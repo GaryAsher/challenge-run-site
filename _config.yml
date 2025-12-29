@@ -1,0 +1,11 @@
+title: Challenge Run Community
+url: https://challengerun.net
+markdown: kramdown
+
+collections:
+  games:
+    output: true
+    permalink: /games/:name/
+  runners:
+    output: true
+    permalink: /runners/:name/
