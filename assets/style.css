@@ -460,6 +460,14 @@ a:hover { text-decoration: underline; }
   opacity: 0.9;
 }
 
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+.runner-tabs .tab{
+  cursor: pointer;
+  font: inherit;
+  background: transparent;
+}
+
 /* ============================================================
    Responsive
    ============================================================ */
