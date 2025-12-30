@@ -5,12 +5,12 @@ name: Hades II
 status: Tracking challenge categories, rules, and notable runs.
 cover: /assets/game-covers/hades-2.jpg
 cover_position: center
-Challenges:
+challenges:
   - No-Hit
   - No-Damage
   - No-Hit No-Damage (NHND)
 
-Categories:
+categories:
   - Underworld Any%
   - Surface Any%
   - Underworld VoR4
