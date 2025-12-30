@@ -52,8 +52,12 @@ a:hover { text-decoration: underline; }
 
 .nav {
   display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
+  gap: 0.9rem; /* space BETWEEN groups */
+}
+
+.nav-group {
+  display: flex;
+  gap: 0.35rem; /* space INSIDE each group */
 }
 
 .nav a {
