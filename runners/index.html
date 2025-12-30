@@ -4,11 +4,41 @@ title: Runners
 ---
 
 <h1>Runners</h1>
-<p class="muted">Runner profiles on CRC.</p>
+<p class="muted">Profiles on CRC. Use search or jump by letter.</p>
 
-<ul>
-  {% assign sorted_runners = site.runners | sort: "name" %}
-  {% for runner in sorted_runners %}
-    <li><a href="{{ runner.url }}">{{ runner.name }}</a></li>
+<input id="q" class="filter" placeholder="Search runners..." autocomplete="off">
+
+<div class="az" aria-label="Jump by letter">
+  {% assign letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" | split: "" %}
+  {% for L in letters %}
+    <a href="#{{ L }}">{{ L }}</a>
   {% endfor %}
-</ul>
+</div>
+
+{% assign sorted = site.runners | sort: "name" %}
+{% assign letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" | split: "" %}
+
+<div id="runner-list">
+  {% for L in letters %}
+    <h2 id="{{ L }}">{{ L }}</h2>
+    <ul class="list">
+      {% for r in sorted %}
+        {% assign first = r.name | slice: 0, 1 | upcase %}
+        {% if first == L %}
+          <li class="runner-item"><a href="{{ r.url }}">{{ r.name }}</a></li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  {% endfor %}
+</div>
+
+<script>
+  const input = document.getElementById("q");
+  const items = Array.from(document.querySelectorAll(".runner-item"));
+  input.addEventListener("input", () => {
+    const q = input.value.trim().toLowerCase();
+    for (const li of items) {
+      li.style.display = li.textContent.toLowerCase().includes(q) ? "" : "none";
+    }
+  });
+</script>
