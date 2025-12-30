@@ -333,3 +333,71 @@ a:hover {
     flex-wrap: wrap;
   }
 }
+
+/* ============================================================
+   RESTORE: Games cards (covers on /games/)
+   ============================================================ */
+.game-card {
+  position: relative;
+  display: block;
+  min-height: 140px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #111;
+}
+
+.game-card__bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.45;
+  filter: saturate(1.1);
+}
+
+.game-card__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  background: linear-gradient(
+    to top,
+    rgba(15, 15, 15, 0.95),
+    rgba(15, 15, 15, 0.6),
+    rgba(15, 15, 15, 0.35)
+  );
+}
+
+.game-card__title {
+  padding: 0.9rem;
+  font-weight: 650;
+  color: #fff;
+  position: relative;
+  z-index: 2;
+}
+
+.game-card:hover .game-card__bg {
+  opacity: 0.6;
+}
+
+.game-card:hover {
+  text-decoration: none;
+}
+
+/* ============================================================
+   RESTORE: Runner cards behavior (for /runners/)
+   ============================================================ */
+.runner-card {
+  display: block;
+  text-decoration: none;
+}
+
+.runner-card:hover {
+  text-decoration: none;
+}
+
+.runner-card:hover .runner-card__bg {
+  opacity: 1;
+}
