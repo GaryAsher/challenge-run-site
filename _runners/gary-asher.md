@@ -2,7 +2,7 @@
 layout: runner
 runner_id: gary-asher
 name: Gary Asher
-cover: /assets/runner-covers/g/gary-asher.jpg
+cover: /assets/runner-covers/g/gary-asher.png
 cover_position: center
 twitch: https://www.twitch.tv/gary_asher
 youtube: https://www.youtube.com/@gary_asher
