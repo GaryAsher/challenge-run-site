@@ -62,8 +62,8 @@ title: Games
     return "other";
   }
 
-  function getFirstChar(li) {
-    const text = (li.querySelector("a")?.textContent || "").trim();
+  function getFirstChar(el) {
+    const text = (el.textContent || "").trim();
     return text ? text[0] : "";
   }
 
