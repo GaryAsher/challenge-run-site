@@ -3,7 +3,7 @@ layout: game
 game_id: hades-2
 name: Hades II
 status: Tracking challenge categories, rules, and notable runs.
-cover: /assets/img/game/h/hades-2.jpg
+cover: /assets/img/games/h/hades-2.jpg
 cover_position: center
 challenges:
   - No-Hit
