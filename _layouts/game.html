@@ -2,25 +2,14 @@
 layout: default
 ---
 
+<nav class="game-tabs">
+  <a href="{{ page.url }}" class="tab active">Overview</a>
+  <a href="{{ '/rules/' | relative_url }}" class="tab">General Rules</a>
+  <a href="{{ '/glossary/' | relative_url }}">Glossary</a>
+</nav>
+
 <p class="muted"><a href="{{ '/games/' | relative_url }}">← Games</a></p>
 
 <h1>{{ page.name }}</h1>
 
-{% if page.status %}
-  <p class="muted">{{ page.status }}</p>
-{% endif %}
-
-{% if page.categories %}
-  <div class="card">
-    <h2>Common categories</h2>
-    <ul>
-      {% for c in page.categories %}
-        <li>{{ c }}</li>
-      {% endfor %}
-    </ul>
-  </div>
-{% endif %}
-
-{% if content and content != "" %}
-  <div class="card">{{ content }}</div>
-{% endif %}
+...
