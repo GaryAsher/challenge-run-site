@@ -51,14 +51,29 @@ title: Runners
     // Everything else: Korean, Japanese, accented, symbols, etc.
     return "other";
   }
+  
+<script>
+  const items = Array.from(document.querySelectorAll(".runner-item"));
+  const input = document.getElementById("q");
+  const status = document.getElementById("status");
+  const limitSelect = document.getElementById("limit");
+
+  function classifyFirstChar(ch) {
+    if (!ch) return "other";
+    const upper = ch.toUpperCase();
+    if (upper >= "A" && upper <= "Z") return upper;
+    if (ch >= "0" && ch <= "9") return "0-9";
+    return "other";
+  }
 
   function applyFilter() {
     const hash = (location.hash || "#all").slice(1);
     const bucket = hash || "all";
     const q = input.value.trim().toLowerCase();
+    const limit = Number(limitSelect.value); // 0 means All
 
-    let shown = 0;
-
+    // First pass: compute matches in order
+    const matches = [];
     for (const li of items) {
       const name = li.dataset.name || "";
       const first = (li.dataset.first || "").trim();
@@ -67,10 +82,15 @@ title: Runners
       const matchesBucket = (bucket === "all") || (bucket === group);
       const matchesSearch = !q || name.includes(q);
 
-      const show = matchesBucket && matchesSearch;
-      li.style.display = show ? "" : "none";
-      if (show) shown++;
+      if (matchesBucket && matchesSearch) matches.push(li);
     }
+
+    // Hide everything first
+    for (const li of items) li.style.display = "none";
+
+    // Show up to limit
+    const toShow = (limit === 0) ? matches.length : Math.min(limit, matches.length);
+    for (let i = 0; i < toShow; i++) matches[i].style.display = "";
 
     const bucketLabel =
       bucket === "all" ? "All" :
@@ -78,14 +98,15 @@ title: Runners
       bucket === "other" ? "Other" :
       bucket;
 
-    status.textContent = `${shown} shown (filter: ${bucketLabel})`;
+    status.textContent = `${toShow} shown of ${matches.length} matches (filter: ${bucketLabel})`;
   }
 
   window.addEventListener("hashchange", applyFilter);
   input.addEventListener("input", applyFilter);
-
-  // Initial
+  limitSelect.addEventListener("change", applyFilter);
   applyFilter();
+</script>
+
 </script>
 
 <label class="muted" for="limit">Show:</label>
