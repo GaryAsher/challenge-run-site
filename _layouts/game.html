@@ -1,88 +1,30 @@
 ---
 layout: default
-title: Games
 ---
 
-<h1>Games</h1>
-<p class="muted">Jump by letter or filter by category.</p>
+<nav class="game-tabs">
+  <a href="{{ page.url }}" class="tab active">Overview</a>
+  <a href="{{ '/rules/' | relative_url }}" class="tab">General Rules</a>
+  <a href="{{ '/glossary/' | relative_url }}" class="tab">Glossary</a>
+</nav>
 
-<div class="az" id="az">
-  <a href="#0-9">#</a>
-  {% assign letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" | split: "" %}
-  {% for L in letters %}
-    <a href="#{{ L }}">{{ L }}</a>
-  {% endfor %}
-  <a href="#other">Other</a>
-  <a href="#all" class="muted">All</a>
-</div>
+<p class="muted"><a href="{{ '/games/' | relative_url }}">← Games</a></p>
 
-<input id="q" class="filter" placeholder="Search within results..." autocomplete="off">
+<h1>{{ page.name }}</h1>
 
-<div style="margin: 0.5rem 0 0.75rem 0;">
-  <label class="muted" for="limit">Show:</label>
-  <select id="limit" class="select">
-    <option value="25" selected>25</option>
-    <option value="50">50</option>
-    <option value="100">100</option>
-    <option value="250">250</option>
-    <option value="0">All</option>
-  </select>
-</div>
+{% if page.status %}
+  <p class="muted">{{ page.status }}</p>
+{% endif %}
 
-<p class="muted" id="status"></p>
+{% if page.categories %}
+  <div class="card">
+    <h2>Common categories</h2>
+    <ul>
+      {% for c in page.categories %}
+        <li>{{ c }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
 
-<ul class="list" id="game-list">
-  {% assign sorted = site.games | sort: "name" %}
-  {% for g in sorted %}
-    <li class="game-item" data-name="{{ g.name | downcase }}">
-      <a href="{{ g.url }}">{{ g.name }}</a>
-    </li>
-  {% endfor %}
-</ul>
-
-<script>
-  const items = Array.from(document.querySelectorAll(".game-item"));
-  const input = document.getElementById("q");
-  const status = document.getElementById("status");
-  const limitSelect = document.getElementById("limit");
-
-  function classifyFirstChar(ch) {
-    if (!ch) return "other";
-    const upper = ch.toUpperCase();
-    if (upper >= "A" && upper <= "Z") return upper;
-    if (ch >= "0" && ch <= "9") return "0-9";
-    return "other";
-  }
-
-  function getFirstChar(li) {
-    const text = (li.querySelector("a")?.textContent || "").trim();
-    return text ? text[0] : "";
-  }
-
-  function applyFilter() {
-    const bucket = ((location.hash || "#all").slice(1)) || "all";
-    const q = input.value.trim().toLowerCase();
-    const limit = Number(limitSelect.value);
-
-    const matches = [];
-    for (const li of items) {
-      const name = li.dataset.name || "";
-      const group = classifyFirstChar(getFirstChar(li));
-      if ((bucket === "all" || bucket === group) && (!q || name.includes(q))) {
-        matches.push(li);
-      }
-    }
-
-    for (const li of items) li.style.display = "none";
-
-    const count = limit === 0 ? matches.length : Math.min(limit, matches.length);
-    for (let i = 0; i < count; i++) matches[i].style.display = "";
-
-    status.textContent = `${count} shown of ${matches.length}`;
-  }
-
-  window.addEventListener("hashchange", applyFilter);
-  input.addEventListener("input", applyFilter);
-  limitSelect.addEventListener("change", applyFilter);
-  applyFilter();
-</script>
+{{ content }}
