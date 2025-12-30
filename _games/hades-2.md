@@ -16,11 +16,8 @@ categories:
   - Underworld VoR4
   - Surface VoR4
 
-sub-categories:
+subcategories:
   - God Only
   - Boonless
   - Arcanaless
-  - Vor4
-featured_runners:
-  - gary-asher
 ---
