@@ -8,42 +8,36 @@ layout: default
   <a href="{{ '/glossary/' | relative_url }}" class="tab">Glossary</a>
 </nav>
 
-{% if page.cover %}
-  <section class="runner-hero"
-    style="background-image: url('{{ page.cover | relative_url }}'); background-position: {{ page.cover_position | default: 'center' }};">
-    <div class="runner-hero__overlay">
-      <div class="runner-hero__content">
-        <p class="muted"><a href="{{ '/runners/' | relative_url }}">← Runners</a></p>
-        <h1>{{ page.name }}</h1>
+<div class="container">
+  <p class="muted"><a href="{{ '/runners/' | relative_url }}">← Runners</a></p>
+
+  <div class="runner-header">
+    {% if page.cover %}
+      <div
+        class="runner-avatar"
+        style="background-image: url('{{ page.cover | relative_url }}');">
+      </div>
+    {% endif %}
+
+    <div class="runner-meta">
+      <h1>{{ page.name }}</h1>
+
+      <div class="runner-links">
+        {% if page.twitch %}
+          <a href="{{ page.twitch }}" target="_blank" rel="noreferrer">Twitch</a>
+        {% endif %}
+        {% if page.youtube %}
+          <a href="{{ page.youtube }}" target="_blank" rel="noreferrer">YouTube</a>
+        {% endif %}
       </div>
     </div>
-  </section>
-{% else %}
-  <div class="container">
-    <p class="muted"><a href="{{ '/runners/' | relative_url }}">← Runners</a></p>
-    <h1>{{ page.name }}</h1>
   </div>
-{% endif %}
-
-<div class="container">
 
   {% if content and content != "" %}
     <div class="card">
       {{ content }}
     </div>
   {% endif %}
-
-  <div class="card">
-    <h2>Links</h2>
-    <ul>
-      {% if page.twitch %}
-        <li><a href="{{ page.twitch }}" target="_blank" rel="noreferrer">Twitch</a></li>
-      {% endif %}
-      {% if page.youtube %}
-        <li><a href="{{ page.youtube }}" target="_blank" rel="noreferrer">YouTube</a></li>
-      {% endif %}
-    </ul>
-  </div>
 
   {% if page.games %}
     <div class="card">
@@ -60,5 +54,4 @@ layout: default
       </ul>
     </div>
   {% endif %}
-
 </div>
