@@ -31,14 +31,22 @@ title: Games
 
 <p class="muted" id="status"></p>
 
-<ul class="list" id="game-list">
+<div class="grid" id="game-list">
   {% assign sorted = site.games | sort: "name" %}
   {% for g in sorted %}
-    <li class="game-item" data-name="{{ g.name | downcase }}">
-      <a href="{{ g.url }}">{{ g.name }}</a>
-    </li>
+    <a class="game-card game-item"
+       href="{{ g.url }}"
+       data-name="{{ g.name | downcase }}"
+       aria-label="{{ g.name }}">
+      <div class="game-card__bg"
+           style="background-image: url('{{ g.cover | default: '' | relative_url }}');">
+      </div>
+      <div class="game-card__overlay">
+        <div class="game-card__title">{{ g.name }}</div>
+      </div>
+    </a>
   {% endfor %}
-</ul>
+</div>
 
 <script>
   const items = Array.from(document.querySelectorAll(".game-item"));
