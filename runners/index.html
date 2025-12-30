@@ -18,40 +18,28 @@ title: Runners
 
 <input id="q" class="filter" placeholder="Search within results..." autocomplete="off">
 
+<div style="margin: 0.5rem 0 0.75rem 0;">
+  <label class="muted" for="limit">Show:</label>
+  <select id="limit" class="select">
+    <option value="25" selected>25</option>
+    <option value="50">50</option>
+    <option value="100">100</option>
+    <option value="250">250</option>
+    <option value="0">All</option>
+  </select>
+</div>
+
 <p class="muted" id="status"></p>
 
 <ul class="list" id="runner-list">
   {% assign sorted = site.runners | sort: "name" %}
   {% for r in sorted %}
-    {% assign first = r.name | slice: 0, 1 %}
-    <li class="runner-item" data-name="{{ r.name | downcase }}" data-first="{{ first }}">
+    <li class="runner-item" data-name="{{ r.name | downcase }}">
       <a href="{{ r.url }}">{{ r.name }}</a>
     </li>
   {% endfor %}
 </ul>
 
-<script>
-  const list = document.getElementById("runner-list");
-  const items = Array.from(document.querySelectorAll(".runner-item"));
-  const input = document.getElementById("q");
-  const status = document.getElementById("status");
-
-  function classifyFirstChar(ch) {
-    if (!ch) return "other";
-
-    // Normalize and uppercase for Latin letters
-    const upper = ch.toUpperCase();
-
-    // A-Z
-    if (upper >= "A" && upper <= "Z") return upper;
-
-    // 0-9
-    if (ch >= "0" && ch <= "9") return "0-9";
-
-    // Everything else: Korean, Japanese, accented, symbols, etc.
-    return "other";
-  }
-  
 <script>
   const items = Array.from(document.querySelectorAll(".runner-item"));
   const input = document.getElementById("q");
@@ -66,18 +54,21 @@ title: Runners
     return "other";
   }
 
+  function getFirstVisibleChar(li) {
+    const text = (li.querySelector("a")?.textContent || li.textContent || "").trim();
+    return text.length ? text[0] : "";
+  }
+
   function applyFilter() {
-    const hash = (location.hash || "#all").slice(1);
-    const bucket = hash || "all";
+    const bucket = ((location.hash || "#all").slice(1)) || "all";
     const q = input.value.trim().toLowerCase();
     const limit = Number(limitSelect.value); // 0 means All
 
-    // First pass: compute matches in order
     const matches = [];
     for (const li of items) {
       const name = li.dataset.name || "";
-      const first = (li.dataset.first || "").trim();
-      const group = classifyFirstChar(first);
+      const firstChar = getFirstVisibleChar(li);
+      const group = classifyFirstChar(firstChar);
 
       const matchesBucket = (bucket === "all") || (bucket === group);
       const matchesSearch = !q || name.includes(q);
@@ -85,10 +76,8 @@ title: Runners
       if (matchesBucket && matchesSearch) matches.push(li);
     }
 
-    // Hide everything first
     for (const li of items) li.style.display = "none";
 
-    // Show up to limit
     const toShow = (limit === 0) ? matches.length : Math.min(limit, matches.length);
     for (let i = 0; i < toShow; i++) matches[i].style.display = "";
 
@@ -106,14 +95,3 @@ title: Runners
   limitSelect.addEventListener("change", applyFilter);
   applyFilter();
 </script>
-
-</script>
-
-<label class="muted" for="limit">Show:</label>
-<select id="limit" class="select">
-  <option value="25">25</option>
-  <option value="50">50</option>
-  <option value="100">100</option>
-  <option value="250">250</option>
-  <option value="0">All</option>
-</select>
