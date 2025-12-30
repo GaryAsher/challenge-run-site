@@ -62,6 +62,16 @@ a:hover { text-decoration: underline; }
   border-radius: 10px;
 }
 
+.nav {
+  display: flex;
+  gap: 0.35rem; /* tighter spacing inside groups */
+}
+
+.nav a.group-separator {
+  margin-left: 0.75rem; /* space between groups */
+}
+
+
 /* ============================================================
    Footer
    ============================================================ */
