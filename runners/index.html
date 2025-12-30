@@ -1,0 +1,14 @@
+---
+layout: default
+title: Runners
+---
+
+<h1>Runners</h1>
+<p class="muted">Runner profiles on CRC.</p>
+
+<ul>
+  {% assign sorted_runners = site.runners | sort: "name" %}
+  {% for runner in sorted_runners %}
+    <li><a href="{{ runner.url }}">{{ runner.name }}</a></li>
+  {% endfor %}
+</ul>
