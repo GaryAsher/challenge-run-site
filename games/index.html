@@ -78,7 +78,13 @@ title: Games
     const count = limit === 0 ? matches.length : Math.min(limit, matches.length);
     for (let i = 0; i < count; i++) matches[i].style.display = "";
 
-    status.textContent = `${count} shown of ${matches.length}`;
+const bucketLabel =
+  bucket === "all" ? "All" :
+  bucket === "0-9" ? "0–9" :
+  bucket === "other" ? "Other" :
+  bucket;
+
+status.textContent = `${count} shown of ${matches.length} matches (filter: ${bucketLabel})`;
   }
 
   window.addEventListener("hashchange", applyFilter);
