@@ -8,6 +8,22 @@ layout: default
   <a href="{{ '/glossary/' | relative_url }}">Glossary</a>
 </nav>
 
+{% if page.cover %}
+  <section class="game-hero" style="background-image: url('{{ page.cover | relative_url }}'); background-position: {{ page.cover_position | default: 'center' }};">
+    <div class="game-hero__overlay">
+      <div class="game-hero__content">
+        <p class="muted"><a href="{{ '/games/' | relative_url }}">← Games</a></p>
+        <h1>{{ page.name }}</h1>
+        {% if page.status %}<p class="muted">{{ page.status }}</p>{% endif %}
+      </div>
+    </div>
+  </section>
+{% else %}
+  <p class="muted"><a href="{{ '/games/' | relative_url }}">← Games</a></p>
+  <h1>{{ page.name }}</h1>
+  {% if page.status %}<p class="muted">{{ page.status }}</p>{% endif %}
+{% endif %}
+
 <div class="container">
   <p class="muted">
     <a href="{{ '/games/' | relative_url }}">← Games</a>
