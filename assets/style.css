@@ -133,3 +133,57 @@ a:hover { text-decoration: underline; }
   margin: 0.25rem 0 0 0;
   color: var(--accent);
 }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.9rem;
+}
+
+.game-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  min-height: 140px;
+  position: relative;
+  display: block;
+  background: #111;
+}
+
+.game-card__bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.45;
+  filter: saturate(1.1);
+}
+
+.game-card__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(15, 15, 15, 0.95),
+    rgba(15, 15, 15, 0.6),
+    rgba(15, 15, 15, 0.35)
+  );
+  display: flex;
+  align-items: flex-end;
+}
+
+.game-card__title {
+  padding: 0.9rem;
+  font-weight: 650;
+  color: #fff;
+  position: relative;
+  z-index: 2;
+}
+
+.game-card:hover .game-card__bg {
+  opacity: 0.6;
+}
+
+.game-card:hover {
+  text-decoration: none;
+}
