@@ -4,11 +4,78 @@ title: Games
 ---
 
 <h1>Games</h1>
-<p class="muted">Tracked games on CRC.</p>
+<p class="muted">Jump by letter or filter by category.</p>
 
-<ul>
-  {% assign sorted_games = site.games | sort: "name" %}
-  {% for game in sorted_games %}
-    <li><a href="{{ game.url }}">{{ game.name }}</a></li>
+<div class="az" id="az">
+  <a href="#0-9" data-filter="0-9">#</a>
+  {% assign letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" | split: "" %}
+  {% for L in letters %}
+    <a href="#{{ L }}" data-filter="{{ L }}">{{ L }}</a>
+  {% endfor %}
+  <a href="#other" data-filter="other">Other</a>
+  <a href="#all" data-filter="all" class="muted">All</a>
+</div>
+
+<input id="q" class="filter" placeholder="Search within results..." autocomplete="off">
+
+<p class="muted" id="status"></p>
+
+<ul class="list" id="game-list">
+  {% assign sorted = site.games | sort: "name" %}
+  {% for g in sorted %}
+    {% assign first = g.name | slice: 0, 1 %}
+    <li class="game-item" data-name="{{ g.name | downcase }}" data-first="{{ first }}">
+      <a href="{{ g.url }}">{{ g.name }}</a>
+    </li>
   {% endfor %}
 </ul>
+
+<script>
+  const items = Array.from(document.querySelectorAll(".game-item"));
+  const input = document.getElementById("q");
+  const status = document.getElementById("status");
+
+  function classifyFirstChar(ch) {
+    if (!ch) return "other";
+
+    const upper = ch.toUpperCase();
+
+    if (upper >= "A" && upper <= "Z") return upper;
+    if (ch >= "0" && ch <= "9") return "0-9";
+
+    return "other";
+  }
+
+  function applyFilter() {
+    const hash = (location.hash || "#all").slice(1);
+    const bucket = hash || "all";
+    const q = input.value.trim().toLowerCase();
+
+    let shown = 0;
+
+    for (const li of items) {
+      const name = li.dataset.name || "";
+      const first = (li.dataset.first || "").trim();
+      const group = classifyFirstChar(first);
+
+      const matchesBucket = (bucket === "all") || (bucket === group);
+      const matchesSearch = !q || name.includes(q);
+
+      const show = matchesBucket && matchesSearch;
+      li.style.display = show ? "" : "none";
+      if (show) shown++;
+    }
+
+    const bucketLabel =
+      bucket === "all" ? "All" :
+      bucket === "0-9" ? "0–9" :
+      bucket === "other" ? "Other" :
+      bucket;
+
+    status.textContent = `${shown} shown (filter: ${bucketLabel})`;
+  }
+
+  window.addEventListener("hashchange", applyFilter);
+  input.addEventListener("input", applyFilter);
+  applyFilter();
+</script>
