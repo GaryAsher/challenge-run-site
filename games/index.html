@@ -7,13 +7,13 @@ title: Games
 <p class="muted">Jump by letter or filter by category.</p>
 
 <div class="az" id="az">
-  <a href="#0-9" data-filter="0-9">#</a>
+  <a href="#0-9">#</a>
   {% assign letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" | split: "" %}
   {% for L in letters %}
-    <a href="#{{ L }}" data-filter="{{ L }}">{{ L }}</a>
+    <a href="#{{ L }}">{{ L }}</a>
   {% endfor %}
-  <a href="#other" data-filter="other">Other</a>
-  <a href="#all" data-filter="all" class="muted">All</a>
+  <a href="#other">Other</a>
+  <a href="#all" class="muted">All</a>
 </div>
 
 <input id="q" class="filter" placeholder="Search within results..." autocomplete="off">
@@ -54,40 +54,31 @@ title: Games
     return "other";
   }
 
-  function getFirstVisibleChar(li) {
-    const text = (li.querySelector("a")?.textContent || li.textContent || "").trim();
-    return text.length ? text[0] : "";
+  function getFirstChar(li) {
+    const text = (li.querySelector("a")?.textContent || "").trim();
+    return text ? text[0] : "";
   }
 
   function applyFilter() {
     const bucket = ((location.hash || "#all").slice(1)) || "all";
     const q = input.value.trim().toLowerCase();
-    const limit = Number(limitSelect.value); // 0 means All
+    const limit = Number(limitSelect.value);
 
     const matches = [];
     for (const li of items) {
       const name = li.dataset.name || "";
-      const firstChar = getFirstVisibleChar(li);
-      const group = classifyFirstChar(firstChar);
-
-      const matchesBucket = (bucket === "all") || (bucket === group);
-      const matchesSearch = !q || name.includes(q);
-
-      if (matchesBucket && matchesSearch) matches.push(li);
+      const group = classifyFirstChar(getFirstChar(li));
+      if ((bucket === "all" || bucket === group) && (!q || name.includes(q))) {
+        matches.push(li);
+      }
     }
 
     for (const li of items) li.style.display = "none";
 
-    const toShow = (limit === 0) ? matches.length : Math.min(limit, matches.length);
-    for (let i = 0; i < toShow; i++) matches[i].style.display = "";
+    const count = limit === 0 ? matches.length : Math.min(limit, matches.length);
+    for (let i = 0; i < count; i++) matches[i].style.display = "";
 
-    const bucketLabel =
-      bucket === "all" ? "All" :
-      bucket === "0-9" ? "0–9" :
-      bucket === "other" ? "Other" :
-      bucket;
-
-    status.textContent = `${toShow} shown of ${matches.length} matches (filter: ${bucketLabel})`;
+    status.textContent = `${count} shown of ${matches.length}`;
   }
 
   window.addEventListener("hashchange", applyFilter);
