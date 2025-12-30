@@ -63,3 +63,31 @@ a:hover { text-decoration: underline; }
   padding: 1rem;
   margin: 1rem 0;
 }
+
+.filter {
+  width: 100%;
+  max-width: 520px;
+  padding: 0.6rem 0.75rem;
+  margin: 0.75rem 0 1rem 0;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #0b0b0b;
+  color: var(--fg);
+}
+
+.az {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 1.25rem;
+}
+
+.az a {
+  padding: 0.2rem 0.45rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
+
+.list { padding-left: 1.2rem; }
+
