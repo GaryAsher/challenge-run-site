@@ -3,9 +3,12 @@ layout: default
 ---
 
 <nav class="game-tabs">
+  <p class="muted"><a href="{{ '/games/' | relative_url }}">← Games</a></p>
+  <!-- 
   <a href="{{ page.url }}" class="tab active">Overview</a>
   <a href="{{ '/rules/' | relative_url }}" class="tab">General Rules</a>
   <a href="{{ '/glossary/' | relative_url }}" class="tab">Glossary</a>
+  -->
 </nav>
 
 {% if page.cover %}
@@ -13,7 +16,6 @@ layout: default
     style="background-image: url('{{ page.cover | relative_url }}'); background-position: {{ page.cover_position | default: 'center' }};">
     <div class="game-hero__overlay">
       <div class="game-hero__content">
-        <p class="muted"><a href="{{ '/games/' | relative_url }}">← Games</a></p>
         <h1>{{ page.name }}</h1>
         {% if page.status %}<p class="muted">{{ page.status }}</p>{% endif %}
       </div>
