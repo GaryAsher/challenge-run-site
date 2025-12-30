@@ -8,9 +8,11 @@ layout: default
   <button class="tab" data-tab="other" type="button">Something Else</button>
 </nav>
 
-<p class="muted" style="margin: 1rem 1.5rem 0 1.5rem;">
-  <a href="{{ '/runners/' | relative_url }}">← Runners</a>
-</p>
+<div class="page-width">
+  <p class="page-back">
+    <a href="{{ '/runners/' | relative_url }}">← Runners</a>
+  </p>
+</div>
 
 {% assign avatar = page.cover | default: "/assets/img/site/default-runner.png" %}
 
@@ -24,7 +26,7 @@ layout: default
   </div>
 </section>
 
-<div class="container">
+<div class="page-width">
 
   <!-- PROFILE PANEL -->
   <section class="tab-panel active" data-panel="profile">
