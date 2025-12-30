@@ -31,11 +31,20 @@ title: Runners
 
 <p class="muted" id="status"></p>
 
-<ul class="list" id="runner-list">
+<ul class="grid" id="runner-list" style="list-style: none; padding-left: 0; margin: 0;">
   {% assign sorted = site.runners | sort: "name" %}
   {% for r in sorted %}
     <li class="runner-item" data-name="{{ r.name | downcase }}">
-      <a href="{{ r.url }}">{{ r.name }}</a>
+      <a class="runner-card" href="{{ r.url }}">
+        {% if r.cover %}
+          <div class="runner-card__bg" style="background-image: url('{{ r.cover | relative_url }}');"></div>
+        {% else %}
+          <div class="runner-card__bg"></div>
+        {% endif %}
+        <div class="runner-card__overlay">
+          <div class="runner-card__title">{{ r.name }}</div>
+        </div>
+      </a>
     </li>
   {% endfor %}
 </ul>
