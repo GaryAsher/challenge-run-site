@@ -19,13 +19,8 @@ body {
   line-height: 1.6;
 }
 
-a {
-  color: var(--accent);
-  text-decoration: none;
-}
-a:hover {
-  text-decoration: underline;
-}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
 
 /* ============================================================
    Layout Containers
@@ -55,9 +50,71 @@ a:hover {
   color: var(--accent);
 }
 
+.nav {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.nav a {
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
 /* ============================================================
-   Dark UI controls (A–Z buttons, search, select)
+   Footer
    ============================================================ */
+.site-footer {
+  padding: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+/* ============================================================
+   Shared Components
+   ============================================================ */
+.muted { opacity: 0.8; }
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.filter {
+  width: 100%;
+  max-width: 520px;
+  padding: 0.6rem 0.75rem;
+  margin: 0.75rem 0 1rem 0;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #0b0b0b;
+  color: var(--fg);
+}
+
+.filter::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.select {
+  padding: 0.45rem 0.6rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #0b0b0b;
+  color: var(--fg);
+  margin-left: 0.4rem;
+}
+
+/* ============================================================
+   A–Z Navigation
+   ============================================================ */
+.az {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 1.25rem;
+}
 
 .az a {
   padding: 0.2rem 0.45rem;
@@ -69,21 +126,221 @@ a:hover {
   display: inline-block;
 }
 
-.az a.muted {
-  opacity: 0.8;
+.list { padding-left: 1.2rem; }
+
+/* ============================================================
+   Grid Utility
+   ============================================================ */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.9rem;
 }
 
-.filter,
-.select {
+/* ============================================================
+   Games: Tabs, Hero, Cards
+   ============================================================ */
+.game-tabs {
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  z-index: 5;
+}
+
+/* Game hero banner */
+.game-hero {
+  position: relative;
   border: 1px solid var(--border);
-  background: #0b0b0b;
-  color: var(--fg);
+  border-radius: 16px;
+  overflow: hidden;
+  margin: 0 0 1.25rem 0;
+  min-height: 260px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
-.filter::placeholder {
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.nav {
+.game-hero__overlay {
+  position: absolute;
+  inset: 0;
   display: flex;
-  gap: 0.75rem;
+  align-items: flex-end;
+  background: linear-gradient(
+    to top,
+    rgba(15, 15, 15, 0.92),
+    rgba(15, 15, 15, 0.65),
+    rgba(15, 15, 15, 0.45)
+  );
+}
+
+.game-hero__content {
+  padding: 1.25rem;
+}
+
+.game-hero h1 {
+  margin: 0.25rem 0 0 0;
+  color: var(--accent);
+}
+
+/* Game cards (covers on /games/) */
+.game-card {
+  position: relative;
+  display: block;
+  min-height: 140px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #111;
+}
+
+.game-card__bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.45;
+  filter: saturate(1.1);
+}
+
+.game-card__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  background: linear-gradient(
+    to top,
+    rgba(15, 15, 15, 0.95),
+    rgba(15, 15, 15, 0.6),
+    rgba(15, 15, 15, 0.35)
+  );
+}
+
+.game-card__title {
+  padding: 0.9rem;
+  font-weight: 650;
+  color: #fff;
+  position: relative;
+  z-index: 2;
+}
+
+.game-card:hover .game-card__bg {
+  opacity: 0.6;
+}
+
+.game-card:hover {
+  text-decoration: none;
+}
+
+/* ============================================================
+   Runners: Tabs + Header Boxes
+   ============================================================ */
+.runner-tabs {
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  z-index: 5;
+}
+
+.runner-tabs .tab {
+  padding: 0.45rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  font-size: 0.9rem;
+  margin-right: 0.5rem;
+  display: inline-block;
+}
+
+.runner-tabs .tab.active {
+  background: var(--accent);
+  color: #0f0f0f;
+  font-weight: 600;
+}
+
+.runner-top {
+  display: flex;
+  gap: 1rem;
+  align-items: stretch;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.runner-left,
+.runner-right {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #0b0b0b;
+  padding: 0.9rem;
+}
+
+.runner-left {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex: 1;
+}
+
+.runner-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 220px;
+}
+
+.runner-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background-color: #111;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  flex: 0 0 auto;
+}
+
+.runner-avatar--empty {
+  opacity: 0.4;
+}
+
+.runner-name h1 {
+  margin: 0;
+  color: var(--accent);
+}
+
+.runner-links {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.runner-link {
+  padding: 0.35rem 0.65rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  font-size: 0.9rem;
+}
+
+.runner-link:hover {
+  text-decoration: none;
+  opacity: 0.9;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 640px) {
+  .runner-top {
+    flex-direction: column;
+  }
+  .runner-right {
+    justify-content: flex-start;
+    min-width: 0;
+  }
+}
