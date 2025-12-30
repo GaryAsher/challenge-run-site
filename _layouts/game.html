@@ -1,0 +1,42 @@
+---
+layout: default
+---
+
+<p class="muted"><a href="{{ '/games/' | relative_url }}">← Games</a></p>
+
+<h1>{{ page.name }}</h1>
+
+{% if page.status %}
+  <p class="muted">{{ page.status }}</p>
+{% endif %}
+
+{% if page.categories %}
+  <div class="card">
+    <h2>Common categories</h2>
+    <ul>
+      {% for c in page.categories %}
+        <li>{{ c }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
+
+{% if page.featured_runners %}
+  <div class="card">
+    <h2>Featured runners</h2>
+    <ul>
+      {% for rid in page.featured_runners %}
+        {% assign r = site.runners | where: "runner_id", rid | first %}
+        {% if r %}
+          <li><a href="{{ r.url }}">{{ r.name }}</a></li>
+        {% else %}
+          <li>{{ rid }}</li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
+
+{% if content and content != "" %}
+  <div class="card">{{ content }}</div>
+{% endif %}
