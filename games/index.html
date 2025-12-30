@@ -1,0 +1,14 @@
+---
+layout: default
+title: Games
+---
+
+<h1>Games</h1>
+<p class="muted">Tracked games on CRC.</p>
+
+<ul>
+  {% assign sorted_games = site.games | sort: "name" %}
+  {% for game in sorted_games %}
+    <li><a href="{{ game.url }}">{{ game.name }}</a></li>
+  {% endfor %}
+</ul>
