@@ -11,23 +11,28 @@ layout: default
 <div class="container">
   <p class="muted"><a href="{{ '/runners/' | relative_url }}">← Runners</a></p>
 
-  <div class="runner-header">
-    {% if page.cover %}
-      <div
-        class="runner-avatar"
-        style="background-image: url('{{ page.cover | relative_url }}');">
+  <div class="runner-top">
+    <div class="runner-left">
+      {% if page.cover %}
+        <div class="runner-avatar"
+             style="background-image: url('{{ page.cover | relative_url }}');">
+        </div>
+      {% else %}
+        <div class="runner-avatar runner-avatar--empty"></div>
+      {% endif %}
+
+      <div class="runner-name">
+        <h1>{{ page.name }}</h1>
       </div>
-    {% endif %}
+    </div>
 
-    <div class="runner-meta">
-      <h1>{{ page.name }}</h1>
-
+    <div class="runner-right">
       <div class="runner-links">
         {% if page.twitch %}
-          <a href="{{ page.twitch }}" target="_blank" rel="noreferrer">Twitch</a>
+          <a class="runner-link" href="{{ page.twitch }}" target="_blank" rel="noreferrer">Twitch</a>
         {% endif %}
         {% if page.youtube %}
-          <a href="{{ page.youtube }}" target="_blank" rel="noreferrer">YouTube</a>
+          <a class="runner-link" href="{{ page.youtube }}" target="_blank" rel="noreferrer">YouTube</a>
         {% endif %}
       </div>
     </div>
