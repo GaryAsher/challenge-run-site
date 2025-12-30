@@ -2,8 +2,8 @@
 layout: runner
 runner_id: gary-asher
 name: Gary Asher
-twitch: https://twitch.tv/YOUR_TWITCH
-youtube: https://youtube.com/YOUR_YOUTUBE
+twitch: https://www.twitch.tv/gary_asher
+youtube: https://www.youtube.com/@gary_asher
 games:
   - hades-2
 ---
