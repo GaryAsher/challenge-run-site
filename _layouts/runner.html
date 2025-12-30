@@ -16,30 +16,38 @@ layout: default
 
 {% assign avatar = page.cover | default: "/assets/img/site/default-runner.png" %}
 
-<section class="runner-hero"
-  style="background-image: url('{{ avatar | relative_url }}'); background-position: {{ page.cover_position | default: 'center' }};">
-  <div class="runner-hero__overlay">
-    <div class="runner-hero__content">
-      <h1>{{ page.name }}</h1>
-      {% if page.status %}<p class="muted">{{ page.status }}</p>{% endif %}
+<div class="page-width">
+  <section class="runner-top">
+    <div class="runner-left">
+      <div
+        class="runner-avatar"
+        style="background-image: url('{{ avatar | relative_url }}');"
+        aria-label="{{ page.name }} profile picture"
+      ></div>
+
+      <div class="runner-name">
+        <h1>{{ page.name }}</h1>
+        {% if page.status %}<p class="muted" style="margin: 0.25rem 0 0 0;">{{ page.status }}</p>{% endif %}
+      </div>
     </div>
-  </div>
-</section>
+
+    <div class="runner-right">
+      <div class="runner-links">
+        {% if page.twitch %}<a class="runner-link" href="{{ page.twitch }}" target="_blank" rel="noreferrer">Twitch</a>{% endif %}
+        {% if page.youtube %}<a class="runner-link" href="{{ page.youtube }}" target="_blank" rel="noreferrer">YouTube</a>{% endif %}
+        {% if page.twitter %}<a class="runner-link" href="{{ page.twitter }}" target="_blank" rel="noreferrer">Twitter/X</a>{% endif %}
+        {% if page.discord %}<a class="runner-link" href="{{ page.discord }}" target="_blank" rel="noreferrer">Discord</a>{% endif %}
+      </div>
+    </div>
+  </section>
+</div>
 
 <div class="page-width">
 
   <section class="tab-panel active" data-panel="profile">
     {% if content and content != "" %}
-      <div class="card">{{ content }}</div>
+      <div class="">{{ content }}</div>
     {% endif %}
-
-    <div class="card">
-      <h2>Links</h2>
-      <ul>
-        {% if page.twitch %}<li><a href="{{ page.twitch }}" target="_blank" rel="noreferrer">Twitch</a></li>{% endif %}
-        {% if page.youtube %}<li><a href="{{ page.youtube }}" target="_blank" rel="noreferrer">YouTube</a></li>{% endif %}
-      </ul>
-    </div>
 
     {% if page.games %}
       <div class="card">
