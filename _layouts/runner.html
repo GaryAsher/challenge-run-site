@@ -2,7 +2,7 @@
 layout: default
 ---
 
-<nav class="runner-tabs">
+<nav class="runner-tabs" id="runner-tabs">
   <button class="tab active" data-tab="profile" type="button">Profile</button>
   <button class="tab" data-tab="runs" type="button">Completed Runs</button>
   <button class="tab" data-tab="other" type="button">Something Else</button>
@@ -12,56 +12,81 @@ layout: default
   <a href="{{ '/runners/' | relative_url }}">← Runners</a>
 </p>
 
-<div class="container">
-  <!-- tab panels go here -->
-</div>
+{% assign avatar = page.cover | default: "/assets/img/site/default-runner.png" %}
 
-  <div class="runner-top">
-    <div class="runner-left">
-      {% if page.cover %}
-        <div class="runner-avatar"
-             style="background-image: url('{{ page.cover | relative_url }}');">
-        </div>
-      {% else %}
-        <div class="runner-avatar runner-avatar--empty"></div>
-      {% endif %}
-
-      <div class="runner-name">
-        <h1>{{ page.name }}</h1>
-      </div>
-    </div>
-
-    <div class="runner-right">
-      <div class="runner-links">
-        {% if page.twitch %}
-          <a class="runner-link" href="{{ page.twitch }}" target="_blank" rel="noreferrer">Twitch</a>
-        {% endif %}
-        {% if page.youtube %}
-          <a class="runner-link" href="{{ page.youtube }}" target="_blank" rel="noreferrer">YouTube</a>
-        {% endif %}
-      </div>
+<section class="runner-hero"
+  style="background-image: url('{{ avatar | relative_url }}'); background-position: {{ page.cover_position | default: 'center' }};">
+  <div class="runner-hero__overlay">
+    <div class="runner-hero__content">
+      <h1>{{ page.name }}</h1>
+      {% if page.status %}<p class="muted">{{ page.status }}</p>{% endif %}
     </div>
   </div>
+</section>
 
-  {% if content and content != "" %}
-    <div class="card">
-      {{ content }}
-    </div>
-  {% endif %}
+<div class="container">
 
-  {% if page.games %}
+  <!-- PROFILE PANEL -->
+  <section class="tab-panel active" data-panel="profile">
+    {% if content and content != "" %}
+      <div class="card">{{ content }}</div>
+    {% endif %}
+
     <div class="card">
-      <h2>Games</h2>
+      <h2>Links</h2>
       <ul>
-        {% for gid in page.games %}
-          {% assign g = site.games | where: "game_id", gid | first %}
-          {% if g %}
-            <li><a href="{{ g.url }}">{{ g.name }}</a></li>
-          {% else %}
-            <li>{{ gid }}</li>
-          {% endif %}
-        {% endfor %}
+        {% if page.twitch %}<li><a href="{{ page.twitch }}" target="_blank" rel="noreferrer">Twitch</a></li>{% endif %}
+        {% if page.youtube %}<li><a href="{{ page.youtube }}" target="_blank" rel="noreferrer">YouTube</a></li>{% endif %}
       </ul>
     </div>
-  {% endif %}
+
+    {% if page.games %}
+      <div class="card">
+        <h2>Games</h2>
+        <ul>
+          {% for gid in page.games %}
+            {% assign g = site.games | where: "game_id", gid | first %}
+            {% if g %}
+              <li><a href="{{ g.url }}">{{ g.name }}</a></li>
+            {% else %}
+              <li>{{ gid }}</li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+  </section>
+
+  <!-- RUNS PANEL -->
+  <section class="tab-panel" data-panel="runs">
+    <div class="card">
+      <h2>Completed Runs</h2>
+      <p class="muted">Coming soon. This will list verified completions, PBs, and categories.</p>
+    </div>
+  </section>
+
+  <!-- OTHER PANEL -->
+  <section class="tab-panel" data-panel="other">
+    <div class="card">
+      <h2>Something Else</h2>
+      <p class="muted">Placeholder tab.</p>
+    </div>
+  </section>
+
 </div>
+
+<script>
+  (function () {
+    const tabs = Array.from(document.querySelectorAll(".runner-tabs .tab"));
+    const panels = Array.from(document.querySelectorAll(".tab-panel"));
+
+    function setActive(name) {
+      for (const t of tabs) t.classList.toggle("active", t.dataset.tab === name);
+      for (const p of panels) p.classList.toggle("active", p.dataset.panel === name);
+    }
+
+    tabs.forEach(t => {
+      t.addEventListener("click", () => setActive(t.dataset.tab));
+    });
+  })();
+</script>
