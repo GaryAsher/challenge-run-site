@@ -36,11 +36,10 @@ title: Runners
   {% for r in sorted %}
     <li class="runner-item" data-name="{{ r.name | downcase }}">
       <a class="runner-card" href="{{ r.url }}">
-        {% if r.cover %}
-          <div class="runner-card__bg" style="background-image: url('{{ r.cover | relative_url }}');"></div>
-        {% else %}
-          <div class="runner-card__bg"></div>
-        {% endif %}
+        {% assign runner_cover = r.cover | default: "/assets/img/site/default-runner.png" %}
+          <div class="runner-card__bg"
+               style="background-image: url('{{ runner_cover | relative_url }}');">
+          </div>
         <div class="runner-card__overlay">
           <div class="runner-card__title">{{ r.name }}</div>
         </div>
