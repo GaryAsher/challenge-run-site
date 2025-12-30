@@ -224,40 +224,6 @@ a:hover { text-decoration: underline; }
   font-weight: 600;
 }
 
-.runner-hero {
-  position: relative;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  overflow: hidden;
-  margin: 0 0 1.25rem 0;
-  min-height: 260px;
-  background-size: cover;
-  background-position: center;
-}
-
-.runner-hero__overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: flex-end;
-  background:
-    linear-gradient(
-      to top,
-      rgba(15, 15, 15, 0.92),
-      rgba(15, 15, 15, 0.65),
-      rgba(15, 15, 15, 0.45)
-    );
-}
-
-.runner-hero__content {
-  padding: 1.25rem;
-}
-
-.runner-hero h1 {
-  margin: 0.25rem 0 0 0;
-  color: var(--accent);
-}
-
 .runner-top {
   display: flex;
   gap: 1rem;
