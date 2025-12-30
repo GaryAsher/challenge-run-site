@@ -3,13 +3,18 @@ layout: default
 ---
 
 <nav class="runner-tabs">
-  <a href="{{ page.url }}" class="tab active">Profile</a>
-  <a href="{{ page.url }}#runs" class="tab">Completed Runs</a>
-  <a href="{{ page.url }}#other" class="tab">Something Else</a>
+  <button class="tab active" data-tab="profile" type="button">Profile</button>
+  <button class="tab" data-tab="runs" type="button">Completed Runs</button>
+  <button class="tab" data-tab="other" type="button">Something Else</button>
 </nav>
 
+<p class="muted" style="margin: 1rem 1.5rem 0 1.5rem;">
+  <a href="{{ '/runners/' | relative_url }}">← Runners</a>
+</p>
+
 <div class="container">
-  <p class="muted"><a href="{{ '/runners/' | relative_url }}">← Runners</a></p>
+  <!-- tab panels go here -->
+</div>
 
   <div class="runner-top">
     <div class="runner-left">
