@@ -21,22 +21,6 @@ layout: default
   </div>
 {% endif %}
 
-{% if page.featured_runners %}
-  <div class="card">
-    <h2>Featured runners</h2>
-    <ul>
-      {% for rid in page.featured_runners %}
-        {% assign r = site.runners | where: "runner_id", rid | first %}
-        {% if r %}
-          <li><a href="{{ r.url }}">{{ r.name }}</a></li>
-        {% else %}
-          <li>{{ rid }}</li>
-        {% endif %}
-      {% endfor %}
-    </ul>
-  </div>
-{% endif %}
-
 {% if content and content != "" %}
   <div class="card">{{ content }}</div>
 {% endif %}
