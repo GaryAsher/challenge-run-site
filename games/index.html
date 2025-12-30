@@ -38,9 +38,11 @@ title: Games
        href="{{ g.url }}"
        data-name="{{ g.name | downcase }}"
        aria-label="{{ g.name }}">
+      {% assign game_cover = g.cover | default: "/assets/img/site/default-game.jpg" %}
       <div class="game-card__bg"
-           style="background-image: url('{{ g.cover | default: '' | relative_url }}');">
+        style="background-image: url('{{ game_cover | relative_url }}');">
       </div>
+
       <div class="game-card__overlay">
         <div class="game-card__title">{{ g.name }}</div>
       </div>
