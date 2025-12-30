@@ -5,11 +5,12 @@ layout: default
 <nav class="game-tabs">
   <a href="{{ page.url }}" class="tab active">Overview</a>
   <a href="{{ '/rules/' | relative_url }}" class="tab">General Rules</a>
-  <a href="{{ '/glossary/' | relative_url }}">Glossary</a>
+  <a href="{{ '/glossary/' | relative_url }}" class="tab">Glossary</a>
 </nav>
 
 {% if page.cover %}
-  <section class="game-hero" style="background-image: url('{{ page.cover | relative_url }}'); background-position: {{ page.cover_position | default: 'center' }};">
+  <section class="game-hero"
+    style="background-image: url('{{ page.cover | relative_url }}'); background-position: {{ page.cover_position | default: 'center' }};">
     <div class="game-hero__overlay">
       <div class="game-hero__content">
         <p class="muted"><a href="{{ '/games/' | relative_url }}">← Games</a></p>
@@ -19,25 +20,29 @@ layout: default
     </div>
   </section>
 {% else %}
-  <p class="muted"><a href="{{ '/games/' | relative_url }}">← Games</a></p>
-  <h1>{{ page.name }}</h1>
-  {% if page.status %}<p class="muted">{{ page.status }}</p>{% endif %}
+  <div class="container">
+    <p class="muted"><a href="{{ '/games/' | relative_url }}">← Games</a></p>
+    <h1>{{ page.name }}</h1>
+    {% if page.status %}<p class="muted">{{ page.status }}</p>{% endif %}
+  </div>
 {% endif %}
 
 <div class="container">
-  <p class="muted">
-    <a href="{{ '/games/' | relative_url }}">← Games</a>
-  </p>
 
-  <h1>{{ page.name }}</h1>
-
-  {% if page.status %}
-    <p class="muted">{{ page.status }}</p>
+  {% if page.challenges %}
+    <div class="card">
+      <h2>Challenges</h2>
+      <ul>
+        {% for x in page.challenges %}
+          <li>{{ x }}</li>
+        {% endfor %}
+      </ul>
+    </div>
   {% endif %}
 
   {% if page.categories %}
     <div class="card">
-      <h2>Common categories</h2>
+      <h2>Categories</h2>
       <ul>
         {% for c in page.categories %}
           <li>{{ c }}</li>
@@ -46,5 +51,21 @@ layout: default
     </div>
   {% endif %}
 
-  {{ content }}
+  {% if page.subcategories %}
+    <div class="card">
+      <h2>Subcategories</h2>
+      <ul>
+        {% for s in page.subcategories %}
+          <li>{{ s }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  {% if content and content != "" %}
+    <div class="card">
+      {{ content }}
+    </div>
+  {% endif %}
+
 </div>
