@@ -4,41 +4,86 @@ title: Runners
 ---
 
 <h1>Runners</h1>
-<p class="muted">Profiles on CRC. Use search or jump by letter.</p>
+<p class="muted">Jump by letter or filter by category.</p>
 
-<input id="q" class="filter" placeholder="Search runners..." autocomplete="off">
-
-<div class="az" aria-label="Jump by letter">
+<div class="az" id="az">
+  <a href="#0-9" data-filter="0-9">#</a>
   {% assign letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" | split: "" %}
   {% for L in letters %}
-    <a href="#{{ L }}">{{ L }}</a>
+    <a href="#{{ L }}" data-filter="{{ L }}">{{ L }}</a>
   {% endfor %}
+  <a href="#other" data-filter="other">Other</a>
+  <a href="#all" data-filter="all" class="muted">All</a>
 </div>
 
-{% assign sorted = site.runners | sort: "name" %}
-{% assign letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" | split: "" %}
+<input id="q" class="filter" placeholder="Search within results..." autocomplete="off">
 
-<div id="runner-list">
-  {% for L in letters %}
-    <h2 id="{{ L }}">{{ L }}</h2>
-    <ul class="list">
-      {% for r in sorted %}
-        {% assign first = r.name | slice: 0, 1 | upcase %}
-        {% if first == L %}
-          <li class="runner-item"><a href="{{ r.url }}">{{ r.name }}</a></li>
-        {% endif %}
-      {% endfor %}
-    </ul>
+<p class="muted" id="status"></p>
+
+<ul class="list" id="runner-list">
+  {% assign sorted = site.runners | sort: "name" %}
+  {% for r in sorted %}
+    {% assign first = r.name | slice: 0, 1 %}
+    <li class="runner-item" data-name="{{ r.name | downcase }}" data-first="{{ first }}">
+      <a href="{{ r.url }}">{{ r.name }}</a>
+    </li>
   {% endfor %}
-</div>
+</ul>
 
 <script>
-  const input = document.getElementById("q");
+  const list = document.getElementById("runner-list");
   const items = Array.from(document.querySelectorAll(".runner-item"));
-  input.addEventListener("input", () => {
+  const input = document.getElementById("q");
+  const status = document.getElementById("status");
+
+  function classifyFirstChar(ch) {
+    if (!ch) return "other";
+
+    // Normalize and uppercase for Latin letters
+    const upper = ch.toUpperCase();
+
+    // A-Z
+    if (upper >= "A" && upper <= "Z") return upper;
+
+    // 0-9
+    if (ch >= "0" && ch <= "9") return "0-9";
+
+    // Everything else: Korean, Japanese, accented, symbols, etc.
+    return "other";
+  }
+
+  function applyFilter() {
+    const hash = (location.hash || "#all").slice(1);
+    const bucket = hash || "all";
     const q = input.value.trim().toLowerCase();
+
+    let shown = 0;
+
     for (const li of items) {
-      li.style.display = li.textContent.toLowerCase().includes(q) ? "" : "none";
+      const name = li.dataset.name || "";
+      const first = (li.dataset.first || "").trim();
+      const group = classifyFirstChar(first);
+
+      const matchesBucket = (bucket === "all") || (bucket === group);
+      const matchesSearch = !q || name.includes(q);
+
+      const show = matchesBucket && matchesSearch;
+      li.style.display = show ? "" : "none";
+      if (show) shown++;
     }
-  });
+
+    const bucketLabel =
+      bucket === "all" ? "All" :
+      bucket === "0-9" ? "0–9" :
+      bucket === "other" ? "Other" :
+      bucket;
+
+    status.textContent = `${shown} shown (filter: ${bucketLabel})`;
+  }
+
+  window.addEventListener("hashchange", applyFilter);
+  input.addEventListener("input", applyFilter);
+
+  // Initial
+  applyFilter();
 </script>
