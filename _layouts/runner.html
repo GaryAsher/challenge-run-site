@@ -2,34 +2,63 @@
 layout: default
 ---
 
-<p class="muted"><a href="{{ '/runners/' | relative_url }}">← Runners</a></p>
+<nav class="runner-tabs">
+  <a href="{{ page.url }}" class="tab active">Profile</a>
+  <a href="{{ '/rules/' | relative_url }}" class="tab">General Rules</a>
+  <a href="{{ '/glossary/' | relative_url }}" class="tab">Glossary</a>
+</nav>
 
-<h1>{{ page.name }}</h1>
-
-{% if content and content != "" %}
-  <div class="card">{{ content }}</div>
-{% endif %}
-
-<div class="card">
-  <h2>Links</h2>
-  <ul>
-    {% if page.twitch %}<li><a href="{{ page.twitch }}" target="_blank" rel="noreferrer">Twitch</a></li>{% endif %}
-    {% if page.youtube %}<li><a href="{{ page.youtube }}" target="_blank" rel="noreferrer">YouTube</a></li>{% endif %}
-  </ul>
-</div>
-
-{% if page.games %}
-  <div class="card">
-    <h2>Games</h2>
-    <ul>
-      {% for gid in page.games %}
-        {% assign g = site.games | where: "game_id", gid | first %}
-        {% if g %}
-          <li><a href="{{ g.url }}">{{ g.name }}</a></li>
-        {% else %}
-          <li>{{ gid }}</li>
-        {% endif %}
-      {% endfor %}
-    </ul>
+{% if page.cover %}
+  <section class="runner-hero"
+    style="background-image: url('{{ page.cover | relative_url }}'); background-position: {{ page.cover_position | default: 'center' }};">
+    <div class="runner-hero__overlay">
+      <div class="runner-hero__content">
+        <p class="muted"><a href="{{ '/runners/' | relative_url }}">← Runners</a></p>
+        <h1>{{ page.name }}</h1>
+      </div>
+    </div>
+  </section>
+{% else %}
+  <div class="container">
+    <p class="muted"><a href="{{ '/runners/' | relative_url }}">← Runners</a></p>
+    <h1>{{ page.name }}</h1>
   </div>
 {% endif %}
+
+<div class="container">
+
+  {% if content and content != "" %}
+    <div class="card">
+      {{ content }}
+    </div>
+  {% endif %}
+
+  <div class="card">
+    <h2>Links</h2>
+    <ul>
+      {% if page.twitch %}
+        <li><a href="{{ page.twitch }}" target="_blank" rel="noreferrer">Twitch</a></li>
+      {% endif %}
+      {% if page.youtube %}
+        <li><a href="{{ page.youtube }}" target="_blank" rel="noreferrer">YouTube</a></li>
+      {% endif %}
+    </ul>
+  </div>
+
+  {% if page.games %}
+    <div class="card">
+      <h2>Games</h2>
+      <ul>
+        {% for gid in page.games %}
+          {% assign g = site.games | where: "game_id", gid | first %}
+          {% if g %}
+            <li><a href="{{ g.url }}">{{ g.name }}</a></li>
+          {% else %}
+            <li>{{ gid }}</li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+</div>
