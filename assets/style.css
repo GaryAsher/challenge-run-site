@@ -235,6 +235,58 @@ a:hover { text-decoration: underline; }
 }
 
 /* ============================================================
+   Runners: Cards (for /runners/)
+   ============================================================ */
+.runner-card {
+  position: relative;
+  display: block;
+  min-height: 140px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #111;
+}
+
+.runner-card__bg {
+  position: absolute;
+  inset: 0;
+  background-size: contain;      /* important for transparent PNG logos */
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.85;                 /* adjust to taste */
+  filter: saturate(1.05);
+}
+
+.runner-card__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  background: linear-gradient(
+    to top,
+    rgba(15, 15, 15, 0.95),
+    rgba(15, 15, 15, 0.55),
+    rgba(15, 15, 15, 0.20)
+  );
+}
+
+.runner-card__title {
+  padding: 0.9rem;
+  font-weight: 650;
+  color: #fff;
+  position: relative;
+  z-index: 2;
+}
+
+.runner-card:hover {
+  text-decoration: none;
+}
+
+.runner-card:hover .runner-card__bg {
+  opacity: 1;
+}
+
+/* ============================================================
    Runners: Tabs + Header Boxes
    ============================================================ */
 .runner-tabs {
