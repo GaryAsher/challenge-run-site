@@ -177,7 +177,7 @@ a:hover {
 }
 
 /* ============================================================
-   Games
+   Games: Tabs, Hero, Cards
    ============================================================ */
 .game-tabs {
   position: sticky;
@@ -193,10 +193,11 @@ a:hover {
   border: 1px solid var(--border);
   border-radius: 16px;
   overflow: hidden;
-  margin-bottom: 1.25rem;
+  margin: 0 0 1.25rem 0;
   min-height: 260px;
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
 }
 
 .game-hero__overlay {
@@ -206,9 +207,9 @@ a:hover {
   align-items: flex-end;
   background: linear-gradient(
     to top,
-    rgba(15,15,15,0.92),
-    rgba(15,15,15,0.65),
-    rgba(15,15,15,0.45)
+    rgba(15, 15, 15, 0.92),
+    rgba(15, 15, 15, 0.65),
+    rgba(15, 15, 15, 0.45)
   );
 }
 
@@ -217,126 +218,10 @@ a:hover {
 }
 
 .game-hero h1 {
-  margin: 0;
+  margin: 0.25rem 0 0 0;
   color: var(--accent);
 }
 
-/* ============================================================
-   Runner Cards
-   ============================================================ */
-.runner-card {
-  position: relative;
-  min-height: 140px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: #111;
-  overflow: hidden;
-}
-
-.runner-card__bg {
-  position: absolute;
-  inset: 0;
-  background-size: contain;
-  background-position: center;
-  background-repeat: no-repeat;
-  opacity: 0.85;
-}
-
-.runner-card__overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: flex-end;
-  background: linear-gradient(
-    to top,
-    rgba(15,15,15,0.95),
-    rgba(15,15,15,0.55),
-    rgba(15,15,15,0.20)
-  );
-}
-
-.runner-card__title {
-  padding: 0.9rem;
-  font-weight: 650;
-  color: #fff;
-}
-
-/* ============================================================
-   Runner Tabs
-   ============================================================ */
-.runner-tabs {
-  display: flex;
-  gap: 0.5rem;
-  align-items: flex-end;
-
-  position: sticky;
-  top: 76px;
-  z-index: 50;
-
-  background: var(--bg);
-  padding: 0.75rem 1.5rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.runner-tabs .tab {
-  appearance: none;
-  cursor: pointer;
-  font: inherit;
-
-  padding: 0.55rem 0.8rem;
-  border: 1px solid transparent;
-  border-bottom: none;
-
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
-
-  background: transparent;
-  color: rgba(255,255,255,0.75);
-}
-
-.runner-tabs .tab:hover {
-  background: var(--panel);
-  color: var(--fg);
-  border-color: var(--border);
-}
-
-.runner-tabs .tab.active {
-  background: var(--panel);
-  color: var(--fg);
-  font-weight: 650;
-  border-color: rgba(255,255,255,0.16);
-  position: relative;
-  top: 1px;
-}
-
-.runner-tabs .tab:focus-visible {
-  outline: 2px solid rgba(59,195,110,0.6);
-  outline-offset: 2px;
-}
-
-/* ============================================================
-   Runner Panels
-   ============================================================ */
-.tab-panel {
-  display: none;
-}
-
-.tab-panel.active {
-  display: block;
-}
-
-/* ============================================================
-   Responsive
-   ============================================================ */
-@media (max-width: 640px) {
-  .runner-tabs {
-    flex-wrap: wrap;
-  }
-}
-
-/* ============================================================
-   RESTORE: Games cards (covers on /games/)
-   ============================================================ */
 .game-card {
   position: relative;
   display: block;
@@ -345,6 +230,7 @@ a:hover {
   border-radius: 14px;
   overflow: hidden;
   background: #111;
+  text-decoration: none;
 }
 
 .game-card__bg {
@@ -387,11 +273,48 @@ a:hover {
 }
 
 /* ============================================================
-   RESTORE: Runner cards behavior (for /runners/)
+   Runners: Cards (for /runners/)
    ============================================================ */
 .runner-card {
+  position: relative;
   display: block;
+  min-height: 140px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #111;
+  overflow: hidden;
   text-decoration: none;
+}
+
+.runner-card__bg {
+  position: absolute;
+  inset: 0;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.85;
+  filter: saturate(1.05);
+}
+
+.runner-card__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  background: linear-gradient(
+    to top,
+    rgba(15, 15, 15, 0.95),
+    rgba(15, 15, 15, 0.55),
+    rgba(15, 15, 15, 0.20)
+  );
+}
+
+.runner-card__title {
+  padding: 0.9rem;
+  font-weight: 650;
+  color: #fff;
+  position: relative;
+  z-index: 2;
 }
 
 .runner-card:hover {
@@ -400,4 +323,163 @@ a:hover {
 
 .runner-card:hover .runner-card__bg {
   opacity: 1;
+}
+
+/* ============================================================
+   Runner Profile Header (avatar left, socials right)
+   ============================================================ */
+.runner-top {
+  display: flex;
+  gap: 1rem;
+  align-items: stretch;
+  justify-content: space-between;
+  margin: 1rem 0 1.25rem 0;
+}
+
+.runner-left,
+.runner-right {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #0b0b0b;
+  padding: 0.9rem;
+}
+
+.runner-left {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex: 1;
+}
+
+.runner-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 220px;
+}
+
+.runner-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background-color: #111;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  flex: 0 0 auto;
+}
+
+.runner-avatar.is-logo {
+  background-size: contain;
+}
+
+.runner-name h1 {
+  margin: 0;
+  color: var(--accent);
+}
+
+.runner-links {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.runner-link {
+  padding: 0.35rem 0.65rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  font-size: 0.9rem;
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.runner-link:hover {
+  text-decoration: none;
+  opacity: 0.9;
+}
+
+/* ============================================================
+   Runner Tabs + Panels
+   ============================================================ */
+.runner-tabs {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+
+  position: sticky;
+  top: 76px;
+  z-index: 50;
+
+  background: var(--bg);
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.runner-tabs .tab {
+  appearance: none;
+  cursor: pointer;
+  font: inherit;
+
+  padding: 0.55rem 0.8rem;
+  border: 1px solid transparent;
+  border-bottom: none;
+
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+
+  background: transparent;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.runner-tabs .tab:hover {
+  background: var(--panel);
+  color: var(--fg);
+  border-color: var(--border);
+}
+
+.runner-tabs .tab.active {
+  background: var(--panel);
+  color: var(--fg);
+  font-weight: 650;
+  border-color: rgba(255, 255, 255, 0.16);
+  position: relative;
+  top: 1px;
+}
+
+.runner-tabs .tab:focus-visible {
+  outline: 2px solid rgba(59, 195, 110, 0.6);
+  outline-offset: 2px;
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 640px) {
+  .runner-tabs {
+    flex-wrap: wrap;
+  }
+
+  .runner-top {
+    flex-direction: column;
+  }
+
+  .runner-right {
+    justify-content: flex-start;
+    min-width: 0;
+  }
+
+  .runner-links {
+    justify-content: flex-start;
+  }
 }
