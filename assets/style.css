@@ -21,13 +21,18 @@ body {
   line-height: 1.6;
 }
 
-a { color: var(--accent); text-decoration: none; }
-a:hover { text-decoration: underline; }
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
 
 /* ============================================================
    Layout Containers
    ============================================================ */
-/* Keep container for most pages, but do not use it on runner profile pages */
 .container {
   padding: 3rem 1.5rem;
   max-width: var(--page-max);
@@ -35,7 +40,6 @@ a:hover { text-decoration: underline; }
   margin-right: auto;
 }
 
-/* Use this instead of .container on pages where you want NO boxed line look */
 .page-width {
   max-width: var(--page-max);
   margin-left: auto;
@@ -43,14 +47,15 @@ a:hover { text-decoration: underline; }
   padding: 0 1.5rem;
 }
 
-/* Small back link row (for runner pages) */
 .page-back {
   margin: 1.25rem 0 0.75rem 0;
   opacity: 0.8;
 }
+
 .page-back a {
   color: rgba(255, 255, 255, 0.75);
 }
+
 .page-back a:hover {
   color: var(--fg);
 }
@@ -80,12 +85,12 @@ a:hover { text-decoration: underline; }
 
 .nav {
   display: flex;
-  gap: 0.9rem; /* space BETWEEN groups */
+  gap: 0.9rem;
 }
 
 .nav-group {
   display: flex;
-  gap: 0.35rem; /* space INSIDE each group */
+  gap: 0.35rem;
 }
 
 .nav a {
@@ -158,7 +163,9 @@ a:hover { text-decoration: underline; }
   display: inline-block;
 }
 
-.list { padding-left: 1.2rem; }
+.list {
+  padding-left: 1.2rem;
+}
 
 /* ============================================================
    Grid Utility
@@ -170,28 +177,26 @@ a:hover { text-decoration: underline; }
 }
 
 /* ============================================================
-   Games: Tabs, Hero, Cards
+   Games
    ============================================================ */
 .game-tabs {
   position: sticky;
-  top: 76px; /* header height */
+  top: 76px;
   background: var(--bg);
   padding: 0.75rem 1.5rem;
   border-bottom: 1px solid var(--border);
   z-index: 50;
 }
 
-/* Game hero banner */
 .game-hero {
   position: relative;
   border: 1px solid var(--border);
   border-radius: 16px;
   overflow: hidden;
-  margin: 0 0 1.25rem 0;
+  margin-bottom: 1.25rem;
   min-height: 260px;
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
 }
 
 .game-hero__overlay {
@@ -201,9 +206,9 @@ a:hover { text-decoration: underline; }
   align-items: flex-end;
   background: linear-gradient(
     to top,
-    rgba(15, 15, 15, 0.92),
-    rgba(15, 15, 15, 0.65),
-    rgba(15, 15, 15, 0.45)
+    rgba(15,15,15,0.92),
+    rgba(15,15,15,0.65),
+    rgba(15,15,15,0.45)
   );
 }
 
@@ -212,81 +217,29 @@ a:hover { text-decoration: underline; }
 }
 
 .game-hero h1 {
-  margin: 0.25rem 0 0 0;
+  margin: 0;
   color: var(--accent);
 }
 
-/* Game cards (covers on /games/) */
-.game-card {
-  position: relative;
-  display: block;
-  min-height: 140px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  overflow: hidden;
-  background: #111;
-}
-
-.game-card__bg {
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  opacity: 0.45;
-  filter: saturate(1.1);
-}
-
-.game-card__overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: flex-end;
-  background: linear-gradient(
-    to top,
-    rgba(15, 15, 15, 0.95),
-    rgba(15, 15, 15, 0.6),
-    rgba(15, 15, 15, 0.35)
-  );
-}
-
-.game-card__title {
-  padding: 0.9rem;
-  font-weight: 650;
-  color: #fff;
-  position: relative;
-  z-index: 2;
-}
-
-.game-card:hover .game-card__bg {
-  opacity: 0.6;
-}
-
-.game-card:hover {
-  text-decoration: none;
-}
-
 /* ============================================================
-   Runners: Cards (for /runners/)
+   Runner Cards
    ============================================================ */
 .runner-card {
   position: relative;
-  display: block;
   min-height: 140px;
   border: 1px solid var(--border);
   border-radius: 14px;
-  overflow: hidden;
   background: #111;
+  overflow: hidden;
 }
 
 .runner-card__bg {
   position: absolute;
   inset: 0;
-  background-size: contain;      /* important for transparent PNG logos */
+  background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
-  opacity: 0.85;                 /* adjust to taste */
-  filter: saturate(1.05);
+  opacity: 0.85;
 }
 
 .runner-card__overlay {
@@ -296,9 +249,9 @@ a:hover { text-decoration: underline; }
   align-items: flex-end;
   background: linear-gradient(
     to top,
-    rgba(15, 15, 15, 0.95),
-    rgba(15, 15, 15, 0.55),
-    rgba(15, 15, 15, 0.20)
+    rgba(15,15,15,0.95),
+    rgba(15,15,15,0.55),
+    rgba(15,15,15,0.20)
   );
 }
 
@@ -306,46 +259,29 @@ a:hover { text-decoration: underline; }
   padding: 0.9rem;
   font-weight: 650;
   color: #fff;
-  position: relative;
-  z-index: 2;
-}
-
-.runner-card:hover {
-  text-decoration: none;
-}
-
-.runner-card:hover .runner-card__bg {
-  opacity: 1;
 }
 
 /* ============================================================
-   Runners: Tabs (non-container style, connected tabs)
+   Runner Tabs
    ============================================================ */
-/*
-  IMPORTANT:
-  - Do NOT wrap runner pages in .container.
-  - Use .page-width instead.
-  - This tab style matches the "sub-nav" feel without creating a box line.
-*/
 .runner-tabs {
   display: flex;
-  align-items: flex-end;
   gap: 0.5rem;
+  align-items: flex-end;
 
   position: sticky;
-  top: 76px; /* header height */
+  top: 76px;
   z-index: 50;
 
   background: var(--bg);
   padding: 0.75rem 1.5rem;
-
   border-bottom: 1px solid var(--border);
 }
 
-/* Tabs look like connected pills */
 .runner-tabs .tab {
-  display: inline-flex;
-  align-items: center;
+  appearance: none;
+  cursor: pointer;
+  font: inherit;
 
   padding: 0.55rem 0.8rem;
   border: 1px solid transparent;
@@ -354,129 +290,46 @@ a:hover { text-decoration: underline; }
   border-top-left-radius: 12px;
   border-top-right-radius: 12px;
 
-  color: rgba(255, 255, 255, 0.75);
-  text-decoration: none;
-
   background: transparent;
+  color: rgba(255,255,255,0.75);
 }
 
 .runner-tabs .tab:hover {
-  color: var(--fg);
   background: var(--panel);
+  color: var(--fg);
   border-color: var(--border);
-  text-decoration: none;
 }
 
-/* Active tab sits on top of the bottom border */
 .runner-tabs .tab.active {
-  color: var(--fg);
   background: var(--panel);
-  border-color: rgba(255, 255, 255, 0.16);
+  color: var(--fg);
   font-weight: 650;
-
+  border-color: rgba(255,255,255,0.16);
   position: relative;
   top: 1px;
 }
 
-/* Content panel under tabs (optional, but nice) */
-.runner-panel {
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: #0b0b0b;
-  padding: 1rem;
+.runner-tabs .tab:focus-visible {
+  outline: 2px solid rgba(59,195,110,0.6);
+  outline-offset: 2px;
 }
 
 /* ============================================================
-   Runners: Header Boxes
+   Runner Panels
    ============================================================ */
-.runner-top {
-  display: flex;
-  gap: 1rem;
-  align-items: stretch;
-  justify-content: space-between;
-  margin-bottom: 1.25rem;
+.tab-panel {
+  display: none;
 }
 
-.runner-left,
-.runner-right {
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: #0b0b0b;
-  padding: 0.9rem;
-}
-
-.runner-left {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  flex: 1;
-}
-
-.runner-right {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  min-width: 220px;
-}
-
-.runner-avatar {
-  width: 96px;
-  height: 96px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background-color: #111;
-  background-size: contain;
-  background-position: center;
-  background-repeat: no-repeat;
-  flex: 0 0 auto;
-}
-
-.runner-avatar--empty {
-  opacity: 0.4;
-}
-
-.runner-name h1 {
-  margin: 0;
-  color: var(--accent);
-}
-
-.runner-links {
-  display: flex;
-  gap: 0.6rem;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-.runner-link {
-  padding: 0.35rem 0.65rem;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: transparent;
-  font-size: 0.9rem;
-}
-
-.runner-link:hover {
-  text-decoration: none;
-  opacity: 0.9;
-}
-
-.tab-panel { display: none; }
-.tab-panel.active { display: block; }
-.runner-tabs .tab{
-  cursor: pointer;
-  font: inherit;
-  background: transparent;
+.tab-panel.active {
+  display: block;
 }
 
 /* ============================================================
    Responsive
    ============================================================ */
 @media (max-width: 640px) {
-  .runner-top {
-    flex-direction: column;
-  }
-  .runner-right {
-    justify-content: flex-start;
-    min-width: 0;
+  .runner-tabs {
+    flex-wrap: wrap;
   }
 }
