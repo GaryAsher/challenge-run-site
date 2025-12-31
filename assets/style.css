@@ -465,25 +465,29 @@ a:hover {
   background: transparent;
   color: rgba(255, 255, 255, 0.75);
 
+  font-weight: 650;
+  opacity: 0.75;
+
   transition:
     background 120ms ease,
     color 120ms ease,
-    font-weight 120ms ease,
+    opacity 120ms ease,
     border-color 120ms ease;
 }
 
 .runner-tabs .tab:hover {
   background: var(--panel);
   color: var(--fg);
-  font-weight: 600;
+  opacity: 1;
 }
 
 .runner-tabs .tab.active {
   background: var(--panel);
   color: var(--fg);
-  font-weight: 650;
+  opacity: 1;
 
   border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(59, 195, 110, 0.35);
   border-bottom-color: transparent;
 
   position: relative;
