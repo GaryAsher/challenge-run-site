@@ -1,16 +1,15 @@
 <header class="site-header">
-  <a class="brand" href="/">CRC</a>
+  <a class="brand" href="{{ '/' | relative_url }}">CRC</a>
 
-<nav class="nav">
-  <div class="nav-group">
-    <a href="/games/">Games</a>
-    <a href="/runners/">Runners</a>
-  </div>
+  <nav class="nav" aria-label="Primary navigation">
+    <div class="nav-group">
+      <a href="{{ '/games/' | relative_url }}">Games</a>
+      <a href="{{ '/runners/' | relative_url }}">Runners</a>
+    </div>
 
-  <div class="nav-group">
-    <a href="/rules/">Rules</a>
-    <a href="/glossary/">Glossary</a>
-  </div>
-</nav>
-
+    <div class="nav-group">
+      <a href="{{ '/rules/' | relative_url }}">Rules</a>
+      <a href="{{ '/glossary/' | relative_url }}">Glossary</a>
+    </div>
+  </nav>
 </header>
