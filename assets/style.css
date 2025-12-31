@@ -456,7 +456,7 @@ a:hover {
   font: inherit;
 
   padding: 0.55rem 0.8rem;
-  border: 1px solid transparent;
+  border: 1px solid var(--border);
   border-bottom: none;
 
   border-top-left-radius: 12px;
@@ -469,7 +469,7 @@ a:hover {
 .runner-tabs .tab:hover {
   background: var(--panel);
   color: var(--fg);
-  border-color: var(--border);
+  font-weight: 600;
 }
 
 .runner-tabs .tab.active {
