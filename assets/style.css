@@ -173,6 +173,14 @@ a:hover {
   height: 100%;
   pointer-events: auto;
   background: transparent;
+  cursor: text;
+}
+
+.filter-wrap::after {
+}
+
+.tag-picker .filter-wrap {
+  max-width: none;
 }
 
 .select {
