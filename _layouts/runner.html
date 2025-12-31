@@ -144,20 +144,16 @@ layout: default
   {% assign all_runs = site.data.runs | default: empty %}
 
   {%- comment -%}
-  Match by runner_id first (best). If a run has no runner_id, fall back to runner name.
-  Your runner pages should have:
+  Match runs by runner_id (required).
+  Runner page front matter should include:
     runner_id: gary-asher
-    name: Gary Asher
+    name: Gary_Asher
+  And each run in _data/runs.yml should include:
+    runner_id: gary-asher
   {%- endcomment -%}
 
-  {% assign rid = page.runner_id | default: page.slug | default: "" %}
-  {% assign rid_norm = rid | strip | downcase %}
-  {% assign name_norm = page.name | strip | downcase %}
-
-  {% assign runs_by_id = all_runs | where: "runner_id", rid_norm %}
-  {% assign runs_by_name = all_runs | where: "runner", page.name %}
-  {% assign combined = runs_by_id | concat: runs_by_name %}
-  {% assign runs = combined | uniq | sort: "date" | reverse %}
+  {% assign rid = page.runner_id | default: "" %}
+  {% assign runs = all_runs | where: "runner_id", rid | sort: "date" | reverse %}
 
   {% if runs and runs.size > 0 %}
     <div id="runner-runs" class="list-paged" data-page-size="25">
