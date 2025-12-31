@@ -51,7 +51,9 @@ puzzle:
 # R
 roguelike:
   label: Roguelike
-
+roguelite:
+  label: Roguelite
+  
 # S
 soulslike:
   label: Soulslike
