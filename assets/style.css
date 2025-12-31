@@ -83,14 +83,15 @@ a:hover {
 .filters-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1rem;
-  margin: 0.75rem 0;
+  gap: 0.6rem;
+  margin: 0;
 }
 
 @media (min-width: 900px) {
   .filters-grid {
     grid-template-columns: 1fr 1fr;
     align-items: start;
+    gap: 0.8rem; 
   }
 }
 
