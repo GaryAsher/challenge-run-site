@@ -11,6 +11,16 @@ tags:
   - mythology
 cover: /assets/img/games/h/hades-2.jpg
 cover_position: center
+
+tabs:
+  challenges: true
+  categories: true
+  runs: true
+  resources: true
+  guides: true
+  forums: true
+  history: true
+
 challenges:
   - no-hit
   - no-damage
