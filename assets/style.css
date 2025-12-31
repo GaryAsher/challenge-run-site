@@ -5,11 +5,29 @@
   --accent: #3BC36E;
   --bg: #0f0f0f;
   --fg: #ffffff;
+
   --border: rgba(255, 255, 255, 0.12);
   --panel: rgba(255, 255, 255, 0.04);
+  --surface: #0b0b0b;
+  --surface-2: #111;
 
+  --placeholder: rgba(255, 255, 255, 0.6);
+  --placeholder-dim: rgba(255, 255, 255, 0.55);
+   
   --bg-soft: rgba(255, 255, 255, 0.06);
   --text-muted: rgba(255, 255, 255, 0.78);
+  --text-dim: rgba(255, 255, 255, 0.75);
+
+  --focus: rgba(59, 195, 110, 0.6);
+  --focus-2: rgba(59, 195, 110, 0.35);
+
+  --overlay-strong: rgba(15, 15, 15, 0.95);
+  --overlay-mid: rgba(15, 15, 15, 0.6);
+  --overlay-light: rgba(15, 15, 15, 0.35);
+
+  --hero-strong: rgba(15, 15, 15, 0.92);
+  --hero-mid: rgba(15, 15, 15, 0.65);
+  --hero-light: rgba(15, 15, 15, 0.45);
 
   /* ============================================================
      Responsive layout scale (desktop default)
@@ -108,7 +126,7 @@ a:hover {
 }
 
 .page-back a {
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--text-dim);
 }
 
 .page-back a:hover {
@@ -178,6 +196,11 @@ a:hover {
   border-radius: var(--radius-sm);
 }
 
+.nav a:hover {
+  background: var(--panel);
+  text-decoration: none;
+}
+
 /* ============================================================
    Footer
    ============================================================ */
@@ -197,7 +220,7 @@ a:hover {
   border-radius: var(--radius-md);
   padding: var(--space-4);
   margin: var(--space-4) 0;
-  background: #0b0b0b;
+  background: var(--surface);
 }
 
 /* ============================================================
@@ -211,14 +234,14 @@ a:hover {
 
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
-  background: #0b0b0b;
+  background: var(--surface);
   color: var(--fg);
 
   min-height: var(--tap);
 }
 
 .filter::placeholder {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--placeholder);
 }
 
 .filter-wrap {
@@ -241,16 +264,14 @@ a:hover {
 
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
-  background: #0b0b0b;
+  background: var(--surface);
   color: var(--fg);
 
   margin-left: 0.4rem;
 }
 
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible {
-  outline: 2px solid rgba(59, 195, 110, 0.6);
+:where(a, button, input, select, textarea, .tag-chip, .tag-suggestion, .tab):focus-visible {
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
@@ -273,7 +294,7 @@ select:focus-visible {
 .filters-grid .tag-filter {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: #0b0b0b;
+  background: var(--surface);
   padding: 0.75rem;
 }
 
@@ -281,7 +302,7 @@ select:focus-visible {
   position: relative;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: #0b0b0b;
+  background: var(--surface);
   padding: 0.6rem;
   cursor: default;
 }
@@ -317,14 +338,13 @@ select:focus-visible {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 0.55rem 0.65rem;
-  padding-right: 0.65rem;
   background: transparent;
   color: var(--fg);
   outline: none;
 }
 
 .tag-search::placeholder {
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--placeholder-dim);
 }
 
 .tag-suggestions {
@@ -336,7 +356,7 @@ select:focus-visible {
 
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: #0b0b0b;
+  background: var(--surface);
 
   max-height: 260px;
   overflow: auto;
@@ -384,12 +404,6 @@ select:focus-visible {
   color: var(--text-muted);
 }
 
-.tag-chip:focus-visible,
-.tag-suggestion:focus-visible {
-  outline: 2px solid rgba(59, 195, 110, 0.6);
-  outline-offset: 2px;
-}
-
 /* ============================================================
    A–Z Navigation
    ============================================================ */
@@ -414,7 +428,7 @@ select:focus-visible {
   font-size: 0.9rem;
   line-height: 1;
 
-  background: #0b0b0b;
+  background: var(--surface);
   color: var(--accent);
 
   -webkit-tap-highlight-color: transparent;
@@ -490,9 +504,9 @@ select:focus-visible {
   align-items: flex-end;
   background: linear-gradient(
     to top,
-    rgba(15, 15, 15, 0.92),
-    rgba(15, 15, 15, 0.65),
-    rgba(15, 15, 15, 0.45)
+    var(--hero-strong),
+    var(--hero-mid),
+    var(--hero-light)
   );
 }
 
@@ -531,7 +545,7 @@ select:focus-visible {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: #111;
+  background: var(--surface-2);
   text-decoration: none;
 }
 
@@ -552,16 +566,16 @@ select:focus-visible {
   align-items: flex-end;
   background: linear-gradient(
     to top,
-    rgba(15, 15, 15, 0.95),
-    rgba(15, 15, 15, 0.6),
-    rgba(15, 15, 15, 0.35)
+    var(--overlay-strong),
+    var(--overlay-mid),
+    var(--overlay-light)
   );
 }
 
 .game-card__title {
   padding: 0.9rem;
   font-weight: 650;
-  color: #fff;
+  color: var(--fg);
   position: relative;
   z-index: 2;
 }
@@ -583,7 +597,7 @@ select:focus-visible {
   min-height: 140px;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  background: #111;
+  background: var(--surface-2);
   overflow: hidden;
   text-decoration: none;
 }
@@ -605,16 +619,16 @@ select:focus-visible {
   align-items: flex-end;
   background: linear-gradient(
     to top,
-    rgba(15, 15, 15, 0.95),
-    rgba(15, 15, 15, 0.55),
-    rgba(15, 15, 15, 0.20)
+    var(--overlay-strong),
+    var(--overlay-mid),
+    var(--overlay-light)
   );
 }
 
 .runner-card__title {
   padding: 0.9rem;
   font-weight: 650;
-  color: #fff;
+  color: var(--fg);
   position: relative;
   z-index: 2;
 }
@@ -642,7 +656,7 @@ select:focus-visible {
 .runner-right {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  background: #0b0b0b;
+  background: var(--surface);
   padding: 0.9rem;
 }
 
@@ -665,7 +679,7 @@ select:focus-visible {
   height: 96px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
-  background-color: #111;
+  background-color: var(--surface-2);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -764,7 +778,7 @@ select:focus-visible {
   border-top-right-radius: var(--radius-md);
 
   background: transparent;
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--text-dim);
 
   font-weight: 650;
   opacity: 0.75;
@@ -788,16 +802,11 @@ select:focus-visible {
   opacity: 1;
 
   border-color: var(--accent);
-  box-shadow: 0 0 0 1px rgba(59, 195, 110, 0.35);
+  box-shadow: 0 0 0 1px var(--focus-2);
   border-bottom-color: transparent;
 
   position: relative;
   top: 1px;
-}
-
-.runner-tabs .tab:focus-visible {
-  outline: 2px solid rgba(59, 195, 110, 0.6);
-  outline-offset: 2px;
 }
 
 /* ============================================================
@@ -809,7 +818,7 @@ select:focus-visible {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
 
-  background: #0b0b0b;
+  background: var(--surface);
   padding: 1rem;
 
   min-height: 40vh;
@@ -836,10 +845,6 @@ select:focus-visible {
     --tap: 40px;
     --az-size: 40px;
     --az-gap: 0.4rem;
-  }
-
-  .filters-grid {
-    grid-template-columns: 1fr;
   }
 }
 
