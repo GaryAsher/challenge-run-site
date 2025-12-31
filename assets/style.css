@@ -379,6 +379,9 @@ a:hover {
   color: var(--accent);
 }
 
+/* ============================================================
+   Runner Links Wrapper (layout for social buttons)
+   ============================================================ */
 .runner-links {
   display: flex;
   gap: 0.6rem;
@@ -386,12 +389,21 @@ a:hover {
   justify-content: flex-end;
 }
 
+/* ============================================================
+   Runner Social Links (buttons + icons)
+   ============================================================ */
 .runner-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+
   padding: 0.35rem 0.65rem;
   border-radius: 10px;
   border: 1px solid var(--border);
   background: transparent;
+
   font-size: 0.9rem;
+  line-height: 1;
   color: var(--fg);
   text-decoration: none;
 }
@@ -401,13 +413,9 @@ a:hover {
   opacity: 0.9;
 }
 
-.runner-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  line-height: 1;
-}
-
+/* ============================================================
+   Runner Social Icons (normalize size/alignment)
+   ============================================================ */
 .runner-link .icon {
   width: 16px;
   height: 16px;
@@ -415,6 +423,7 @@ a:hover {
   display: inline-block;
   vertical-align: middle;
 
+  /* small optical nudge so icons look level */
   transform: translateY(0.5px);
 }
 
