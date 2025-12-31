@@ -22,8 +22,25 @@
   box-sizing: border-box;
 }
 
-* { caret-color: transparent; }
-input, textarea, select, [contenteditable="true"] { caret-color: auto; }
+* {
+  caret-color: transparent;
+}
+
+input,
+textarea,
+[contenteditable="true"] {
+  caret-color: transparent;
+}
+
+input:focus,
+textarea:focus,
+[contenteditable="true"]:focus {
+  caret-color: auto;
+}
+
+select {
+  caret-color: transparent;
+}
 
 button, input, select, textarea { font: inherit; }
 
