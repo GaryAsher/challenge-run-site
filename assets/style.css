@@ -217,6 +217,7 @@ a:hover {
 
   max-height: 260px;
   overflow: auto;
+  scrollbar-gutter: stable;
 
   padding: 0.35rem;
 }
