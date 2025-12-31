@@ -249,7 +249,6 @@ layout: default
 
   tabs.forEach(t => {
     t.addEventListener("click", (e) => {
-      if (t.tagName === "A") return;
       e.preventDefault();
       setActive(t.dataset.tab);
       history.replaceState(null, "", "#" + t.dataset.tab);
@@ -257,8 +256,14 @@ layout: default
   });
 
   const hash = location.hash.slice(1);
+
+  if (hash === "runs") {
+     location.replace("{{ page.url | relative_url }}completed-runs/");
+     return;
+  }
+       
   const valid = tabs.find(t => t.dataset.tab === hash);
-  const start = valid ? hash : (tabs[0] && tabs[0].dataset.tab);
+  const start = valid ? hash : null;
 
   if (start) setActive(start);
 })();
