@@ -153,6 +153,28 @@ a:hover {
   color: rgba(255, 255, 255, 0.6);
 }
 
+.filter-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+}
+
+.filter-wrap .filter {
+  max-width: none;
+  width: 100%;
+}
+
+.filter-wrap::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 2.2rem;
+  height: 100%;
+  pointer-events: auto;
+  background: transparent;
+}
+
 .select {
   padding: 0.45rem 0.6rem;
   border-radius: 10px;
