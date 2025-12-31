@@ -325,10 +325,24 @@ wireDropdown({
   list: CHALLENGES,
   pickedEl: challengePickedEl
 });
+     
+  window.addEventListener("hashchange", applyFilter);
+  input.addEventListener("input", applyFilter);
+  limitSelect.addEventListener("change", applyFilter);
+     
+// =========================================================
+// UX: clicking outside the whole filter area removes focus (caret)
+// =========================================================
+const controlsRoot = document.querySelector(".page-width");
 
-window.addEventListener("hashchange", applyFilter);
-input.addEventListener("input", applyFilter);
-limitSelect.addEventListener("change", applyFilter);
+document.addEventListener("pointerdown", (e) => {
+  if (controlsRoot && controlsRoot.contains(e.target)) return;
+
+  input.blur();
+  tagSearchEl.blur();
+  challengeSearchEl.blur();
+  limitSelect.blur();
+});
 
 applyFilter();
 </script>
