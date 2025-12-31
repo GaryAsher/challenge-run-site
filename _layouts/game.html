@@ -327,7 +327,9 @@ layout: default
   }
 
   tabs.forEach(t => {
-    t.addEventListener("click", () => {
+    t.addEventListener("click", (e) => {
+      if (t.tagName === "A") return;
+      e.preventDefault();
       setActive(t.dataset.tab);
       history.replaceState(null, "", "#" + t.dataset.tab);
     });
@@ -338,69 +340,5 @@ layout: default
   const start = valid ? hash : (tabs[0] && tabs[0].dataset.tab);
 
   if (start) setActive(start);
-})();
-</script>
-
-<script>
-(function () {
-  const list = document.getElementById("runs-list");
-  if (!list) return;
-
-  const items = Array.from(list.querySelectorAll(".run-item"));
-  const limitEl = document.getElementById("runs-limit");
-  const countEl = document.getElementById("runs-count");
-
-  const pager = document.getElementById("runs-pager");
-  const prevBtn = document.getElementById("runs-prev");
-  const nextBtn = document.getElementById("runs-next");
-  const pageLabel = document.getElementById("runs-page");
-
-  let page = 1;
-
-  function getLimit() {
-    const v = parseInt(limitEl.value, 10);
-    return Number.isFinite(v) ? v : 10;
-  }
-
-  function render() {
-    const limit = getLimit();
-    const total = items.length;
-
-    if (countEl) countEl.textContent = total === 1 ? "1 run" : `${total} runs`;
-
-    if (limit === 0) {
-      items.forEach(el => (el.style.display = ""));
-      if (pager) pager.style.display = "none";
-      return;
-    }
-
-    const pages = Math.max(1, Math.ceil(total / limit));
-    if (page > pages) page = pages;
-
-    const start = (page - 1) * limit;
-    const end = start + limit;
-
-    items.forEach((el, i) => {
-      el.style.display = (i >= start && i < end) ? "" : "none";
-    });
-
-    if (pager) pager.style.display = pages > 1 ? "" : "none";
-    if (pageLabel) pageLabel.textContent = `Page ${page} / ${pages}`;
-
-    if (prevBtn) prevBtn.disabled = page <= 1;
-    if (nextBtn) nextBtn.disabled = page >= pages;
-  }
-
-  if (prevBtn) prevBtn.addEventListener("click", () => { page -= 1; render(); });
-  if (nextBtn) nextBtn.addEventListener("click", () => { page += 1; render(); });
-
-  if (limitEl) {
-    limitEl.addEventListener("change", () => {
-      page = 1;
-      render();
-    });
-  }
-
-  render();
 })();
 </script>
