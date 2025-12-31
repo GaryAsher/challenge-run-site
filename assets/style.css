@@ -85,6 +85,7 @@ a:hover {
   grid-template-columns: 1fr;
   gap: 0.6rem;
   margin: 0;
+  max-width: 520px;
 }
 
 @media (min-width: 900px) {
@@ -159,7 +160,6 @@ a:hover {
   width: 100%;
   max-width: 520px;
   padding: 0.6rem 0.75rem;
-  padding-right: 2.2rem;
   margin: 0.75rem 0 1rem 0;
   border-radius: 12px;
   border: 1px solid var(--border);
@@ -180,21 +180,6 @@ a:hover {
 .filter-wrap .filter {
   max-width: none;
   width: 100%;
-}
-
-.filter-wrap::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 2.2rem;
-  height: 100%;
-  pointer-events: auto;
-  background: transparent;
-  cursor: text;
-}
-
-.filter-wrap::after {
 }
 
 .tag-picker .filter-wrap {
@@ -266,7 +251,7 @@ a:hover {
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 0.55rem 0.65rem;
-  padding-right: 2.2rem;
+  padding-right: 0.65rem;
   background: transparent;
   color: var(--fg);
   outline: none;
