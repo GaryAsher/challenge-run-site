@@ -13,11 +13,21 @@
   --text-muted: rgba(255, 255, 255, 0.78);
 }
 
+/* ============================================================
+   Global Defaults
+   ============================================================ */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
+
+/* Hide caret everywhere except actual typing surfaces */
+* { caret-color: transparent; }
+input, textarea, select, [contenteditable="true"] { caret-color: auto; }
+
+/* Make form controls match site typography */
+button, input, select, textarea { font: inherit; }
 
 /* ============================================================
    Base / Reset
@@ -166,6 +176,7 @@ a:hover {
   border-radius: 12px;
   background: #0b0b0b;
   padding: 0.6rem;
+  cursor: default;
 }
 
 .tag-picked {
@@ -184,6 +195,10 @@ a:hover {
   cursor: pointer;
   font: inherit;
   font-size: 0.85rem;
+
+  min-height: 32px;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .tag-chip:hover {
@@ -224,7 +239,10 @@ a:hover {
 
 .tag-suggestion {
   width: 100%;
-  display: block;
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+
   text-align: left;
 
   background: transparent;
@@ -236,6 +254,9 @@ a:hover {
 
   cursor: pointer;
   font: inherit;
+
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .tag-suggestion:hover {
@@ -255,21 +276,11 @@ a:hover {
   color: var(--text-muted);
 }
 
-/* ============================================================
-   Tag Picker: Click targets + consistency
-   ============================================================ */
-.tag-chip { min-height: 32px; user-select: none; -webkit-tap-highlight-color: transparent; }
-.tag-suggestion { min-height: 36px; user-select: none; -webkit-tap-highlight-color: transparent; }
-
 .tag-chip:focus-visible,
 .tag-suggestion:focus-visible {
   outline: 2px solid rgba(59, 195, 110, 0.6);
   outline-offset: 2px;
 }
-
-.tag-picker { cursor: default; }
-.tag-chip,
-.tag-suggestion { cursor: pointer; }
 
 /* ============================================================
    A–Z Navigation
@@ -665,7 +676,6 @@ a:hover {
 
   margin-top: -1px;
 }
-
 
 .tab-panel.active {
   display: block;
