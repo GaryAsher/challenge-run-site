@@ -177,6 +177,10 @@ a:hover {
   max-width: 520px;
 }
 
+.filter-wrap::after {
+  content: none !important;
+}
+
 .filter-wrap .filter {
   max-width: none;
   width: 100%;
