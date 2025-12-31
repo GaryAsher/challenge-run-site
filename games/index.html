@@ -3,78 +3,45 @@ layout: default
 title: Games
 ---
 
-<h1>Games</h1>a
+<h1>Games</h1>
 <p class="muted">Jump by letter or filter by category.</p>
 
 <div class="az" id="az">
   <a href="#0-9">#</a>
-
   {% assign letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" | split: "" %}
   {% for L in letters %}
     <a href="#{{ L }}">{{ L }}</a>
   {% endfor %}
-
   <a href="#other">Other</a>
   <a href="#all" class="muted">All</a>
 </div>
 
 <div class="filter-wrap">
-  <input
-    id="q"
-    class="filter"
-    placeholder="Search within results..."
-    autocomplete="off"
-  />
+  <input id="q" class="filter" placeholder="Search within results..." autocomplete="off" />
 </div>
 
+<!-- TAG FILTER -->
 <div class="tag-filter" id="tag-filter">
   <div class="muted" style="margin-bottom: 0.35rem;">Filter by tags:</div>
-
   <div class="tag-picker">
     <div class="tag-picked" id="tag-picked"></div>
-
     <div class="filter-wrap">
-      <input
-        id="tag-search"
-        class="tag-search"
-        type="text"
-        placeholder="Type a tag (ex: Roguelike) ..."
-        autocomplete="off"
-        aria-label="Filter games by tags"
-      />
+      <input id="tag-search" class="tag-search" type="text" placeholder="Type a tag..." autocomplete="off" />
     </div>
-
     <div class="tag-suggestions" id="tag-suggestions" hidden></div>
   </div>
-
-  <p class="muted" style="margin: 0.4rem 0 0 0;">
-    Tip: click a selected tag chip to remove it.
-  </p>
 </div>
 
+<!-- CHALLENGE FILTER -->
 <div class="tag-filter" id="challenge-filter">
   <div class="muted" style="margin-bottom: 0.35rem;">Filter by challenges:</div>
-
   <div class="tag-picker">
     <div class="tag-picked" id="challenge-picked"></div>
-
     <div class="filter-wrap">
-      <input
-        id="challenge-search"
-        class="tag-search"
-        type="text"
-        placeholder="Type a challenge (ex: No-Hit) ..."
-        autocomplete="off"
-        aria-label="Filter games by challenges"
-      />
+      <input id="challenge-search" class="tag-search" type="text" placeholder="Type a challenge..." autocomplete="off" />
     </div>
-
     <div class="tag-suggestions" id="challenge-suggestions" hidden></div>
   </div>
-
-  <p class="muted" style="margin: 0.4rem 0 0 0;">
-    Tip: click a selected challenge chip to remove it.
-  </p>
 </div>
 
 <div class="results-controls">
@@ -100,15 +67,9 @@ title: Games
       data-name="{{ g.name | downcase }}"
       data-tags="{{ g.tags | join: ',' | downcase }}"
       data-challenges="{{ g.challenges | default: empty | join: ',' | downcase }}"
-      aria-label="{{ g.name }}"
     >
       {% assign game_cover = g.cover | default: "/assets/img/site/default-game.jpg" %}
-
-      <div
-        class="game-card__bg"
-        style="background-image: url('{{ game_cover | relative_url }}');"
-      ></div>
-
+      <div class="game-card__bg" style="background-image: url('{{ game_cover | relative_url }}');"></div>
       <div class="game-card__overlay">
         <div class="game-card__title">{{ g.name }}</div>
       </div>
@@ -117,266 +78,99 @@ title: Games
 </div>
 
 <script>
-  // =========================================================
-  // DOM
-  // =========================================================
-  const items = Array.from(document.querySelectorAll(".game-item"));
-  const input = document.getElementById("q");
+const items = Array.from(document.querySelectorAll(".game-item"));
+const input = document.getElementById("q");
+const status = document.getElementById("status");
+const limitSelect = document.getElementById("limit");
 
-  function focusEndOnWrap(inputEl) {
-    const wrap = inputEl.closest(".filter-wrap");
-    if (!wrap) return;
+const tagFilterEl = document.getElementById("tag-filter");
+const tagPickedEl = document.getElementById("tag-picked");
+const tagSearchEl = document.getElementById("tag-search");
+const tagSugEl = document.getElementById("tag-suggestions");
 
-    wrap.addEventListener("pointerdown", (e) => {
-      if (e.target !== inputEl) {
-        e.preventDefault();
-        inputEl.focus();
-        const len = inputEl.value.length;
-        inputEl.setSelectionRange(len, len);
-      }
-    });
-    }
+const challengeFilterEl = document.getElementById("challenge-filter");
+const challengePickedEl = document.getElementById("challenge-picked");
+const challengeSearchEl = document.getElementById("challenge-search");
+const challengeSugEl = document.getElementById("challenge-suggestions");
 
-  focusEndOnWrap(input);
+const activeTags = new Set();
+const activeChallenges = new Set();
 
-  const status = document.getElementById("status");
-  const limitSelect = document.getElementById("limit");
+const TAGS = [
+{% for pair in site.data.tags %}
+{ id: "{{ pair[0] }}", label: "{{ pair[1].label }}" }{% unless forloop.last %},{% endunless %}
+{% endfor %}
+].sort((a,b)=>a.label.localeCompare(b.label));
 
-  // Tag picker DOM
-  const tagFilterEl = document.getElementById("tag-filter");
-  const pickerEl = document.querySelector(".tag-picker");
-  const pickedEl = document.getElementById("tag-picked");
-  const searchEl = document.getElementById("tag-search");
-  const sugEl = document.getElementById("tag-suggestions");
+const CHALLENGES = [
+{% for pair in site.data.challenges %}
+{ id: "{{ pair[0] }}", label: "{{ pair[1].label }}" }{% unless forloop.last %},{% endunless %}
+{% endfor %}
+].sort((a,b)=>a.label.localeCompare(b.label));
 
-  focusEndOnWrap(searchEl);
+const norm = s => (s || "").trim().toLowerCase();
 
-  // Challenge picker DOM
-  const challengeFilterEl = document.getElementById("challenge-filter");
-  const challengePickerEl = challengeFilterEl.querySelector(".tag-picker");
-  const challengePickedEl = document.getElementById("challenge-picked");
-  const challengeSearchEl = document.getElementById("challenge-search");
-  const challengeSugEl = document.getElementById("challenge-suggestions");
-
-  focusEndOnWrap(challengeSearchEl);
-  
-  // =========================================================
-  // Data
-  // =========================================================
-  const activeTags = new Set();
-  const activeChallenges = new Set();
-
-  const TAGS = [
-    {% for pair in site.data.tags %}
-      {% assign id = pair[0] %}
-      {% assign meta = pair[1] %}
-      { id: "{{ id | escape }}", label: "{{ meta.label | escape }}" }{% unless forloop.last %},{% endunless %}
-    {% endfor %}
-  ].sort((a, b) => (a.label.localeCompare(b.label) || a.id.localeCompare(b.id)));
-
-  const CHALLENGES = [
-    {% for pair in site.data.challenges %}
-      {% assign id = pair[0] %}
-      {% assign meta = pair[1] %}
-      { id: "{{ id | escape }}", label: "{{ meta.label | escape }}" }{% unless forloop.last %},{% endunless %}
-    {% endfor %}
-  ].sort((a, b) => (a.label.localeCompare(b.label) || a.id.localeCompare(b.id)));
-  
-  function norm(s) {
-    return (s || "").trim().toLowerCase();
+function renderPicked(set, list, el) {
+  el.innerHTML = "";
+  for (const id of set) {
+    const meta = list.find(x => norm(x.id) === id);
+    const chip = document.createElement("button");
+    chip.className = "tag-chip";
+    chip.textContent = meta ? meta.label : id;
+    chip.onclick = () => { set.delete(id); applyFilter(); renderAll(); };
+    el.appendChild(chip);
   }
+}
 
-  // =========================================================
-  // Suggestions UI
-  // =========================================================
-  function openSuggestions() {
-    sugEl.hidden = false;
-  }
-
-  function closeSuggestions() {
-    sugEl.hidden = true;
-  }
-
-  function renderPicked() {
-    pickedEl.innerHTML = "";
-
-    for (const id of activeTags) {
-      const meta = TAGS.find(t => norm(t.id) === id);
-      const label = meta ? meta.label : id;
-
-      const chip = document.createElement("button");
-      chip.type = "button";
-      chip.className = "tag-chip";
-      chip.textContent = label;
-
-      chip.addEventListener("click", () => {
-        activeTags.delete(id);
-
-        searchEl.value = "";
-        renderPicked();
-        applyFilter();
-        
-        closeSuggestions();
-        searchEl.blur();
+function renderSuggestions(query, set, list, el, pickedEl) {
+  const q = norm(query);
+  el.innerHTML = "";
+  list.filter(x => !set.has(norm(x.id)) && (!q || norm(x.label).includes(q)))
+      .slice(0,24)
+      .forEach(x => {
+        const b = document.createElement("button");
+        b.className = "tag-suggestion";
+        b.textContent = x.label;
+        b.onclick = () => { set.add(norm(x.id)); applyFilter(); renderAll(); };
+        el.appendChild(b);
       });
+  el.hidden = false;
+}
 
-      pickedEl.appendChild(chip);
-    }
+function applyFilter() {
+  const q = norm(input.value);
+  const limit = Number(limitSelect.value);
+  const matches = [];
 
-    pickedEl.classList.toggle("is-empty", activeTags.size === 0);
+  for (const el of items) {
+    const name = el.dataset.name;
+    const tags = (el.dataset.tags || "").split(",").map(norm);
+    const challenges = (el.dataset.challenges || "").split(",").map(norm);
+
+    const ok =
+      (!q || name.includes(q)) &&
+      [...activeTags].every(t => tags.includes(t)) &&
+      [...activeChallenges].every(c => challenges.includes(c));
+
+    if (ok) matches.push(el);
+    el.style.display = "none";
   }
 
-  function renderSuggestions(query) {
-    const q = norm(query);
-    sugEl.innerHTML = "";
+  matches.slice(0, limit || matches.length).forEach(el => el.style.display = "");
+  status.textContent = `${matches.length} matches`;
+}
 
-    const results = TAGS
-      .filter(t => {
-        const id = norm(t.id);
-        const label = norm(t.label);
-        if (activeTags.has(id)) return false;
-        if (!q) return true;
-        return id.includes(q) || label.includes(q);
-      })
-      .slice(0, 24);
+function renderAll() {
+  renderPicked(activeTags, TAGS, tagPickedEl);
+  renderPicked(activeChallenges, CHALLENGES, challengePickedEl);
+}
 
-    if (results.length === 0) {
-      const empty = document.createElement("div");
-      empty.className = "tag-suggestion is-empty";
-      empty.textContent = "No matching tags.";
-      sugEl.appendChild(empty);
-      openSuggestions();
-      return;
-    }
+tagSearchEl.oninput = () => renderSuggestions(tagSearchEl.value, activeTags, TAGS, tagSugEl);
+challengeSearchEl.oninput = () => renderSuggestions(challengeSearchEl.value, activeChallenges, CHALLENGES, challengeSugEl);
 
-    for (const t of results) {
-      const row = document.createElement("button");
-      row.type = "button";
-      row.className = "tag-suggestion";
-      row.textContent = t.label;
+input.oninput = applyFilter;
+limitSelect.onchange = applyFilter;
 
-      row.addEventListener("click", () => {
-        activeTags.add(norm(t.id));
-        searchEl.value = "";
-        renderPicked();
-        applyFilter();
-
-        closeSuggestions();
-        searchEl.blur();
-      });
-
-      sugEl.appendChild(row);
-    }
-
-    openSuggestions();
-  }
-
-  // =========================================================
-  // Game filtering
-  // =========================================================
-  function classifyFirstChar(ch) {
-    if (!ch) return "other";
-    const upper = ch.toUpperCase();
-    if (upper >= "A" && upper <= "Z") return upper;
-    if (ch >= "0" && ch <= "9") return "0-9";
-    return "other";
-  }
-
-  function getFirstChar(el) {
-    const text = (el.textContent || "").trim();
-    return text ? text[0] : "";
-  }
-
-  function applyFilter() {
-    const bucket = ((location.hash || "#all").slice(1)) || "all";
-    const q = norm(input.value);
-    const limit = Number(limitSelect.value);
-
-    const matches = [];
-
-    for (const el of items) {
-      const name = el.dataset.name || "";
-      const group = classifyFirstChar(getFirstChar(el));
-
-      const tags = (el.dataset.tags || "")
-        .split(",")
-        .map(s => norm(s))
-        .filter(Boolean);
-
-      const matchesTags =
-        activeTags.size === 0 ||
-        Array.from(activeTags).every(t => tags.includes(t));
-
-      const matchesBucket = (bucket === "all" || bucket === group);
-      const matchesQuery = (!q || name.includes(q));
-
-      if (matchesBucket && matchesQuery && matchesTags) {
-        matches.push(el);
-      }
-    }
-
-    for (const el of items) el.style.display = "none";
-
-    const count = limit === 0 ? matches.length : Math.min(limit, matches.length);
-    for (let i = 0; i < count; i++) matches[i].style.display = "";
-
-    const bucketLabel =
-      bucket === "all" ? "All" :
-      bucket === "0-9" ? "0–9" :
-      bucket === "other" ? "Other" :
-      bucket;
-
-    const tagLabel =
-      activeTags.size === 0 ? "Any tag" : `Tags: ${Array.from(activeTags).join(", ")}`;
-
-    status.textContent =
-      `${count} shown of ${matches.length} matches (filter: ${bucketLabel}, ${tagLabel})`;
-  }
-
-// =========================================================
-// Events
-// =========================================================
-
-searchEl.addEventListener("input", () => renderSuggestions(searchEl.value));
-
-searchEl.addEventListener("pointerdown", (e) => {
-  if (!sugEl.hidden) {
-    e.preventDefault();
-    closeSuggestions();
-    searchEl.blur();
-  }
-});
-
-searchEl.addEventListener("focus", () => {
-  if (sugEl.hidden) renderSuggestions(searchEl.value);
-});
-
-pickerEl.addEventListener("pointerdown", (e) => {
-  const clickedInput = (e.target === searchEl);
-  const clickedSuggestions = sugEl.contains(e.target);
-  if (!clickedInput && !clickedSuggestions) e.preventDefault();
-});
-
-// Close suggestions when clicking outside
-document.addEventListener("pointerdown", (e) => {
-  if (!tagFilterEl.contains(e.target)) closeSuggestions();
-}, true);
-
-// Close suggestions on Escape
-searchEl.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") {
-    closeSuggestions();
-    searchEl.blur();
-  }
-});
-
-window.addEventListener("hashchange", applyFilter);
-input.addEventListener("input", applyFilter);
-limitSelect.addEventListener("change", applyFilter);
-
-  // =========================================================
-  // Init
-  // =========================================================
-  renderPicked();
-  applyFilter();
+renderAll();
+applyFilter();
 </script>
