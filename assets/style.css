@@ -159,7 +159,7 @@ a:hover {
 }
 
 /* ============================================================
-   Shared Components
+  Components: Shared (used across pages)
    ============================================================ */
 .muted { color: var(--text-muted); }
 .muted a { color: inherit; }
@@ -171,6 +171,9 @@ a:hover {
   margin: 1rem 0;
 }
 
+/* ============================================================
+   Forms: Inputs + Selects + Focus
+   ============================================================ */
 .filter {
   width: 100%;
   max-width: 520px;
@@ -209,14 +212,17 @@ a:hover {
   margin-left: 0.4rem;
 }
 
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid rgba(59, 195, 110, 0.6);
+  outline-offset: 2px;
+}
+
 .results-controls {
   display: flex;
   align-items: center;
   margin: 0.25rem 0 0.5rem 0;
-}
-
-.results-controls .select {
-  caret-color: transparent;
 }
 
 /* ============================================================
