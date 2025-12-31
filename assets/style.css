@@ -466,9 +466,17 @@ a:hover {
    ============================================================ */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 0.9rem;
+
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
 }
+
+@media (min-width: 1200px) {
+  .grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
 
 /* ============================================================
    Games: Tabs
@@ -885,7 +893,7 @@ a:hover {
 /* Wide desktop */
 @media (min-width: 1200px) {
   :root {
-    --page-max: 1100px;
+    --page-max: 1200px;
     --gutter: 2rem;
   }
 }
