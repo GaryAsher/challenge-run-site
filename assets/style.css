@@ -263,10 +263,11 @@ select:focus-visible {
 /* ============================================================
    Games: Tag Filter (index) - Searchable picker
    ============================================================ */
-.tag-filter > .muted {
+.filter-label {
+  display: block;
   text-align: center;
   font-weight: 600;
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.35rem;
 }
 
 .filters-grid .tag-filter {
@@ -302,7 +303,7 @@ select:focus-visible {
   font: inherit;
   font-size: 0.85rem;
 
-  min-height: var(--tap);
+  min-height: 32px;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
@@ -399,7 +400,6 @@ select:focus-visible {
   margin-bottom: 1.25rem;
 }
 
-
 .az a {
   display: inline-flex;
   align-items: center;
@@ -419,8 +419,27 @@ select:focus-visible {
 
   -webkit-tap-highlight-color: transparent;
   user-select: none;
+
+  flex: 0 0 auto;
 }
 
+/* Mobile: make A–Z horizontally scrollable */
+@media (max-width: 640px) {
+  .az {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+
+    padding-bottom: 0.35rem;
+    margin-bottom: 1rem;
+
+    scrollbar-width: none;
+  }
+
+  .az::-webkit-scrollbar {
+    display: none;
+  }
+}
 
 .list {
   padding-left: 1.2rem;
