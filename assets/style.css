@@ -886,6 +886,10 @@ a:hover {
   align-items: center;
 }
 
+.pager .muted {
+  white-space: nowrap;
+}
+
 /* ============================================================
    Responsive scale tweaks
    ============================================================ */
