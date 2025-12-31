@@ -505,15 +505,17 @@ a:hover {
   display: none;
 
   border: 1px solid var(--border);
-  border-top: none;
-  border-radius: 0 0 14px 14px;
+  border-radius: 14px;
 
   background: #0b0b0b;
   padding: 1rem;
 
   min-height: 40vh;
   overflow-y: auto;
+
+  margin-top: -1px;
 }
+
 
 .tab-panel.active {
   display: block;
