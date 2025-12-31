@@ -77,7 +77,7 @@ const limitSelect = document.getElementById("limit");
 const getLimit = () => (limitSelect ? Number(limitSelect.value) : 0);
 
 function applyFilter() {
-  const q = norm(input.value);
+  const q = input ? norm(input.value) : "";
   const limit = getLimit();
   const matches = [];
 
@@ -85,7 +85,7 @@ function applyFilter() {
   const hashMode = rawHash && rawHash !== "ALL" ? rawHash : "";
 
   for (const el of items) {
-    const name = el.dataset.name || "";
+    const name = norm(el.dataset.name);
     const letter = (el.dataset.letter || "").toUpperCase();
 
     const startsWithDigit = letter >= "0" && letter <= "9";
@@ -106,18 +106,20 @@ function applyFilter() {
   const shown = limit === 0 ? matches.length : Math.min(limit, matches.length);
   for (let i = 0; i < shown; i++) matches[i].style.display = "";
 
-  status.textContent = `${shown} shown of ${matches.length} matches${hashMode ? ` (section: ${hashMode})` : ""}`;
+  if (status) {
+    status.textContent = `${shown} shown of ${matches.length} matches${hashMode ? ` (section: ${hashMode})` : ""}`;
+  }
 }
 
 window.addEventListener("hashchange", applyFilter);
-input.addEventListener("input", applyFilter);
+if (input) input.addEventListener("input", applyFilter);
 if (limitSelect) limitSelect.addEventListener("change", applyFilter);
 
 const controlsRoot = document.getElementById("runners-controls");
 
 document.addEventListener("pointerdown", (e) => {
   if (controlsRoot && controlsRoot.contains(e.target)) return;
-  input.blur();
+  if (input) input.blur();
   if (limitSelect) limitSelect.blur();
 });
   
