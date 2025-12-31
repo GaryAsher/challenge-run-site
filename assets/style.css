@@ -560,6 +560,19 @@ a:hover {
   }
 }
 
+@supports not (aspect-ratio: 16 / 9) {
+  .game-hero::before {
+    content: "";
+    display: block;
+    padding-top: 56.25%;
+  }
+
+  .game-hero__overlay {
+    position: absolute;
+    inset: 0;
+  }
+}
+
 /* ============================================================
    Games: Cards
    ============================================================ */
