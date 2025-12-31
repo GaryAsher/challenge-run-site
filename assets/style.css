@@ -53,14 +53,12 @@ a:hover {
 .container {
   padding: 3rem 1.5rem;
   max-width: var(--page-max);
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0 auto;
 }
 
 .page-width {
   max-width: var(--page-max);
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0 auto;
   padding: 0 1.5rem;
 }
 
@@ -179,11 +177,6 @@ a:hover {
 
 .filter-wrap::after {
   content: none !important;
-}
-
-.filter-wrap .filter {
-  max-width: none;
-  width: 100%;
 }
 
 .tag-picker .filter-wrap {
