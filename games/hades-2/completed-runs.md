@@ -1,5 +1,5 @@
 ---
-layout: game-runs-completed
+layout: completed-runs
 title: Completed Runs
 game_id: hades-2
 game_name: Hades II
