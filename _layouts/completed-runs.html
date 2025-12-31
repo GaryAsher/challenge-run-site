@@ -107,7 +107,11 @@ layout: default
            Completed Runs (paged)
            ========================================================= -->
       <div id="runs" class="list-paged" data-page-size="25">
-        <div class="list-controls">
+        <div class="list-items">
+          {{ content }}
+        </div>
+
+        <div class="list-controls list-controls--bottom">
           <div class="muted" data-status></div>
 
           <div class="pager">
@@ -115,10 +119,6 @@ layout: default
             <span class="muted" data-page-label></span>
             <button type="button" class="btn" data-next>Next</button>
           </div>
-        </div>
-
-        <div class="list-items">
-          {{ content }}
         </div>
       </div>
     {% else %}
