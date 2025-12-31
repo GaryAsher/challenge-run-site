@@ -102,13 +102,40 @@ layout: default
       </div>
     {% endif %}
 
-    {% if content and content != "" %}
+    {% assign runs = site.data.runs | where: "game_id", page.game_id | sort: "date" | reverse %}
+
+    {% if runs and runs.size > 0 %}
       <!-- =========================================================
            Completed Runs (paged)
            ========================================================= -->
       <div id="runs" class="list-paged" data-page-size="25">
         <div class="list-items">
-          {{ content }}
+          {% for r in runs %}
+            <article class="card list-item"
+              data-runner="{{ r.runner | strip | downcase }}"
+              data-category="{{ r.category | strip | downcase }}"
+              data-date="{{ r.date }}"
+            >
+              <strong>
+                {% if r.runner_id %}
+                  <a href="{{ '/runners/' | append: r.runner_id | append: '/' | relative_url }}">{{ r.runner }}</a>
+                {% else %}
+                  {{ r.runner | strip }}
+                {% endif %}
+              </strong>
+              — {{ r.category }}
+
+              <div class="muted">
+                {% if r.kind %}{{ r.kind }} • {% endif %}
+                <time datetime="{{ r.date }}">{{ r.date }}</time>
+                {% if r.video and r.video != "" %} • <a href="{{ r.video }}">Video</a>{% endif %}
+              </div>
+
+              {% if r.notes and r.notes != "" %}
+                <div class="muted">{{ r.notes }}</div>
+              {% endif %}
+            </article>
+          {% endfor %}
         </div>
 
         <div class="list-controls list-controls--bottom">
