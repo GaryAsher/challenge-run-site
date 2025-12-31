@@ -72,12 +72,13 @@ layout: default
   {% if page.challenges and page.challenges.size > 0 %}
     <div class="card">
       <h2>Challenges</h2>
-      <ul>
-        {% for x in page.challenges %}
-          {% assign meta = site.data.challenges[x] %}
-          <li>{{ meta.label | default: x }}</li>
+
+      <div class="game-tags">
+        {% for challenge in page.challenges %}
+          {% assign meta = site.data.challenges[challenge] %}
+          <span class="tag">{{ meta.label | default: challenge }}</span>
         {% endfor %}
-      </ul>
+      </div>
     </div>
   {% endif %}
 
