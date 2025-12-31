@@ -30,19 +30,19 @@ title: Games
 <div class="tag-filter" id="tag-filter">
   <div class="muted" style="margin-bottom: 0.35rem;">Filter by tags:</div>
 
-<div class="tag-picker">
-  <div class="tag-picked" id="tag-picked"></div>
+  <div class="tag-picker">
+    <div class="tag-picked" id="tag-picked"></div>
 
-  <div class="filter-wrap">
-    <input
-      id="tag-search"
-      class="tag-search"
-      type="text"
-      placeholder="Type a tag (ex: Roguelike) ..."
-      autocomplete="off"
-      aria-label="Filter games by tags"
-    />
-  </div>
+    <div class="filter-wrap">
+      <input
+        id="tag-search"
+        class="tag-search"
+        type="text"
+        placeholder="Type a tag (ex: Roguelike) ..."
+        autocomplete="off"
+        aria-label="Filter games by tags"
+      />
+    </div>
 
     <div class="tag-suggestions" id="tag-suggestions" hidden></div>
   </div>
@@ -96,6 +96,23 @@ title: Games
   // =========================================================
   const items = Array.from(document.querySelectorAll(".game-item"));
   const input = document.getElementById("q");
+  
+    function focusEndOnWrap(inputEl) {
+    const wrap = inputEl.closest(".filter-wrap");
+    if (!wrap) return;
+
+    wrap.addEventListener("pointerdown", (e) => {
+      if (e.target === wrap || e.target === inputEl) {
+        e.preventDefault();
+        inputEl.focus();
+        const len = inputEl.value.length;
+        inputEl.setSelectionRange(len, len);
+      }
+    });
+  }
+
+  focusEndOnWrap(input);
+
   const status = document.getElementById("status");
   const limitSelect = document.getElementById("limit");
 
@@ -106,6 +123,8 @@ title: Games
   const searchEl = document.getElementById("tag-search");
   const sugEl = document.getElementById("tag-suggestions");
 
+  focusEndOnWrap(searchEl);
+  
   // =========================================================
   // Data
   // =========================================================
