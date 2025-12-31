@@ -3,20 +3,33 @@ layout: default
 title: Games
 ---
 
+<!-- =========================================================
+     Page header
+     ========================================================= -->
 <h1>Games</h1>
 <p class="muted">Jump by letter or filter by category.</p>
 
+<!-- =========================================================
+     A–Z navigation (hash-based filtering)
+     ========================================================= -->
 <div class="az" id="az">
   <a href="#0-9">#</a>
+
   {% assign letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" | split: "" %}
   {% for L in letters %}
     <a href="#{{ L }}">{{ L }}</a>
   {% endfor %}
+
   <a href="#other">Other</a>
   <a href="#all" class="muted">All</a>
 </div>
 
-<input id="q" class="filter" placeholder="Search within results..." autocomplete="off">
+<input
+  id="q"
+  class="filter"
+  placeholder="Search within results..."
+  autocomplete="off"
+>
 
 <div style="margin: 0.5rem 0 0.75rem 0;">
   <label class="muted" for="limit">Show:</label>
@@ -31,17 +44,24 @@ title: Games
 
 <p class="muted" id="status"></p>
 
+<!-- =========================================================
+     Game grid
+     ========================================================= -->
 <div class="grid" id="game-list">
   {% assign sorted = site.games | sort: "name" %}
   {% for g in sorted %}
-    <a class="game-card game-item"
-       href="{{ g.url }}"
-       data-name="{{ g.name | downcase }}"
-       aria-label="{{ g.name }}">
+    <a
+      class="game-card game-item"
+      href="{{ g.url | relative_url }}"
+      data-name="{{ g.name | downcase }}"
+      aria-label="{{ g.name }}"
+    >
       {% assign game_cover = g.cover | default: "/assets/img/site/default-game.jpg" %}
-      <div class="game-card__bg"
-        style="background-image: url('{{ game_cover | relative_url }}');">
-      </div>
+
+      <div
+        class="game-card__bg"
+        style="background-image: url('{{ game_cover | relative_url }}');"
+      ></div>
 
       <div class="game-card__overlay">
         <div class="game-card__title">{{ g.name }}</div>
@@ -50,6 +70,9 @@ title: Games
   {% endfor %}
 </div>
 
+<!-- =========================================================
+     Client-side filtering logic
+     ========================================================= -->
 <script>
   const items = Array.from(document.querySelectorAll(".game-item"));
   const input = document.getElementById("q");
@@ -75,9 +98,11 @@ title: Games
     const limit = Number(limitSelect.value);
 
     const matches = [];
+
     for (const li of items) {
       const name = li.dataset.name || "";
       const group = classifyFirstChar(getFirstChar(li));
+
       if ((bucket === "all" || bucket === group) && (!q || name.includes(q))) {
         matches.push(li);
       }
@@ -85,20 +110,28 @@ title: Games
 
     for (const li of items) li.style.display = "none";
 
-    const count = limit === 0 ? matches.length : Math.min(limit, matches.length);
-    for (let i = 0; i < count; i++) matches[i].style.display = "";
+    const count = limit === 0
+      ? matches.length
+      : Math.min(limit, matches.length);
 
-const bucketLabel =
-  bucket === "all" ? "All" :
-  bucket === "0-9" ? "0–9" :
-  bucket === "other" ? "Other" :
-  bucket;
+    for (let i = 0; i < count; i++) {
+      matches[i].style.display = "";
+    }
 
-status.textContent = `${count} shown of ${matches.length} matches (filter: ${bucketLabel})`;
+    const bucketLabel =
+      bucket === "all" ? "All" :
+      bucket === "0-9" ? "0–9" :
+      bucket === "other" ? "Other" :
+      bucket;
+
+    status.textContent =
+      `${count} shown of ${matches.length} matches (filter: ${bucketLabel})`;
   }
 
+  // Event wiring
   window.addEventListener("hashchange", applyFilter);
   input.addEventListener("input", applyFilter);
   limitSelect.addEventListener("change", applyFilter);
+
   applyFilter();
 </script>
