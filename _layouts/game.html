@@ -66,53 +66,136 @@ layout: default
 {% endif %}
 
 <!-- =========================================================
-     Main page content
+     Game Tabs - Main
      ========================================================= -->
-<div class="container">
+<nav class="runner-tabs" id="game-tabs">
+  <button class="tab active" type="button" data-tab="challenges">Challenges</button>
+  <button class="tab" type="button" data-tab="categories">Categories</button>
+  <button class="tab" type="button" data-tab="runs">Completed Runs</button>
+  <button class="tab" type="button" data-tab="resources">Resources</button>
+  <button class="tab" type="button" data-tab="guides">Guides</button>
+  <button class="tab" type="button" data-tab="forums">Forums</button>
+</nav>
 
-  <!-- Challenges list -->
-  {% if page.challenges and page.challenges.size > 0 %}
+<div class="page-width">
+
+  <!-- =======================================================
+       CHALLENGES
+       ======================================================= -->
+  <section class="tab-panel active" data-panel="challenges">
     <div class="card">
       <h2>Challenges</h2>
 
-      <div class="game-tags">
-        {% for challenge in page.challenges %}
-          {% assign meta = site.data.challenges[challenge] %}
-          <span class="tag">{{ meta.label | default: challenge }}</span>
-        {% endfor %}
-      </div>
+      {% if page.challenges and page.challenges.size > 0 %}
+        <div class="game-tags">
+          {% for challenge in page.challenges %}
+            {% assign meta = site.data.challenges[challenge] %}
+            <span class="tag">{{ meta.label | default: challenge }}</span>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="muted">No challenges listed yet.</p>
+      {% endif %}
     </div>
-  {% endif %}
 
-  <!-- Categories list -->
-  {% if page.categories %}
+    {% if content and content != "" %}
+      <div class="card">
+        {{ content }}
+      </div>
+    {% endif %}
+  </section>
+
+  <!-- =======================================================
+       CATEGORIES
+       ======================================================= -->
+  <section class="tab-panel" data-panel="categories">
     <div class="card">
       <h2>Categories</h2>
-      <ul>
-        {% for c in page.categories %}
-          <li>{{ c }}</li>
-        {% endfor %}
-      </ul>
-    </div>
-  {% endif %}
 
-  <!-- Subcategories list -->
-  {% if page.subcategories %}
-    <div class="card">
-      <h2>Subcategories</h2>
-      <ul>
-        {% for s in page.subcategories %}
-          <li>{{ s }}</li>
-        {% endfor %}
-      </ul>
-    </div>
-  {% endif %}
+      {% if page.categories and page.categories.size > 0 %}
+        <ul class="list">
+          {% for c in page.categories %}
+            <li>{{ c }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="muted">No categories listed yet.</p>
+      {% endif %}
 
-  <!-- Markdown body content from the game file -->
-  {% if content and content != "" %}
-    <div class="card">
-      {{ content }}
+      {% if page.subcategories and page.subcategories.size > 0 %}
+        <hr style="border: 0; border-top: 1px solid var(--border); margin: 1rem 0;">
+        <h3>Subcategories</h3>
+        <ul class="list">
+          {% for s in page.subcategories %}
+            <li>{{ s }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
     </div>
-  {% endif %}
+  </section>
+
+  <!-- =======================================================
+       COMPLETED RUNS
+       ======================================================= -->
+  <section class="tab-panel" data-panel="runs">
+    <div class="card">
+      <h2>Completed Runs</h2>
+      <p class="muted">Coming soon.</p>
+    </div>
+  </section>
+
+  <!-- =======================================================
+       RESOURCES
+       ======================================================= -->
+  <section class="tab-panel" data-panel="resources">
+    <div class="card">
+      <h2>Resources</h2>
+      <p class="muted">Coming soon.</p>
+    </div>
+  </section>
+
+  <!-- =======================================================
+       GUIDES
+       ======================================================= -->
+  <section class="tab-panel" data-panel="guides">
+    <div class="card">
+      <h2>Guides</h2>
+      <p class="muted">Coming soon.</p>
+    </div>
+  </section>
+
+  <!-- =======================================================
+       FORUMS
+       ======================================================= -->
+  <section class="tab-panel" data-panel="forums">
+    <div class="card">
+      <h2>Forums</h2>
+      <p class="muted">Coming soon.</p>
+    </div>
+  </section>
 
 </div>
+
+<!-- =========================================================
+     Tabs Script
+     ========================================================= -->
+<script>
+(function () {
+  const root = document.getElementById("game-tabs");
+  if (!root) return;
+
+  const tabs = Array.from(root.querySelectorAll(".tab"));
+  const wrap = root.nextElementSibling;
+  const panels = wrap ? Array.from(wrap.querySelectorAll(".tab-panel")) : [];
+
+  function setActive(name) {
+    for (const t of tabs) t.classList.toggle("active", t.dataset.tab === name);
+    for (const p of panels) p.classList.toggle("active", p.dataset.panel === name);
+  }
+
+  tabs.forEach(t => {
+    t.addEventListener("click", () => setActive(t.dataset.tab));
+  });
+  setActive("challenges");
+})();
+</script>
