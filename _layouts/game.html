@@ -20,17 +20,24 @@ layout: default
       background-position: {{ page.cover_position | default: 'center' }};
     "
   >
-    <!-- Dark gradient overlay on top of the cover -->
-    <div class="game-hero__overlay">
-      <div class="game-hero__content">
-        <h1>{{ page.name }}</h1>
-
-        <!-- Optional game status text -->
-        {% if page.status %}
-          <p class="muted">{{ page.status }}</p>
-        {% endif %}
-      </div>
-    </div>
+     <!-- Dark gradient overlay on top of the cover -->
+     <div class="game-hero__overlay">
+       <div class="game-hero__content">
+         <h1>{{ page.name }}</h1>
+     
+         {% if page.status %}
+           <p class="muted">{{ page.status }}</p>
+         {% endif %}
+     
+         {% if page.tags and page.tags.size > 0 %}
+           <div class="game-tags">
+             {% for tag in page.tags %}
+               <span class="tag">{{ tag }}</span>
+             {% endfor %}
+           </div>
+         {% endif %}
+       </div>
+     </div>
   </section>
 
 <!-- =========================================================
