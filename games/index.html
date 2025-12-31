@@ -20,28 +20,45 @@ title: Games
   <input id="q" class="filter" placeholder="Search within results..." autocomplete="off" />
 </div>
 
-<!-- TAG FILTER -->
-<div class="tag-filter" id="tag-filter">
-  <div class="muted" style="margin-bottom: 0.35rem;">Filter by tags:</div>
-  <div class="tag-picker">
-    <div class="tag-picked" id="tag-picked"></div>
-    <div class="filter-wrap">
-      <input id="tag-search" class="tag-search" type="text" placeholder="Type a tag..." autocomplete="off" />
-    </div>
-    <div class="tag-suggestions" id="tag-suggestions" hidden></div>
-  </div>
-</div>
+<!-- TAGS + CHALLENGES FILTER ROW -->
+<div class="filters-grid">
 
-<!-- CHALLENGE FILTER -->
-<div class="tag-filter" id="challenge-filter">
-  <div class="muted" style="margin-bottom: 0.35rem;">Filter by challenges:</div>
-  <div class="tag-picker">
-    <div class="tag-picked" id="challenge-picked"></div>
-    <div class="filter-wrap">
-      <input id="challenge-search" class="tag-search" type="text" placeholder="Type a challenge..." autocomplete="off" />
+  <!-- TAG FILTER -->
+  <div class="tag-filter" id="tag-filter">
+    <div class="muted" style="margin-bottom: 0.35rem;">Filter by tags:</div>
+    <div class="tag-picker">
+      <div class="tag-picked" id="tag-picked"></div>
+      <div class="filter-wrap">
+        <input
+          id="tag-search"
+          class="tag-search"
+          type="text"
+          placeholder="Type a tag..."
+          autocomplete="off"
+        />
+      </div>
+      <div class="tag-suggestions" id="tag-suggestions" hidden></div>
     </div>
-    <div class="tag-suggestions" id="challenge-suggestions" hidden></div>
   </div>
+
+  <!-- CHALLENGE FILTER -->
+  <div class="tag-filter" id="challenge-filter">
+    <div class="muted" style="margin-bottom: 0.35rem;">Filter by challenges:</div>
+    <div class="tag-picker">
+      <div class="tag-picked" id="challenge-picked"></div>
+      <div class="filter-wrap">
+        <input
+          id="challenge-search"
+          class="tag-search"
+          type="text"
+          placeholder="Type a challenge..."
+          autocomplete="off"
+        />
+      </div>
+      <div class="tag-suggestions" id="challenge-suggestions" hidden></div>
+    </div>
+  </div>
+  
 </div>
 
 <div class="results-controls">
