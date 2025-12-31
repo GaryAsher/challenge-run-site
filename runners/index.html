@@ -52,8 +52,9 @@ title: Runners
       <a
         class="runner-card runner-item"
         href="{{ r.url | relative_url }}"
-        data-name="{{ r.name | downcase }}"
-        data-letter="{{ r.name | strip | slice: 0, 1 | upcase }}"
+        {% assign runner_name = r.name | default: r.title | default: "Unknown" %}
+        data-name="{{ runner_name | downcase }}"
+        data-letter="{{ runner_name | strip | slice: 0, 1 | upcase }}"
       >
         <div class="runner-card__bg" style="background-image: url('{{ avatar | relative_url }}');"></div>
         <div class="runner-card__overlay">
@@ -85,7 +86,7 @@ function applyFilter() {
   const hashMode = rawHash && rawHash !== "ALL" ? rawHash : "";
 
   for (const el of items) {
-    const name = norm(el.dataset.name);
+    const name = norm(el.dataset.name || "");
     const letter = (el.dataset.letter || "").toUpperCase();
 
     const startsWithDigit = letter >= "0" && letter <= "9";
@@ -111,7 +112,11 @@ function applyFilter() {
   }
 }
 
-window.addEventListener("hashchange", applyFilter);
+window.addEventListener("hashchange", () => {
+  if (input) input.value = "";
+  applyFilter();
+});
+  
 if (input) input.addEventListener("input", applyFilter);
 if (limitSelect) limitSelect.addEventListener("change", applyFilter);
 
