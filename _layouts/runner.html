@@ -152,9 +152,18 @@ layout: default
     runner_id: gary-asher
   {%- endcomment -%}
 
-  {% assign rid = page.runner_id | default: "" %}
-  {% assign runs = all_runs | where: "runner_id", rid | sort: "date" | reverse %}
+  {% assign rid = page.runner_id | default: "" | strip | downcase %}
+     
+  {% assign runs = "" | split: "" %}
+  {% for r in all_runs %}
+    {% assign r_rid = r.runner_id | default: "" | strip | downcase %}
+    {% if r_rid == rid %}
+      {% assign runs = runs | push: r %}
+    {% endif %}
+  {% endfor %}
 
+  {% assign runs = runs | sort: "date" | reverse %}
+     
   {% if runs and runs.size > 0 %}
     <div id="runner-runs" class="list-paged" data-page-size="25">
       <div class="list-items">
