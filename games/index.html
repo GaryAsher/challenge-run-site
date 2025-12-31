@@ -167,7 +167,11 @@ title: Games
 
       chip.addEventListener("click", () => {
         activeTags.delete(id);
+
+        searchEl.value = "";
         renderPicked();
+        applyFilter();
+        
         closeSuggestions();
         searchEl.blur();
       });
