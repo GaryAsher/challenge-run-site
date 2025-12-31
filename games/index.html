@@ -168,8 +168,8 @@ title: Games
       chip.addEventListener("click", () => {
         activeTags.delete(id);
         renderPicked();
-        applyFilter();
-        renderSuggestions(searchEl.value);
+        closeSuggestions();
+        searchEl.blur();
       });
 
       pickedEl.appendChild(chip);
