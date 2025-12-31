@@ -63,9 +63,10 @@ title: Games
   class="game-card game-item"
   href="{{ g.url | relative_url }}"
   data-name="{{ g.name | downcase }}"
-  data-tags="{{ g.tags | join: ',' }}"
+  data-tags="{{ g.tags | join: ',' | downcase }}"
   aria-label="{{ g.name }}"
 >
+     
       {% assign game_cover = g.cover | default: "/assets/img/site/default-game.jpg" %}
 
       <div
@@ -88,6 +89,27 @@ title: Games
   const input = document.getElementById("q");
   const status = document.getElementById("status");
   const limitSelect = document.getElementById("limit");
+
+  // Tag filter
+  const tagButtons = Array.from(document.querySelectorAll(".tag-btn"));
+  const activeTags = new Set();
+
+  for (const btn of tagButtons) {
+    btn.addEventListener("click", () => {
+      const tag = (btn.dataset.tag || "").toLowerCase();
+      if (!tag) return;
+
+      if (activeTags.has(tag)) {
+        activeTags.delete(tag);
+        btn.classList.remove("active");
+      } else {
+        activeTags.add(tag);
+        btn.classList.add("active");
+      }
+
+      applyFilter();
+    });
+  }
 
   function classifyFirstChar(ch) {
     if (!ch) return "other";
@@ -113,7 +135,17 @@ title: Games
       const name = li.dataset.name || "";
       const group = classifyFirstChar(getFirstChar(li));
 
-      if ((bucket === "all" || bucket === group) && (!q || name.includes(q))) {
+      const tags = (li.dataset.tags || "")
+        .toLowerCase()
+        .split(",")
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      const matchesTags =
+        activeTags.size === 0 ||
+        Array.from(activeTags).every(t => tags.includes(t));
+
+      if ((bucket === "all" || bucket === group) && (!q || name.includes(q)) && matchesTags) {
         matches.push(li);
       }
     }
@@ -134,8 +166,13 @@ title: Games
       bucket === "other" ? "Other" :
       bucket;
 
+    const tagLabel =
+      activeTags.size === 0
+        ? "Any tag"
+        : `Tags: ${Array.from(activeTags).join(", ")}`;
+
     status.textContent =
-      `${count} shown of ${matches.length} matches (filter: ${bucketLabel})`;
+      `${count} shown of ${matches.length} matches (filter: ${bucketLabel}, ${tagLabel})`;
   }
 
   // Event wiring
