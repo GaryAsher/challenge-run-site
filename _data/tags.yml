@@ -35,7 +35,7 @@ metroidvania:
   label: Metroidvania
 mythology:
   label: Mythology
-  
+
 # N
 
 # O
@@ -53,7 +53,7 @@ roguelike:
   label: Roguelike
 roguelite:
   label: Roguelite
-  
+
 # S
 soulslike:
   label: Soulslike
