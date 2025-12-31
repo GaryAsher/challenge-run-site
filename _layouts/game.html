@@ -2,31 +2,60 @@
 layout: default
 ---
 
+<!-- =========================================================
+     Back link to the Games index
+     ========================================================= -->
 <p class="muted" style="margin: 1rem 1.5rem;">
   <a href="{{ '/games/' | relative_url }}">← Games</a>
 </p>
 
-
+<!-- =========================================================
+     Game hero section (uses cover image if provided)
+     ========================================================= -->
 {% if page.cover %}
-  <section class="game-hero"
-    style="background-image: url('{{ page.cover | relative_url }}'); background-position: {{ page.cover_position | default: 'center' }};">
+  <section
+    class="game-hero"
+    style="
+      background-image: url('{{ page.cover | relative_url }}');
+      background-position: {{ page.cover_position | default: 'center' }};
+    "
+  >
+    <!-- Dark gradient overlay on top of the cover -->
     <div class="game-hero__overlay">
       <div class="game-hero__content">
         <h1>{{ page.name }}</h1>
-        {% if page.status %}<p class="muted">{{ page.status }}</p>{% endif %}
+
+        <!-- Optional game status text -->
+        {% if page.status %}
+          <p class="muted">{{ page.status }}</p>
+        {% endif %}
       </div>
     </div>
   </section>
+
+<!-- =========================================================
+     Fallback layout if no cover image exists
+     ========================================================= -->
 {% else %}
   <div class="container">
-    <p class="muted"><a href="{{ '/games/' | relative_url }}">← Games</a></p>
+    <p class="muted">
+      <a href="{{ '/games/' | relative_url }}">← Games</a>
+    </p>
+
     <h1>{{ page.name }}</h1>
-    {% if page.status %}<p class="muted">{{ page.status }}</p>{% endif %}
+
+    {% if page.status %}
+      <p class="muted">{{ page.status }}</p>
+    {% endif %}
   </div>
 {% endif %}
 
+<!-- =========================================================
+     Main page content
+     ========================================================= -->
 <div class="container">
 
+  <!-- Challenges list -->
   {% if page.challenges %}
     <div class="card">
       <h2>Challenges</h2>
@@ -38,6 +67,7 @@ layout: default
     </div>
   {% endif %}
 
+  <!-- Categories list -->
   {% if page.categories %}
     <div class="card">
       <h2>Categories</h2>
@@ -49,6 +79,7 @@ layout: default
     </div>
   {% endif %}
 
+  <!-- Subcategories list -->
   {% if page.subcategories %}
     <div class="card">
       <h2>Subcategories</h2>
@@ -60,6 +91,7 @@ layout: default
     </div>
   {% endif %}
 
+  <!-- Markdown body content from the game file -->
   {% if content and content != "" %}
     <div class="card">
       {{ content }}
