@@ -516,7 +516,7 @@ a:hover {
   overflow: hidden;
   margin: 0 0 1.25rem 0;
 
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 2 / 1;
   height: auto;
 
   background-size: cover;
@@ -560,7 +560,7 @@ a:hover {
   }
 }
 
-@supports not (aspect-ratio: 16 / 9) {
+@supports not (aspect-ratio: 2 / 1) {
   .game-hero::before {
     content: "";
     display: block;
