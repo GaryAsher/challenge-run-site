@@ -2,26 +2,110 @@
 layout: default
 ---
 
+{% assign game = site.games | where: "game_id", page.game_id | first %}
+
+<!-- =========================================================
+     Back link to the Games index
+     ========================================================= -->
 <div class="page-width">
   <p class="muted page-back">
-    <a href="{{ page.game_url | relative_url }}">← {{ page.game_name }}</a>
+    <a href="{{ '/games/' | relative_url }}">← Games</a>
   </p>
 </div>
 
-<div class="page-width">
-  <div class="card">
-    <h1>{{ page.title }}</h1>
-    {% if page.subtitle %}
-      <p class="muted">{{ page.subtitle }}</p>
-    {% endif %}
-  </div>
+<!-- =========================================================
+     Game hero section (same as _layouts/game.html)
+     ========================================================= -->
+{% if game and game.cover %}
+  <section
+    class="game-hero"
+    style="
+      background-image: url('{{ game.cover | relative_url }}');
+      background-position: {{ game.cover_position | default: 'center' }};
+    "
+  >
+    <div class="game-hero__overlay">
+      <div class="game-hero__content">
+        <h1>{{ game.name }}</h1>
 
-{% if content and content != "" %}
-  {{ content }}
+        {% if game.status %}
+          <p class="muted">{{ game.status }}</p>
+        {% endif %}
+
+        {% if game.tags and game.tags.size > 0 %}
+          <div class="game-tags">
+            {% for tag in game.tags %}
+              {% assign meta = site.data.tags[tag] %}
+              <span class="tag">{{ meta.label | default: tag }}</span>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
 {% else %}
-  <div class="card">
-    <p class="muted">No runs have been added yet.</p>
+  <div class="container">
+    <h1>{{ page.game_name }}</h1>
   </div>
 {% endif %}
 
+<!-- =========================================================
+     Tabs (same look, links back to the main game page)
+     ========================================================= -->
+{% assign tabs_cfg = game.tabs | default: {} %}
+{% assign show_challenges = tabs_cfg.challenges | default: true %}
+{% assign show_categories = tabs_cfg.categories | default: true %}
+{% assign show_runs       = tabs_cfg.runs       | default: true %}
+{% assign show_resources  = tabs_cfg.resources  | default: true %}
+{% assign show_guides     = tabs_cfg.guides     | default: true %}
+{% assign show_forums     = tabs_cfg.forums     | default: true %}
+{% assign show_history    = tabs_cfg.history    | default: true %}
+
+<nav class="runner-tabs" id="game-tabs">
+  {% if show_challenges %}
+    <a class="tab" href="{{ game.url | relative_url }}#challenges">Challenges</a>
+  {% endif %}
+
+  {% if show_categories %}
+    <a class="tab" href="{{ game.url | relative_url }}#categories">Categories</a>
+  {% endif %}
+
+  {% if show_runs %}
+    <a class="tab active" href="{{ page.url | relative_url }}">Completed Runs</a>
+  {% endif %}
+
+  {% if show_resources %}
+    <a class="tab" href="{{ game.url | relative_url }}#resources">Resources</a>
+  {% endif %}
+
+  {% if show_guides %}
+    <a class="tab" href="{{ game.url | relative_url }}#guides">Guides</a>
+  {% endif %}
+
+  {% if show_forums %}
+    <a class="tab" href="{{ game.url | relative_url }}#forums">Forums</a>
+  {% endif %}
+
+  {% if show_history %}
+    <a class="tab" href="{{ game.url | relative_url }}#history">History</a>
+  {% endif %}
+</nav>
+
+<!-- =========================================================
+     Completed Runs page body
+     ========================================================= -->
+<div class="page-width">
+  {% if page.subtitle %}
+    <div class="card">
+      <p class="muted">{{ page.subtitle }}</p>
+    </div>
+  {% endif %}
+
+  {% if content and content != "" %}
+    {{ content }}
+  {% else %}
+    <div class="card">
+      <p class="muted">No runs have been added yet.</p>
+    </div>
+  {% endif %}
 </div>
