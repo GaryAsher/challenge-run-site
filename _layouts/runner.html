@@ -2,22 +2,38 @@
 layout: default
 ---
 
+<!-- ============================================================
+     Runner Tabs (Profile / Runs / Other)
+     ============================================================ -->
 <nav class="runner-tabs" id="runner-tabs">
   <button class="tab active" data-tab="profile" type="button">Profile</button>
   <button class="tab" data-tab="runs" type="button">Completed Runs</button>
   <button class="tab" data-tab="other" type="button">Something Else</button>
 </nav>
 
+<!-- ============================================================
+     Back Link (kept in page-width for alignment)
+     ============================================================ -->
 <div class="page-width">
   <p class="page-back">
     <a href="{{ '/runners/' | relative_url }}">← Runners</a>
   </p>
 </div>
 
+<!-- ============================================================
+     Runner Avatar Source (fallback if cover is missing)
+     ============================================================ -->
 {% assign avatar = page.cover | default: "/assets/img/site/default-runner.png" %}
 
+<!-- ============================================================
+     Runner Header Row (Avatar left, Socials right)
+     ============================================================ -->
 <div class="page-width">
   <section class="runner-top">
+
+    <!-- ========================================================
+         Left: Avatar + Name + Status
+         ======================================================== -->
     <div class="runner-left">
       <div
         class="runner-avatar"
@@ -27,32 +43,86 @@ layout: default
 
       <div class="runner-name">
         <h1>{{ page.name }}</h1>
-        {% if page.status %}<p class="muted" style="margin: 0.25rem 0 0 0;">{{ page.status }}</p>{% endif %}
+        {% if page.status %}
+          <p class="muted" style="margin: 0.25rem 0 0 0;">{{ page.status }}</p>
+        {% endif %}
       </div>
     </div>
 
+    <!-- ========================================================
+         Right: Social Links (icon + label)
+         Each link only renders if the frontmatter field exists.
+         Order is fixed by the layout (missing links are skipped).
+         ======================================================== -->
     <div class="runner-right">
       <div class="runner-links">
-        {% if page.twitch %}<a class="runner-link" href="{{ page.twitch }}" target="_blank" rel="noreferrer">Twitch</a>{% endif %}
-        {% if page.youtube %}<a class="runner-link" href="{{ page.youtube }}" target="_blank" rel="noreferrer">YouTube</a>{% endif %}
-        {% if page.twitter %}<a class="runner-link" href="{{ page.twitter }}" target="_blank" rel="noreferrer">Twitter/X</a>{% endif %}
-        {% if page.discord %}<a class="runner-link" href="{{ page.discord }}" target="_blank" rel="noreferrer">Discord</a>{% endif %}
+
+        <!-- Twitch -->
+        {% if page.twitch %}
+          <a class="runner-link" href="{{ page.twitch }}" target="_blank" rel="noreferrer">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="currentColor" d="M4 3h17v11l-5 5h-4l-3 3H7v-3H4V3zm2 2v14h3v3l3-3h5l4-4V5H6zm6 3h2v6h-2V8zm5 0h2v6h-2V8z"/>
+            </svg>
+            <span>Twitch</span>
+          </a>
+        {% endif %}
+
+        <!-- YouTube -->
+        {% if page.youtube %}
+          <a class="runner-link" href="{{ page.youtube }}" target="_blank" rel="noreferrer">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="currentColor" d="M21.6 7.2c-.2-.8-.9-1.5-1.7-1.7C18.3 5 12 5 12 5s-6.3 0-7.9.5c-.8.2-1.5.9-1.7 1.7C2 8.8 2 12 2 12s0 3.2.4 4.8c.2.8.9 1.5 1.7 1.7C5.7 19 12 19 12 19s6.3 0 7.9-.5c.8-.2 1.5-.9 1.7-1.7.4-1.6.4-4.8.4-4.8s0-3.2-.4-4.8zM10 15V9l6 3-6 3z"/>
+            </svg>
+            <span>YouTube</span>
+          </a>
+        {% endif %}
+
+        <!-- Discord -->
+        {% if page.discord %}
+          <a class="runner-link" href="{{ page.discord }}" target="_blank" rel="noreferrer">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="currentColor" d="M20 4.7A16.6 16.6 0 0 0 15.9 3l-.2.4a14.6 14.6 0 0 1 3.3 1.6c-3-1.4-6-1.4-9 0A14.6 14.6 0 0 1 13.3 3l-.2-.4A16.6 16.6 0 0 0 9 4.7C6.7 8.1 6.1 11.4 6.3 14.6c1.4 1.1 2.8 1.7 4.2 2l.5-1.7c-.5-.2-1-.4-1.4-.7l.3-.2c2.6 1.2 5.4 1.2 8 0l.3.2c-.4.3-.9.5-1.4.7l.5 1.7c1.4-.3 2.8-1 4.2-2 .3-3.2-.3-6.5-2.6-9.9zM10.2 13c-.7 0-1.3-.7-1.3-1.5S9.5 10 10.2 10s1.3.7 1.3 1.5S10.9 13 10.2 13zm3.6 0c-.7 0-1.3-.7-1.3-1.5S13.1 10 13.8 10s1.3.7 1.3 1.5S14.5 13 13.8 13z"/>
+            </svg>
+            <span>Discord</span>
+          </a>
+        {% endif %}
+
+        <!-- Twitter / X -->
+        {% if page.twitter %}
+          <a class="runner-link" href="{{ page.twitter }}" target="_blank" rel="noreferrer">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="currentColor" d="M18.9 2H22l-6.8 7.8L23 22h-6.7l-5.2-6.7L5.3 22H2l7.3-8.4L1 2h6.9l4.7 6.1L18.9 2zm-1.2 18h1.7L6.8 3.9H5L17.7 20z"/>
+            </svg>
+            <span>Twitter/X</span>
+          </a>
+        {% endif %}
+
       </div>
     </div>
+
   </section>
 </div>
 
+<!-- ============================================================
+     Tab Panels Wrapper
+     ============================================================ -->
 <div class="page-width">
 
+  <!-- ==========================================================
+       PROFILE PANEL
+       ========================================================== -->
   <section class="tab-panel active" data-panel="profile">
+
+    <!-- Bio / About content from the runner page body -->
     {% if content and content != "" %}
       <div class="card">{{ content }}</div>
     {% endif %}
 
+    <!-- Games list rendered using the same card tiles as /games/ -->
     {% if page.games %}
       <div class="card">
         <h2>Games</h2>
-  
+
         <div class="grid">
           {% for gid in page.games %}
             {% assign g = site.games | where: "game_id", gid | first %}
@@ -73,6 +143,9 @@ layout: default
 
   </section>
 
+  <!-- ==========================================================
+       RUNS PANEL
+       ========================================================== -->
   <section class="tab-panel" data-panel="runs">
     <div class="card">
       <h2>Completed Runs</h2>
@@ -80,6 +153,9 @@ layout: default
     </div>
   </section>
 
+  <!-- ==========================================================
+       OTHER PANEL
+       ========================================================== -->
   <section class="tab-panel" data-panel="other">
     <div class="card">
       <h2>Something Else</h2>
@@ -89,6 +165,9 @@ layout: default
 
 </div>
 
+<!-- ============================================================
+     Tabs Script (switch panels without changing pages)
+     ============================================================ -->
 <script>
   (function () {
     const tabs = Array.from(document.querySelectorAll(".runner-tabs .tab"));
