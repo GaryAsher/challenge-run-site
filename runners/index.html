@@ -65,16 +65,20 @@ title: Runners
 </div>
 
 <script>
+  
+// =========================================================
+// DOM: cache runner items + helpers
+// =========================================================
 const items = Array.from(document.querySelectorAll(".runner-item"));
+const norm = s => (s || "").trim().toLowerCase();
 const input = document.getElementById("q");
 const status = document.getElementById("status");
 const limitSelect = document.getElementById("limit");
-
-const norm = s => (s || "").trim().toLowerCase();
+const getLimit = () => (limitSelect ? Number(limitSelect.value) : 0);
 
 function applyFilter() {
   const q = norm(input.value);
-  const limit = Number(limitSelect.value);
+  const limit = getLimit();
   const matches = [];
 
   const rawHash = (location.hash || "").replace("#", "").toUpperCase();
@@ -107,7 +111,15 @@ function applyFilter() {
 
 window.addEventListener("hashchange", applyFilter);
 input.addEventListener("input", applyFilter);
-limitSelect.addEventListener("change", applyFilter);
+if (limitSelect) limitSelect.addEventListener("change", applyFilter);
 
+const controlsRoot = document.getElementById("runners-controls");
+
+document.addEventListener("pointerdown", (e) => {
+  if (controlsRoot && controlsRoot.contains(e.target)) return;
+  input.blur();
+  if (limitSelect) limitSelect.blur();
+});
+  
 applyFilter();
 </script>
