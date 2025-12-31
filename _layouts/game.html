@@ -90,7 +90,7 @@ layout: default
     {% endif %}
 
     {% if show_runs %}
-      <button class="tab" type="button" data-tab="runs">Completed Runs</button>
+      <a class="tab" href="{{ page.url | relative_url }}completed-runs/">Completed Runs</a>
     {% endif %}
 
     {% if show_resources %}
@@ -167,18 +167,6 @@ layout: default
               {% endfor %}
             </ul>
           {% endif %}
-        </div>
-      </section>
-    {% endif %}
-
-    <!-- =======================================================
-         COMPLETED RUNS
-         ======================================================= -->
-    {% if show_runs %}
-      <section class="tab-panel" data-panel="runs">
-        <div class="card">
-          <h2>Completed Runs</h2>
-          <p class="muted">Coming soon.</p>
         </div>
       </section>
     {% endif %}
