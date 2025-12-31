@@ -103,7 +103,24 @@ layout: default
     {% endif %}
 
     {% if content and content != "" %}
-      {{ content }}
+      <!-- =========================================================
+           Completed Runs (paged)
+           ========================================================= -->
+      <div id="runs" class="list-paged" data-page-size="25">
+        <div class="list-controls">
+          <div class="muted" data-status></div>
+
+          <div class="pager">
+            <button type="button" class="btn" data-prev>Prev</button>
+            <span class="muted" data-page-label></span>
+            <button type="button" class="btn" data-next>Next</button>
+          </div>
+        </div>
+
+        <div class="list-items">
+          {{ content }}
+        </div>
+      </div>
     {% else %}
       <div class="card">
         <p class="muted">No runs have been added yet.</p>
