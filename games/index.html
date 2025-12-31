@@ -96,20 +96,20 @@ title: Games
   // =========================================================
   const items = Array.from(document.querySelectorAll(".game-item"));
   const input = document.getElementById("q");
-  
-    function focusEndOnWrap(inputEl) {
+
+  function focusEndOnWrap(inputEl) {
     const wrap = inputEl.closest(".filter-wrap");
     if (!wrap) return;
 
     wrap.addEventListener("pointerdown", (e) => {
-      if (e.target === wrap || e.target === inputEl) {
+      if (e.target !== inputEl) {
         e.preventDefault();
         inputEl.focus();
         const len = inputEl.value.length;
         inputEl.setSelectionRange(len, len);
       }
     });
-  }
+
 
   focusEndOnWrap(input);
 
