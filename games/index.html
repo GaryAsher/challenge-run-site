@@ -3,7 +3,7 @@ layout: default
 title: Games
 ---
 
-<h1>Games</h1>
+<h1>Games</h1>a
 <p class="muted">Jump by letter or filter by category.</p>
 
 <div class="az" id="az">
@@ -52,6 +52,31 @@ title: Games
   </p>
 </div>
 
+<div class="tag-filter" id="challenge-filter">
+  <div class="muted" style="margin-bottom: 0.35rem;">Filter by challenges:</div>
+
+  <div class="tag-picker">
+    <div class="tag-picked" id="challenge-picked"></div>
+
+    <div class="filter-wrap">
+      <input
+        id="challenge-search"
+        class="tag-search"
+        type="text"
+        placeholder="Type a challenge (ex: No-Hit) ..."
+        autocomplete="off"
+        aria-label="Filter games by challenges"
+      />
+    </div>
+
+    <div class="tag-suggestions" id="challenge-suggestions" hidden></div>
+  </div>
+
+  <p class="muted" style="margin: 0.4rem 0 0 0;">
+    Tip: click a selected challenge chip to remove it.
+  </p>
+</div>
+
 <div class="results-controls">
   <label class="muted" for="limit">Show:</label>
   <select id="limit" class="select">
@@ -74,6 +99,7 @@ title: Games
       href="{{ g.url | relative_url }}"
       data-name="{{ g.name | downcase }}"
       data-tags="{{ g.tags | join: ',' | downcase }}"
+      data-challenges="{{ g.challenges | join: ',' | downcase }}"
       aria-label="{{ g.name }}"
     >
       {% assign game_cover = g.cover | default: "/assets/img/site/default-game.jpg" %}
@@ -124,12 +150,23 @@ title: Games
   const sugEl = document.getElementById("tag-suggestions");
 
   focusEndOnWrap(searchEl);
+
+  // Challenge picker DOM
+  const challengeFilterEl = document.getElementById("challenge-filter");
+  const challengePickerEl = challengeFilterEl.querySelector(".tag-picker");
+  const challengePickedEl = document.getElementById("challenge-picked");
+  const challengeSearchEl = document.getElementById("challenge-search");
+  const challengeSugEl = document.getElementById("challenge-suggestions");
+
+  focusEndOnWrap(challengeSearchEl);
   
   // =========================================================
   // Data
   // =========================================================
   const activeTags = new Set();
+  const activeChallenges = new Set();
 
+  
   const TAGS = [
     {% for pair in site.data.tags %}
       {% assign id = pair[0] %}
