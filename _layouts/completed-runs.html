@@ -120,11 +120,7 @@ layout: default
       </div>
 
       <div id="runs-list">
-        {% if site.runs %}
-          {% assign runs = site.runs | where: "game_id", page.game_id | sort: "date" | reverse %}
-        {% else %}
-          {% assign runs = empty %}
-        {% endif %}
+        {% assign runs = site.data.runs | where: "game_id", page.game_id | sort: "date" | reverse %}
 
         {% if runs and runs.size > 0 %}
           {% for run in runs %}
