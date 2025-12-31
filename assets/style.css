@@ -406,6 +406,9 @@ a:hover {
   line-height: 1;
   color: var(--fg);
   text-decoration: none;
+
+  white-space: nowrap;
+
 }
 
 .runner-link:hover {
