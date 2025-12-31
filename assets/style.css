@@ -82,8 +82,8 @@ a:hover {
   display: grid;
   grid-template-columns: 1fr;
   gap: 0.6rem;
-  margin: 0;
-  max-width: 520px;
+  margin: 0 0 0.9rem 0;
+  width: 100%;
 }
 
 @media (min-width: 900px) {
@@ -190,6 +190,16 @@ a:hover {
   background: #0b0b0b;
   color: var(--fg);
   margin-left: 0.4rem;
+}
+
+.results-controls {
+  display: flex;
+  align-items: center;
+  margin: 0.25rem 0 0.5rem 0;
+}
+
+.results-controls .select {
+  caret-color: transparent;
 }
 
 /* ============================================================
