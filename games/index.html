@@ -263,27 +263,46 @@ title: Games
       `${count} shown of ${matches.length} matches (filter: ${bucketLabel}, ${tagLabel})`;
   }
 
-  // =========================================================
-  // Events
-  // =========================================================
-  searchEl.addEventListener("input", () => renderSuggestions(searchEl.value));
-  searchEl.addEventListener("focus", () => renderSuggestions(searchEl.value));
+// =========================================================
+// Events
+// =========================================================
 
-  // Don’t allow “dead space” clicks in the picker to start typing
-  pickerEl.addEventListener("pointerdown", (e) => {
-    const clickedInput = (e.target === searchEl);
-    const clickedSuggestions = sugEl.contains(e.target);
-    if (!clickedInput && !clickedSuggestions) e.preventDefault();
-  });
+searchEl.addEventListener("input", () => renderSuggestions(searchEl.value));
 
-  // Close suggestions when clicking outside
-  document.addEventListener("pointerdown", (e) => {
-    if (!tagFilterEl.contains(e.target)) closeSuggestions();
-  }, true);
+searchEl.addEventListener("pointerdown", (e) => {
+  if (!sugEl.hidden) {
+    e.preventDefault();
+    closeSuggestions();
+    searchEl.blur();
+  }
+});
 
-  window.addEventListener("hashchange", applyFilter);
-  input.addEventListener("input", applyFilter);
-  limitSelect.addEventListener("change", applyFilter);
+searchEl.addEventListener("focus", () => {
+  if (sugEl.hidden) renderSuggestions(searchEl.value);
+});
+
+pickerEl.addEventListener("pointerdown", (e) => {
+  const clickedInput = (e.target === searchEl);
+  const clickedSuggestions = sugEl.contains(e.target);
+  if (!clickedInput && !clickedSuggestions) e.preventDefault();
+});
+
+// Close suggestions when clicking outside
+document.addEventListener("pointerdown", (e) => {
+  if (!tagFilterEl.contains(e.target)) closeSuggestions();
+}, true);
+
+// Close suggestions on Escape
+searchEl.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    closeSuggestions();
+    searchEl.blur();
+  }
+});
+
+window.addEventListener("hashchange", applyFilter);
+input.addEventListener("input", applyFilter);
+limitSelect.addEventListener("change", applyFilter);
 
   // =========================================================
   // Init
