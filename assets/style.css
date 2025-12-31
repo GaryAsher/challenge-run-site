@@ -401,6 +401,28 @@ a:hover {
   opacity: 0.9;
 }
 
+.runner-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  line-height: 1;
+}
+
+.runner-link .icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  display: inline-block;
+  vertical-align: middle;
+
+  transform: translateY(0.5px);
+}
+
+.runner-link span {
+  display: inline-block;
+  line-height: 1;
+}
+
 /* ============================================================
    Runner Tabs + Panels
    ============================================================ */
