@@ -412,6 +412,7 @@ a:hover {
 
 .runner-link:hover {
   opacity: 0.9;
+  text-decoration: none;
 }
 
 /* ============================================================
@@ -423,9 +424,8 @@ a:hover {
   flex: 0 0 16px;
   display: inline-block;
   vertical-align: middle;
-
-  /* small optical nudge so icons look level */
   transform: translateY(0.5px);
+  fill: currentColor;
 }
 
 .runner-link span {
@@ -486,14 +486,28 @@ a:hover {
   outline-offset: 2px;
 }
 
+/* ============================================================
+   Runner Tab Panels (boxed content areas)
+   ============================================================ */
 .tab-panel {
-   display: none;
-   min-height: 40vh;
-   overflow-y: auto;
+  display: none;
+
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #0b0b0b;
+
+  padding: 1rem;
+  margin-top: 1rem;
+
+  min-height: 40vh;
+  overflow-y: auto;
 }
 
 .tab-panel.active {
   display: block;
+
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(59, 195, 110, 0.35);
 }
 
 /* ============================================================
