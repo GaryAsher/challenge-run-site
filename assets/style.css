@@ -890,6 +890,21 @@ a:hover {
   white-space: nowrap;
 }
 
+.list-controls--bottom {
+  justify-content: center;
+}
+
+.list-controls--bottom [data-status] {
+  display: none;
+}
+
+.page-numbers {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 /* ============================================================
    Responsive scale tweaks
    ============================================================ */
