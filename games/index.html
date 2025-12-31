@@ -31,6 +31,14 @@ title: Games
   autocomplete="off"
 >
 
+<div class="tag-filter" id="tag-filter">
+  {% for pair in site.data.tags %}
+    {% assign id = pair[0] %}
+    {% assign meta = pair[1] %}
+    <button type="button" class="tag-btn" data-tag="{{ id }}">{{ meta.label }}</button>
+  {% endfor %}
+</div>
+
 <div class="results-controls">
   <label class="muted" for="limit">Show:</label>
   <select id="limit" class="select">
