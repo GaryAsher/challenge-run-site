@@ -166,15 +166,22 @@ title: Games
   const activeTags = new Set();
   const activeChallenges = new Set();
 
-  
   const TAGS = [
     {% for pair in site.data.tags %}
       {% assign id = pair[0] %}
       {% assign meta = pair[1] %}
       { id: "{{ id | escape }}", label: "{{ meta.label | escape }}" }{% unless forloop.last %},{% endunless %}
     {% endfor %}
-  ];
+  ].sort((a, b) => (a.label.localeCompare(b.label) || a.id.localeCompare(b.id)));
 
+  const CHALLENGES = [
+    {% for pair in site.data.challenges %}
+      {% assign id = pair[0] %}
+      {% assign meta = pair[1] %}
+      { id: "{{ id | escape }}", label: "{{ meta.label | escape }}" }{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ].sort((a, b) => (a.label.localeCompare(b.label) || a.id.localeCompare(b.id)));
+  
   function norm(s) {
     return (s || "").trim().toLowerCase();
   }
