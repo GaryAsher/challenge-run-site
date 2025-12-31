@@ -10,13 +10,7 @@
     const btnNext = root.querySelector("[data-next]");
     const statusEl = root.querySelector("[data-status]");
     const pageLabelEl = root.querySelector("[data-page-label]");
-
-    if (items.length === 0) {
-      if (statusEl) statusEl.textContent = "No results.";
-      if (btnPrev) btnPrev.disabled = true;
-      if (btnNext) btnNext.disabled = true;
-      return;
-    }
+    const pagesWrap = root.querySelector("[data-pages]");
 
     // If you have multiple lists on one page, give each wrapper an id.
     // Otherwise they’ll share the same ?page= param.
@@ -49,36 +43,68 @@
       if (statusEl) {
         const shownStart = total === 0 ? 0 : start + 1;
         const shownEnd = Math.min(end, total);
-        statusEl.textContent = `Showing ${shownStart}-${shownEnd} of ${total}`;
+        statusEl.textContent = `Page ${safePage} of ${totalPages} • Showing ${shownStart}–${shownEnd} of ${total}`;
       }
-
-      if (pageLabelEl) pageLabelEl.textContent = `Page ${safePage} / ${totalPages}`;
 
       if (btnPrev) btnPrev.disabled = safePage <= 1;
       if (btnNext) btnNext.disabled = safePage >= totalPages;
+
+      if (pageLabelEl) pageLabelEl.textContent = `Page ${safePage} / ${totalPages}`;
+
+      // Render numbered pages
+      if (pagesWrap) {
+        pagesWrap.innerHTML = "";
+
+        for (let p = 1; p <= totalPages; p++) {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "btn page-btn";
+          b.textContent = String(p);
+
+          if (p === safePage) {
+            b.disabled = true;
+            b.classList.add("is-current");
+          }
+
+          b.addEventListener("click", () => {
+            render(p);
+            root.scrollIntoView({ behavior: "smooth", block: "start" });
+          });
+
+          pagesWrap.appendChild(b);
+        }
+      }
 
       setPageInUrl(safePage);
       root.setAttribute("data-page", String(safePage));
     }
 
-    const initialPage = getPageFromUrl();
-    render(initialPage);
+    if (items.length === 0) {
+      if (statusEl) statusEl.textContent = "No results.";
+      if (btnPrev) btnPrev.disabled = true;
+      if (btnNext) btnNext.disabled = true;
+      if (pagesWrap) pagesWrap.innerHTML = "";
+      return;
+    }
 
+    // Wire buttons
     if (btnPrev) {
       btnPrev.addEventListener("click", () => {
-        const cur = parseInt(root.getAttribute("data-page") || "1", 10);
-        render(cur - 1);
+        render(getPageFromUrl() - 1);
         root.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     }
 
     if (btnNext) {
       btnNext.addEventListener("click", () => {
-        const cur = parseInt(root.getAttribute("data-page") || "1", 10);
-        render(cur + 1);
+        render(getPageFromUrl() + 1);
         root.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     }
+
+    render(getPageFromUrl());
+
+    window.addEventListener("popstate", () => render(getPageFromUrl()));
   }
 
   document.addEventListener("DOMContentLoaded", () => {
