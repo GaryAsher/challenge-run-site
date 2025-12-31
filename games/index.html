@@ -51,12 +51,13 @@ title: Games
 <div class="grid" id="game-list">
   {% assign sorted = site.games | sort: "name" %}
   {% for g in sorted %}
-    <a
-      class="game-card game-item"
-      href="{{ g.url | relative_url }}"
-      data-name="{{ g.name | downcase }}"
-      aria-label="{{ g.name }}"
-    >
+<a
+  class="game-card game-item"
+  href="{{ g.url | relative_url }}"
+  data-name="{{ g.name | downcase }}"
+  data-tags="{{ g.tags | join: ',' }}"
+  aria-label="{{ g.name }}"
+>
       {% assign game_cover = g.cover | default: "/assets/img/site/default-game.jpg" %}
 
       <div
