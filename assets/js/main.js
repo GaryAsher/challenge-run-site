@@ -15,6 +15,7 @@
     // If you have multiple lists on one page, give each wrapper an id.
     // Otherwise they’ll share the same ?page= param.
     const paramKey = root.id ? `${root.id}-page` : "page";
+    let currentPage = 1;
 
     function getPageFromUrl() {
       const url = new URL(window.location.href);
@@ -32,6 +33,7 @@
       const total = items.length;
       const totalPages = Math.max(1, Math.ceil(total / pageSize));
       const safePage = Math.min(Math.max(1, page), totalPages);
+      currentPage = safePage;
 
       const start = (safePage - 1) * pageSize;
       const end = start + pageSize;
@@ -90,14 +92,14 @@
     // Wire buttons
     if (btnPrev) {
       btnPrev.addEventListener("click", () => {
-        render(getPageFromUrl() - 1);
+        render(currentPage - 1);
         root.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     }
 
     if (btnNext) {
       btnNext.addEventListener("click", () => {
-        render(getPageFromUrl() + 1);
+        render(currentPage + 1);
         root.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     }
