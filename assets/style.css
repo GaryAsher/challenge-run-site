@@ -349,7 +349,7 @@ select:focus-visible {
   width: 100%;
   display: flex;
   align-items: center;
-  min-height: 36px;
+  min-height: 32px;
 
   text-align: left;
 
@@ -431,6 +431,8 @@ select:focus-visible {
     -webkit-overflow-scrolling: touch;
 
     padding-bottom: 0.35rem;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
     margin-bottom: 1rem;
 
     scrollbar-width: none;
