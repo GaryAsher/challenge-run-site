@@ -318,8 +318,9 @@ layout: default
 
   tabs.forEach(t => {
     t.addEventListener("click", () => {
-    setActive(t.dataset.tab);
-    history.replaceState(null, "", "#" + t.dataset.tab);
+      setActive(t.dataset.tab);
+      history.replaceState(null, "", "#" + t.dataset.tab);
+    });
   });
 
   const hash = location.hash.slice(1);
