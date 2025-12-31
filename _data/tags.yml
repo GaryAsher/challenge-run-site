@@ -17,8 +17,6 @@ dungeon-crawler:
 # F
 
 # G
-greek-mythology:
-  label: Greek Mythology
 
 # H
 hack-and-slash:
@@ -35,7 +33,9 @@ hack-and-slash:
 # M
 metroidvania:
   label: Metroidvania
-
+mythology:
+  label: Mythology
+  
 # N
 
 # O
