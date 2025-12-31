@@ -57,7 +57,7 @@ layout: default
           {% for gid in page.games %}
             {% assign g = site.games | where: "game_id", gid | first %}
             {% if g %}
-              <a href="{{ g.url }}" class="game-card">
+              <a href="{{ g.url | relative_url }}" class="game-card">
                 <div class="game-card__bg" style="background-image: url('{{ g.cover | relative_url }}');"></div>
                 <div class="game-card__overlay">
                   <div class="game-card__title">{{ g.name }}</div>
