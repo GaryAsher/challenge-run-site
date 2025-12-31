@@ -563,7 +563,7 @@ a:hover {
   .game-hero::before {
     content: "";
     display: block;
-    padding-top: 56.25%;
+    padding-top: 50%;
   }
 
   .game-hero__overlay {
