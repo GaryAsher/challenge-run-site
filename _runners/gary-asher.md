@@ -1,5 +1,5 @@
 ---
-layout: runners
+layout: runner
 runner_id: gary-asher
 name: Gary_Asher
 cover: /assets/img/runners/g/gary-asher.png
