@@ -3,15 +3,9 @@ layout: default
 title: Games
 ---
 
-<!-- =========================================================
-     Page header
-     ========================================================= -->
 <h1>Games</h1>
 <p class="muted">Jump by letter or filter by category.</p>
 
-<!-- =========================================================
-     A–Z navigation (hash-based filtering)
-     ========================================================= -->
 <div class="az" id="az">
   <a href="#0-9">#</a>
 
@@ -29,12 +23,10 @@ title: Games
   class="filter"
   placeholder="Search within results..."
   autocomplete="off"
->
+/>
 
 <div class="tag-filter" id="tag-filter">
-  <label class="muted" for="tag-search" style="display:block; margin-bottom: 0.35rem;">
-    Filter by tags:
-  </label>
+  <div class="muted" style="margin-bottom: 0.35rem;">Filter by tags:</div>
 
   <div class="tag-picker">
     <div class="tag-picked" id="tag-picked"></div>
@@ -45,6 +37,7 @@ title: Games
       type="text"
       placeholder="Type a tag (ex: Roguelike) ..."
       autocomplete="off"
+      aria-label="Filter games by tags"
     />
 
     <div class="tag-suggestions" id="tag-suggestions" hidden></div>
@@ -54,7 +47,6 @@ title: Games
     Tip: click a selected tag chip to remove it.
   </p>
 </div>
-
 
 <div class="results-controls">
   <label class="muted" for="limit">Show:</label>
@@ -70,20 +62,16 @@ title: Games
 
 <p class="muted" id="status"></p>
 
-<!-- =========================================================
-     Game grid
-     ========================================================= -->
 <div class="grid" id="game-list">
   {% assign sorted = site.games | sort: "name" %}
   {% for g in sorted %}
-<a
-  class="game-card game-item"
-  href="{{ g.url | relative_url }}"
-  data-name="{{ g.name | downcase }}"
-  data-tags="{{ g.tags | join: ',' | downcase }}"
-  aria-label="{{ g.name }}"
->
-     
+    <a
+      class="game-card game-item"
+      href="{{ g.url | relative_url }}"
+      data-name="{{ g.name | downcase }}"
+      data-tags="{{ g.tags | join: ',' | downcase }}"
+      aria-label="{{ g.name }}"
+    >
       {% assign game_cover = g.cover | default: "/assets/img/site/default-game.jpg" %}
 
       <div
@@ -98,23 +86,27 @@ title: Games
   {% endfor %}
 </div>
 
-<!-- =========================================================
-     Client-side filtering logic
-     ========================================================= -->
 <script>
+  // =========================================================
+  // DOM
+  // =========================================================
   const items = Array.from(document.querySelectorAll(".game-item"));
   const input = document.getElementById("q");
   const status = document.getElementById("status");
   const limitSelect = document.getElementById("limit");
 
-  // Tag picker (searchable)
-  const activeTags = new Set();
-
+  // Tag picker DOM
+  const tagFilterEl = document.getElementById("tag-filter");
+  const pickerEl = document.querySelector(".tag-picker");
   const pickedEl = document.getElementById("tag-picked");
   const searchEl = document.getElementById("tag-search");
   const sugEl = document.getElementById("tag-suggestions");
 
-  // Build tag list from _data/tags.yml
+  // =========================================================
+  // Data
+  // =========================================================
+  const activeTags = new Set();
+
   const TAGS = [
     {% for pair in site.data.tags %}
       {% assign id = pair[0] %}
@@ -123,31 +115,13 @@ title: Games
     {% endfor %}
   ];
 
-  function renderPicked() {
-    pickedEl.innerHTML = "";
-
-    for (const id of activeTags) {
-      const meta = TAGS.find(t => t.id.toLowerCase() === id);
-      const label = meta ? meta.label : id;
-
-      const chip = document.createElement("button");
-      chip.type = "button";
-      chip.className = "tag-chip";
-      chip.textContent = label;
-      chip.setAttribute("data-tag", id);
-
-      chip.addEventListener("click", () => {
-        activeTags.delete(id);
-        renderPicked();
-        applyFilter();
-      });
-
-      pickedEl.appendChild(chip);
-    }
-
-    pickedEl.classList.toggle("is-empty", activeTags.size === 0);
+  function norm(s) {
+    return (s || "").trim().toLowerCase();
   }
 
+  // =========================================================
+  // Suggestions UI
+  // =========================================================
   function openSuggestions() {
     sugEl.hidden = false;
   }
@@ -156,19 +130,44 @@ title: Games
     sugEl.hidden = true;
   }
 
+  function renderPicked() {
+    pickedEl.innerHTML = "";
+
+    for (const id of activeTags) {
+      const meta = TAGS.find(t => norm(t.id) === id);
+      const label = meta ? meta.label : id;
+
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "tag-chip";
+      chip.textContent = label;
+
+      chip.addEventListener("click", () => {
+        activeTags.delete(id);
+        renderPicked();
+        applyFilter();
+        renderSuggestions(searchEl.value);
+      });
+
+      pickedEl.appendChild(chip);
+    }
+
+    pickedEl.classList.toggle("is-empty", activeTags.size === 0);
+  }
+
   function renderSuggestions(query) {
-    const q = (query || "").trim().toLowerCase();
+    const q = norm(query);
     sugEl.innerHTML = "";
 
     const results = TAGS
       .filter(t => {
-        const id = t.id.toLowerCase();
-        const label = t.label.toLowerCase();
+        const id = norm(t.id);
+        const label = norm(t.label);
         if (activeTags.has(id)) return false;
         if (!q) return true;
         return id.includes(q) || label.includes(q);
       })
-      .slice(0, 24); // keep list short
+      .slice(0, 24);
 
     if (results.length === 0) {
       const empty = document.createElement("div");
@@ -183,16 +182,17 @@ title: Games
       const row = document.createElement("button");
       row.type = "button";
       row.className = "tag-suggestion";
-      row.setAttribute("data-tag", t.id.toLowerCase());
       row.textContent = t.label;
 
       row.addEventListener("click", () => {
-        activeTags.add(t.id.toLowerCase());
+        activeTags.add(norm(t.id));
         searchEl.value = "";
         renderPicked();
-        closeSuggestions();
         applyFilter();
+
+        // Immediately allow selecting another tag
         searchEl.focus();
+        renderSuggestions("");
       });
 
       sugEl.appendChild(row);
@@ -201,24 +201,9 @@ title: Games
     openSuggestions();
   }
 
-  // Input behavior
-  searchEl.addEventListener("input", () => {
-    renderSuggestions(searchEl.value);
-  });
-
-  searchEl.addEventListener("focus", () => {
-    renderSuggestions(searchEl.value);
-  });
-
-  // Close suggestions when clicking outside
-  document.addEventListener("click", (e) => {
-    const within = document.getElementById("tag-filter").contains(e.target);
-    if (!within) closeSuggestions();
-  });
-
-  // Initial render
-  renderPicked();
-
+  // =========================================================
+  // Game filtering
+  // =========================================================
   function classifyFirstChar(ch) {
     if (!ch) return "other";
     const upper = ch.toUpperCase();
@@ -234,39 +219,36 @@ title: Games
 
   function applyFilter() {
     const bucket = ((location.hash || "#all").slice(1)) || "all";
-    const q = input.value.trim().toLowerCase();
+    const q = norm(input.value);
     const limit = Number(limitSelect.value);
 
     const matches = [];
 
-    for (const li of items) {
-      const name = li.dataset.name || "";
-      const group = classifyFirstChar(getFirstChar(li));
+    for (const el of items) {
+      const name = el.dataset.name || "";
+      const group = classifyFirstChar(getFirstChar(el));
 
-      const tags = (li.dataset.tags || "")
-        .toLowerCase()
+      const tags = (el.dataset.tags || "")
         .split(",")
-        .map(s => s.trim())
+        .map(s => norm(s))
         .filter(Boolean);
 
       const matchesTags =
         activeTags.size === 0 ||
         Array.from(activeTags).every(t => tags.includes(t));
 
-      if ((bucket === "all" || bucket === group) && (!q || name.includes(q)) && matchesTags) {
-        matches.push(li);
+      const matchesBucket = (bucket === "all" || bucket === group);
+      const matchesQuery = (!q || name.includes(q));
+
+      if (matchesBucket && matchesQuery && matchesTags) {
+        matches.push(el);
       }
     }
 
-    for (const li of items) li.style.display = "none";
+    for (const el of items) el.style.display = "none";
 
-    const count = limit === 0
-      ? matches.length
-      : Math.min(limit, matches.length);
-
-    for (let i = 0; i < count; i++) {
-      matches[i].style.display = "";
-    }
+    const count = limit === 0 ? matches.length : Math.min(limit, matches.length);
+    for (let i = 0; i < count; i++) matches[i].style.display = "";
 
     const bucketLabel =
       bucket === "all" ? "All" :
@@ -275,18 +257,37 @@ title: Games
       bucket;
 
     const tagLabel =
-      activeTags.size === 0
-        ? "Any tag"
-        : `Tags: ${Array.from(activeTags).join(", ")}`;
+      activeTags.size === 0 ? "Any tag" : `Tags: ${Array.from(activeTags).join(", ")}`;
 
     status.textContent =
       `${count} shown of ${matches.length} matches (filter: ${bucketLabel}, ${tagLabel})`;
   }
 
-  // Event wiring
+  // =========================================================
+  // Events
+  // =========================================================
+  searchEl.addEventListener("input", () => renderSuggestions(searchEl.value));
+  searchEl.addEventListener("focus", () => renderSuggestions(searchEl.value));
+
+  // Don’t allow “dead space” clicks in the picker to start typing
+  pickerEl.addEventListener("pointerdown", (e) => {
+    const clickedInput = (e.target === searchEl);
+    const clickedSuggestions = sugEl.contains(e.target);
+    if (!clickedInput && !clickedSuggestions) e.preventDefault();
+  });
+
+  // Close suggestions when clicking outside
+  document.addEventListener("pointerdown", (e) => {
+    if (!tagFilterEl.contains(e.target)) closeSuggestions();
+  }, true);
+
   window.addEventListener("hashchange", applyFilter);
   input.addEventListener("input", applyFilter);
   limitSelect.addEventListener("change", applyFilter);
 
+  // =========================================================
+  // Init
+  // =========================================================
+  renderPicked();
   applyFilter();
 </script>
