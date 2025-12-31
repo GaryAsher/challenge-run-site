@@ -1,1 +1,0 @@
-layout: game-runs-completed
