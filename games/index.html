@@ -255,6 +255,7 @@ function wireDropdown({ filterEl, searchEl, sugEl, set, list, pickedEl }) {
 
   searchEl.addEventListener("pointerdown", () => {
     if (sugEl.hidden) open();
+    else close();
   });
 
   searchEl.addEventListener("input", () => open());
@@ -301,3 +302,4 @@ input.addEventListener("input", applyFilter);
 limitSelect.addEventListener("change", applyFilter);
 
 applyFilter();
+</script>
