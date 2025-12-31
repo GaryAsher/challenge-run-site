@@ -124,10 +124,16 @@ layout: default
 
         {% if runs and runs.size > 0 %}
           {% for run in runs %}
-            <article class="run-item" style="padding: 0.9rem 0; border-top: 1px solid var(--border);">
+            <article
+              class="run-item"
+              style="padding: 0.9rem 0; border-top: 1px solid var(--border);"
+            >
               <div class="muted" style="margin-bottom: 0.25rem;">
                 {% if run.date %}{{ run.date }}{% endif %}
-                {% if run.platform %}{% if run.date %} • {% endif %}{{ run.platform }}{% endif %}
+                {% if run.platform %}
+                  {% if run.date %} • {% endif %}
+                  {{ run.platform }}
+                {% endif %}
               </div>
 
               <h3 style="margin: 0 0 0.35rem 0;">
@@ -135,13 +141,20 @@ layout: default
               </h3>
 
               <p class="muted" style="margin: 0 0 0.5rem 0;">
-                {% if run.runner_id %}
+                {% if run.runner_name %}
+                  Runner:
+                  {% if run.runner_id %}
+                    <a href="{{ '/runners/' | relative_url }}{{ run.runner_id | slugify }}/">
+                      {{ run.runner_name }}
+                    </a>
+                  {% else %}
+                    {{ run.runner_name }}
+                  {% endif %}
+                {% elsif run.runner_id %}
                   Runner:
                   <a href="{{ '/runners/' | relative_url }}{{ run.runner_id | slugify }}/">
-                    {{ run.runner_name | default: run.runner_id }}
+                    {{ run.runner_id | replace: "-", " " | capitalize }}
                   </a>
-                {% elsif run.runner_name %}
-                  Runner: {{ run.runner_name }}
                 {% endif %}
 
                 {% if run.category %}
@@ -166,7 +179,11 @@ layout: default
         {% endif %}
       </div>
 
-      <div class="pager" id="runs-pager" style="display:none; margin-top: 0.75rem;">
+      <div
+        class="pager"
+        id="runs-pager"
+        style="display:none; margin-top: 0.75rem;"
+      >
         <button class="btn" id="runs-prev" type="button">Prev</button>
         <span class="muted" id="runs-page" style="padding: 0 0.5rem;"></span>
         <button class="btn" id="runs-next" type="button">Next</button>
