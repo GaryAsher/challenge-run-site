@@ -17,6 +17,7 @@ challenges:
   - nhnd
 
 categories:
+  - Chaos Trials
   - Underworld Any%
   - Surface Any%
   - Underworld VoR4
