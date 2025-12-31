@@ -251,23 +251,8 @@ a:hover {
 /* ============================================================
    Tag Picker: Click targets + consistency
    ============================================================ */
-
-.tag-chip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 32px;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.tag-suggestion {
-  display: flex;
-  align-items: center;
-  min-height: 36px;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
+.tag-chip { min-height: 32px; user-select: none; -webkit-tap-highlight-color: transparent; }
+.tag-suggestion { min-height: 36px; user-select: none; -webkit-tap-highlight-color: transparent; }
 
 .tag-chip:focus-visible,
 .tag-suggestion:focus-visible {
