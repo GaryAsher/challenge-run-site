@@ -90,7 +90,7 @@ layout: default
     {% endif %}
 
     {% if show_runs %}
-      <button class="tab" type="button" data-tab="runs">Completed Runs</button>
+      <a class="tab" href="{{ page.url | relative_url }}completed-runs/">Completed Runs</a>
     {% endif %}
 
     {% if show_resources %}
@@ -314,7 +314,7 @@ layout: default
   const root = document.getElementById("game-tabs");
   if (!root) return;
 
-  const tabs = Array.from(root.querySelectorAll('button.tab[data-tab]'));
+  const tabs = Array.from(root.querySelectorAll('[data-tab].tab'));
   const wrap = root.nextElementSibling;
   const panels = wrap ? Array.from(wrap.querySelectorAll(".tab-panel")) : [];
 
