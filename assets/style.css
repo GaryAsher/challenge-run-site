@@ -7,10 +7,33 @@
   --fg: #ffffff;
   --border: rgba(255, 255, 255, 0.12);
   --panel: rgba(255, 255, 255, 0.04);
-  --page-max: 960px;
 
   --bg-soft: rgba(255, 255, 255, 0.06);
   --text-muted: rgba(255, 255, 255, 0.78);
+
+  /* ============================================================
+     Responsive layout scale (desktop default)
+     ============================================================ */
+  --page-max: 960px;
+  --gutter: 1.5rem;
+  --section-pad-y: 3rem;
+
+  --radius-sm: 10px;
+  --radius-md: 12px;
+  --radius-lg: 14px;
+  --radius-xl: 16px;
+
+  --space-1: 0.35rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+
+  /* Touch targets */
+  --tap: 36px;
+  --az-size: 36px;
+  --az-gap: 0.35rem;
 }
 
 /* ============================================================
@@ -68,7 +91,7 @@ a:hover {
    Layout Containers
    ============================================================ */
 .container {
-  padding: 3rem 1.5rem;
+  padding: var(--section-pad-y) var(--gutter);
   max-width: var(--page-max);
   margin: 0 auto;
 }
@@ -76,7 +99,7 @@ a:hover {
 .page-width {
   max-width: var(--page-max);
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 var(--gutter);
 }
 
 .page-back {
@@ -145,9 +168,14 @@ a:hover {
 }
 
 .nav a {
-  padding: 0.35rem 0.6rem;
+  display: inline-flex;
+  align-items: center;
+
+  min-height: var(--tap);
+  padding: 0.35rem 0.65rem;
+
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
 }
 
 /* ============================================================
@@ -166,9 +194,10 @@ a:hover {
 
 .card {
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1rem;
-  margin: 1rem 0;
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin: var(--space-4) 0;
+  background: #0b0b0b;
 }
 
 /* ============================================================
@@ -178,11 +207,14 @@ a:hover {
   width: 100%;
   max-width: 520px;
   padding: 0.6rem 0.75rem;
-  margin: 0.75rem 0 1rem 0;
-  border-radius: 12px;
+  margin: var(--space-3) 0 var(--space-4) 0;
+
+  border-radius: var(--radius-md);
   border: 1px solid var(--border);
   background: #0b0b0b;
   color: var(--fg);
+
+  min-height: var(--tap);
 }
 
 .filter::placeholder {
@@ -204,11 +236,14 @@ a:hover {
 }
 
 .select {
+  min-height: var(--tap);
   padding: 0.45rem 0.6rem;
-  border-radius: 10px;
+
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: #0b0b0b;
   color: var(--fg);
+
   margin-left: 0.4rem;
 }
 
@@ -236,7 +271,7 @@ select:focus-visible {
 
 .filters-grid .tag-filter {
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: #0b0b0b;
   padding: 0.75rem;
 }
@@ -244,7 +279,7 @@ select:focus-visible {
 .tag-picker {
   position: relative;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: #0b0b0b;
   padding: 0.6rem;
   cursor: default;
@@ -267,7 +302,7 @@ select:focus-visible {
   font: inherit;
   font-size: 0.85rem;
 
-  min-height: 32px;
+  min-height: var(--tap);
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
@@ -279,7 +314,7 @@ select:focus-visible {
 .tag-search {
   width: 100%;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   padding: 0.55rem 0.65rem;
   padding-right: 0.65rem;
   background: transparent;
@@ -299,7 +334,7 @@ select:focus-visible {
   z-index: 60;
 
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: #0b0b0b;
 
   max-height: 260px;
@@ -322,7 +357,7 @@ select:focus-visible {
   color: var(--text-muted);
 
   padding: 0.5rem 0.6rem;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
 
   cursor: pointer;
   font: inherit;
@@ -360,19 +395,32 @@ select:focus-visible {
 .az {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem;
+  gap: var(--az-gap);
   margin-bottom: 1.25rem;
 }
 
+
 .az a {
-  padding: 0.2rem 0.45rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: var(--az-size);
+  height: var(--az-size);
+
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
+
   font-size: 0.9rem;
+  line-height: 1;
+
   background: #0b0b0b;
   color: var(--accent);
-  display: inline-block;
+
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
+
 
 .list {
   padding-left: 1.2rem;
@@ -405,7 +453,7 @@ select:focus-visible {
 .game-hero {
   position: relative;
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   overflow: hidden;
   margin: 0 0 1.25rem 0;
   min-height: 260px;
@@ -460,7 +508,7 @@ select:focus-visible {
   display: block;
   min-height: 140px;
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
   background: #111;
   text-decoration: none;
@@ -513,7 +561,7 @@ select:focus-visible {
   display: block;
   min-height: 140px;
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   background: #111;
   overflow: hidden;
   text-decoration: none;
@@ -572,7 +620,7 @@ select:focus-visible {
 .runner-left,
 .runner-right {
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   background: #0b0b0b;
   padding: 0.9rem;
 }
@@ -594,7 +642,7 @@ select:focus-visible {
 .runner-avatar {
   width: 96px;
   height: 96px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border);
   background-color: #111;
   background-size: cover;
@@ -631,7 +679,7 @@ select:focus-visible {
   gap: 0.45rem;
 
   padding: 0.35rem 0.65rem;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: transparent;
 
@@ -691,8 +739,8 @@ select:focus-visible {
   border: 1px solid var(--border);
   border-bottom: none;
 
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
 
   background: transparent;
   color: rgba(255, 255, 255, 0.75);
@@ -738,7 +786,7 @@ select:focus-visible {
   display: none;
 
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
 
   background: #0b0b0b;
   padding: 1rem;
@@ -754,9 +802,42 @@ select:focus-visible {
 }
 
 /* ============================================================
-   Responsive
+   Responsive scale tweaks
    ============================================================ */
+
+/* Tablet and down */
+@media (max-width: 900px) {
+  :root {
+    --page-max: 860px;
+    --gutter: 1.25rem;
+    --section-pad-y: 2.25rem;
+
+    --tap: 40px;
+    --az-size: 40px;
+    --az-gap: 0.4rem;
+  }
+
+  .filters-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile */
 @media (max-width: 640px) {
+  :root {
+    --gutter: 1rem;
+    --section-pad-y: 1.75rem;
+
+    --tap: 44px;
+    --az-size: 44px;
+    --az-gap: 0.45rem;
+  }
+
+  .nav {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
   .runner-tabs {
     flex-wrap: wrap;
   }
@@ -772,5 +853,13 @@ select:focus-visible {
 
   .runner-links {
     justify-content: flex-start;
+  }
+}
+
+/* Wide desktop */
+@media (min-width: 1200px) {
+  :root {
+    --page-max: 1100px;
+    --gutter: 2rem;
   }
 }
