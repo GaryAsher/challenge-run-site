@@ -235,7 +235,7 @@ layout: default
   const root = document.getElementById("game-tabs");
   if (!root) return;
 
-  const tabs = Array.from(root.querySelectorAll(".tab"));
+  const tabs = Array.from(root.querySelectorAll('button.tab[data-tab]'));
   const wrap = root.nextElementSibling;
   const panels = wrap ? Array.from(wrap.querySelectorAll(".tab-panel")) : [];
 
