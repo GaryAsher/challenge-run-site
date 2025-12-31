@@ -1,7 +1,7 @@
 ---
 layout: runners
 runner_id: gary-asher
-name: Gary Asher
+name: Gary_Asher
 cover: /assets/img/runners/g/gary-asher.png
 cover_position: center
 twitch: https://www.twitch.tv/gary_asher
