@@ -99,7 +99,7 @@ title: Games
       href="{{ g.url | relative_url }}"
       data-name="{{ g.name | downcase }}"
       data-tags="{{ g.tags | join: ',' | downcase }}"
-      data-challenges="{{ g.challenges | join: ',' | downcase }}"
+      data-challenges="{{ g.challenges | default: empty | join: ',' | downcase }}"
       aria-label="{{ g.name }}"
     >
       {% assign game_cover = g.cover | default: "/assets/img/site/default-game.jpg" %}
