@@ -12,9 +12,9 @@ tags:
 cover: /assets/img/games/h/hades-2.jpg
 cover_position: center
 challenges:
-  - No-Hit
-  - No-Damage
-  - No-Hit No-Damage (NHND)
+  - no-hit
+  - no-damage
+  - nhnd
 
 categories:
   - Underworld Any%
