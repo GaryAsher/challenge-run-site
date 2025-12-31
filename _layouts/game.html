@@ -69,12 +69,13 @@ layout: default
 <div class="container">
 
   <!-- Challenges list -->
-  {% if page.challenges %}
+  {% if page.challenges and page.challenges.size > 0 %}
     <div class="card">
       <h2>Challenges</h2>
       <ul>
         {% for x in page.challenges %}
-          <li>{{ x }}</li>
+          {% assign meta = site.data.challenges[x] %}
+          <li>{{ meta.label | default: x }}</li>
         {% endfor %}
       </ul>
     </div>
