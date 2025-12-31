@@ -213,9 +213,8 @@ title: Games
         renderPicked();
         applyFilter();
 
-        // Immediately allow selecting another tag
-        searchEl.focus();
-        renderSuggestions("");
+        closeSuggestions();
+        searchEl.blur();
       });
 
       sugEl.appendChild(row);
