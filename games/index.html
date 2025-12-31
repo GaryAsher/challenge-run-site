@@ -117,6 +117,7 @@ title: Games
         class="game-card game-item"
         href="{{ g.url | relative_url }}"
         data-name="{{ g.name | downcase }}"
+        data-letter="{{ g.name | strip | slice: 0, 1 | upcase }}"
         data-tags="{{ g.tags | join: ',' | downcase }}"
         data-challenges="{{ g.challenges | default: empty | join: ',' | downcase }}"
       >
@@ -253,12 +254,26 @@ function applyFilter() {
   const limit = Number(limitSelect.value);
   const matches = [];
 
+  const rawHash = (location.hash || "").replace("#", "").toUpperCase();
+  const hashMode = rawHash && rawHash !== "ALL" ? rawHash : "";
+
   for (const el of items) {
     const name = el.dataset.name || "";
     const tags = (el.dataset.tags || "").split(",").map(norm).filter(Boolean);
     const challenges = (el.dataset.challenges || "").split(",").map(norm).filter(Boolean);
 
+    const letter = (el.dataset.letter || "").toUpperCase();
+    const startsWithDigit = letter >= "0" && letter <= "9";
+    const startsWithAtoZ = letter >= "A" && letter <= "Z";
+
+    const okHash =
+      !hashMode ||
+      (hashMode === "0-9" && startsWithDigit) ||
+      (hashMode === "OTHER" && !startsWithDigit && !startsWithAtoZ) ||
+      (hashMode.length === 1 && letter === hashMode);
+       
     const ok =
+      okHash &&
       (!q || name.includes(q)) &&
       Array.from(activeTags).every(t => tags.includes(t)) &&
       Array.from(activeChallenges).every(c => challenges.includes(c));
@@ -270,7 +285,7 @@ function applyFilter() {
   const shown = limit === 0 ? matches.length : Math.min(limit, matches.length);
   for (let i = 0; i < shown; i++) matches[i].style.display = "";
 
-  status.textContent = `${shown} shown of ${matches.length} matches`;
+  status.textContent = `${shown} shown of ${matches.length} matches${hashMode ? ` (section: ${hashMode})` : ""}`;
 }
 
 // =========================================================
