@@ -464,6 +464,12 @@ a:hover {
 
   background: transparent;
   color: rgba(255, 255, 255, 0.75);
+
+  transition:
+    background 120ms ease,
+    color 120ms ease,
+    font-weight 120ms ease,
+    border-color 120ms ease;
 }
 
 .runner-tabs .tab:hover {
@@ -478,7 +484,7 @@ a:hover {
   font-weight: 650;
 
   border-color: var(--accent);
-  box-shadow: 0 0 0 1px rgba(59, 195, 110, 0.35);
+  border-bottom-color: transparent;
 
   position: relative;
   top: 1px;
@@ -496,11 +502,11 @@ a:hover {
   display: none;
 
   border: 1px solid var(--border);
-  border-radius: 14px;
-  background: #0b0b0b;
+  border-top: none;
+  border-radius: 0 0 14px 14px;
 
+  background: #0b0b0b;
   padding: 1rem;
-  margin-top: 0;
 
   min-height: 40vh;
   overflow-y: auto;
