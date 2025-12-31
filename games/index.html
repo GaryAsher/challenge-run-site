@@ -78,11 +78,17 @@ title: Games
 </div>
 
 <script>
+// =========================================================
+// DOM: cache everything once for speed + clarity
+// =========================================================  
 const items = Array.from(document.querySelectorAll(".game-item"));
 const input = document.getElementById("q");
 const status = document.getElementById("status");
 const limitSelect = document.getElementById("limit");
 
+// =========================================================
+// DOM: Tags filter elements + challenge filter elements
+// =========================================================
 const tagFilterEl = document.getElementById("tag-filter");
 const tagPickedEl = document.getElementById("tag-picked");
 const tagSearchEl = document.getElementById("tag-search");
@@ -96,6 +102,9 @@ const challengeSugEl = document.getElementById("challenge-suggestions");
 const activeTags = new Set();
 const activeChallenges = new Set();
 
+// =========================================================
+// Data: load label maps from Jekyll data files
+// =========================================================
 const TAGS = [
 {% for pair in site.data.tags %}
 { id: "{{ pair[0] }}", label: "{{ pair[1].label }}" }{% unless forloop.last %},{% endunless %}
@@ -108,69 +117,187 @@ const CHALLENGES = [
 {% endfor %}
 ].sort((a,b)=>a.label.localeCompare(b.label));
 
+// =========================================================
+// Normalize user input + IDs so matching is consistent.
+// =========================================================
 const norm = s => (s || "").trim().toLowerCase();
 
-function renderPicked(set, list, el) {
+// =========================================================
+// UI: render selected chips (click chip = remove)
+// =========================================================
+function renderPicked(set, list, el, { onRemove } = {}) {
   el.innerHTML = "";
+
   for (const id of set) {
     const meta = list.find(x => norm(x.id) === id);
+    const label = meta ? meta.label : id;
+
     const chip = document.createElement("button");
+    chip.type = "button";
     chip.className = "tag-chip";
-    chip.textContent = meta ? meta.label : id;
-    chip.onclick = () => { set.delete(id); applyFilter(); renderAll(); };
+    chip.textContent = label;
+
+    chip.addEventListener("click", () => {
+      set.delete(id);
+      if (onRemove) onRemove();
+    });
+
     el.appendChild(chip);
   }
+
+  el.classList.toggle("is-empty", set.size === 0);
 }
 
-function renderSuggestions(query, set, list, el) {
+// =========================================================
+// UI: render dropdown suggestions (click suggestion = select)
+// =========================================================
+function renderSuggestions(query, set, list, sugEl, { onPick } = {}) {
   const q = norm(query);
-  el.innerHTML = "";
-  list.filter(x => !set.has(norm(x.id)) && (!q || norm(x.label).includes(q)))
-      .slice(0,24)
-      .forEach(x => {
-        const b = document.createElement("button");
-        b.className = "tag-suggestion";
-        b.textContent = x.label;
-        b.onclick = () => { set.add(norm(x.id)); applyFilter(); renderAll(); };
-        el.appendChild(b);
-      });
-  el.hidden = false;
+  sugEl.innerHTML = "";
+
+  const results = list
+    .filter(x => {
+      const id = norm(x.id);
+      const label = norm(x.label);
+      if (set.has(id)) return false;
+      if (!q) return true;
+      return id.includes(q) || label.includes(q);
+    })
+    .slice(0, 24);
+
+  if (results.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "tag-suggestion is-empty";
+    empty.textContent = "No matches.";
+    sugEl.appendChild(empty);
+    sugEl.hidden = false;
+    return;
+  }
+
+  for (const x of results) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "tag-suggestion";
+    btn.textContent = x.label;
+
+    btn.addEventListener("click", () => {
+      set.add(norm(x.id));
+      if (onPick) onPick();
+      sugEl.hidden = true;
+    });
+
+    sugEl.appendChild(btn);
+  }
+
+  sugEl.hidden = false;
 }
 
+// =========================================================
+// Filtering: search + tags + challenges
+// =========================================================
 function applyFilter() {
   const q = norm(input.value);
   const limit = Number(limitSelect.value);
   const matches = [];
 
   for (const el of items) {
-    const name = el.dataset.name;
-    const tags = (el.dataset.tags || "").split(",").map(norm);
-    const challenges = (el.dataset.challenges || "").split(",").map(norm);
+    const name = el.dataset.name || "";
+    const tags = (el.dataset.tags || "").split(",").map(norm).filter(Boolean);
+    const challenges = (el.dataset.challenges || "").split(",").map(norm).filter(Boolean);
 
     const ok =
       (!q || name.includes(q)) &&
-      [...activeTags].every(t => tags.includes(t)) &&
-      [...activeChallenges].every(c => challenges.includes(c));
+      Array.from(activeTags).every(t => tags.includes(t)) &&
+      Array.from(activeChallenges).every(c => challenges.includes(c));
 
     if (ok) matches.push(el);
     el.style.display = "none";
   }
 
-  matches.slice(0, limit || matches.length).forEach(el => el.style.display = "");
-  status.textContent = `${matches.length} matches`;
+  const shown = limit === 0 ? matches.length : Math.min(limit, matches.length);
+  for (let i = 0; i < shown; i++) matches[i].style.display = "";
+
+  status.textContent = `${shown} shown of ${matches.length} matches`;
 }
 
-function renderAll() {
-  renderPicked(activeTags, TAGS, tagPickedEl);
-  renderPicked(activeChallenges, CHALLENGES, challengePickedEl);
+// =========================================================
+// Dropdown behavior: open on focus/click, close on outside/Esc
+// =========================================================
+function wireDropdown({ filterEl, searchEl, sugEl, set, list, pickedEl }) {
+  function open() {
+    renderSuggestions(searchEl.value, set, list, sugEl, {
+      onPick: () => {
+        searchEl.value = "";
+        renderPicked(set, list, pickedEl, { onRemove: onRemoveChip });
+        applyFilter();
+        searchEl.blur();
+      }
+    });
+  }
+
+  function close() {
+    sugEl.hidden = true;
+  }
+
+  function onRemoveChip() {
+    searchEl.value = "";
+    renderPicked(set, list, pickedEl, { onRemove: onRemoveChip });
+    applyFilter();
+    close();
+    searchEl.blur();
+  }
+
+  renderPicked(set, list, pickedEl, { onRemove: onRemoveChip });
+
+  searchEl.addEventListener("focus", () => {
+    if (sugEl.hidden) open();
+  });
+
+  searchEl.addEventListener("pointerdown", () => {
+    if (sugEl.hidden) open();
+  });
+
+  searchEl.addEventListener("input", () => open());
+
+  searchEl.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      close();
+      searchEl.blur();
+    }
+  });
+
+  document.addEventListener(
+    "pointerdown",
+    (e) => {
+      if (!filterEl.contains(e.target)) close();
+    },
+    true
+  );
 }
 
-tagSearchEl.oninput = () => renderSuggestions(tagSearchEl.value, activeTags, TAGS, tagSugEl);
-challengeSearchEl.oninput = () => renderSuggestions(challengeSearchEl.value, activeChallenges, CHALLENGES, challengeSugEl);
+// =========================================================
+// Init: wire both dropdowns and attach global filter events
+// =========================================================
+wireDropdown({
+  filterEl: tagFilterEl,
+  searchEl: tagSearchEl,
+  sugEl: tagSugEl,
+  set: activeTags,
+  list: TAGS,
+  pickedEl: tagPickedEl
+});
 
-input.oninput = applyFilter;
-limitSelect.onchange = applyFilter;
+wireDropdown({
+  filterEl: challengeFilterEl,
+  searchEl: challengeSearchEl,
+  sugEl: challengeSugEl,
+  set: activeChallenges,
+  list: CHALLENGES,
+  pickedEl: challengePickedEl
+});
 
-renderAll();
+window.addEventListener("hashchange", applyFilter);
+input.addEventListener("input", applyFilter);
+limitSelect.addEventListener("change", applyFilter);
+
 applyFilter();
-</script>
