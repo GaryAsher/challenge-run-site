@@ -1,0 +1,20 @@
+---
+layout: default
+---
+
+<div class="page-width">
+  <p class="muted page-back">
+    <a href="{{ page.game_url | relative_url }}">← {{ page.game_name }}</a>
+  </p>
+</div>
+
+<div class="page-width">
+  <div class="card">
+    <h1>{{ page.title }}</h1>
+    {% if page.subtitle %}
+      <p class="muted">{{ page.subtitle }}</p>
+    {% endif %}
+  </div>
+
+  {{ content }}
+</div>
