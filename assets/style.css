@@ -476,7 +476,10 @@ a:hover {
   background: var(--panel);
   color: var(--fg);
   font-weight: 650;
-  border-color: rgba(255, 255, 255, 0.16);
+
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(59, 195, 110, 0.35);
+
   position: relative;
   top: 1px;
 }
@@ -505,9 +508,6 @@ a:hover {
 
 .tab-panel.active {
   display: block;
-
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px rgba(59, 195, 110, 0.35);
 }
 
 /* ============================================================
