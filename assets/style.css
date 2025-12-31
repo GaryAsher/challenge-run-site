@@ -8,6 +8,9 @@
   --border: rgba(255, 255, 255, 0.12);
   --panel: rgba(255, 255, 255, 0.04);
   --page-max: 960px;
+
+  --bg-soft: rgba(255, 255, 255, 0.06);
+  --text-muted: rgba(255, 255, 255, 0.78);
 }
 
 /* ============================================================
@@ -220,6 +223,22 @@ a:hover {
 .game-hero h1 {
   margin: 0.25rem 0 0 0;
   color: var(--accent);
+}
+
+.game-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.game-tags .tag {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: var(--bg-soft);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
 }
 
 .game-card {
