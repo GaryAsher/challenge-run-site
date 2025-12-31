@@ -6,92 +6,104 @@ title: Games
 <h1>Games</h1>
 <p class="muted">Jump by letter or filter by category.</p>
 
-<div class="az" id="az">
-  <a href="#0-9">#</a>
-  {% assign letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" | split: "" %}
-  {% for L in letters %}
-    <a href="#{{ L }}">{{ L }}</a>
-  {% endfor %}
-  <a href="#other">Other</a>
-  <a href="#all" class="muted">All</a>
-</div>
+<!-- =========================================================
+     A–Z navigation + all filter controls (constrained to page width)
+     ========================================================= -->
+<div class="page-width">
 
-<div class="filter-wrap">
-  <input id="q" class="filter" placeholder="Search within results..." autocomplete="off" />
-</div>
-
-<!-- TAGS + CHALLENGES FILTER ROW -->
-<div class="filters-grid">
-
-  <!-- TAG FILTER -->
-  <div class="tag-filter" id="tag-filter">
-    <div class="muted" style="margin-bottom: 0.35rem;">Filter by tags:</div>
-    <div class="tag-picker">
-      <div class="tag-picked" id="tag-picked"></div>
-      <div class="filter-wrap">
-        <input
-          id="tag-search"
-          class="tag-search"
-          type="text"
-          placeholder="Type a tag..."
-          autocomplete="off"
-        />
-      </div>
-      <div class="tag-suggestions" id="tag-suggestions" hidden></div>
-    </div>
+  <div class="az" id="az">
+    <a href="#0-9">#</a>
+    {% assign letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" | split: "" %}
+    {% for L in letters %}
+      <a href="#{{ L }}">{{ L }}</a>
+    {% endfor %}
+    <a href="#other">Other</a>
+    <a href="#all" class="muted">All</a>
   </div>
 
-  <!-- CHALLENGE FILTER -->
-  <div class="tag-filter" id="challenge-filter">
-    <div class="muted" style="margin-bottom: 0.35rem;">Filter by challenges:</div>
-    <div class="tag-picker">
-      <div class="tag-picked" id="challenge-picked"></div>
-      <div class="filter-wrap">
-        <input
-          id="challenge-search"
-          class="tag-search"
-          type="text"
-          placeholder="Type a challenge..."
-          autocomplete="off"
-        />
-      </div>
-      <div class="tag-suggestions" id="challenge-suggestions" hidden></div>
-    </div>
+  <div class="filter-wrap">
+    <input id="q" class="filter" placeholder="Search within results..." autocomplete="off" />
   </div>
-  
-</div>
 
-<div class="results-controls">
-  <label class="muted" for="limit">Show:</label>
-  <select id="limit" class="select">
-    <option value="10" selected>10</option>
-    <option value="25">25</option>
-    <option value="50">50</option>
-    <option value="100">100</option>
-    <option value="250">250</option>
-    <option value="0">All</option>
-  </select>
-</div>
+  <!-- Tags + Challenges row -->
+  <div class="filters-grid">
 
-<p class="muted" id="status"></p>
-
-<div class="grid" id="game-list">
-  {% assign sorted = site.games | sort: "name" %}
-  {% for g in sorted %}
-    <a
-      class="game-card game-item"
-      href="{{ g.url | relative_url }}"
-      data-name="{{ g.name | downcase }}"
-      data-tags="{{ g.tags | join: ',' | downcase }}"
-      data-challenges="{{ g.challenges | default: empty | join: ',' | downcase }}"
-    >
-      {% assign game_cover = g.cover | default: "/assets/img/site/default-game.jpg" %}
-      <div class="game-card__bg" style="background-image: url('{{ game_cover | relative_url }}');"></div>
-      <div class="game-card__overlay">
-        <div class="game-card__title">{{ g.name }}</div>
+    <!-- Tag filter -->
+    <div class="tag-filter" id="tag-filter">
+      <div class="muted" style="margin-bottom: 0.35rem;">Filter by tags:</div>
+      <div class="tag-picker">
+        <div class="tag-picked" id="tag-picked"></div>
+        <div class="filter-wrap">
+          <input
+            id="tag-search"
+            class="tag-search"
+            type="text"
+            placeholder="Type a tag..."
+            autocomplete="off"
+          />
+        </div>
+        <div class="tag-suggestions" id="tag-suggestions" hidden></div>
       </div>
-    </a>
-  {% endfor %}
+    </div>
+
+    <!-- Challenge filter -->
+    <div class="tag-filter" id="challenge-filter">
+      <div class="muted" style="margin-bottom: 0.35rem;">Filter by challenges:</div>
+      <div class="tag-picker">
+        <div class="tag-picked" id="challenge-picked"></div>
+        <div class="filter-wrap">
+          <input
+            id="challenge-search"
+            class="tag-search"
+            type="text"
+            placeholder="Type a challenge..."
+            autocomplete="off"
+          />
+        </div>
+        <div class="tag-suggestions" id="challenge-suggestions" hidden></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="results-controls">
+    <label class="muted" for="limit">Show:</label>
+    <select id="limit" class="select">
+      <option value="10" selected>10</option>
+      <option value="25">25</option>
+      <option value="50">50</option>
+      <option value="100">100</option>
+      <option value="250">250</option>
+      <option value="0">All</option>
+    </select>
+  </div>
+
+  <p class="muted" id="status"></p>
+
+</div>
+
+<!-- =========================================================
+     Games grid (constrained to page width)
+     ========================================================= -->
+<div class="page-width">
+  <div class="grid" id="game-list">
+    {% assign sorted = site.games | sort: "name" %}
+    {% for g in sorted %}
+      <a
+        class="game-card game-item"
+        href="{{ g.url | relative_url }}"
+        data-name="{{ g.name | downcase }}"
+        data-tags="{{ g.tags | join: ',' | downcase }}"
+        data-challenges="{{ g.challenges | default: empty | join: ',' | downcase }}"
+      >
+        {% assign game_cover = g.cover | default: "/assets/img/site/default-game.jpg" %}
+        <div class="game-card__bg" style="background-image: url('{{ game_cover | relative_url }}');"></div>
+        <div class="game-card__overlay">
+          <div class="game-card__title">{{ g.name }}</div>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
 </div>
 
 <script>
