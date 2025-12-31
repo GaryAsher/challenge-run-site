@@ -53,6 +53,7 @@ layout: default
      Tabs (same look, links back to the main game page)
      ========================================================= -->
 {% assign tabs_cfg = game.tabs | default: {} %}
+{% unless game %}{% assign tabs_cfg = {} %}{% endunless %}
 {% assign show_challenges = tabs_cfg.challenges | default: true %}
 {% assign show_categories = tabs_cfg.categories | default: true %}
 {% assign show_runs       = tabs_cfg.runs       | default: true %}
@@ -138,16 +139,13 @@ layout: default
               </h3>
 
               <p class="muted" style="margin: 0 0 0.5rem 0;">
-                {% if run.runner_name %}
+                {% if run.runner_id %}
                   Runner:
                   <a href="{{ '/runners/' | relative_url }}{{ run.runner_id | slugify }}/">
-                    {{ run.runner_name }}
+                    {{ run.runner_name | default: run.runner_id }}
                   </a>
-                {% elsif run.runner_id %}
-                  Runner:
-                  <a href="{{ '/runners/' | relative_url }}{{ run.runner_id | slugify }}/">
-                    {{ run.runner_id }}
-                  </a>
+                {% elsif run.runner_name %}
+                  Runner: {{ run.runner_name }}
                 {% endif %}
 
                 {% if run.category %}
