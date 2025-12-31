@@ -32,12 +32,29 @@ title: Games
 >
 
 <div class="tag-filter" id="tag-filter">
-  {% for pair in site.data.tags %}
-    {% assign id = pair[0] %}
-    {% assign meta = pair[1] %}
-    <button type="button" class="tag-btn" data-tag="{{ id }}">{{ meta.label }}</button>
-  {% endfor %}
+  <label class="muted" for="tag-search" style="display:block; margin-bottom: 0.35rem;">
+    Filter by tags:
+  </label>
+
+  <div class="tag-picker">
+    <div class="tag-picked" id="tag-picked"></div>
+
+    <input
+      id="tag-search"
+      class="tag-search"
+      type="text"
+      placeholder="Type a tag (ex: Roguelike) ..."
+      autocomplete="off"
+    />
+
+    <div class="tag-suggestions" id="tag-suggestions" hidden></div>
+  </div>
+
+  <p class="muted" style="margin: 0.4rem 0 0 0;">
+    Tip: click a selected tag chip to remove it.
+  </p>
 </div>
+
 
 <div class="results-controls">
   <label class="muted" for="limit">Show:</label>
@@ -90,26 +107,117 @@ title: Games
   const status = document.getElementById("status");
   const limitSelect = document.getElementById("limit");
 
-  // Tag filter
-  const tagButtons = Array.from(document.querySelectorAll(".tag-btn"));
+  // Tag picker (searchable)
   const activeTags = new Set();
 
-  for (const btn of tagButtons) {
-    btn.addEventListener("click", () => {
-      const tag = (btn.dataset.tag || "").toLowerCase();
-      if (!tag) return;
+  const pickedEl = document.getElementById("tag-picked");
+  const searchEl = document.getElementById("tag-search");
+  const sugEl = document.getElementById("tag-suggestions");
 
-      if (activeTags.has(tag)) {
-        activeTags.delete(tag);
-        btn.classList.remove("active");
-      } else {
-        activeTags.add(tag);
-        btn.classList.add("active");
-      }
+  // Build tag list from _data/tags.yml
+  const TAGS = [
+    {% for pair in site.data.tags %}
+      {% assign id = pair[0] %}
+      {% assign meta = pair[1] %}
+      { id: "{{ id | escape }}", label: "{{ meta.label | escape }}" }{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ];
 
-      applyFilter();
-    });
+  function renderPicked() {
+    pickedEl.innerHTML = "";
+
+    for (const id of activeTags) {
+      const meta = TAGS.find(t => t.id.toLowerCase() === id);
+      const label = meta ? meta.label : id;
+
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "tag-chip";
+      chip.textContent = label;
+      chip.setAttribute("data-tag", id);
+
+      chip.addEventListener("click", () => {
+        activeTags.delete(id);
+        renderPicked();
+        applyFilter();
+      });
+
+      pickedEl.appendChild(chip);
+    }
+
+    pickedEl.classList.toggle("is-empty", activeTags.size === 0);
   }
+
+  function openSuggestions() {
+    sugEl.hidden = false;
+  }
+
+  function closeSuggestions() {
+    sugEl.hidden = true;
+  }
+
+  function renderSuggestions(query) {
+    const q = (query || "").trim().toLowerCase();
+    sugEl.innerHTML = "";
+
+    const results = TAGS
+      .filter(t => {
+        const id = t.id.toLowerCase();
+        const label = t.label.toLowerCase();
+        if (activeTags.has(id)) return false;
+        if (!q) return true;
+        return id.includes(q) || label.includes(q);
+      })
+      .slice(0, 24); // keep list short
+
+    if (results.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "tag-suggestion is-empty";
+      empty.textContent = "No matching tags.";
+      sugEl.appendChild(empty);
+      openSuggestions();
+      return;
+    }
+
+    for (const t of results) {
+      const row = document.createElement("button");
+      row.type = "button";
+      row.className = "tag-suggestion";
+      row.setAttribute("data-tag", t.id.toLowerCase());
+      row.textContent = t.label;
+
+      row.addEventListener("click", () => {
+        activeTags.add(t.id.toLowerCase());
+        searchEl.value = "";
+        renderPicked();
+        closeSuggestions();
+        applyFilter();
+        searchEl.focus();
+      });
+
+      sugEl.appendChild(row);
+    }
+
+    openSuggestions();
+  }
+
+  // Input behavior
+  searchEl.addEventListener("input", () => {
+    renderSuggestions(searchEl.value);
+  });
+
+  searchEl.addEventListener("focus", () => {
+    renderSuggestions(searchEl.value);
+  });
+
+  // Close suggestions when clicking outside
+  document.addEventListener("click", (e) => {
+    const within = document.getElementById("tag-filter").contains(e.target);
+    if (!within) closeSuggestions();
+  });
+
+  // Initial render
+  renderPicked();
 
   function classifyFirstChar(ch) {
     if (!ch) return "other";
