@@ -195,7 +195,7 @@ layout: default
             {% if site.runs %}
                {% assign game_runs = site.runs | where: "game_id", page.game_id | sort: "date" | reverse %}
             {% else %}
-              {% assign game_runs = empty %}
+               {% assign game_runs = empty %}
             {% endif %}
 
             {% for run in game_runs %}
