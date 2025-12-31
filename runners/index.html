@@ -3,104 +3,111 @@ layout: default
 title: Runners
 ---
 
-<h1>Runners</h1>
-<p class="muted">Jump by letter or filter by category.</p>
+<div class="page-width" id="runners-controls">
+  <h1>Runners</h1>
+  <p class="muted">Jump by letter or search.</p>
 
-<div class="az" id="az">
-  <a href="#0-9" data-filter="0-9">#</a>
-  {% assign letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" | split: "" %}
-  {% for L in letters %}
-    <a href="#{{ L }}" data-filter="{{ L }}">{{ L }}</a>
-  {% endfor %}
-  <a href="#other" data-filter="other">Other</a>
-  <a href="#all" data-filter="all" class="muted">All</a>
+  <div class="az" id="az">
+    <a href="#0-9">#</a>
+    {% assign letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" | split: "" %}
+    {% for L in letters %}
+      <a href="#{{ L }}">{{ L }}</a>
+    {% endfor %}
+    <a href="#other">Other</a>
+    <a href="#all" class="muted">All</a>
+  </div>
+
+  <div class="filter-wrap">
+    <input
+      id="q"
+      class="filter"
+      type="text"
+      placeholder="Search within results..."
+      autocomplete="off"
+      inputmode="search"
+      enterkeyhint="search"
+      aria-label="Search runners"
+    />
+  </div>
+
+  <div class="results-controls">
+    <label class="muted" for="limit">Show:</label>
+    <select id="limit" class="select">
+      <option value="10" selected>10</option>
+      <option value="25">25</option>
+      <option value="50">50</option>
+      <option value="100">100</option>
+      <option value="0">All</option>
+    </select>
+  </div>
+
+  <p class="muted" id="status"></p>
 </div>
 
-<input id="q" class="filter" placeholder="Search within results..." autocomplete="off">
-
-<div style="margin: 0.5rem 0 0.75rem 0;">
-  <label class="muted" for="limit">Show:</label>
-  <select id="limit" class="select">
-    <option value="10" selected>10</option>
-    <option value="25">25</option>
-    <option value="50">50</option>
-    <option value="100">100</option>
-    <option value="250">250</option>
-    <option value="0">All</option>
-  </select>
-</div>
-
-<p class="muted" id="status"></p>
-
-<ul class="grid" id="runner-list" style="list-style: none; padding-left: 0; margin: 0;">
-  {% assign sorted = site.runners | sort: "name" %}
-  {% for r in sorted %}
-    <li class="runner-item" data-name="{{ r.name | downcase }}">
-      <a class="runner-card" href="{{ r.url }}">
-        {% assign runner_cover = r.cover | default: "/assets/img/site/default-runner.png" %}
-          <div class="runner-card__bg"
-               style="background-image: url('{{ runner_cover | relative_url }}');">
-          </div>
+<div class="page-width">
+  <div class="grid" id="runner-list">
+    {% assign sorted = site.runners | sort: "name" %}
+    {% for r in sorted %}
+      {% assign avatar = r.cover | default: "/assets/img/site/default-runner.png" %}
+      <a
+        class="runner-card runner-item"
+        href="{{ r.url | relative_url }}"
+        data-name="{{ r.name | downcase }}"
+        data-letter="{{ r.name | strip | slice: 0, 1 | upcase }}"
+      >
+        <div class="runner-card__bg" style="background-image: url('{{ avatar | relative_url }}');"></div>
         <div class="runner-card__overlay">
           <div class="runner-card__title">{{ r.name }}</div>
         </div>
       </a>
-    </li>
-  {% endfor %}
-</ul>
+    {% endfor %}
+  </div>
+</div>
 
 <script>
-  const items = Array.from(document.querySelectorAll(".runner-item"));
-  const input = document.getElementById("q");
-  const status = document.getElementById("status");
-  const limitSelect = document.getElementById("limit");
+const items = Array.from(document.querySelectorAll(".runner-item"));
+const input = document.getElementById("q");
+const status = document.getElementById("status");
+const limitSelect = document.getElementById("limit");
 
-  function classifyFirstChar(ch) {
-    if (!ch) return "other";
-    const upper = ch.toUpperCase();
-    if (upper >= "A" && upper <= "Z") return upper;
-    if (ch >= "0" && ch <= "9") return "0-9";
-    return "other";
+const norm = s => (s || "").trim().toLowerCase();
+
+function applyFilter() {
+  const q = norm(input.value);
+  const limit = Number(limitSelect.value);
+  const matches = [];
+
+  const rawHash = (location.hash || "").replace("#", "").toUpperCase();
+  const hashMode = rawHash && rawHash !== "ALL" ? rawHash : "";
+
+  for (const el of items) {
+    const name = el.dataset.name || "";
+    const letter = (el.dataset.letter || "").toUpperCase();
+
+    const startsWithDigit = letter >= "0" && letter <= "9";
+    const startsWithAtoZ = letter >= "A" && letter <= "Z";
+
+    const okHash =
+      !hashMode ||
+      (hashMode === "0-9" && startsWithDigit) ||
+      (hashMode === "OTHER" && !startsWithDigit && !startsWithAtoZ) ||
+      (hashMode.length === 1 && letter === hashMode);
+
+    const ok = okHash && (!q || name.includes(q));
+
+    if (ok) matches.push(el);
+    el.style.display = "none";
   }
 
-  function getFirstVisibleChar(li) {
-    const text = (li.querySelector("a")?.textContent || li.textContent || "").trim();
-    return text.length ? text[0] : "";
-  }
+  const shown = limit === 0 ? matches.length : Math.min(limit, matches.length);
+  for (let i = 0; i < shown; i++) matches[i].style.display = "";
 
-  function applyFilter() {
-    const bucket = ((location.hash || "#all").slice(1)) || "all";
-    const q = input.value.trim().toLowerCase();
-    const limit = Number(limitSelect.value); // 0 means All
+  status.textContent = `${shown} shown of ${matches.length} matches${hashMode ? ` (section: ${hashMode})` : ""}`;
+}
 
-    const matches = [];
-    for (const li of items) {
-      const name = li.dataset.name || "";
-      const firstChar = getFirstVisibleChar(li);
-      const group = classifyFirstChar(firstChar);
+window.addEventListener("hashchange", applyFilter);
+input.addEventListener("input", applyFilter);
+limitSelect.addEventListener("change", applyFilter);
 
-      const matchesBucket = (bucket === "all") || (bucket === group);
-      const matchesSearch = !q || name.includes(q);
-
-      if (matchesBucket && matchesSearch) matches.push(li);
-    }
-
-    for (const li of items) li.style.display = "none";
-
-    const toShow = (limit === 0) ? matches.length : Math.min(limit, matches.length);
-    for (let i = 0; i < toShow; i++) matches[i].style.display = "";
-
-    const bucketLabel =
-      bucket === "all" ? "All" :
-      bucket === "0-9" ? "0–9" :
-      bucket === "other" ? "Other" :
-      bucket;
-
-    status.textContent = `${toShow} shown of ${matches.length} matches (filter: ${bucketLabel})`;
-  }
-
-  window.addEventListener("hashchange", applyFilter);
-  input.addEventListener("input", applyFilter);
-  limitSelect.addEventListener("change", applyFilter);
-  applyFilter();
+applyFilter();
 </script>
