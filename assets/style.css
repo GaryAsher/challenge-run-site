@@ -408,11 +408,9 @@ a:hover {
   text-decoration: none;
 
   white-space: nowrap;
-
 }
 
 .runner-link:hover {
-  text-decoration: none;
   opacity: 0.9;
 }
 
@@ -489,7 +487,9 @@ a:hover {
 }
 
 .tab-panel {
-  display: none;
+   display: none;
+   min-height: 40vh;
+   overflow-y: auto;
 }
 
 .tab-panel.active {
