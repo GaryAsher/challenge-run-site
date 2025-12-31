@@ -137,15 +137,81 @@ layout: default
 
   </section>
 
-  <!-- ==========================================================
-       RUNS PANEL
-       ========================================================== -->
-  <section class="tab-panel" data-panel="runs">
-    <div class="card">
-      <h2>Completed Runs</h2>
-      <p class="muted">Coming soon. This will list verified completions, PBs, and categories.</p>
+<!-- ==========================================================
+     RUNS PANEL
+     ========================================================== -->
+<section class="tab-panel" data-panel="runs">
+  {% assign all_runs = site.data.runs | default: empty %}
+
+  {%- comment -%}
+  Match by runner_id first (best). If a run has no runner_id, fall back to runner name.
+  Your runner pages should have:
+    runner_id: gary-asher
+    name: Gary Asher
+  {%- endcomment -%}
+
+  {% assign rid = page.runner_id | default: page.slug | default: "" %}
+  {% assign rid_norm = rid | strip | downcase %}
+  {% assign name_norm = page.name | strip | downcase %}
+
+  {% assign runs_by_id = all_runs | where: "runner_id", rid_norm %}
+  {% assign runs_by_name = all_runs | where: "runner", page.name %}
+  {% assign combined = runs_by_id | concat: runs_by_name %}
+  {% assign runs = combined | uniq | sort: "date" | reverse %}
+
+  {% if runs and runs.size > 0 %}
+    <div id="runner-runs" class="list-paged" data-page-size="25">
+      <div class="list-items">
+        {% for r in runs %}
+          {% assign g = site.games | where: "game_id", r.game_id | first %}
+
+          <article class="card list-item"
+            data-game="{{ r.game_id | strip | downcase }}"
+            data-category="{{ r.category | strip | downcase }}"
+            data-date="{{ r.date }}"
+          >
+            <strong>
+              {% if g %}
+                <a href="{{ g.url | relative_url }}">{{ g.name }}</a>
+              {% else %}
+                {{ r.game_id }}
+              {% endif %}
+            </strong>
+            — {{ r.category | strip }}
+
+            <div class="muted">
+              {% if r.kind %}{{ r.kind }} • {% endif %}
+              <time datetime="{{ r.date }}">{{ r.date }}</time>
+              {% if r.video and r.video != "" %} • <a href="{{ r.video }}">Video</a>{% endif %}
+            </div>
+
+            {% if r.notes and r.notes != "" %}
+              <div class="muted">{{ r.notes }}</div>
+            {% endif %}
+          </article>
+        {% endfor %}
+      </div>
+
+      <div class="list-controls list-controls--bottom">
+        <div class="muted" data-status></div>
+
+        <div class="pager">
+          <button type="button" class="btn" data-prev>Prev</button>
+
+          <span class="muted" data-page-label></span>
+
+          <div class="page-numbers" data-pages></div>
+
+          <button type="button" class="btn" data-next>Next</button>
+        </div>
+      </div>
     </div>
-  </section>
+  {% else %}
+    <div class="card">
+      <p class="muted">No runs have been added yet.</p>
+    </div>
+  {% endif %}
+</section>
 
   <!-- ==========================================================
        OTHER PANEL
