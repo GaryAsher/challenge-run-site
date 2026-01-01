@@ -31,13 +31,16 @@ layout: default
     <!-- =========================================================
          Filter controls
          ========================================================= -->
-    {% assign challenge_ids = runs | map: "challenge_id" | uniq | sort %}
+    {% assign challenge_ids = runs | map: "challenge_id" | compact | uniq | sort %}
 
     {%- comment -%}
-    CHANGE IF NEEDED:
-    If your runs use a different field name than "restrictions" for restrictions,
-    update the map below and the data attribute later.
+    NOTE:
+    This assumes each run has either:
+      - restrictions: [ "Hestia Only", "No Hexes" ]   (array)   OR
+      - restrictions: "Hestia Only, No Hexes"        (string)
+    If your field name differs, update the assigns below and the <tr data-*> later.
     {%- endcomment -%}
+
     {% assign restrictions_raw = runs | map: "restrictions" | compact | uniq | sort %}
 
     <div class="card" style="margin: 0 0 1rem 0;">
@@ -50,7 +53,7 @@ layout: default
             id="q"
             class="filter"
             type="text"
-            placeholder="Search runner, category, challenge..."
+            placeholder="Search runner, category, challenge, restrictions..."
             autocomplete="off"
             inputmode="search"
             enterkeyhint="search"
@@ -58,7 +61,7 @@ layout: default
         </div>
 
         <!-- Dropdown row -->
-        <div style="display: grid; gap: 0.75rem; grid-template-columns: 1fr;">
+        <div style="display: grid; gap: 0.75rem; grid-template-columns: repeat(3, minmax(0, 1fr));">
 
           <!-- Challenge -->
           <div>
@@ -79,11 +82,18 @@ layout: default
             <select id="restriction" class="select" style="width: 100%;">
               <option value="">All</option>
               {% for rr in restrictions_raw %}
+                {%- comment -%}
+                If rr is an array, Liquid will render it like: ["A", "B"].
+                That is not ideal for a dropdown label, but it will still work
+                because we match against the row's data-restrictions string.
+                The recommended way is storing restrictions as an array AND also
+                a pre-joined string field, but we are keeping your current setup.
+                {%- endcomment -%}
                 <option value="{{ rr | escape }}">{{ rr }}</option>
               {% endfor %}
             </select>
             <p class="muted" style="margin: 0.35rem 0 0 0; font-size: 0.95rem;">
-              Tip: if you store multiple restrictions in one field, this filter matches the full text.
+              Tip: this filter matches the restriction text stored on the run row.
             </p>
           </div>
 
@@ -107,7 +117,7 @@ layout: default
     </div>
 
     <!-- =========================================================
-         Runs table
+         Runs table (date sort)
          ========================================================= -->
     <div class="table-wrap">
       <table class="runs-table" id="runs-table">
@@ -116,46 +126,93 @@ layout: default
             <th>Runner</th>
             <th>Category</th>
             <th>Challenge</th>
+            <th>Restrictions</th>
             <th>Time</th>
-            <th>Date</th>
+            <th class="th-date">
+              <span>Date</span>
+              <span class="th-date-sort" aria-label="Sort Date">
+                <button class="th-sort" id="date-asc" type="button" title="Sort oldest to newest">↑</button>
+                <button class="th-sort" id="date-desc" type="button" title="Sort newest to oldest">↓</button>
+              </span>
+            </th>
             <th>Video</th>
           </tr>
         </thead>
+
         <tbody id="runs-body">
           {% for r in runs %}
             {% assign meta = site.data.challenges[r.challenge_id] %}
             {% assign challenge_label = meta.label | default: r.challenge_id %}
 
             {%- comment -%}
-            CHANGE IF NEEDED:
-            If your field is named differently, replace r.restrictions with r.YOUR_FIELD.
+            Prefer human text:
+            - If restrictions is an array: show tags and also build a joined text for data-restrictions
+            - If restrictions is a string: use it directly
+            Also supports legacy: restriction / restriction_ids if present
             {%- endcomment -%}
-            {% assign r_restrictions = r.restrictions | default: r.restriction | default: "" %}
+
+            {% assign rtexts = r.restrictions | default: empty %}
+            {% assign rtext_joined = "" %}
+
+            {% if rtexts and rtexts.size > 0 %}
+              {% assign rtext_joined = rtexts | join: " | " %}
+            {% else %}
+              {% assign rtext_joined = r.restrictions | default: r.restriction | default: "" %}
+            {% endif %}
 
             <tr
               class="run-row"
-              data-runner="{{ r.runner | downcase | escape }}"
-              data-category="{{ r.category | downcase | escape }}"
-              data-challenge-id="{{ r.challenge_id | escape }}"
+              data-runner="{{ r.runner | default: '' | downcase | escape }}"
+              data-category="{{ r.category | default: '' | downcase | escape }}"
+              data-challenge-id="{{ r.challenge_id | default: '' | escape }}"
               data-challenge-label="{{ challenge_label | downcase | escape }}"
-              data-restrictions="{{ r_restrictions | downcase | escape }}"
-              data-date="{{ r.date_completed | escape }}"
-              data-time="{{ r.time | escape }}"
+              data-restrictions="{{ rtext_joined | downcase | escape }}"
+              data-date="{{ r.date_completed | default: '' | escape }}"
+              data-time="{{ r.time | default: '' | escape }}"
             >
               <td>
-                <a href="{{ '/runners/' | relative_url }}{{ r.runner_id }}/">
-                  {{ r.runner }}
-                </a>
+                {% if r.runner_id %}
+                  <a href="{{ '/runners/' | relative_url }}{{ r.runner_id | slugify }}/">
+                    {{ r.runner | default: r.runner_id }}
+                  </a>
+                {% else %}
+                  {{ r.runner | default: "—" }}
+                {% endif %}
               </td>
-              <td>{{ r.category }}</td>
+
+              <td>{{ r.category | default: "—" }}</td>
+
               <td>{{ challenge_label }}</td>
-              <td>{{ r.time | default: "—" }}</td>
-              <td>{{ r.date_completed }}</td>
+
+              <td>
+                {% if rtexts and rtexts.size > 0 %}
+                  {% for t in rtexts %}
+                    <span class="tag">{{ t }}</span>
+                  {% endfor %}
+                {% else %}
+                  {% if rtext_joined and rtext_joined != "" %}
+                    <span class="tag">{{ rtext_joined }}</span>
+                  {% else %}
+                    <span class="muted">—</span>
+                  {% endif %}
+                {% endif %}
+              </td>
+
+              <td>
+                {% if r.time %}
+                  {{ r.time }}
+                {% else %}
+                  <span class="muted">—</span>
+                {% endif %}
+              </td>
+
+              <td>{{ r.date_completed | default: "—" }}</td>
+
               <td>
                 {% if r.video %}
                   <a href="{{ r.video }}" target="_blank" rel="noopener">Link</a>
                 {% else %}
-                  —
+                  <span class="muted">—</span>
                 {% endif %}
               </td>
             </tr>
@@ -165,83 +222,143 @@ layout: default
     </div>
 
     <!-- =========================================================
-         Filtering script
+         Filtering + Date sort script
          ========================================================= -->
     <script>
-      (function () {
-        const q = document.getElementById("q");
-        const challenge = document.getElementById("challenge");
-        const restriction = document.getElementById("restriction");
-        const limit = document.getElementById("limit");
-        const status = document.getElementById("status");
-        const rows = Array.from(document.querySelectorAll(".run-row"));
+(function () {
+  const q = document.getElementById("q");
+  const challenge = document.getElementById("challenge");
+  const restriction = document.getElementById("restriction");
+  const limit = document.getElementById("limit");
+  const status = document.getElementById("status");
 
-        function norm(v) {
-          return (v || "").toString().trim().toLowerCase();
-        }
+  const ascBtn = document.getElementById("date-asc");
+  const descBtn = document.getElementById("date-desc");
 
-        function applyFilters() {
-          const needle = norm(q.value);
-          const ch = (challenge.value || "").toString();
-          const rr = norm(restriction.value);
-          const lim = parseInt(limit.value, 10);
+  const tbody = document.getElementById("runs-body");
+  const rows = Array.from(document.querySelectorAll(".run-row"));
 
-          let matched = [];
+  rows.forEach((r, i) => (r.dataset._i = String(i)));
 
-          for (const row of rows) {
-            const runner = row.dataset.runner || "";
-            const cat = row.dataset.category || "";
-            const chId = row.dataset.challengeId || "";
-            const chLabel = row.dataset.challengeLabel || "";
-            const restr = row.dataset.restrictions || "";
+  function norm(v) {
+    return (v || "").toString().trim().toLowerCase();
+  }
 
-            const passesChallenge = !ch || chId === ch;
-            const passesRestrictions = !rr || restr.includes(rr);
+  function parseDateToNumber(s) {
+    const v = (s || "").trim();
+    if (!v) return NaN;
 
-            const hay = (runner + " " + cat + " " + chLabel + " " + restr).trim();
-            const passesSearch = !needle || hay.includes(needle);
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(v);
+    if (m) {
+      const y = parseInt(m[1], 10);
+      const mo = parseInt(m[2], 10);
+      const d = parseInt(m[3], 10);
+      if (Number.isFinite(y) && Number.isFinite(mo) && Number.isFinite(d)) {
+        return Date.UTC(y, mo - 1, d);
+      }
+    }
 
-            const show = passesChallenge && passesRestrictions && passesSearch;
+    const t = Date.parse(v);
+    return Number.isFinite(t) ? t : NaN;
+  }
 
-            row.style.display = show ? "" : "none";
-            if (show) matched.push(row);
-          }
+  let dateSortDir = "desc";
 
-          // Apply limit to currently-matched rows, keep ordering
-          if (!isNaN(lim) && lim > 0) {
-            matched.forEach((row, idx) => {
-              row.style.display = idx < lim ? "" : "none";
-            });
-            status.textContent = "Showing " + Math.min(lim, matched.length) + " of " + matched.length + " matching runs.";
-          } else {
-            status.textContent = "Showing " + matched.length + " matching runs.";
-          }
-        }
+  function updateDateButtons() {
+    if (ascBtn) ascBtn.disabled = dateSortDir === "asc";
+    if (descBtn) descBtn.disabled = dateSortDir === "desc";
+  }
 
-        // Responsive improvement: stack selects on narrow screens without extra CSS edits
-        function tweakLayoutForWidth() {
-          const isNarrow = window.matchMedia("(max-width: 860px)").matches;
-          const gridRows = document.querySelectorAll('[style*="grid-template-columns"]');
-          gridRows.forEach(el => {
-            if (isNarrow) {
-              el.style.gridTemplateColumns = "1fr";
-            } else {
-              // Only restore the second grid (dropdown row) if it was originally 1fr
-              // This keeps things stable across your existing CSS.
-              if (el.id !== "runners-controls") {
-                el.style.gridTemplateColumns = "1fr";
-              }
-            }
-          });
-        }
+  function sortRowsByDate(list) {
+    const dir = dateSortDir;
 
-        [q, challenge, restriction, limit].forEach(el => {
-          el.addEventListener("input", applyFilters);
-          el.addEventListener("change", applyFilters);
-        });
+    return list.sort((a, b) => {
+      const aDate = parseDateToNumber(a.dataset.date);
+      const bDate = parseDateToNumber(b.dataset.date);
 
-        applyFilters();
-      })();
+      const aBad = !Number.isFinite(aDate);
+      const bBad = !Number.isFinite(bDate);
+
+      if (aBad && bBad) {
+        return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
+      }
+      if (aBad) return 1;
+      if (bBad) return -1;
+
+      if (aDate === bDate) {
+        return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
+      }
+
+      return dir === "asc" ? aDate - bDate : bDate - aDate;
+    });
+  }
+
+  function applyFilters() {
+    const needle = norm(q && q.value);
+    const ch = (challenge && challenge.value ? challenge.value.toString() : "");
+    const rr = norm(restriction && restriction.value);
+    const lim = parseInt(limit && limit.value ? limit.value : "10", 10);
+
+    let matched = [];
+
+    for (const row of rows) {
+      const runner = row.dataset.runner || "";
+      const cat = row.dataset.category || "";
+      const chId = row.dataset.challengeId || "";
+      const chLabel = row.dataset.challengeLabel || "";
+      const restr = row.dataset.restrictions || "";
+
+      const passesChallenge = !ch || chId === ch;
+      const passesRestrictions = !rr || restr.includes(rr);
+
+      const hay = (runner + " " + cat + " " + chLabel + " " + restr).trim();
+      const passesSearch = !needle || hay.includes(needle);
+
+      const show = passesChallenge && passesRestrictions && passesSearch;
+
+      row.style.display = show ? "" : "none";
+      if (show) matched.push(row);
+    }
+
+    matched = sortRowsByDate(matched);
+
+    if (tbody) matched.forEach(r => tbody.appendChild(r));
+
+    if (!isNaN(lim) && lim > 0) {
+      matched.forEach((row, idx) => {
+        row.style.display = idx < lim ? "" : "none";
+      });
+      if (status) status.textContent = "Showing " + Math.min(lim, matched.length) + " of " + matched.length + " matching runs.";
+    } else {
+      if (status) status.textContent = "Showing " + matched.length + " matching runs.";
+    }
+  }
+
+  [q, challenge, restriction, limit].forEach(el => {
+    if (!el) return;
+    el.addEventListener("input", applyFilters);
+    el.addEventListener("change", applyFilters);
+  });
+
+  if (ascBtn) {
+    ascBtn.addEventListener("click", () => {
+      dateSortDir = "asc";
+      updateDateButtons();
+      applyFilters();
+    });
+  }
+
+  if (descBtn) {
+    descBtn.addEventListener("click", () => {
+      dateSortDir = "desc";
+      updateDateButtons();
+      applyFilters();
+    });
+  }
+
+  updateDateButtons();
+  applyFilters();
+})();
     </script>
 
   {% else %}
