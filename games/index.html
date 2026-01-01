@@ -158,7 +158,7 @@ const activeTags = new Set();
 const activeChallenges = new Set();
 
 // =========================================================
-// Data: load label maps from Jekyll data files
+// Data: load label maps from Jekyll data files (safe via jsonify)
 // =========================================================
 const TAGS = [
 {% for pair in site.data.tags %}
@@ -182,7 +182,6 @@ const CHALLENGES = [
 // Normalize user input + IDs so matching is consistent
 // =========================================================
 const norm = s => (s || "").trim().toLowerCase();
-const TAG_LABEL = new Map(TAGS.map(t => [norm(t.id), t.label]));
 const CH_LABEL = new Map(CHALLENGES.map(c => [norm(c.id), c.label]));
 
 // =========================================================
@@ -202,7 +201,6 @@ items.forEach(card => {
   const target = card.querySelector("[data-challenge-labels]");
   if (target) target.textContent = labels;
 });
-
 
 // =========================================================
 // Filtering: search + tags + challenges
