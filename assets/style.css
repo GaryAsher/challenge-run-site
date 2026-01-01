@@ -900,6 +900,64 @@ a:hover {
 }
 
 /* ============================================================
+   Runs Table (boxed + nicer grid)
+   ============================================================ */
+.table-wrap {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.runs-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.95rem;
+}
+
+.runs-table thead th {
+  text-align: left;
+  font-weight: 700;
+  color: var(--fg);
+  background: rgba(255, 255, 255, 0.03);
+
+  padding: 0.75rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.runs-table tbody td {
+  padding: 0.75rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.runs-table thead th + th,
+.runs-table tbody td + td {
+  border-left: 1px solid var(--border);
+}
+
+.runs-table tbody tr:nth-child(even) td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.runs-table tbody tr:hover td {
+  background: rgba(59, 195, 110, 0.06);
+}
+
+.runs-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.runs-table {
+  min-width: 780px;
+}
+
+/* ============================================================
    Pagination
    ============================================================ */
 .list-controls {
