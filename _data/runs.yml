@@ -2,7 +2,6 @@
   runner: Gary_Asher
   runner_id: gary-asher
   category: Underworld Any%
-  challenge: No-Hit No-Damage
   challenge_id: no-hit-no-damage
   restrictions:
   - Hestia Only
@@ -16,7 +15,6 @@
   runner: Meira
   runner_id: meira
   category: Chaos Trials - Trial of Origin
-  challenge: No-Hit No-Damage
   challenge_id: no-hit-no-damage
   restrictions: []
   restriction_ids: []
