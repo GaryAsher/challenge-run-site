@@ -15,85 +15,115 @@ layout: default
      Game hero
      ========================================================= -->
 {% if page.cover %}
-<div class="page-width">
-  <section
-    class="game-hero"
-    style="
-      background-image: url('{{ page.cover | relative_url }}');
-      background-position: {{ page.cover_position | default: 'center' }};
-    "
-  >
-    <div class="game-hero__overlay">
-      <div class="game-hero__content">
-        <h1>{{ page.name }}</h1>
+  <div class="page-width">
+    <div class="game-shell">
+      <section
+        class="game-hero"
+        style="
+          background-image: url('{{ page.cover | relative_url }}');
+          background-position: {{ page.cover_position | default: 'center' }};
+        "
+      >
+        <div class="game-hero__overlay">
+          <div class="game-hero__content">
+            <h1>{{ page.name }}</h1>
 
-        {% if page.status %}
-          <p class="muted">{{ page.status }}</p>
-        {% endif %}
+            {% if page.status %}
+              <p class="muted">{{ page.status }}</p>
+            {% endif %}
 
-        {% if page.tags %}
-          <div class="game-tags">
-            {% for tag in page.tags %}
-              {% assign meta = site.data.tags[tag] %}
-              <span class="tag">{{ meta.label | default: tag }}</span>
-            {% endfor %}
+            {% if page.tags and page.tags.size > 0 %}
+              <div class="game-tags">
+                {% for tag in page.tags %}
+                  {% assign meta = site.data.tags[tag] %}
+                  <span class="tag">{{ meta.label | default: tag }}</span>
+                {% endfor %}
+              </div>
+            {% endif %}
           </div>
-        {% endif %}
-      </div>
+        </div>
+      </section>
     </div>
-  </section>
-</div>
+  </div>
+{% else %}
+  <div class="page-width">
+    <h1>{{ page.name }}</h1>
+    {% if page.status %}
+      <p class="muted">{{ page.status }}</p>
+    {% endif %}
+    {% if page.tags and page.tags.size > 0 %}
+      <div class="game-tags" style="margin-top: 0.5rem;">
+        {% for tag in page.tags %}
+          {% assign meta = site.data.tags[tag] %}
+          <span class="tag">{{ meta.label | default: tag }}</span>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
 {% endif %}
 
 <!-- =========================================================
-     Game tabs
+     Game tabs (Overview / Categories / Runs)
+     Notes:
+     - Overview + Categories are in-page tab panels
+     - Runs is a real link to the runs page for this game
      ========================================================= -->
-<nav class="runner-tabs game-tabs" id="game-tabs">
-  <button class="tab active" data-tab="overview" type="button">Overview</button>
-  <button class="tab" data-tab="categories" type="button">Categories</button>
-  <a
-    class="tab"
-    href="{{ page.url | relative_url | append: 'game-runs/' }}"
-  >
-    Runs
-  </a>
-</nav>
+<div class="page-width">
+  <div class="game-shell">
+    <nav class="runner-tabs game-tabs" id="game-tabs">
+      <button class="tab active" data-tab="overview" type="button">Overview</button>
+      <button class="tab" data-tab="categories" type="button">Categories</button>
+
+      <a class="tab" href="{{ page.url | relative_url }}game-runs/">
+        Runs
+      </a>
+      {%- comment -%}
+      If your runs page is actually:
+        /games/<game-id>/completed-runs/
+      then replace the href above with:
+        href="{{ page.url | relative_url }}completed-runs/"
+      {%- endcomment -%}
+    </nav>
+  </div>
+</div>
 
 <!-- =========================================================
      Tab panels
      ========================================================= -->
 <div class="page-width">
+  <div class="game-shell">
 
-  <!-- Overview -->
-  <section class="tab-panel active" data-panel="overview">
-    {% if content %}
-      <div class="card">
-        {{ content }}
-      </div>
-    {% endif %}
-  </section>
-
-  <!-- Categories -->
-  <section class="tab-panel" data-panel="categories">
-    <div class="card">
-      <h2>Categories</h2>
-
-      {% if page.categories %}
-        <ul class="list">
-          {% for c in page.categories %}
-            <li>
-              <a href="{{ page.url | relative_url }}categories/{{ c | slugify }}/">
-                {{ c }}
-              </a>
-            </li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <p class="muted">No categories listed.</p>
+    <!-- Overview -->
+    <section class="tab-panel active" data-panel="overview">
+      {% if content %}
+        <div class="card">
+          {{ content }}
+        </div>
       {% endif %}
-    </div>
-  </section>
+    </section>
 
+    <!-- Categories -->
+    <section class="tab-panel" data-panel="categories">
+      <div class="card">
+        <h2>Categories</h2>
+
+        {% if page.categories and page.categories.size > 0 %}
+          <ul class="list">
+            {% for c in page.categories %}
+              <li>
+                <a href="{{ page.url | relative_url }}categories/{{ c | slugify }}/">
+                  {{ c }}
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="muted">No categories listed.</p>
+        {% endif %}
+      </div>
+    </section>
+
+  </div>
 </div>
 
 <!-- =========================================================
@@ -101,8 +131,11 @@ layout: default
      ========================================================= -->
 <script>
 (function () {
-  const tabs = [...document.querySelectorAll("#game-tabs .tab[data-tab]")];
-  const panels = [...document.querySelectorAll(".tab-panel[data-panel]")];
+  const root = document.getElementById("game-tabs");
+  if (!root) return;
+
+  const tabs = Array.from(root.querySelectorAll(".tab[data-tab]"));
+  const panels = Array.from(document.querySelectorAll(".tab-panel[data-panel]"));
 
   function activate(name) {
     tabs.forEach(t => t.classList.toggle("active", t.dataset.tab === name));
@@ -110,7 +143,7 @@ layout: default
   }
 
   tabs.forEach(t => {
-    t.addEventListener("click", e => {
+    t.addEventListener("click", (e) => {
       e.preventDefault();
       activate(t.dataset.tab);
     });
