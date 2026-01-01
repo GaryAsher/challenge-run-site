@@ -20,15 +20,97 @@ layout: default
 </div>
 
 <!-- =========================================================
-     Runs list
+     Runs + Filters
      ========================================================= -->
 <div class="page-width">
 
   {% assign runs = site.data.runs | where: "game_id", page.game_id %}
 
   {% if runs and runs.size > 0 %}
+
+    <!-- =========================================================
+         Filter controls
+         ========================================================= -->
+    {% assign challenge_ids = runs | map: "challenge_id" | uniq | sort %}
+
+    {%- comment -%}
+    CHANGE IF NEEDED:
+    If your runs use a different field name than "restrictions" for restrictions,
+    update the map below and the data attribute later.
+    {%- endcomment -%}
+    {% assign restrictions_raw = runs | map: "restrictions" | compact | uniq | sort %}
+
+    <div class="card" style="margin: 0 0 1rem 0;">
+      <div style="display: grid; gap: 0.75rem; grid-template-columns: 1fr;">
+
+        <!-- Search -->
+        <div>
+          <label class="muted" for="q">Search</label>
+          <input
+            id="q"
+            class="filter"
+            type="text"
+            placeholder="Search runner, category, challenge..."
+            autocomplete="off"
+            inputmode="search"
+            enterkeyhint="search"
+          >
+        </div>
+
+        <!-- Dropdown row -->
+        <div style="display: grid; gap: 0.75rem; grid-template-columns: 1fr;">
+
+          <!-- Challenge -->
+          <div>
+            <label class="muted" for="challenge">Challenge</label>
+            <select id="challenge" class="select" style="width: 100%;">
+              <option value="">All</option>
+              {% for cid in challenge_ids %}
+                {% assign meta = site.data.challenges[cid] %}
+                {% assign label = meta.label | default: cid %}
+                <option value="{{ cid }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Restrictions -->
+          <div>
+            <label class="muted" for="restriction">Restrictions</label>
+            <select id="restriction" class="select" style="width: 100%;">
+              <option value="">All</option>
+              {% for rr in restrictions_raw %}
+                <option value="{{ rr | escape }}">{{ rr }}</option>
+              {% endfor %}
+            </select>
+            <p class="muted" style="margin: 0.35rem 0 0 0; font-size: 0.95rem;">
+              Tip: if you store multiple restrictions in one field, this filter matches the full text.
+            </p>
+          </div>
+
+          <!-- Limit -->
+          <div>
+            <label class="muted" for="limit">Show</label>
+            <select id="limit" class="select" style="width: 100%;">
+              <option value="10" selected>10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+              <option value="250">250</option>
+              <option value="0">All</option>
+            </select>
+          </div>
+
+        </div>
+
+        <p class="muted" id="status" style="margin: 0;"></p>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         Runs table
+         ========================================================= -->
     <div class="table-wrap">
-      <table class="runs-table">
+      <table class="runs-table" id="runs-table">
         <thead>
           <tr>
             <th>Runner</th>
@@ -39,19 +121,34 @@ layout: default
             <th>Video</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="runs-body">
           {% for r in runs %}
-            <tr>
+            {% assign meta = site.data.challenges[r.challenge_id] %}
+            {% assign challenge_label = meta.label | default: r.challenge_id %}
+
+            {%- comment -%}
+            CHANGE IF NEEDED:
+            If your field is named differently, replace r.restrictions with r.YOUR_FIELD.
+            {%- endcomment -%}
+            {% assign r_restrictions = r.restrictions | default: r.restriction | default: "" %}
+
+            <tr
+              class="run-row"
+              data-runner="{{ r.runner | downcase | escape }}"
+              data-category="{{ r.category | downcase | escape }}"
+              data-challenge-id="{{ r.challenge_id | escape }}"
+              data-challenge-label="{{ challenge_label | downcase | escape }}"
+              data-restrictions="{{ r_restrictions | downcase | escape }}"
+              data-date="{{ r.date_completed | escape }}"
+              data-time="{{ r.time | escape }}"
+            >
               <td>
                 <a href="{{ '/runners/' | relative_url }}{{ r.runner_id }}/">
                   {{ r.runner }}
                 </a>
               </td>
               <td>{{ r.category }}</td>
-              <td>
-                {% assign meta = site.data.challenges[r.challenge_id] %}
-                {{ meta.label | default: r.challenge_id }}
-              </td>
+              <td>{{ challenge_label }}</td>
               <td>{{ r.time | default: "—" }}</td>
               <td>{{ r.date_completed }}</td>
               <td>
@@ -66,6 +163,87 @@ layout: default
         </tbody>
       </table>
     </div>
+
+    <!-- =========================================================
+         Filtering script
+         ========================================================= -->
+    <script>
+      (function () {
+        const q = document.getElementById("q");
+        const challenge = document.getElementById("challenge");
+        const restriction = document.getElementById("restriction");
+        const limit = document.getElementById("limit");
+        const status = document.getElementById("status");
+        const rows = Array.from(document.querySelectorAll(".run-row"));
+
+        function norm(v) {
+          return (v || "").toString().trim().toLowerCase();
+        }
+
+        function applyFilters() {
+          const needle = norm(q.value);
+          const ch = (challenge.value || "").toString();
+          const rr = norm(restriction.value);
+          const lim = parseInt(limit.value, 10);
+
+          let matched = [];
+
+          for (const row of rows) {
+            const runner = row.dataset.runner || "";
+            const cat = row.dataset.category || "";
+            const chId = row.dataset.challengeId || "";
+            const chLabel = row.dataset.challengeLabel || "";
+            const restr = row.dataset.restrictions || "";
+
+            const passesChallenge = !ch || chId === ch;
+            const passesRestrictions = !rr || restr.includes(rr);
+
+            const hay = (runner + " " + cat + " " + chLabel + " " + restr).trim();
+            const passesSearch = !needle || hay.includes(needle);
+
+            const show = passesChallenge && passesRestrictions && passesSearch;
+
+            row.style.display = show ? "" : "none";
+            if (show) matched.push(row);
+          }
+
+          // Apply limit to currently-matched rows, keep ordering
+          if (!isNaN(lim) && lim > 0) {
+            matched.forEach((row, idx) => {
+              row.style.display = idx < lim ? "" : "none";
+            });
+            status.textContent = "Showing " + Math.min(lim, matched.length) + " of " + matched.length + " matching runs.";
+          } else {
+            status.textContent = "Showing " + matched.length + " matching runs.";
+          }
+        }
+
+        // Responsive improvement: stack selects on narrow screens without extra CSS edits
+        function tweakLayoutForWidth() {
+          const isNarrow = window.matchMedia("(max-width: 860px)").matches;
+          const gridRows = document.querySelectorAll('[style*="grid-template-columns"]');
+          gridRows.forEach(el => {
+            if (isNarrow) {
+              el.style.gridTemplateColumns = "1fr";
+            } else {
+              // Only restore the second grid (dropdown row) if it was originally 1fr
+              // This keeps things stable across your existing CSS.
+              if (el.id !== "runners-controls") {
+                el.style.gridTemplateColumns = "1fr";
+              }
+            }
+          });
+        }
+
+        [q, challenge, restriction, limit].forEach(el => {
+          el.addEventListener("input", applyFilters);
+          el.addEventListener("change", applyFilters);
+        });
+
+        applyFilters();
+      })();
+    </script>
+
   {% else %}
     <div class="card">
       <p class="muted">No runs recorded yet.</p>
