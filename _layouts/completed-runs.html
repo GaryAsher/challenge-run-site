@@ -191,11 +191,16 @@ layout: default
               </table>
 
               <!-- Excel-style header filter menu (single instance) -->
-              <div class="th-menu" id="th-menu" hidden>
-                <div class="th-menu__top">
+              <div class="th-menu__top">
+                  <!-- Date sorting (only shown when filtering the Date column) -->
+                  <div class="th-menu__sort" id="th-menu-sort" hidden>
+                    <button class="btn" id="th-sort-asc" type="button" title="Sort oldest to newest">Sort ↑</button>
+                    <button class="btn" id="th-sort-desc" type="button" title="Sort newest to oldest">Sort ↓</button>
+                  </div>
+
                   <input id="th-menu-q" class="filter th-menu__q" type="text" placeholder="Search..." autocomplete="off" />
                 </div>
-
+                 
                 <div class="th-menu__list" id="th-menu-list"></div>
 
                 <div class="th-menu__actions">
@@ -231,353 +236,457 @@ layout: default
         </div>
 
         <script>
-        (function () {
-          const root = document.getElementById("runs-list");
-          if (!root) return;
+(function () {
+  const root = document.getElementById("runs-list");
+  if (!root) return;
 
-          const rows = Array.from(root.querySelectorAll(".run-row"));
+  const rows = Array.from(root.querySelectorAll(".run-row"));
 
-          const limitEl = document.getElementById("runs-limit");
-          const countEl = document.getElementById("runs-count");
+  rows.forEach((r, i) => (r.dataset._i = String(i)));
 
-          const pager = document.getElementById("runs-pager");
-          const prevBtn = document.getElementById("runs-prev");
-          const nextBtn = document.getElementById("runs-next");
-          const pageLabel = document.getElementById("runs-page");
+  const limitEl = document.getElementById("runs-limit");
+  const countEl = document.getElementById("runs-count");
 
-          const thMenu = document.getElementById("th-menu");
-          const thMenuQ = document.getElementById("th-menu-q");
-          const thMenuList = document.getElementById("th-menu-list");
-          const thMenuClear = document.getElementById("th-menu-clear");
-          const thMenuClose = document.getElementById("th-menu-close");
+  const pager = document.getElementById("runs-pager");
+  const prevBtn = document.getElementById("runs-prev");
+  const nextBtn = document.getElementById("runs-next");
+  const pageLabel = document.getElementById("runs-page");
 
-          const norm = (s) => (s || "").trim().toLowerCase();
+  const thMenu = document.getElementById("th-menu");
+  const thMenuQ = document.getElementById("th-menu-q");
+  const thMenuList = document.getElementById("th-menu-list");
+  const thMenuClear = document.getElementById("th-menu-clear");
+  const thMenuClose = document.getElementById("th-menu-close");
 
-          function uniq(arr) {
-            return Array.from(new Set(arr.filter(Boolean)));
+  const thMenuSort = document.getElementById("th-menu-sort");
+  const thSortAsc = document.getElementById("th-sort-asc");
+  const thSortDesc = document.getElementById("th-sort-desc");
+
+  const norm = (s) => (s || "").trim().toLowerCase();
+
+  function uniq(arr) {
+    return Array.from(new Set(arr));
+  }
+
+  // YYYY-MM-DD parsing
+  function parseDateToNumber(s) {
+    const v = (s || "").trim();
+    if (!v) return NaN;
+
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(v);
+    if (m) {
+      const y = parseInt(m[1], 10);
+      const mo = parseInt(m[2], 10);
+      const d = parseInt(m[3], 10);
+      if (Number.isFinite(y) && Number.isFinite(mo) && Number.isFinite(d)) {
+        return Date.UTC(y, mo - 1, d);
+      }
+    }
+
+    const t = Date.parse(v);
+    return Number.isFinite(t) ? t : NaN;
+  }
+
+  function buildOptions() {
+    const cats = [];
+    const runners = [];
+    const challenges = [];
+    const restrictions = [];
+
+    const catLabelById = new Map();
+    const runLabelById = new Map();
+    const chLabelById = new Map();
+    const resLabelById = new Map();
+
+    let hasBlankRunner = false;
+
+    rows.forEach((row) => {
+      const catId = norm(row.dataset.category);
+      const runnerId = norm(row.dataset.runner);
+      const chId = norm(row.dataset.challengeId);
+      const resIds = (row.dataset.restrictionIds || "")
+        .split(",")
+        .map(norm)
+        .filter(Boolean);
+
+      if (catId) {
+        cats.push(catId);
+        const cell = row.children[0];
+        if (cell && !catLabelById.has(catId)) catLabelById.set(catId, cell.textContent.trim());
+      }
+
+      if (!runnerId) hasBlankRunner = true;
+      else {
+        runners.push(runnerId);
+        const cell = row.children[3];
+        if (cell && !runLabelById.has(runnerId)) runLabelById.set(runnerId, cell.textContent.trim());
+      }
+
+      if (chId) {
+        challenges.push(chId);
+        const cell = row.children[1];
+        const tag = cell ? cell.querySelector(".tag") : null;
+        if (tag && !chLabelById.has(chId)) chLabelById.set(chId, tag.textContent.trim());
+      }
+
+      if (resIds.length) {
+        resIds.forEach((id, idx) => {
+          restrictions.push(id);
+          if (!resLabelById.has(id)) {
+            const cell = row.children[2];
+            const tags = cell ? Array.from(cell.querySelectorAll(".tag")) : [];
+            const label = tags[idx] ? tags[idx].textContent.trim() : id;
+            resLabelById.set(id, label);
           }
-
-          function buildOptions() {
-            const cats = [];
-            const runners = [];
-            const challenges = [];
-            const restrictions = [];
-
-            const catLabelById = new Map();
-            const runLabelById = new Map();
-            const chLabelById = new Map();
-            const resLabelById = new Map();
-
-            rows.forEach((row) => {
-              const catId = norm(row.dataset.category);
-              const runnerId = norm(row.dataset.runner);
-              const chId = norm(row.dataset.challengeId);
-              const resIds = (row.dataset.restrictionIds || "")
-                .split(",")
-                .map(norm)
-                .filter(Boolean);
-
-              if (catId) {
-                cats.push(catId);
-                const cell = row.children[0];
-                if (cell && !catLabelById.has(catId)) catLabelById.set(catId, cell.textContent.trim());
-              }
-
-              if (runnerId) {
-                runners.push(runnerId);
-                const cell = row.children[3];
-                if (cell && !runLabelById.has(runnerId)) runLabelById.set(runnerId, cell.textContent.trim());
-              }
-
-              if (chId) {
-                challenges.push(chId);
-                const cell = row.children[1];
-                const tag = cell ? cell.querySelector(".tag") : null;
-                if (tag && !chLabelById.has(chId)) chLabelById.set(chId, tag.textContent.trim());
-              }
-
-              if (resIds.length) {
-                resIds.forEach((id, idx) => {
-                  restrictions.push(id);
-                  if (!resLabelById.has(id)) {
-                    const cell = row.children[2];
-                    const tags = cell ? Array.from(cell.querySelectorAll(".tag")) : [];
-                    const label = tags[idx] ? tags[idx].textContent.trim() : id;
-                    resLabelById.set(id, label);
-                  }
-                });
-              }
-            });
-
-            function toList(ids, map) {
-              return uniq(ids)
-                .map((id) => ({ id, label: map.get(id) || id }))
-                .sort((a, b) => a.label.localeCompare(b.label));
-            }
-
-            return {
-              categories: toList(cats, catLabelById),
-              runners: toList(runners, runLabelById),
-              challenges: toList(challenges, chLabelById),
-              restrictions: toList(restrictions, resLabelById)
-            };
-          }
-
-          const OPTIONS = buildOptions();
-
-          // Active filters (Excel-style header menus)
-          const activeCats = new Set();
-          const activeChallenges = new Set();
-          const activeRestrictions = new Set();
-          const activeRunners = new Set();
-          const activeDates = new Set(); // exact date strings (multi)
-
-          // Pagination
-          let page = 1;
-
-          function getLimit() {
-            if (!limitEl) return 10;
-            const v = parseInt(limitEl.value, 10);
-            return Number.isFinite(v) ? v : 10;
-          }
-
-          function passesFilters(row) {
-            const cat = norm(row.dataset.category);
-            const ch = norm(row.dataset.challengeId);
-            const runner = norm(row.dataset.runner);
-            const date = (row.dataset.date || "").trim();
-            const res = (row.dataset.restrictionIds || "").split(",").map(norm).filter(Boolean);
-
-            if (activeCats.size && !activeCats.has(cat)) return false;
-            if (activeChallenges.size && !activeChallenges.has(ch)) return false;
-            if (activeRunners.size && !activeRunners.has(runner)) return false;
-
-            if (activeRestrictions.size) {
-              const need = Array.from(activeRestrictions);
-              const okAll = need.every((x) => res.includes(x));
-              if (!okAll) return false;
-            }
-
-            if (activeDates.size && !activeDates.has(date)) return false;
-
-            return true;
-          }
-
-          function anyFiltersActive() {
-            return (
-              activeCats.size ||
-              activeChallenges.size ||
-              activeRestrictions.size ||
-              activeRunners.size ||
-              activeDates.size
-            );
-          }
-
-          function render() {
-            const totalAll = rows.length;
-            const filtered = rows.filter(passesFilters);
-            const total = filtered.length;
-
-            const limit = getLimit();
-
-            if (countEl) {
-              if (!anyFiltersActive()) {
-                countEl.textContent = total === 1 ? "1 run" : `${total} runs`;
-              } else {
-                countEl.textContent = `${total} match${total === 1 ? "" : "es"} (of ${totalAll})`;
-              }
-            }
-
-            rows.forEach((r) => (r.style.display = "none"));
-
-            if (limit === 0) {
-              filtered.forEach((r) => (r.style.display = ""));
-              if (pager) pager.style.display = "none";
-              return;
-            }
-
-            const pages = Math.max(1, Math.ceil(total / limit));
-            if (page > pages) page = pages;
-
-            const start = (page - 1) * limit;
-            const end = start + limit;
-
-            filtered.slice(start, end).forEach((r) => (r.style.display = ""));
-
-            if (pager) pager.style.display = pages > 1 ? "" : "none";
-            if (pageLabel) pageLabel.textContent = `Page ${page} / ${pages}`;
-
-            if (prevBtn) prevBtn.disabled = page <= 1;
-            if (nextBtn) nextBtn.disabled = page >= pages;
-          }
-
-          if (prevBtn) {
-            prevBtn.addEventListener("click", () => {
-              page -= 1;
-              render();
-            });
-          }
-
-          if (nextBtn) {
-            nextBtn.addEventListener("click", () => {
-              page += 1;
-              render();
-            });
-          }
-
-          if (limitEl) {
-            limitEl.addEventListener("change", () => {
-              page = 1;
-              render();
-            });
-          }
-
-          // =========================================================
-          // Excel-style header filter menu
-          // =========================================================
-          let thActiveCol = null;
-
-          function closeThMenu() {
-            thMenu.hidden = true;
-            thActiveCol = null;
-          }
-
-          function getSetForCol(col) {
-            if (col === "category") return activeCats;
-            if (col === "challenge") return activeChallenges;
-            if (col === "restrictions") return activeRestrictions;
-            if (col === "runner") return activeRunners;
-            if (col === "date") return activeDates;
-            return null;
-          }
-
-          function getOptionsForCol(col) {
-            if (col === "category") return OPTIONS.categories;
-            if (col === "challenge") return OPTIONS.challenges;
-            if (col === "restrictions") return OPTIONS.restrictions;
-            if (col === "runner") return OPTIONS.runners;
-
-            if (col === "date") {
-              const dates = uniq(rows.map(r => (r.dataset.date || "").trim()).filter(Boolean));
-              return dates
-                .map(d => ({ id: d, label: d }))
-                .sort((a, b) => a.label.localeCompare(b.label));
-            }
-
-            return [];
-          }
-
-          function renderThMenuList() {
-            if (!thActiveCol) return;
-
-            const q = norm(thMenuQ.value);
-            const list = getOptionsForCol(thActiveCol);
-            const set = getSetForCol(thActiveCol);
-
-            thMenuList.innerHTML = "";
-
-            const filtered = list.filter(x => {
-              if (!q) return true;
-              return norm(x.label).includes(q) || norm(x.id).includes(q);
-            });
-
-            if (filtered.length === 0) {
-              const empty = document.createElement("div");
-              empty.className = "th-menu__empty muted";
-              empty.textContent = "No matches.";
-              thMenuList.appendChild(empty);
-              return;
-            }
-
-            filtered.slice(0, 250).forEach(x => {
-              const lab = document.createElement("label");
-              lab.className = "th-menu__item";
-
-              const cb = document.createElement("input");
-              cb.type = "checkbox";
-              cb.checked = set.has(x.id);
-
-              cb.addEventListener("change", () => {
-                if (cb.checked) set.add(x.id);
-                else set.delete(x.id);
-
-                page = 1;
-                render();
-              });
-
-              const txt = document.createElement("span");
-              txt.textContent = x.label;
-
-              lab.appendChild(cb);
-              lab.appendChild(txt);
-              thMenuList.appendChild(lab);
-            });
-          }
-
-          function openThMenuFor(col, anchorEl) {
-            thActiveCol = col;
-
-            thMenu.hidden = false;
-
-            const r = anchorEl.getBoundingClientRect();
-            const menuW = thMenu.offsetWidth || 320;
-            const menuH = thMenu.offsetHeight || 300;
-
-            const left = Math.min(window.innerWidth - menuW - 12, Math.max(12, r.left));
-            const top = Math.min(window.innerHeight - menuH - 12, r.bottom + 8);
-
-            thMenu.style.left = left + "px";
-            thMenu.style.top = top + "px";
-
-            thMenuQ.value = "";
-            renderThMenuList();
-            thMenuQ.focus();
-          }
-
-          document.querySelectorAll("[data-filter-btn]").forEach(btn => {
-            btn.addEventListener("click", (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              const col = btn.getAttribute("data-filter-btn");
-              openThMenuFor(col, btn);
-            });
-          });
-
-          thMenuQ.addEventListener("input", renderThMenuList);
-
-          thMenuClear.addEventListener("click", () => {
-            if (!thActiveCol) return;
-            const set = getSetForCol(thActiveCol);
-            if (!set) return;
-
-            set.clear();
-            page = 1;
-            render();
-            renderThMenuList();
-          });
-
-          thMenuClose.addEventListener("click", closeThMenu);
-
-          document.addEventListener("pointerdown", (e) => {
-            if (thMenu.hidden) return;
-            if (thMenu.contains(e.target)) return;
-
-            const isCaret = e.target && e.target.closest && e.target.closest("[data-filter-btn]");
-            if (isCaret) return;
-
-            closeThMenu();
-          }, true);
-
-          window.addEventListener("resize", () => {
-            if (!thMenu.hidden) closeThMenu();
-          });
-
-          // Initial render
-          render();
-        })();
-        </script>
-
-      </div>
-    </section>
-  </div>
-</div>
+        });
+      }
+    });
+
+    function toList(ids, map) {
+      return uniq(ids.filter(Boolean))
+        .map((id) => ({ id, label: map.get(id) || id }))
+        .sort((a, b) => a.label.localeCompare(b.label));
+    }
+
+    const runnerList = toList(runners, runLabelById);
+
+    if (hasBlankRunner) {
+      runnerList.unshift({ id: "__blank__", label: "(blank)" });
+    }
+
+    return {
+      categories: toList(cats, catLabelById),
+      runners: runnerList,
+      challenges: toList(challenges, chLabelById),
+      restrictions: toList(restrictions, resLabelById)
+    };
+  }
+
+  const OPTIONS = buildOptions();
+
+  const activeCats = new Set();
+  const activeChallenges = new Set();
+  const activeRestrictions = new Set();
+  const activeRunners = new Set();
+  const activeDates = new Set();
+
+  let page = 1;
+
+  // Date sort state (default: newest first)
+  let dateSortDir = "desc"; // "asc" | "desc"
+
+  function getLimit() {
+    if (!limitEl) return 10;
+    const v = parseInt(limitEl.value, 10);
+    return Number.isFinite(v) ? v : 10;
+  }
+
+  function passesFilters(row) {
+    const cat = norm(row.dataset.category);
+    const ch = norm(row.dataset.challengeId);
+    const runner = norm(row.dataset.runner);
+    const date = (row.dataset.date || "").trim();
+    const res = (row.dataset.restrictionIds || "").split(",").map(norm).filter(Boolean);
+
+    if (activeCats.size && !activeCats.has(cat)) return false;
+    if (activeChallenges.size && !activeChallenges.has(ch)) return false;
+
+    if (activeRunners.size) {
+      const wantsBlank = activeRunners.has("__blank__");
+      const runnerMatches =
+        (runner && activeRunners.has(runner)) ||
+        (!runner && wantsBlank);
+
+      if (!runnerMatches) return false;
+    }
+
+    if (activeRestrictions.size) {
+      const need = Array.from(activeRestrictions);
+      const okAll = need.every((x) => res.includes(x));
+      if (!okAll) return false;
+    }
+
+    if (activeDates.size && !activeDates.has(date)) return false;
+
+    return true;
+  }
+
+  function anyFiltersActive() {
+    return (
+      activeCats.size ||
+      activeChallenges.size ||
+      activeRestrictions.size ||
+      activeRunners.size ||
+      activeDates.size
+    );
+  }
+
+  // Sort filtered rows by date_completed before paginating
+  function sortRowsByDate(list) {
+    const dir = dateSortDir;
+
+    return list.sort((a, b) => {
+      const aDate = parseDateToNumber(a.dataset.date);
+      const bDate = parseDateToNumber(b.dataset.date);
+
+      const aBad = !Number.isFinite(aDate);
+      const bBad = !Number.isFinite(bDate);
+
+      // Put invalid/blank dates at the bottom (both asc/desc)
+      if (aBad && bBad) {
+        return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
+      }
+      if (aBad) return 1;
+      if (bBad) return -1;
+
+      if (aDate === bDate) {
+        return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
+      }
+
+      return dir === "asc" ? aDate - bDate : bDate - aDate;
+    });
+  }
+
+  function render() {
+    const totalAll = rows.length;
+    let filtered = rows.filter(passesFilters);
+    const total = filtered.length;
+
+    // Apply date sort
+    filtered = sortRowsByDate(filtered);
+
+    const limit = getLimit();
+
+    if (countEl) {
+      if (!anyFiltersActive()) {
+        countEl.textContent = total === 1 ? "1 run" : `${total} runs`;
+      } else {
+        countEl.textContent = `${total} match${total === 1 ? "" : "es"} (of ${totalAll})`;
+      }
+    }
+
+    rows.forEach((r) => (r.style.display = "none"));
+
+    if (limit === 0) {
+      filtered.forEach((r) => (r.style.display = ""));
+      if (pager) pager.style.display = "none";
+      return;
+    }
+
+    const pages = Math.max(1, Math.ceil(total / limit));
+    if (page > pages) page = pages;
+
+    const start = (page - 1) * limit;
+    const end = start + limit;
+
+    filtered.slice(start, end).forEach((r) => (r.style.display = ""));
+
+    if (pager) pager.style.display = pages > 1 ? "" : "none";
+    if (pageLabel) pageLabel.textContent = `Page ${page} / ${pages}`;
+
+    if (prevBtn) prevBtn.disabled = page <= 1;
+    if (nextBtn) nextBtn.disabled = page >= pages;
+  }
+
+  if (prevBtn) {
+    prevBtn.addEventListener("click", () => {
+      page -= 1;
+      render();
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => {
+      page += 1;
+      render();
+    });
+  }
+
+  if (limitEl) {
+    limitEl.addEventListener("change", () => {
+      page = 1;
+      render();
+    });
+  }
+
+  // =========================================================
+  // Excel-style header filter menu
+  // =========================================================
+  let thActiveCol = null;
+
+  function closeThMenu() {
+    thMenu.hidden = true;
+    thActiveCol = null;
+  }
+
+  function getSetForCol(col) {
+    if (col === "category") return activeCats;
+    if (col === "challenge") return activeChallenges;
+    if (col === "restrictions") return activeRestrictions;
+    if (col === "runner") return activeRunners;
+    if (col === "date") return activeDates;
+    return null;
+  }
+
+  function getOptionsForCol(col) {
+    if (col === "category") return OPTIONS.categories;
+    if (col === "challenge") return OPTIONS.challenges;
+    if (col === "restrictions") return OPTIONS.restrictions;
+    if (col === "runner") return OPTIONS.runners;
+
+    if (col === "date") {
+      const dates = uniq(rows.map(r => (r.dataset.date || "").trim()).filter(Boolean));
+      return dates
+        .map(d => ({ id: d, label: d }))
+        .sort((a, b) => a.label.localeCompare(b.label));
+    }
+
+    return [];
+  }
+
+  function renderSortButtonsState() {
+    if (!thMenuSort) return;
+    if (thActiveCol !== "date") {
+      thMenuSort.hidden = true;
+      return;
+    }
+
+    thMenuSort.hidden = false;
+
+    if (thSortAsc) thSortAsc.disabled = dateSortDir === "asc";
+    if (thSortDesc) thSortDesc.disabled = dateSortDir === "desc";
+  }
+
+  function renderThMenuList() {
+    if (!thActiveCol) return;
+
+    const q = norm(thMenuQ.value);
+    const list = getOptionsForCol(thActiveCol);
+    const set = getSetForCol(thActiveCol);
+
+    thMenuList.innerHTML = "";
+
+    const filtered = list.filter(x => {
+      if (!q) return true;
+      return norm(x.label).includes(q) || norm(x.id).includes(q);
+    });
+
+    if (filtered.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "th-menu__empty muted";
+      empty.textContent = "No matches.";
+      thMenuList.appendChild(empty);
+      return;
+    }
+
+    filtered.slice(0, 250).forEach(x => {
+      const lab = document.createElement("label");
+      lab.className = "th-menu__item";
+
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = set.has(x.id);
+
+      cb.addEventListener("change", () => {
+        if (cb.checked) set.add(x.id);
+        else set.delete(x.id);
+
+        page = 1;
+        render();
+      });
+
+      const txt = document.createElement("span");
+      txt.textContent = x.label;
+
+      lab.appendChild(cb);
+      lab.appendChild(txt);
+      thMenuList.appendChild(lab);
+    });
+  }
+
+  function openThMenuFor(col, anchorEl) {
+    thActiveCol = col;
+
+    thMenu.hidden = false;
+
+    const r = anchorEl.getBoundingClientRect();
+    const menuW = thMenu.offsetWidth || 320;
+    const menuH = thMenu.offsetHeight || 300;
+
+    const left = Math.min(window.innerWidth - menuW - 12, Math.max(12, r.left));
+    const top = Math.min(window.innerHeight - menuH - 12, r.bottom + 8);
+
+    thMenu.style.left = left + "px";
+    thMenu.style.top = top + "px";
+
+    thMenuQ.value = "";
+
+    // Show/Hide sort controls based on column
+    renderSortButtonsState();
+
+    renderThMenuList();
+    thMenuQ.focus();
+  }
+
+  document.querySelectorAll("[data-filter-btn]").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const col = btn.getAttribute("data-filter-btn");
+      openThMenuFor(col, btn);
+    });
+  });
+
+  if (thMenuQ) thMenuQ.addEventListener("input", renderThMenuList);
+
+  if (thMenuClear) {
+    thMenuClear.addEventListener("click", () => {
+      if (!thActiveCol) return;
+      const set = getSetForCol(thActiveCol);
+      if (!set) return;
+
+      set.clear();
+      page = 1;
+      render();
+      renderThMenuList();
+    });
+  }
+
+  if (thMenuClose) thMenuClose.addEventListener("click", closeThMenu);
+
+  // Sort button actions
+  if (thSortAsc) {
+    thSortAsc.addEventListener("click", () => {
+      dateSortDir = "asc";
+      renderSortButtonsState();
+      page = 1;
+      render();
+    });
+  }
+
+  if (thSortDesc) {
+    thSortDesc.addEventListener("click", () => {
+      dateSortDir = "desc";
+      renderSortButtonsState();
+      page = 1;
+      render();
+    });
+  }
+
+  document.addEventListener("pointerdown", (e) => {
+    if (thMenu.hidden) return;
+    if (thMenu.contains(e.target)) return;
+
+    const isCaret = e.target && e.target.closest && e.target.closest("[data-filter-btn]");
+    if (isCaret) return;
+
+    closeThMenu();
+  }, true);
+
+  window.addEventListener("resize", () => {
+    if (!thMenu.hidden) closeThMenu();
+  });
+
+  render();
+})();
+</script>
