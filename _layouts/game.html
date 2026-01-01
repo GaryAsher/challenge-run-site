@@ -12,172 +12,180 @@ layout: default
 </div>
 
 <!-- =========================================================
-     Game hero section (16:9, constrained)
+     STANDARDIZED WIDTH WRAPPER
+     This makes /games/<id>/#forums match /games/<id>/completed-runs/
      ========================================================= -->
-{% if page.cover %}
-  <div class="game-shell">
-    <section
-      class="game-hero"
-      style="
-        background-image: url('{{ page.cover | relative_url }}');
-        background-position: {{ page.cover_position | default: 'center' }};
-      "
-    >
-      <div class="game-hero__overlay">
-        <div class="game-hero__content">
-          <h1>{{ page.name }}</h1>
+<div class="page-width">
 
-          {% if page.status %}
-            <p class="muted">{{ page.status }}</p>
-          {% endif %}
+  <!-- =========================================================
+       Game hero section (constrained via game-shell)
+       ========================================================= -->
+  {% if page.cover %}
+    <div class="game-shell">
+      <section
+        class="game-hero"
+        style="
+          background-image: url('{{ page.cover | relative_url }}');
+          background-position: {{ page.cover_position | default: 'center' }};
+        "
+      >
+        <div class="game-hero__overlay">
+          <div class="game-hero__content">
+            <h1>{{ page.name }}</h1>
 
-          {% if page.tags and page.tags.size > 0 %}
-            <div class="game-tags">
-              {% for tag in page.tags %}
-                {% assign meta = site.data.tags[tag] %}
-                <span class="tag">{{ meta.label | default: tag }}</span>
-              {% endfor %}
+            {% if page.status %}
+              <p class="muted">{{ page.status }}</p>
+            {% endif %}
+
+            {% if page.tags and page.tags.size > 0 %}
+              <div class="game-tags">
+                {% for tag in page.tags %}
+                  {% assign meta = site.data.tags[tag] %}
+                  <span class="tag">{{ meta.label | default: tag }}</span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </section>
+    </div>
+  {% endif %}
+
+  <!-- =========================================================
+       Game Tabs
+       ========================================================= -->
+  {% assign tabs_cfg = page.tabs | default: {} %}
+  {% assign show_challenges = tabs_cfg.challenges | default: true %}
+  {% assign show_categories = tabs_cfg.categories | default: true %}
+  {% assign show_runs       = tabs_cfg.runs       | default: true %}
+  {% assign show_resources  = tabs_cfg.resources  | default: true %}
+  {% assign show_guides     = tabs_cfg.guides     | default: true %}
+  {% assign show_forums     = tabs_cfg.forums     | default: true %}
+  {% assign show_history    = tabs_cfg.history    | default: true %}
+
+  {% if show_challenges or show_categories or show_runs or show_resources or show_guides or show_forums or show_history %}
+    <div class="game-shell">
+
+      <nav class="runner-tabs game-tabs" id="game-tabs">
+        {% if show_challenges %}
+          <button class="tab active" data-tab="challenges" type="button">Challenges</button>
+        {% endif %}
+
+        {% if show_categories %}
+          <button class="tab" data-tab="categories" type="button">Categories</button>
+        {% endif %}
+
+        {% if show_runs %}
+          <a
+            class="tab"
+            href="{{ page.url | relative_url | append: 'completed-runs/' }}"
+          >
+            Completed Runs
+          </a>
+        {% endif %}
+
+        {% if show_resources %}
+          <button class="tab" data-tab="resources" type="button">Resources</button>
+        {% endif %}
+
+        {% if show_guides %}
+          <button class="tab" data-tab="guides" type="button">Guides</button>
+        {% endif %}
+
+        {% if show_forums %}
+          <button class="tab" data-tab="forums" type="button">Forums</button>
+        {% endif %}
+
+        {% if show_history %}
+          <button class="tab" data-tab="history" type="button">History</button>
+        {% endif %}
+      </nav>
+
+      <!-- ======================= PANELS ======================= -->
+
+      {% if show_challenges %}
+        <section class="tab-panel active" data-panel="challenges">
+          <div class="card">
+            <h2>Challenges</h2>
+
+            {% if page.challenges %}
+              <div class="game-tags">
+                {% for c in page.challenges %}
+                  {% assign meta = site.data.challenges[c] %}
+                  <span class="tag">{{ meta.label | default: c }}</span>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p class="muted">No challenges listed yet.</p>
+            {% endif %}
+          </div>
+
+          {% if content %}
+            <div class="card">
+              {{ content }}
             </div>
           {% endif %}
-        </div>
-      </div>
-    </section>
-  </div>
-{% endif %}
-
-<!-- =========================================================
-     Game Tabs
-     ========================================================= -->
-{% assign tabs_cfg = page.tabs | default: {} %}
-{% assign show_challenges = tabs_cfg.challenges | default: true %}
-{% assign show_categories = tabs_cfg.categories | default: true %}
-{% assign show_runs       = tabs_cfg.runs       | default: true %}
-{% assign show_resources  = tabs_cfg.resources  | default: true %}
-{% assign show_guides     = tabs_cfg.guides     | default: true %}
-{% assign show_forums     = tabs_cfg.forums     | default: true %}
-{% assign show_history    = tabs_cfg.history    | default: true %}
-
-{% if show_challenges or show_categories or show_runs or show_resources or show_guides or show_forums or show_history %}
-  <div class="game-shell">
-
-    <nav class="runner-tabs game-tabs" id="game-tabs">
-      {% if show_challenges %}
-        <button class="tab active" data-tab="challenges" type="button">Challenges</button>
+        </section>
       {% endif %}
 
       {% if show_categories %}
-        <button class="tab" data-tab="categories" type="button">Categories</button>
-      {% endif %}
+        <section class="tab-panel" data-panel="categories">
+          <div class="card">
+            <h2>Categories</h2>
 
-      {% if show_runs %}
-        <a
-          class="tab"
-          href="{{ page.url | relative_url | append: 'completed-runs/' }}"
-        >
-          Completed Runs
-        </a>
+            {% if page.categories %}
+              <ul class="list">
+                {% for c in page.categories %}
+                  <li>{{ c }}</li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="muted">No categories listed yet.</p>
+            {% endif %}
+          </div>
+        </section>
       {% endif %}
 
       {% if show_resources %}
-        <button class="tab" data-tab="resources" type="button">Resources</button>
+        <section class="tab-panel" data-panel="resources">
+          <div class="card">
+            <h2>Resources</h2>
+            <p class="muted">Coming soon.</p>
+          </div>
+        </section>
       {% endif %}
 
       {% if show_guides %}
-        <button class="tab" data-tab="guides" type="button">Guides</button>
+        <section class="tab-panel" data-panel="guides">
+          <div class="card">
+            <h2>Guides</h2>
+            <p class="muted">Coming soon.</p>
+          </div>
+        </section>
       {% endif %}
 
       {% if show_forums %}
-        <button class="tab" data-tab="forums" type="button">Forums</button>
+        <section class="tab-panel" data-panel="forums">
+          <div class="card">
+            <h2>Forums</h2>
+            <p class="muted">Coming soon.</p>
+          </div>
+        </section>
       {% endif %}
 
       {% if show_history %}
-        <button class="tab" data-tab="history" type="button">History</button>
-      {% endif %}
-    </nav>
-
-    <!-- ======================= PANELS ======================= -->
-
-    {% if show_challenges %}
-      <section class="tab-panel active" data-panel="challenges">
-        <div class="card">
-          <h2>Challenges</h2>
-
-          {% if page.challenges %}
-            <div class="game-tags">
-              {% for c in page.challenges %}
-                {% assign meta = site.data.challenges[c] %}
-                <span class="tag">{{ meta.label | default: c }}</span>
-              {% endfor %}
-            </div>
-          {% else %}
-            <p class="muted">No challenges listed yet.</p>
-          {% endif %}
-        </div>
-
-        {% if content %}
+        <section class="tab-panel" data-panel="history">
           <div class="card">
-            {{ content }}
+            <h2>History</h2>
+            {{ page.history | default: "No history recorded yet." | markdownify }}
           </div>
-        {% endif %}
-      </section>
-    {% endif %}
+        </section>
+      {% endif %}
 
-    {% if show_categories %}
-      <section class="tab-panel" data-panel="categories">
-        <div class="card">
-          <h2>Categories</h2>
+    </div>
+  {% endif %}
 
-          {% if page.categories %}
-            <ul class="list">
-              {% for c in page.categories %}
-                <li>{{ c }}</li>
-              {% endfor %}
-            </ul>
-          {% else %}
-            <p class="muted">No categories listed yet.</p>
-          {% endif %}
-        </div>
-      </section>
-    {% endif %}
-
-    {% if show_resources %}
-      <section class="tab-panel" data-panel="resources">
-        <div class="card">
-          <h2>Resources</h2>
-          <p class="muted">Coming soon.</p>
-        </div>
-      </section>
-    {% endif %}
-
-    {% if show_guides %}
-      <section class="tab-panel" data-panel="guides">
-        <div class="card">
-          <h2>Guides</h2>
-          <p class="muted">Coming soon.</p>
-        </div>
-      </section>
-    {% endif %}
-
-    {% if show_forums %}
-      <section class="tab-panel" data-panel="forums">
-        <div class="card">
-          <h2>Forums</h2>
-          <p class="muted">Coming soon.</p>
-        </div>
-      </section>
-    {% endif %}
-
-    {% if show_history %}
-      <section class="tab-panel" data-panel="history">
-        <div class="card">
-          <h2>History</h2>
-          {{ page.history | default: "No history recorded yet." | markdownify }}
-        </div>
-      </section>
-    {% endif %}
-
-  </div>
-{% endif %}
+</div>
 
 <!-- =========================================================
      Tabs Script
