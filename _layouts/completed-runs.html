@@ -127,7 +127,7 @@ layout: default
           </div>
         </div>
 
-        <!-- Challenge filter -->
+        <!-- Challenge filter 
         <div class="tag-filter" id="ch-filter">
           <div class="muted filter-label">Challenge:</div>
           <div class="tag-picker">
@@ -147,7 +147,8 @@ layout: default
             <div class="tag-suggestions" id="ch-suggestions" hidden></div>
           </div>
         </div>
-
+          -->
+           
         <!-- Restrictions filter -->
         <div class="tag-filter" id="res-filter">
           <div class="muted filter-label">Restrictions:</div>
@@ -169,7 +170,7 @@ layout: default
           </div>
         </div>
 
-        <!-- Runner filter -->
+        <!-- Runner filter
         <div class="tag-filter" id="run-filter">
           <div class="muted filter-label">Runner:</div>
           <div class="tag-picker">
@@ -191,25 +192,26 @@ layout: default
         </div>
 
       </div>
+      -->
+           
+     <!-- Date filter + Clear (same row) -->
+      <div class="runs-date-row" style="margin: 0.25rem 0 0.75rem 0;">
+        <div class="filter-wrap">
+          <input
+            id="date-q"
+            class="filter"
+            type="text"
+            placeholder="Filter by date (ex: 2025 or 2025-01)..."
+            autocomplete="off"
+            inputmode="search"
+            enterkeyhint="search"
+            aria-label="Filter runs by date"
+          />
+        </div>
 
-      <!-- Date filter (simple text match) -->
-      <div class="filter-wrap" style="margin: 0.25rem 0 0.75rem 0;">
-        <input
-          id="date-q"
-          class="filter"
-          type="text"
-          placeholder="Filter by date (ex: 2025 or 2025-01)..."
-          autocomplete="off"
-          inputmode="search"
-          enterkeyhint="search"
-          aria-label="Filter runs by date"
-        />
-      </div>
-
-      <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin: 0 0 0.75rem 0;">
         <button class="btn" id="runs-clear" type="button">Clear filters</button>
       </div>
-
+           
       <!-- =========================================================
            Runs table
            ========================================================= -->
