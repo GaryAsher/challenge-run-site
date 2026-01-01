@@ -3,9 +3,13 @@
   runner_id: gary-asher
   category: Underworld Any%
   challenge: No-Hit No-Damage
+  challenge_id: no-hit-no-damage
   restrictions:
   - Hestia Only
   - No Hexes
+  restriction_ids:
+  - hestia-only
+  - no-hexes
   date_completed: 2025-01-03
 
 - game_id: hades-2
@@ -13,6 +17,7 @@
   runner_id: meira
   category: Chaos Trials - Trial of Origin
   challenge: No-Hit No-Damage
-  restrictions:
-  - (none)
+  challenge_id: no-hit-no-damage
+  restrictions: []
+  restriction_ids: []
   date_completed: 2025-01-05
