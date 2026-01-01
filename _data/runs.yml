@@ -1,13 +1,18 @@
 - game_id: hades-2
   runner: Gary_Asher
   runner_id: gary-asher
-  category: Any% No Hit
-  date: 2025-01-03
-  kind: No-Hit No-Damage
+  category: Underworld Any%
+  challenge: No-Hit No-Damage
+  restrictions:
+  - Hestia Only
+  - No Hexes
+  date_completed: 2025-01-03
 
 - game_id: hades-2
-  runner: SomeoneElse
-  runner_id: someoneelse
-  category: No Arcana
-  date: 2025-01-05
-  kind: First Clear
+  runner: Meira
+  runner_id: meira
+  category: Chaos Trials - Trial of Origin
+  challenge: No-Hit No-Damage
+  restrictions:
+  - (none)
+  date_completed: 2025-01-05
