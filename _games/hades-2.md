@@ -24,7 +24,7 @@ tabs:
 challenges:
   - no-hit
   - no-damage
-  - nhnd
+  - no-hit-no-damage
 
 categories:
   - Chaos Trials
