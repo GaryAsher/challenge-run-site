@@ -24,25 +24,13 @@ layout: default
      ========================================================= -->
 <div class="page-width">
 
-  {% assign runs = site.data.runs | where: "game_id", page.game_id %}
+  {% assign runs = site.data.runs | where: "game_id", page.game_id | sort: "date_completed" | reverse %}
 
   {% if runs and runs.size > 0 %}
 
     <!-- =========================================================
-         Filter controls
+         Filter controls (Search + Limit only)
          ========================================================= -->
-    {% assign challenge_ids = runs | map: "challenge_id" | compact | uniq | sort %}
-
-    {%- comment -%}
-    NOTE:
-    This assumes each run has either:
-      - restrictions: [ "Hestia Only", "No Hexes" ]   (array)   OR
-      - restrictions: "Hestia Only, No Hexes"        (string)
-    If your field name differs, update the assigns below and the <tr data-*> later.
-    {%- endcomment -%}
-
-    {% assign restrictions_raw = runs | map: "restrictions" | compact | uniq | sort %}
-
     <div class="card" style="margin: 0 0 1rem 0;">
       <div style="display: grid; gap: 0.75rem; grid-template-columns: 1fr;">
 
@@ -60,56 +48,17 @@ layout: default
           >
         </div>
 
-        <!-- Dropdown row -->
-        <div style="display: grid; gap: 0.75rem; grid-template-columns: repeat(3, minmax(0, 1fr));">
-
-          <!-- Challenge -->
-          <div>
-            <label class="muted" for="challenge">Challenge</label>
-            <select id="challenge" class="select" style="width: 100%;">
-              <option value="">All</option>
-              {% for cid in challenge_ids %}
-                {% assign meta = site.data.challenges[cid] %}
-                {% assign label = meta.label | default: cid %}
-                <option value="{{ cid }}">{{ label }}</option>
-              {% endfor %}
-            </select>
-          </div>
-
-          <!-- Restrictions -->
-          <div>
-            <label class="muted" for="restriction">Restrictions</label>
-            <select id="restriction" class="select" style="width: 100%;">
-              <option value="">All</option>
-              {% for rr in restrictions_raw %}
-                {%- comment -%}
-                If rr is an array, Liquid will render it like: ["A", "B"].
-                That is not ideal for a dropdown label, but it will still work
-                because we match against the row's data-restrictions string.
-                The recommended way is storing restrictions as an array AND also
-                a pre-joined string field, but we are keeping your current setup.
-                {%- endcomment -%}
-                <option value="{{ rr | escape }}">{{ rr }}</option>
-              {% endfor %}
-            </select>
-            <p class="muted" style="margin: 0.35rem 0 0 0; font-size: 0.95rem;">
-              Tip: this filter matches the restriction text stored on the run row.
-            </p>
-          </div>
-
-          <!-- Limit -->
-          <div>
-            <label class="muted" for="limit">Show</label>
-            <select id="limit" class="select" style="width: 100%;">
-              <option value="10" selected>10</option>
-              <option value="25">25</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-              <option value="250">250</option>
-              <option value="0">All</option>
-            </select>
-          </div>
-
+        <!-- Limit -->
+        <div>
+          <label class="muted" for="limit">Show</label>
+          <select id="limit" class="select" style="width: 100%; margin-left: 0;">
+            <option value="10" selected>10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="250">250</option>
+            <option value="0">All</option>
+          </select>
         </div>
 
         <p class="muted" id="status" style="margin: 0;"></p>
@@ -117,24 +66,42 @@ layout: default
     </div>
 
     <!-- =========================================================
-         Runs table (date sort)
+         Runs table (Header filter carets + Date sort)
          ========================================================= -->
-    <div class="table-wrap">
+    <div class="table-wrap" id="runs-list">
       <table class="runs-table" id="runs-table">
         <thead>
           <tr>
             <th>Runner</th>
-            <th>Category</th>
-            <th>Challenge</th>
-            <th>Restrictions</th>
-            <th>Time</th>
-            <th class="th-date">
-              <span>Date</span>
-              <span class="th-date-sort" aria-label="Sort Date">
-                <button class="th-sort" id="date-asc" type="button" title="Sort oldest to newest">↑</button>
-                <button class="th-sort" id="date-desc" type="button" title="Sort newest to oldest">↓</button>
-              </span>
+
+            <th class="th-filter">
+              <span>Category</span>
+              <button class="th-caret" type="button" aria-label="Filter Category" data-filter-btn="category">▾</button>
             </th>
+
+            <th class="th-filter">
+              <span>Challenge</span>
+              <button class="th-caret" type="button" aria-label="Filter Challenge" data-filter-btn="challenge">▾</button>
+            </th>
+
+            <th class="th-filter">
+              <span>Restrictions</span>
+              <button class="th-caret" type="button" aria-label="Filter Restrictions" data-filter-btn="restrictions">▾</button>
+            </th>
+
+            <th>Time</th>
+
+            <th class="th-filter th-date">
+              <div class="th-title">
+                <span>Date</span>
+              </div>
+
+              <div class="th-date-sort" aria-label="Sort Date">
+                <button class="th-sort" id="th-sort-asc" type="button" title="Sort oldest to newest">↑</button>
+                <button class="th-sort" id="th-sort-desc" type="button" title="Sort newest to oldest">↓</button>
+              </div>
+            </th>
+
             <th>Video</th>
           </tr>
         </thead>
@@ -144,37 +111,25 @@ layout: default
             {% assign meta = site.data.challenges[r.challenge_id] %}
             {% assign challenge_label = meta.label | default: r.challenge_id %}
 
-            {%- comment -%}
-            Prefer human text:
-            - If restrictions is an array: show tags and also build a joined text for data-restrictions
-            - If restrictions is a string: use it directly
-            Also supports legacy: restriction / restriction_ids if present
-            {%- endcomment -%}
-
-            {% assign rtexts = r.restrictions | default: empty %}
-            {% assign rtext_joined = "" %}
-
-            {% if rtexts and rtexts.size > 0 %}
-              {% assign rtext_joined = rtexts | join: " | " %}
-            {% else %}
-              {% assign rtext_joined = r.restrictions | default: r.restriction | default: "" %}
+            {% assign r_texts = r.restrictions | default: empty %}
+            {% assign r_join_for_data = "" %}
+            {% if r_texts and r_texts.size > 0 %}
+              {% assign r_join_for_data = r_texts | join: "," %}
             {% endif %}
 
             <tr
               class="run-row"
-              data-runner="{{ r.runner | default: '' | downcase | escape }}"
+              data-runner="{{ r.runner_id | default: r.runner | default: '' | downcase | escape }}"
               data-category="{{ r.category | default: '' | downcase | escape }}"
-              data-challenge-id="{{ r.challenge_id | default: '' | escape }}"
-              data-challenge-label="{{ challenge_label | downcase | escape }}"
-              data-restrictions="{{ rtext_joined | downcase | escape }}"
+              data-challenge-id="{{ r.challenge_id | default: '' | downcase | escape }}"
+              data-challenge-label="{{ challenge_label | default: '' | downcase | escape }}"
+              data-restrictions="{{ r_join_for_data | downcase | escape }}"
               data-date="{{ r.date_completed | default: '' | escape }}"
               data-time="{{ r.time | default: '' | escape }}"
             >
               <td>
                 {% if r.runner_id %}
-                  <a href="{{ '/runners/' | relative_url }}{{ r.runner_id | slugify }}/">
-                    {{ r.runner | default: r.runner_id }}
-                  </a>
+                  <a href="{{ '/runners/' | relative_url }}{{ r.runner_id }}/">{{ r.runner | default: r.runner_id }}</a>
                 {% else %}
                   {{ r.runner | default: "—" }}
                 {% endif %}
@@ -185,26 +140,16 @@ layout: default
               <td>{{ challenge_label }}</td>
 
               <td>
-                {% if rtexts and rtexts.size > 0 %}
-                  {% for t in rtexts %}
-                    <span class="tag">{{ t }}</span>
+                {% if r_texts and r_texts.size > 0 %}
+                  {% for rr in r_texts %}
+                    <span class="tag">{{ rr }}</span>
                   {% endfor %}
                 {% else %}
-                  {% if rtext_joined and rtext_joined != "" %}
-                    <span class="tag">{{ rtext_joined }}</span>
-                  {% else %}
-                    <span class="muted">—</span>
-                  {% endif %}
+                  —
                 {% endif %}
               </td>
 
-              <td>
-                {% if r.time %}
-                  {{ r.time }}
-                {% else %}
-                  <span class="muted">—</span>
-                {% endif %}
-              </td>
+              <td>{{ r.time | default: "—" }}</td>
 
               <td>{{ r.date_completed | default: "—" }}</td>
 
@@ -212,36 +157,65 @@ layout: default
                 {% if r.video %}
                   <a href="{{ r.video }}" target="_blank" rel="noopener">Link</a>
                 {% else %}
-                  <span class="muted">—</span>
+                  —
                 {% endif %}
               </td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
+
+      <!-- Excel-style header filter menu (single instance) -->
+      <div class="th-menu" id="th-menu" hidden>
+        <div class="th-menu__top">
+          <input
+            id="th-menu-q"
+            class="filter th-menu__q"
+            type="text"
+            placeholder="Search..."
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="th-menu__list" id="th-menu-list"></div>
+
+        <div class="th-menu__actions">
+          <button class="btn" id="th-menu-clear" type="button">Clear</button>
+          <button class="btn" id="th-menu-close" type="button">Close</button>
+        </div>
+      </div>
     </div>
 
     <!-- =========================================================
-         Filtering + Date sort script
+         Filtering script (Search + Header filters + Date sort + Limit)
          ========================================================= -->
     <script>
 (function () {
   const q = document.getElementById("q");
-  const challenge = document.getElementById("challenge");
-  const restriction = document.getElementById("restriction");
-  const limit = document.getElementById("limit");
+  const limitEl = document.getElementById("limit");
   const status = document.getElementById("status");
 
-  const ascBtn = document.getElementById("date-asc");
-  const descBtn = document.getElementById("date-desc");
+  const table = document.getElementById("runs-table");
+  if (!table) return;
 
-  const tbody = document.getElementById("runs-body");
-  const rows = Array.from(document.querySelectorAll(".run-row"));
+  const rows = Array.from(table.querySelectorAll(".run-row"));
+  const tbody = table.querySelector("tbody");
+
+  const thMenu = document.getElementById("th-menu");
+  const thMenuQ = document.getElementById("th-menu-q");
+  const thMenuList = document.getElementById("th-menu-list");
+  const thMenuClear = document.getElementById("th-menu-clear");
+  const thMenuClose = document.getElementById("th-menu-close");
+
+  const thSortAsc = document.getElementById("th-sort-asc");
+  const thSortDesc = document.getElementById("th-sort-desc");
 
   rows.forEach((r, i) => (r.dataset._i = String(i)));
 
-  function norm(v) {
-    return (v || "").toString().trim().toLowerCase();
+  const norm = (s) => (s || "").toString().trim().toLowerCase();
+
+  function uniq(arr) {
+    return Array.from(new Set(arr));
   }
 
   function parseDateToNumber(s) {
@@ -249,24 +223,123 @@ layout: default
     if (!v) return NaN;
 
     const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(v);
-    if (m) {
-      const y = parseInt(m[1], 10);
-      const mo = parseInt(m[2], 10);
-      const d = parseInt(m[3], 10);
-      if (Number.isFinite(y) && Number.isFinite(mo) && Number.isFinite(d)) {
-        return Date.UTC(y, mo - 1, d);
-      }
-    }
+    if (m) return Date.UTC(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10));
 
     const t = Date.parse(v);
     return Number.isFinite(t) ? t : NaN;
   }
 
-  let dateSortDir = "desc";
+  function getLimit() {
+    const v = parseInt((limitEl && limitEl.value) || "10", 10);
+    return Number.isFinite(v) ? v : 10;
+  }
 
-  function updateDateButtons() {
-    if (ascBtn) ascBtn.disabled = dateSortDir === "asc";
-    if (descBtn) descBtn.disabled = dateSortDir === "desc";
+  // Build options from the rendered rows
+  function buildOptions() {
+    const cats = [];
+    const catLabelById = new Map();
+
+    const chIds = [];
+    const chLabelById = new Map();
+
+    const restrictions = [];
+
+    rows.forEach((row) => {
+      const cat = norm(row.dataset.category);
+      const chId = norm(row.dataset.challengeId);
+      const chLabel = (row.dataset.challengeLabel || "").trim();
+      const res = (row.dataset.restrictions || "")
+        .split(",")
+        .map(norm)
+        .filter(Boolean);
+
+      if (cat) {
+        cats.push(cat);
+        if (!catLabelById.has(cat)) {
+          // Category is column index 1
+          const cell = row.children[1];
+          if (cell) catLabelById.set(cat, cell.textContent.trim());
+        }
+      }
+
+      if (chId) {
+        chIds.push(chId);
+        if (!chLabelById.has(chId)) chLabelById.set(chId, chLabel || chId);
+      }
+
+      if (res.length) restrictions.push(...res);
+    });
+
+    function toList(ids, map) {
+      return uniq(ids.filter(Boolean))
+        .map((id) => ({ id, label: (map && map.get(id)) || id }))
+        .sort((a, b) => a.label.localeCompare(b.label));
+    }
+
+    return {
+      categories: toList(cats, catLabelById),
+      challenges: toList(chIds, chLabelById),
+      restrictions: toList(restrictions)
+    };
+  }
+
+  const OPTIONS = buildOptions();
+
+  const activeCats = new Set();
+  const activeChallenges = new Set();
+  const activeRestrictions = new Set();
+
+  let dateSortDir = "desc";
+  let thActiveCol = null;
+
+  function closeThMenu() {
+    if (!thMenu) return;
+    thMenu.hidden = true;
+    thActiveCol = null;
+  }
+
+  function getSetForCol(col) {
+    if (col === "category") return activeCats;
+    if (col === "challenge") return activeChallenges;
+    if (col === "restrictions") return activeRestrictions;
+    return null;
+  }
+
+  function getOptionsForCol(col) {
+    if (col === "category") return OPTIONS.categories;
+    if (col === "challenge") return OPTIONS.challenges;
+    if (col === "restrictions") return OPTIONS.restrictions;
+    return [];
+  }
+
+  function matchesAllRestrictions(rowResList) {
+    if (!activeRestrictions.size) return true;
+    const need = Array.from(activeRestrictions);
+    return need.every(x => rowResList.includes(x));
+  }
+
+  function passesFilters(row) {
+    const needle = norm(q && q.value);
+
+    const cat = norm(row.dataset.category);
+    const ch = norm(row.dataset.challengeId);
+    const res = (row.dataset.restrictions || "").split(",").map(norm).filter(Boolean);
+
+    if (activeCats.size && !activeCats.has(cat)) return false;
+    if (activeChallenges.size && !activeChallenges.has(ch)) return false;
+    if (!matchesAllRestrictions(res)) return false;
+
+    if (needle) {
+      const hay =
+        norm(row.dataset.runner) + " " +
+        norm(row.dataset.category) + " " +
+        norm(row.dataset.challengeLabel) + " " +
+        norm(row.dataset.restrictions);
+
+      if (!hay.includes(needle)) return false;
+    }
+
+    return true;
   }
 
   function sortRowsByDate(list) {
@@ -279,85 +352,179 @@ layout: default
       const aBad = !Number.isFinite(aDate);
       const bBad = !Number.isFinite(bDate);
 
-      if (aBad && bBad) {
-        return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
-      }
+      if (aBad && bBad) return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
       if (aBad) return 1;
       if (bBad) return -1;
 
-      if (aDate === bDate) {
-        return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
-      }
+      if (aDate === bDate) return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
 
       return dir === "asc" ? aDate - bDate : bDate - aDate;
     });
   }
 
-  function applyFilters() {
-    const needle = norm(q && q.value);
-    const ch = (challenge && challenge.value ? challenge.value.toString() : "");
-    const rr = norm(restriction && restriction.value);
-    const lim = parseInt(limit && limit.value ? limit.value : "10", 10);
-
-    let matched = [];
-
-    for (const row of rows) {
-      const runner = row.dataset.runner || "";
-      const cat = row.dataset.category || "";
-      const chId = row.dataset.challengeId || "";
-      const chLabel = row.dataset.challengeLabel || "";
-      const restr = row.dataset.restrictions || "";
-
-      const passesChallenge = !ch || chId === ch;
-      const passesRestrictions = !rr || restr.includes(rr);
-
-      const hay = (runner + " " + cat + " " + chLabel + " " + restr).trim();
-      const passesSearch = !needle || hay.includes(needle);
-
-      const show = passesChallenge && passesRestrictions && passesSearch;
-
-      row.style.display = show ? "" : "none";
-      if (show) matched.push(row);
-    }
-
-    matched = sortRowsByDate(matched);
-
-    if (tbody) matched.forEach(r => tbody.appendChild(r));
-
-    if (!isNaN(lim) && lim > 0) {
-      matched.forEach((row, idx) => {
-        row.style.display = idx < lim ? "" : "none";
-      });
-      if (status) status.textContent = "Showing " + Math.min(lim, matched.length) + " of " + matched.length + " matching runs.";
-    } else {
-      if (status) status.textContent = "Showing " + matched.length + " matching runs.";
-    }
+  function updateDateSortButtons() {
+    if (thSortAsc) thSortAsc.disabled = dateSortDir === "asc";
+    if (thSortDesc) thSortDesc.disabled = dateSortDir === "desc";
   }
 
-  [q, challenge, restriction, limit].forEach(el => {
-    if (!el) return;
-    el.addEventListener("input", applyFilters);
-    el.addEventListener("change", applyFilters);
+  function render() {
+    let filtered = rows.filter(passesFilters);
+    filtered = sortRowsByDate(filtered);
+
+    if (tbody) filtered.forEach(r => tbody.appendChild(r));
+
+    const lim = getLimit();
+    const total = filtered.length;
+
+    rows.forEach(r => (r.style.display = "none"));
+
+    if (lim === 0) {
+      filtered.forEach(r => (r.style.display = ""));
+      if (status) status.textContent = "Showing " + total + " matching runs.";
+      return;
+    }
+
+    filtered.forEach((r, idx) => {
+      r.style.display = idx < lim ? "" : "none";
+    });
+
+    if (status) status.textContent = "Showing " + Math.min(lim, total) + " of " + total + " matching runs.";
+  }
+
+  function renderThMenuList() {
+    if (!thMenuList || !thMenuQ || !thActiveCol) return;
+
+    const qv = norm(thMenuQ.value);
+    const list = getOptionsForCol(thActiveCol);
+    const set = getSetForCol(thActiveCol);
+
+    thMenuList.innerHTML = "";
+
+    const filtered = list.filter(x => {
+      if (!qv) return true;
+      return norm(x.label).includes(qv) || norm(x.id).includes(qv);
+    });
+
+    if (!filtered.length) {
+      const empty = document.createElement("div");
+      empty.className = "th-menu__empty muted";
+      empty.textContent = "No matches.";
+      thMenuList.appendChild(empty);
+      return;
+    }
+
+    filtered.slice(0, 250).forEach(x => {
+      const lab = document.createElement("label");
+      lab.className = "th-menu__item";
+
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = set.has(x.id);
+
+      cb.addEventListener("change", () => {
+        if (cb.checked) set.add(x.id);
+        else set.delete(x.id);
+        render();
+      });
+
+      const txt = document.createElement("span");
+      txt.textContent = x.label;
+
+      lab.appendChild(cb);
+      lab.appendChild(txt);
+      thMenuList.appendChild(lab);
+    });
+  }
+
+  function openThMenuFor(col, anchorEl) {
+    if (!thMenu) return;
+
+    thActiveCol = col;
+    thMenu.hidden = false;
+
+    const r = anchorEl.getBoundingClientRect();
+    const menuW = thMenu.offsetWidth || 320;
+    const menuH = thMenu.offsetHeight || 300;
+
+    const left = Math.min(window.innerWidth - menuW - 12, Math.max(12, r.left));
+    const top = Math.min(window.innerHeight - menuH - 12, r.bottom + 8);
+
+    thMenu.style.left = left + "px";
+    thMenu.style.top = top + "px";
+
+    if (thMenuQ) thMenuQ.value = "";
+    renderThMenuList();
+    if (thMenuQ) thMenuQ.focus();
+  }
+
+  // Toggle behavior: clicking same caret closes the popup
+  document.querySelectorAll("[data-filter-btn]").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const col = btn.getAttribute("data-filter-btn");
+
+      if (thMenu && !thMenu.hidden && thActiveCol === col) {
+        closeThMenu();
+        return;
+      }
+
+      openThMenuFor(col, btn);
+    });
   });
 
-  if (ascBtn) {
-    ascBtn.addEventListener("click", () => {
+  if (thMenuQ) thMenuQ.addEventListener("input", renderThMenuList);
+
+  if (thMenuClear) {
+    thMenuClear.addEventListener("click", () => {
+      if (!thActiveCol) return;
+      const set = getSetForCol(thActiveCol);
+      if (!set) return;
+
+      set.clear();
+      render();
+      renderThMenuList();
+    });
+  }
+
+  if (thMenuClose) thMenuClose.addEventListener("click", closeThMenu);
+
+  document.addEventListener("pointerdown", (e) => {
+    if (!thMenu || thMenu.hidden) return;
+    if (thMenu.contains(e.target)) return;
+
+    const isCaret = e.target && e.target.closest && e.target.closest("[data-filter-btn]");
+    if (isCaret) return;
+
+    closeThMenu();
+  }, true);
+
+  window.addEventListener("resize", () => {
+    if (thMenu && !thMenu.hidden) closeThMenu();
+  });
+
+  if (thSortAsc) {
+    thSortAsc.addEventListener("click", () => {
       dateSortDir = "asc";
-      updateDateButtons();
-      applyFilters();
+      updateDateSortButtons();
+      render();
     });
   }
 
-  if (descBtn) {
-    descBtn.addEventListener("click", () => {
+  if (thSortDesc) {
+    thSortDesc.addEventListener("click", () => {
       dateSortDir = "desc";
-      updateDateButtons();
-      applyFilters();
+      updateDateSortButtons();
+      render();
     });
   }
 
-  updateDateButtons();
-  applyFilters();
+  if (q) q.addEventListener("input", render);
+  if (limitEl) limitEl.addEventListener("change", render);
+
+  updateDateSortButtons();
+  render();
 })();
     </script>
 
