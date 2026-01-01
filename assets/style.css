@@ -13,7 +13,7 @@
 
   --placeholder: rgba(255, 255, 255, 0.6);
   --placeholder-dim: rgba(255, 255, 255, 0.55);
-   
+
   --bg-soft: rgba(255, 255, 255, 0.06);
   --text-muted: rgba(255, 255, 255, 0.78);
   --text-dim: rgba(255, 255, 255, 0.75);
@@ -63,10 +63,14 @@
   box-sizing: border-box;
 }
 
-* {
-  caret-color: transparent;
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }
 
+/* Caret: only show when actively focused */
 input,
 textarea,
 [contenteditable="true"] {
@@ -82,8 +86,6 @@ textarea:focus,
 select {
   caret-color: transparent;
 }
-
-button, input, select, textarea { font: inherit; }
 
 /* ============================================================
    Base / Reset
@@ -134,47 +136,6 @@ a:hover {
 }
 
 /* ============================================================
-   Filters Grid (Game runs + Games index)
-   ============================================================ */
-.filters-grid{
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.9rem;
-  align-items: start;
-  margin: 0 0 0.9rem 0;
-  width: 100%;
-}
-
-/* Runs page: 4 columns on wide screens */
-@media (min-width: 981px){
-  .filters-grid.runs-filters{
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
-/* 2 columns on medium screens */
-@media (max-width: 980px){
-  .filters-grid{
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-/* 1 column on small screens */
-@media (max-width: 560px){
-  .filters-grid{
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Each filter "field" looks like a mini card */
-.filters-grid .tag-filter{
-  padding: 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-}
-
-/* ============================================================
    Header / Navigation
    ============================================================ */
 .site-header {
@@ -186,6 +147,7 @@ a:hover {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+
   padding: 1.25rem 1.5rem;
   border-bottom: 1px solid var(--border);
   background: var(--bg);
@@ -232,7 +194,7 @@ a:hover {
 }
 
 /* ============================================================
-  Components: Shared (used across pages)
+   Components: Shared (used across pages)
    ============================================================ */
 .muted { color: var(--text-muted); }
 .muted a { color: inherit; }
@@ -326,10 +288,44 @@ a:hover {
   outline-offset: 2px;
 }
 
-.results-controls {
-  display: flex;
-  align-items: center;
-  margin: 0.25rem 0 0.5rem 0;
+/* ============================================================
+   Filters Grid (Games index + Runs page)
+   ============================================================ */
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+  align-items: start;
+  margin: 0 0 0.9rem 0;
+  width: 100%;
+}
+
+.filters-grid .tag-filter {
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+/* Runs page: 4 columns on wide screens */
+@media (min-width: 981px) {
+  .filters-grid.runs-filters {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* 2 columns on medium screens */
+@media (max-width: 980px) {
+  .filters-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* 1 column on small screens */
+@media (max-width: 560px) {
+  .filters-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ============================================================
@@ -511,7 +507,6 @@ a:hover {
 .grid {
   display: grid;
   gap: 0.9rem;
-
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
 }
 
@@ -522,7 +517,7 @@ a:hover {
 }
 
 /* ============================================================
-   Games: Hero + Tags (Fixed 16:9)
+   Games: Hero + Tags (Fixed 2:1)
    ============================================================ */
 .game-hero {
   position: relative;
@@ -900,17 +895,19 @@ a:hover {
 }
 
 /* ============================================================
-   Runs Table (boxed + nicer grid)
+   Runs Page: Table + Date Row + Pagination
    ============================================================ */
 .table-wrap {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
+  overflow-x: auto;
   background: var(--surface);
 }
 
 .runs-table {
   width: 100%;
+  min-width: 780px;
   border-collapse: separate;
   border-spacing: 0;
   font-size: 0.95rem;
@@ -949,14 +946,6 @@ a:hover {
   border-bottom: none;
 }
 
-.table-wrap {
-  overflow-x: auto;
-}
-
-.runs-table {
-  min-width: 780px;
-}
-
 .runs-date-row {
   display: flex;
   gap: 0.5rem;
@@ -971,18 +960,7 @@ a:hover {
 
 .runs-date-row .filter {
   margin: 0;
-}
-
-/* ============================================================
-   Pagination
-   ============================================================ */
-.list-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  align-items: center;
-  justify-content: space-between;
-  margin: 0.75rem 0;
+  max-width: none;
 }
 
 .pager {
@@ -993,6 +971,18 @@ a:hover {
 
 .pager .muted {
   white-space: nowrap;
+}
+
+/* ============================================================
+   Pagination (shared utilities)
+   ============================================================ */
+.list-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0.75rem 0;
 }
 
 .list-controls--bottom {
