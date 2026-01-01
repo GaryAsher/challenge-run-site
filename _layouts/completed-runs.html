@@ -174,10 +174,16 @@ layout: default
                       </td>
 
                       <td>
-                        {% if run.restriction_ids and run.restriction_ids.size > 0 %}
-                          {% for rid in run.restriction_ids %}
-                          {% assign rmeta = site.data.restrictions[rid] %}
-                            <span class="tag">{{ rmeta.label | default: rid }}</span>
+                        {% assign rtexts = run.restrictions | default: empty %}
+                        {% assign rids   = run.restriction_ids | default: empty %}
+                           
+                        {% if rtexts and rtexts.size > 0 %}
+                          {% for r in rtexts %}
+                            <span class="tag">{{ r }}</span>
+                          {% endfor %}
+                        {% elsif rids and rids.size > 0 %}
+                          {% for rid in rids %}
+                            <span class="tag">{{ rid }}</span>
                           {% endfor %}
                         {% endif %}
                       </td>
