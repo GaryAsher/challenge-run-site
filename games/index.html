@@ -203,6 +203,70 @@ items.forEach(card => {
 });
 
 // =========================================================
+// UI helpers: picked chips + suggestions list
+// =========================================================
+function renderPicked(set, list, pickedEl, { onRemove } = {}) {
+  pickedEl.innerHTML = "";
+
+  const entries = Array.from(set);
+  if (!entries.length) return;
+
+  for (const id of entries) {
+    const meta = list.find(x => norm(x.id) === norm(id));
+    const label = meta ? meta.label : id;
+
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "tag-chip";
+    chip.textContent = `${label} ×`;
+
+    chip.addEventListener("click", () => {
+      set.delete(norm(id));
+      if (onRemove) onRemove();
+    });
+
+    pickedEl.appendChild(chip);
+  }
+}
+
+function renderSuggestions(qRaw, set, list, sugEl, { onPick } = {}) {
+  const q = norm(qRaw);
+  sugEl.innerHTML = "";
+
+  const available = list.filter(x => !set.has(norm(x.id)));
+  const filtered = q
+    ? available.filter(x => norm(x.label).includes(q) || norm(x.id).includes(q))
+    : available;
+
+  const show = filtered.slice(0, 30);
+
+  if (!show.length) {
+    const empty = document.createElement("div");
+    empty.className = "tag-suggestion is-empty";
+    empty.textContent = "No matches.";
+    sugEl.appendChild(empty);
+    sugEl.hidden = false;
+    return;
+  }
+
+  for (const item of show) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "tag-suggestion";
+    btn.textContent = item.label;
+
+    btn.addEventListener("click", () => {
+      set.add(norm(item.id));
+      if (onPick) onPick(item);
+    });
+
+    sugEl.appendChild(btn);
+  }
+
+  sugEl.hidden = false;
+}
+
+// =========================================================
 // Filtering: search + tags + challenges
 // =========================================================
 function applyFilter() {
