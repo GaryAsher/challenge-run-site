@@ -141,9 +141,15 @@ layout: default
                       <button class="th-caret" type="button" aria-label="Filter Runner" data-filter-btn="runner">▾</button>
                     </th>
 
-                    <th class="th-filter">
-                      <span>Date Completed</span>
-                      <button class="th-caret" type="button" aria-label="Filter Date" data-filter-btn="date">▾</button>
+                    <th class="th-filter th-date">
+                      <div class="th-title">
+                        <span>Date Completed</span>
+                      </div>
+                         
+                      <div class="th-date-sort" aria-label="Sort Date Completed">
+                        <button class="th-sort" id="th-sort-asc" type="button" title="Sort oldest to newest">↑</button>
+                        <button class="th-sort" id="th-sort-desc" type="button" title="Sort newest to oldest">↓</button>
+                      </div>
                     </th>
                   </tr>
                 </thead>
@@ -193,11 +199,6 @@ layout: default
                <!-- Excel-style header filter menu (single instance) -->
                <div class="th-menu" id="th-menu" hidden>
                  <div class="th-menu__top">
-                   <!-- Date sorting (only shown when filtering the Date column) -->
-                   <div class="th-menu__sort" id="th-menu-sort" hidden>
-                     <button class="btn" id="th-sort-asc" type="button" title="Sort oldest to newest">Sort ↑</button>
-                     <button class="btn" id="th-sort-desc" type="button" title="Sort newest to oldest">Sort ↓</button>
-                   </div>
                
                    <input
                      id="th-menu-q"
@@ -264,7 +265,6 @@ layout: default
   const thMenuClear = document.getElementById("th-menu-clear");
   const thMenuClose = document.getElementById("th-menu-close");
 
-  const thMenuSort = document.getElementById("th-menu-sort");
   const thSortAsc = document.getElementById("th-sort-asc");
   const thSortDesc = document.getElementById("th-sort-desc");
 
@@ -550,19 +550,6 @@ layout: default
     return [];
   }
 
-  function renderSortButtonsState() {
-    if (!thMenuSort) return;
-    if (thActiveCol !== "date") {
-      thMenuSort.hidden = true;
-      return;
-    }
-
-    thMenuSort.hidden = false;
-
-    if (thSortAsc) thSortAsc.disabled = dateSortDir === "asc";
-    if (thSortDesc) thSortDesc.disabled = dateSortDir === "desc";
-  }
-
   function renderThMenuList() {
     if (!thActiveCol) return;
 
@@ -628,8 +615,6 @@ layout: default
     thMenuQ.value = "";
 
     // Show/Hide sort controls based on column
-    renderSortButtonsState();
-
     renderThMenuList();
     thMenuQ.focus();
   }
@@ -659,12 +644,17 @@ layout: default
   }
 
   if (thMenuClose) thMenuClose.addEventListener("click", closeThMenu);
+     
+  function updateDateSortButtons() {
+    if (thSortAsc) thSortAsc.disabled = dateSortDir === "asc";
+    if (thSortDesc) thSortDesc.disabled = dateSortDir === "desc";
+  }
 
   // Sort button actions
   if (thSortAsc) {
     thSortAsc.addEventListener("click", () => {
       dateSortDir = "asc";
-      renderSortButtonsState();
+      updateDateSortButtons();
       page = 1;
       render();
     });
@@ -673,7 +663,7 @@ layout: default
   if (thSortDesc) {
     thSortDesc.addEventListener("click", () => {
       dateSortDir = "desc";
-      renderSortButtonsState();
+      updateDateSortButtons();
       page = 1;
       render();
     });
@@ -693,6 +683,7 @@ layout: default
     if (!thMenu.hidden) closeThMenu();
   });
 
+  updateDateSortButtons();
   render();
 })();
 </script>
