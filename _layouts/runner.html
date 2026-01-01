@@ -143,17 +143,8 @@ layout: default
 <section class="tab-panel" data-panel="runs">
   {% assign all_runs = site.data.runs | default: empty %}
 
-  {%- comment -%}
-  Match runs by runner_id (required).
-  Runner page front matter should include:
-    runner_id: gary-asher
-    name: Gary_Asher
-  And each run in _data/runs.yml should include:
-    runner_id: gary-asher
-  {%- endcomment -%}
-
   {% assign rid = page.runner_id | default: "" | strip | downcase %}
-     
+
   {% assign runs = "" | split: "" %}
   {% for r in all_runs %}
     {% assign r_rid = r.runner_id | default: "" | strip | downcase %}
@@ -162,8 +153,8 @@ layout: default
     {% endif %}
   {% endfor %}
 
-  {% assign runs = runs | sort: "date" | reverse %}
-     
+  {% assign runs = runs | sort: "date_completed" | reverse %}
+
   {% if runs and runs.size > 0 %}
     <div id="runner-runs" class="list-paged" data-page-size="25">
       <div class="list-items">
@@ -171,9 +162,9 @@ layout: default
           {% assign g = site.games | where: "game_id", r.game_id | first %}
 
           <article class="card list-item"
-            data-game="{{ r.game_id | strip | downcase }}"
-            data-category="{{ r.category | strip | downcase }}"
-            data-date="{{ r.date }}"
+            data-game="{{ r.game_id | default: '' | strip | downcase }}"
+            data-category="{{ r.category | default: '' | strip | downcase }}"
+            data-date="{{ r.date_completed | default: '' }}"
           >
             <strong>
               {% if g %}
@@ -182,13 +173,21 @@ layout: default
                 {{ r.game_id }}
               {% endif %}
             </strong>
-            — {{ r.category | strip }}
+
+            {% if r.category and r.category != "" %}
+              — {{ r.category | strip }}
+            {% endif %}
 
             <div class="muted">
-              {% if r.kind %}{{ r.kind }} • {% endif %}
-              <time datetime="{{ r.date }}">{{ r.date }}</time>
-              {% if r.video and r.video != "" %} • <a href="{{ r.video }}">Video</a>{% endif %}
+              <time datetime="{{ r.date_completed }}">{{ r.date_completed }}</time>
+              {% if r.video_link and r.video_link != "" %}
+                • <a href="{{ r.video_link }}" target="_blank" rel="noopener">Video</a>
+              {% endif %}
             </div>
+
+            {% if r.time and r.time != "" %}
+              <div class="muted">Time: {{ r.time }}</div>
+            {% endif %}
 
             {% if r.notes and r.notes != "" %}
               <div class="muted">{{ r.notes }}</div>
@@ -202,11 +201,8 @@ layout: default
 
         <div class="pager">
           <button type="button" class="btn" data-prev>Prev</button>
-
           <span class="muted" data-page-label></span>
-
           <div class="page-numbers" data-pages></div>
-
           <button type="button" class="btn" data-next>Next</button>
         </div>
       </div>
