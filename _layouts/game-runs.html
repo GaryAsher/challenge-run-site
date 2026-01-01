@@ -1,22 +1,65 @@
----
-layout: default
----
+{% assign game = site.games | where: "game_id", page.game_id | first %}
+{% if game == nil %}
+  {% assign game = page %}
+{% endif %}
 
 <!-- =========================================================
      Back link to Game page
      ========================================================= -->
 <div class="page-width">
   <p class="muted page-back">
-    <a href="{{ page.game_url | relative_url }}">← {{ page.game_name }}</a>
+    <a href="{{ game.url | relative_url }}">← {{ game.name | default: page.game_name }}</a>
   </p>
 </div>
 
 <!-- =========================================================
-     Page header
+     Game hero + tags
+     ========================================================= -->
+{% if game.cover %}
+  <div class="page-width">
+    <section
+      class="game-hero"
+      style="
+        background-image: url('{{ game.cover | relative_url }}');
+        background-position: {{ game.cover_position | default: 'center' }};
+      "
+    >
+      <div class="game-hero__overlay">
+        <div class="game-hero__content">
+          <h1>{{ game.name | default: page.game_name }}</h1>
+
+          {% if game.status %}
+            <p class="muted">{{ game.status }}</p>
+          {% endif %}
+
+          {% if game.tags and game.tags.size > 0 %}
+            <div class="game-tags">
+              {% for tag in game.tags %}
+                {% assign meta = site.data.tags[tag] %}
+                <span class="tag">{{ meta.label | default: tag }}</span>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+  </div>
+{% else %}
+  <div class="page-width">
+    <h1>{{ game.name | default: page.game_name }}</h1>
+    <p class="muted">All recorded runs for this game.</p>
+  </div>
+{% endif %}
+
+<!-- =========================================================
+     Tabs (Runs active)
      ========================================================= -->
 <div class="page-width">
-  <h1>{{ page.game_name }} Runs</h1>
-  <p class="muted">All recorded runs for this game.</p>
+  <nav class="runner-tabs game-tabs" id="game-tabs">
+    <a class="tab" href="{{ game.url | relative_url }}#overview">Overview</a>
+    <a class="tab" href="{{ game.url | relative_url }}#categories">Categories</a>
+    <a class="tab active" href="{{ game.url | relative_url }}game-runs/">Runs</a>
+  </nav>
 </div>
 
 <!-- =========================================================
