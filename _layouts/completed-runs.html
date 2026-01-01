@@ -248,6 +248,7 @@ layout: default
   if (!root) return;
 
   const rows = Array.from(root.querySelectorAll(".run-row"));
+  const tbody = document.querySelector("#runs-table tbody");
 
   rows.forEach((r, i) => (r.dataset._i = String(i)));
 
@@ -461,6 +462,10 @@ layout: default
     // Apply date sort
     filtered = sortRowsByDate(filtered);
 
+    if (tbody) {
+     filtered.forEach(r => tbody.appendChild(r));
+    }
+       
     const limit = getLimit();
 
     if (countEl) {
