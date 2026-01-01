@@ -70,23 +70,6 @@ textarea {
   font: inherit;
 }
 
-/* Caret: only show when actively focused */
-input,
-textarea,
-[contenteditable="true"] {
-  caret-color: transparent;
-}
-
-input:focus,
-textarea:focus,
-[contenteditable="true"]:focus {
-  caret-color: auto;
-}
-
-select {
-  caret-color: transparent;
-}
-
 /* ============================================================
    Base / Reset
    ============================================================ */
@@ -105,6 +88,26 @@ a {
 
 a:hover {
   text-decoration: underline;
+}
+
+/* ============================================================
+   Caret control: only show in real text inputs/editable fields
+   ============================================================ */
+
+/* Hide caret almost everywhere */
+html, body, * {
+  caret-color: transparent;
+}
+
+select {
+  caret-color: transparent;
+}
+
+/* Re-enable caret where typing actually happens */
+input,
+textarea,
+[contenteditable="true"] {
+  caret-color: auto;
 }
 
 /* ============================================================
