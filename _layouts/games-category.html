@@ -6,20 +6,9 @@ layout: default
 {% assign runs_all = site.data.runs | where: "game_id", page.game_id %}
 
 {% assign cat_slug = page.category | slugify %}
+{% assign runs = runs_all | where_exp: "r", "r.category and (r.category | slugify) == cat_slug" | sort: "date_completed" | reverse %}
 
-{% assign runs = "" | split: "" %}
-{% for r in runs_all %}
-  {% assign r_cat = r.category | default: "" %}
-  {% if r_cat != "" %}
-    {% assign r_slug = r_cat | slugify %}
-    {% if r_slug == cat_slug %}
-      {% assign runs = runs | push: r %}
-    {% endif %}
-  {% endif %}
-{% endfor %}
-
-{% assign runs = runs | sort: "date_completed" | reverse %}
-
+<!-- Back link -->
 <div class="page-width">
   <p class="muted page-back">
     <a href="{{ '/games/' | relative_url }}">← Games</a>
@@ -32,6 +21,7 @@ layout: default
   </p>
 </div>
 
+<!-- Hero -->
 {% if game and game.cover %}
   <div class="page-width">
     <div class="game-shell">
@@ -58,10 +48,56 @@ layout: default
   </div>
 {% endif %}
 
+<!-- Tabs -->
+{% assign tabs_cfg = game.tabs | default: {} %}
+{% unless game %}{% assign tabs_cfg = {} %}{% endunless %}
+{% assign show_challenges = tabs_cfg.challenges | default: true %}
+{% assign show_categories = tabs_cfg.categories | default: true %}
+{% assign show_runs       = tabs_cfg.runs       | default: true %}
+{% assign show_resources  = tabs_cfg.resources  | default: true %}
+{% assign show_guides     = tabs_cfg.guides     | default: true %}
+{% assign show_forums     = tabs_cfg.forums     | default: true %}
+{% assign show_history    = tabs_cfg.history    | default: true %}
+
+<div class="page-width">
+  <div class="game-shell">
+    <nav class="runner-tabs game-tabs">
+      {% if show_challenges %}
+        <a class="tab" href="{{ game.url | relative_url }}">Challenges</a>
+      {% endif %}
+
+      {% if show_categories %}
+        <a class="tab active" href="{{ game.url | relative_url }}categories/">Categories</a>
+      {% endif %}
+
+      {% if show_runs %}
+        <a class="tab" href="{{ game.url | relative_url }}game-runs/">Runs</a>
+      {% endif %}
+
+      {% if show_resources %}
+        <a class="tab" href="{{ game.url | relative_url }}resources/">Resources</a>
+      {% endif %}
+
+      {% if show_guides %}
+        <a class="tab" href="{{ game.url | relative_url }}guides/">Guides</a>
+      {% endif %}
+
+      {% if show_forums %}
+        <a class="tab" href="{{ game.url | relative_url }}forums/">Forums</a>
+      {% endif %}
+
+      {% if show_history %}
+        <a class="tab" href="{{ game.url | relative_url }}history/">History</a>
+      {% endif %}
+    </nav>
+  </div>
+</div>
+
+<!-- Runs list -->
 <div class="page-width">
   <div class="game-shell">
     <div class="card">
-      <h2>Runs</h2>
+      <h2>Completed Runs</h2>
       <p class="muted">
         {% if runs and runs.size > 0 %}
           {{ runs.size }} run{% if runs.size != 1 %}s{% endif %}
@@ -87,6 +123,17 @@ layout: default
 
             <tbody>
               {% for run in runs %}
+                {% assign run_video = run.video_link | default: run.video | default: "" %}
+                {% assign run_date  = run.date_completed | default: run.date | default: "" %}
+                {% assign run_time  = run.time | default: "" %}
+                {% assign run_vby   = run.verified_by | default: "" %}
+                {% assign has_verified = false %}
+                {% if run.verified == true or run.verified == "true" %}
+                  {% assign has_verified = true %}
+                {% elsif run_vby and run_vby != "" and run_vby != "N/A" %}
+                  {% assign has_verified = true %}
+                {% endif %}
+
                 <tr>
                   <td>
                     {% if run.runner_id %}
@@ -109,9 +156,9 @@ layout: default
                     {% assign rtexts = run.restrictions | default: empty %}
                     {% assign rids   = run.restriction_ids | default: empty %}
 
-                    {% if rtexts.size > 0 %}
-                      {% for rtxt in rtexts %}
-                        <span class="tag">{{ rtxt }}</span>
+                    {% if rtexts and rtexts.size > 0 %}
+                      {% for r in rtexts %}
+                        <span class="tag">{{ r }}</span>
                       {% endfor %}
                     {% elsif rids and rids.size > 0 %}
                       {% for rid in rids %}
@@ -121,25 +168,25 @@ layout: default
                   </td>
 
                   <td>
-                    {% if run.time %}
-                      {{ run.time }}
+                    {% if run_time and run_time != "" %}
+                      {{ run_time }}
                     {% else %}
                       <span class="muted">—</span>
                     {% endif %}
                   </td>
 
                   <td>
-                    {% if run.video_link %}
-                      <a href="{{ run.video_link }}" target="_blank" rel="noopener">Video</a>
+                    {% if run_video and run_video != "" %}
+                      <a href="{{ run_video }}" target="_blank" rel="noopener">Video</a>
                     {% else %}
                       <span class="muted">—</span>
                     {% endif %}
                   </td>
 
                   <td>
-                    {% if run.verified %}
-                      {% if run.verified_by %}
-                        <span class="muted">✓ {{ run.verified_by }}</span>
+                    {% if has_verified %}
+                      {% if run_vby and run_vby != "" %}
+                        <span class="muted">✓ {{ run_vby }}</span>
                       {% else %}
                         <span class="muted">✓ Verified</span>
                       {% endif %}
@@ -148,7 +195,7 @@ layout: default
                     {% endif %}
                   </td>
 
-                  <td>{{ run.date_completed | default: "" }}</td>
+                  <td>{{ run_date }}</td>
                 </tr>
               {% endfor %}
             </tbody>
