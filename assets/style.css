@@ -138,6 +138,11 @@ textarea,
   color: var(--fg);
 }
 
+.game-shell {
+  max-width: 820px;
+  margin: 0 auto;
+}
+
 /* ============================================================
    Header / Navigation
    ============================================================ */
@@ -289,6 +294,14 @@ textarea,
 :where(a, button, input, select, textarea, .tag-chip, .tag-suggestion, .tab):focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
+}
+
+.results-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0.25rem 0 0.75rem 0;
 }
 
 /* ============================================================
@@ -643,6 +656,11 @@ textarea,
   color: var(--fg);
   position: relative;
   z-index: 2;
+}
+
+.game-card__meta {
+  padding: 0 0.9rem 0.8rem 0.9rem;
+  font-size: 0.85rem;
 }
 
 .game-card:hover .game-card__bg {
@@ -1124,6 +1142,10 @@ textarea,
   gap: 0.35rem;
   align-items: center;
   flex-wrap: wrap;
+}
+
+.page-btn.is-current {
+  opacity: 1;
 }
 
 /* ============================================================
