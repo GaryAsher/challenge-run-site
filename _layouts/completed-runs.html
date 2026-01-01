@@ -108,17 +108,6 @@ layout: default
       <h2>Completed Runs</h2>
       <p class="muted" id="runs-count"></p>
 
-      <div style="margin: 0.5rem 0 0.75rem 0;">
-        <label class="muted" for="runs-limit">Show:</label>
-        <select id="runs-limit" class="select">
-          <option value="10" selected>10</option>
-          <option value="25">25</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
-          <option value="0">All</option>
-        </select>
-      </div>
-
       <div id="runs-list">
         {% assign runs = site.data.runs | where: "game_id", page.game_id | sort: "date" | reverse %}
 
@@ -179,11 +168,18 @@ layout: default
         {% endif %}
       </div>
 
-      <div
-        class="pager"
-        id="runs-pager"
-        style="display:none; margin-top: 0.75rem;"
-      >
+      <div style="margin: 0.5rem 0 0.75rem 0;">
+        <label class="muted" for="runs-limit">Show:</label>
+        <select id="runs-limit" class="select">
+          <option value="10" selected>10</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+          <option value="0">All</option>
+        </select>
+      </div>
+         
+      <div class="pager" id="runs-pager" style="display:none; margin-top: 0.75rem;">
         <button class="btn" id="runs-prev" type="button">Prev</button>
         <span class="muted" id="runs-page" style="padding: 0 0.5rem;"></span>
         <button class="btn" id="runs-next" type="button">Next</button>
