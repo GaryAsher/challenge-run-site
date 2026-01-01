@@ -23,12 +23,12 @@ game_id: hades-2
       <h1>{% if game %}{{ game.name }}{% else %}Game{% endif %} Categories</h1>
       <p class="muted">Pick a category to view completed runs.</p>
 
-      {% assign cats_raw = runs | map: "category" | uniq | sort %}
+      {% assign cats_raw = runs | map: "category" | sort | uniq %}
       <div class="tag-picker" style="margin-top: 0.75rem;">
         {% for cat in cats_raw %}
           {% if cat and cat != "" %}
             {% assign slug = cat | slugify %}
-            <a class="tag" href="{{ '/games/hades-2/categories/' | relative_url }}{{ slug }}/">
+            <a class="tag" href="{{ '/games/' | relative_url }}{{ page.game_id | slugify }}/categories/{{ slug }}/">
               {{ cat }}
             </a>
           {% endif %}
