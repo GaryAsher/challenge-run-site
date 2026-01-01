@@ -78,7 +78,7 @@ layout: default
         {% if show_runs %}
           <a
             class="tab"
-            href="{{ page.url | relative_url | append: 'completed-runs/' }}"
+            href="{{ page.url | relative_url | append: '/' | append: 'completed-runs/' }}"
           >
             Completed Runs
           </a>
@@ -213,7 +213,7 @@ layout: default
 
   const hash = location.hash.slice(1);
   if (hash === "runs") {
-    location.replace("{{ page.url | relative_url | append: 'completed-runs/' }}");
+    location.replace("{{ page.url | relative_url | append: '/' | append: 'completed-runs/' }}");
     return;
   }
 
