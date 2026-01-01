@@ -162,20 +162,28 @@ const activeChallenges = new Set();
 // =========================================================
 const TAGS = [
 {% for pair in site.data.tags %}
-{ id: "{{ pair[0] }}", label: "{{ pair[1].label }}" }{% unless forloop.last %},{% endunless %}
+  {
+    id: {{ pair[0] | jsonify }},
+    label: {{ pair[1].label | default: pair[0] | jsonify }}
+  }{% unless forloop.last %},{% endunless %}
 {% endfor %}
-].sort((a,b)=>a.label.localeCompare(b.label));
+].sort((a, b) => a.label.localeCompare(b.label));
 
 const CHALLENGES = [
 {% for pair in site.data.challenges %}
-{ id: "{{ pair[0] }}", label: "{{ pair[1].label }}" }{% unless forloop.last %},{% endunless %}
+  {
+    id: {{ pair[0] | jsonify }},
+    label: {{ pair[1].label | default: pair[0] | jsonify }}
+  }{% unless forloop.last %},{% endunless %}
 {% endfor %}
-].sort((a,b)=>a.label.localeCompare(b.label));
+].sort((a, b) => a.label.localeCompare(b.label));
 
 // =========================================================
 // Normalize user input + IDs so matching is consistent
 // =========================================================
 const norm = s => (s || "").trim().toLowerCase();
+const TAG_LABEL = new Map(TAGS.map(t => [norm(t.id), t.label]));
+const CH_LABEL = new Map(CHALLENGES.map(c => [norm(c.id), c.label]));
 
 // =========================================================
 // Populate challenge labels inside game cards
@@ -188,15 +196,13 @@ items.forEach(card => {
   if (!ids.length) return;
 
   const labels = ids
-    .map(id => {
-      const meta = CHALLENGES.find(c => c.id === id);
-      return meta ? meta.label : id;
-    })
+    .map(id => CH_LABEL.get(norm(id)) || id)
     .join(", ");
 
   const target = card.querySelector("[data-challenge-labels]");
   if (target) target.textContent = labels;
 });
+
 
 // =========================================================
 // Filtering: search + tags + challenges
