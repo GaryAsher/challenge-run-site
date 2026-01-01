@@ -4,8 +4,21 @@ layout: default
 
 {% assign game = site.games | where: "game_id", page.game_id | first %}
 {% assign runs_all = site.data.runs | where: "game_id", page.game_id %}
-{% assign {% assign cat_slug = page.category | slugify %}
-{% assign runs = runs_all | where_exp: "r", "r.category and r.category | slugify == cat_slug" | sort: "date_completed" | reverse %}
+
+{% assign cat_slug = page.category | slugify %}
+
+{% assign runs = "" | split: "" %}
+{% for r in runs_all %}
+  {% assign r_cat = r.category | default: "" %}
+  {% if r_cat != "" %}
+    {% assign r_slug = r_cat | slugify %}
+    {% if r_slug == cat_slug %}
+      {% assign runs = runs | push: r %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+
+{% assign runs = runs | sort: "date_completed" | reverse %}
 
 <div class="page-width">
   <p class="muted page-back">
@@ -14,7 +27,7 @@ layout: default
       <span class="muted"> / </span>
       <a href="{{ game.url | relative_url }}">{{ game.name }}</a>
       <span class="muted"> / </span>
-      <a href="{{ '/games/' | relative_url }}{{ page.game_id | slugify }}/categories/">Categories</a>
+      <a href="{{ game.url | relative_url }}categories/">Categories</a>
     {% endif %}
   </p>
 </div>
@@ -48,7 +61,7 @@ layout: default
 <div class="page-width">
   <div class="game-shell">
     <div class="card">
-      <h2>Completed Runs</h2>
+      <h2>Runs</h2>
       <p class="muted">
         {% if runs and runs.size > 0 %}
           {{ runs.size }} run{% if runs.size != 1 %}s{% endif %}
@@ -97,8 +110,8 @@ layout: default
                     {% assign rids   = run.restriction_ids | default: empty %}
 
                     {% if rtexts.size > 0 %}
-                      {% for r in rtexts %}
-                        <span class="tag">{{ r }}</span>
+                      {% for rtxt in rtexts %}
+                        <span class="tag">{{ rtxt }}</span>
                       {% endfor %}
                     {% elsif rids and rids.size > 0 %}
                       {% for rid in rids %}
