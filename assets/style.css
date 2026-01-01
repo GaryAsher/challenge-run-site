@@ -957,6 +957,22 @@ a:hover {
   min-width: 780px;
 }
 
+.runs-date-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.runs-date-row .filter-wrap {
+  flex: 1;
+  max-width: none;
+}
+
+.runs-date-row .filter {
+  margin: 0;
+}
+
 /* ============================================================
    Pagination
    ============================================================ */
