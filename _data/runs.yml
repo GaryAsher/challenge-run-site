@@ -9,6 +9,7 @@
   restriction_ids:
   - hestia-only
   - no-hexes
+  time: "00:27:41"
   date_completed: 2025-01-03
 
 - game_id: hades-2
@@ -18,4 +19,5 @@
   challenge_id: no-hit-no-damage
   restrictions: []
   restriction_ids: []
+  time: []
   date_completed: 2025-01-05
