@@ -167,15 +167,17 @@ layout: default
                       <td>{{ run.category | default: "" }}</td>
 
                       <td>
-                        {% if run.challenge %}
-                          <span class="tag">{{ run.challenge }}</span>
+                        {% if run.challenge_id %}
+                          {% assign chmeta = site.data.challenges[run.challenge_id] %}
+                          <span class="tag">{{ chmeta.label | default: run.challenge_id }}</span>
                         {% endif %}
                       </td>
 
                       <td>
-                        {% if run.restrictions and run.restrictions.size > 0 %}
-                          {% for r in run.restrictions %}
-                            <span class="tag">{{ r }}</span>
+                        {% if run.restriction_ids and run.restriction_ids.size > 0 %}
+                          {% for rid in run.restriction_ids %}
+                          {% assign rmeta = site.data.restrictions[rid] %}
+                            <span class="tag">{{ rmeta.label | default: rid }}</span>
                           {% endfor %}
                         {% endif %}
                       </td>
