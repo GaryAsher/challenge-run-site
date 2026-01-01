@@ -121,6 +121,10 @@ layout: default
               <table class="runs-table" id="runs-table">
                 <thead>
                   <tr>
+                    <th>
+                      <span>Runner(s)</span>
+                    </th>
+
                     <th class="th-filter">
                       <span>Category</span>
                       <button class="th-caret" type="button" aria-label="Filter Category" data-filter-btn="category">▾</button>
@@ -137,14 +141,22 @@ layout: default
                     </th>
 
                     <th>
-                      <span>Runner(s)</span>
+                      <span>Time</span>
+                    </th>
+
+                    <th>
+                      <span>Video</span>
+                    </th>
+
+                    <th>
+                      <span>Verified By</span>
                     </th>
 
                     <th class="th-filter th-date">
                       <div class="th-title">
                         <span>Date Completed</span>
                       </div>
-                         
+
                       <div class="th-date-sort" aria-label="Sort Date Completed">
                         <button class="th-sort" id="th-sort-asc" type="button" title="Sort oldest to newest">↑</button>
                         <button class="th-sort" id="th-sort-desc" type="button" title="Sort newest to oldest">↓</button>
@@ -157,14 +169,30 @@ layout: default
                   {% for run in runs %}
                     <tr
                       class="run-row"
+                      data-runner="{{ run.runner_id | default: run.runner | default: '' | downcase }}"
                       data-category="{{ run.category | default: '' | downcase }}"
                       data-challenge-id="{{ run.challenge_id | default: '' | downcase }}"
                       data-restriction-ids="{{ run.restriction_ids | default: empty | join: ',' | downcase }}"
-                      data-runner="{{ run.runner_id | default: run.runner | default: '' | downcase }}"
                       data-date="{{ run.date_completed | default: '' }}"
+                      data-time="{{ run.time | default: '' }}"
+                      data-verified="{{ run.verified | default: false }}"
+                      data-video="{{ run.video_link | default: '' }}"
                     >
+                      <!-- Runner(s) -->
+                      <td>
+                        {% if run.runner_id %}
+                          <a href="{{ '/runners/' | relative_url }}{{ run.runner_id | slugify }}/">
+                            {{ run.runner | default: run.runner_id }}
+                          </a>
+                        {% else %}
+                          {{ run.runner | default: "" }}
+                        {% endif %}
+                      </td>
+
+                      <!-- Category -->
                       <td>{{ run.category | default: "" }}</td>
 
+                      <!-- Challenge -->
                       <td>
                         {% if run.challenge_id %}
                           {% assign chmeta = site.data.challenges[run.challenge_id] %}
@@ -172,10 +200,11 @@ layout: default
                         {% endif %}
                       </td>
 
+                      <!-- Restrictions -->
                       <td>
                         {% assign rtexts = run.restrictions | default: empty %}
                         {% assign rids   = run.restriction_ids | default: empty %}
-                           
+
                         {% if rtexts.size > 0 %}
                           {% for r in rtexts %}
                             <span class="tag">{{ r }}</span>
@@ -187,42 +216,63 @@ layout: default
                         {% endif %}
                       </td>
 
+                      <!-- Time -->
                       <td>
-                        {% if run.runner_id %}
-                          <a href="{{ '/runners/' | relative_url }}{{ run.runner_id | slugify }}/">
-                            {{ run.runner | default: run.runner_id }}
-                          </a>
+                        {% if run.time %}
+                          {{ run.time }}
                         {% else %}
-                          {{ run.runner | default: "" }}
+                          <span class="muted">—</span>
                         {% endif %}
                       </td>
 
+                      <!-- Video -->
+                      <td>
+                        {% if run.video_link %}
+                          <a href="{{ run.video_link }}" target="_blank" rel="noopener">Video</a>
+                        {% else %}
+                          <span class="muted">—</span>
+                        {% endif %}
+                      </td>
+
+                      <!-- Verified By -->
+                      <td>
+                        {% if run.verified %}
+                          {% if run.verified_by %}
+                            <span class="muted">✓ {{ run.verified_by }}</span>
+                          {% else %}
+                            <span class="muted">✓ Verified</span>
+                          {% endif %}
+                        {% else %}
+                          <span class="muted">—</span>
+                        {% endif %}
+                      </td>
+
+                      <!-- Date Completed -->
                       <td>{{ run.date_completed | default: "" }}</td>
                     </tr>
                   {% endfor %}
                 </tbody>
               </table>
 
-               <!-- Excel-style header filter menu (single instance) -->
-               <div class="th-menu" id="th-menu" hidden>
-                 <div class="th-menu__top">
-               
-                   <input
-                     id="th-menu-q"
-                     class="filter th-menu__q"
-                     type="text"
-                     placeholder="Search..."
-                     autocomplete="off"
-                   />
-                 </div>
-               
-                 <div class="th-menu__list" id="th-menu-list"></div>
-               
-                 <div class="th-menu__actions">
-                   <button class="btn" id="th-menu-clear" type="button">Clear</button>
-                   <button class="btn" id="th-menu-close" type="button">Close</button>
-                 </div>
-               </div>
+              <!-- Excel-style header filter menu (single instance) -->
+              <div class="th-menu" id="th-menu" hidden>
+                <div class="th-menu__top">
+                  <input
+                    id="th-menu-q"
+                    class="filter th-menu__q"
+                    type="text"
+                    placeholder="Search..."
+                    autocomplete="off"
+                  />
+                </div>
+
+                <div class="th-menu__list" id="th-menu-list"></div>
+
+                <div class="th-menu__actions">
+                  <button class="btn" id="th-menu-clear" type="button">Clear</button>
+                  <button class="btn" id="th-menu-close" type="button">Close</button>
+                </div>
+              </div>
             </div>
           {% else %}
             <p class="muted">No runs have been added yet.</p>
@@ -303,20 +353,15 @@ layout: default
 
   function buildOptions() {
     const cats = [];
-    const runners = [];
     const challenges = [];
     const restrictions = [];
 
     const catLabelById = new Map();
-    const runLabelById = new Map();
     const chLabelById = new Map();
     const resLabelById = new Map();
 
-    let hasBlankRunner = false;
-
     rows.forEach((row) => {
       const catId = norm(row.dataset.category);
-      const runnerId = norm(row.dataset.runner);
       const chId = norm(row.dataset.challengeId);
       const resIds = (row.dataset.restrictionIds || "")
         .split(",")
@@ -325,13 +370,13 @@ layout: default
 
       if (catId) {
         cats.push(catId);
-        const cell = row.children[0];
+        const cell = row.children[1];
         if (cell && !catLabelById.has(catId)) catLabelById.set(catId, cell.textContent.trim());
       }
 
       if (chId) {
         challenges.push(chId);
-        const cell = row.children[1];
+        const cell = row.children[2];
         const tag = cell ? cell.querySelector(".tag") : null;
         if (tag && !chLabelById.has(chId)) chLabelById.set(chId, tag.textContent.trim());
       }
@@ -340,7 +385,7 @@ layout: default
         resIds.forEach((id, idx) => {
           restrictions.push(id);
           if (!resLabelById.has(id)) {
-            const cell = row.children[2];
+            const cell = row.children[3];
             const tags = cell ? Array.from(cell.querySelectorAll(".tag")) : [];
             const label = tags[idx] ? tags[idx].textContent.trim() : id;
             resLabelById.set(id, label);
@@ -374,6 +419,15 @@ layout: default
   // Date sort state (default: newest first)
   let dateSortDir = "desc"; // "asc" | "desc"
 
+  function anyFiltersActive() {
+    return (
+      activeCats.size ||
+      activeChallenges.size ||
+      activeRestrictions.size ||
+      activeDates.size
+    );
+  }
+
   function getLimit() {
     if (!limitEl) return 10;
     const v = parseInt(limitEl.value, 10);
@@ -383,7 +437,6 @@ layout: default
   function passesFilters(row) {
     const cat = norm(row.dataset.category);
     const ch = norm(row.dataset.challengeId);
-    const runner = norm(row.dataset.runner);
     const date = (row.dataset.date || "").trim();
     const res = (row.dataset.restrictionIds || "").split(",").map(norm).filter(Boolean);
 
@@ -436,9 +489,9 @@ layout: default
     filtered = sortRowsByDate(filtered);
 
     if (tbody) {
-     filtered.forEach(r => tbody.appendChild(r));
+      filtered.forEach(r => tbody.appendChild(r));
     }
-       
+
     const limit = getLimit();
 
     if (countEl) {
@@ -590,7 +643,6 @@ layout: default
 
     thMenuQ.value = "";
 
-    // Show/Hide sort controls based on column
     renderThMenuList();
     thMenuQ.focus();
   }
@@ -599,13 +651,15 @@ layout: default
     btn.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
+
       const col = btn.getAttribute("data-filter-btn");
-             
+
+      // Toggle: clicking same caret closes it
       if (!thMenu.hidden && thActiveCol === col) {
         closeThMenu();
         return;
-    }
-         
+      }
+
       openThMenuFor(col, btn);
     });
   });
@@ -626,7 +680,7 @@ layout: default
   }
 
   if (thMenuClose) thMenuClose.addEventListener("click", closeThMenu);
-     
+
   function updateDateSortButtons() {
     if (thSortAsc) thSortAsc.disabled = dateSortDir === "asc";
     if (thSortDesc) thSortDesc.disabled = dateSortDir === "desc";
@@ -668,4 +722,8 @@ layout: default
   updateDateSortButtons();
   render();
 })();
-</script>
+        </script>
+      </div>
+    </section>
+  </div>
+</div>
