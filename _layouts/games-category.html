@@ -2,14 +2,18 @@
 layout: default
 ---
 
+{% assign game = site.games | where: "game_id", page.game_id | first %}
+
 <!-- =========================================================
      Back link to Game
      ========================================================= -->
 <div class="page-width">
   <p class="muted page-back">
-    <a href="{{ '/games/' | relative_url }}{{ page.game_id }}/">
-      ← Back to {{ page.game_id }}
-    </a>
+    {% if game %}
+      <a href="{{ game.url | relative_url }}">← Back to {{ game.name }}</a>
+    {% else %}
+      <a href="{{ '/games/' | relative_url }}">← Games</a>
+    {% endif %}
   </p>
 </div>
 
@@ -25,11 +29,8 @@ layout: default
      Runs filtered by category
      ========================================================= -->
 <div class="page-width">
-
-  {% assign runs = site.data.runs
-    | where: "game_id", page.game_id
-    | where: "category", page.category
-  %}
+  {% assign all_runs = site.data.runs[page.game_id] | default: site.data.runs %}
+  {% assign runs = all_runs | where: "game_id", page.game_id | where: "category", page.category %}
 
   {% if runs and runs.size > 0 %}
     <div class="table-wrap">
@@ -43,20 +44,29 @@ layout: default
             <th>Video</th>
           </tr>
         </thead>
+
         <tbody>
           {% for r in runs %}
+            {% assign meta = site.data.challenges[r.challenge_id] %}
+            {% assign challenge_label = meta.label | default: r.challenge_id %}
+
             <tr>
               <td>
-                <a href="{{ '/runners/' | relative_url }}{{ r.runner_id }}/">
-                  {{ r.runner }}
-                </a>
+                {% if r.runner_id %}
+                  <a href="{{ '/runners/' | relative_url }}{{ r.runner_id }}/">
+                    {{ r.runner | default: r.runner_id }}
+                  </a>
+                {% else %}
+                  {{ r.runner | default: "—" }}
+                {% endif %}
               </td>
-              <td>
-                {% assign meta = site.data.challenges[r.challenge_id] %}
-                {{ meta.label | default: r.challenge_id }}
-              </td>
+
+              <td>{{ challenge_label }}</td>
+
               <td>{{ r.time | default: "—" }}</td>
-              <td>{{ r.date_completed }}</td>
+
+              <td>{{ r.date_completed | default: "—" }}</td>
+
               <td>
                 {% if r.video %}
                   <a href="{{ r.video }}" target="_blank" rel="noopener">Link</a>
@@ -74,5 +84,4 @@ layout: default
       <p class="muted">No runs found for this category.</p>
     </div>
   {% endif %}
-
 </div>
