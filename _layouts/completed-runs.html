@@ -97,594 +97,610 @@ layout: default
      ========================================================= -->
 <div class="page-width">
   <section class="tab-panel active">
-
     <div class="card">
       <h2>Completed Runs</h2>
       <p class="muted" id="runs-count"></p>
 
-<!-- =========================================================
-     Filters row (Category / Challenge / Restrictions / Runner / Date)
-     ========================================================= -->
-<div class="filters-grid" style="margin: 0.75rem 0 0.5rem 0;">
+      <!-- =========================================================
+           Filters row (Category / Challenge / Restrictions / Runner / Date)
+           ========================================================= -->
+      <div class="filters-grid" style="margin: 0.75rem 0 0.5rem 0;">
 
-  <!-- Category filter -->
-  <div class="tag-filter" id="cat-filter">
-    <div class="muted filter-label">Category:</div>
-    <div class="tag-picker">
-      <div class="tag-picked" id="cat-picked"></div>
-      <div class="filter-wrap">
+        <!-- Category filter -->
+        <div class="tag-filter" id="cat-filter">
+          <div class="muted filter-label">Category:</div>
+          <div class="tag-picker">
+            <div class="tag-picked" id="cat-picked"></div>
+            <div class="filter-wrap">
+              <input
+                id="cat-search"
+                class="tag-search"
+                type="text"
+                placeholder="Type a category..."
+                autocomplete="off"
+                inputmode="search"
+                enterkeyhint="done"
+                aria-label="Filter runs by category"
+              />
+            </div>
+            <div class="tag-suggestions" id="cat-suggestions" hidden></div>
+          </div>
+        </div>
+
+        <!-- Challenge filter -->
+        <div class="tag-filter" id="ch-filter">
+          <div class="muted filter-label">Challenge:</div>
+          <div class="tag-picker">
+            <div class="tag-picked" id="ch-picked"></div>
+            <div class="filter-wrap">
+              <input
+                id="ch-search"
+                class="tag-search"
+                type="text"
+                placeholder="Type a challenge..."
+                autocomplete="off"
+                inputmode="search"
+                enterkeyhint="done"
+                aria-label="Filter runs by challenge"
+              />
+            </div>
+            <div class="tag-suggestions" id="ch-suggestions" hidden></div>
+          </div>
+        </div>
+
+        <!-- Restrictions filter -->
+        <div class="tag-filter" id="res-filter">
+          <div class="muted filter-label">Restrictions:</div>
+          <div class="tag-picker">
+            <div class="tag-picked" id="res-picked"></div>
+            <div class="filter-wrap">
+              <input
+                id="res-search"
+                class="tag-search"
+                type="text"
+                placeholder="Type a restriction..."
+                autocomplete="off"
+                inputmode="search"
+                enterkeyhint="done"
+                aria-label="Filter runs by restriction"
+              />
+            </div>
+            <div class="tag-suggestions" id="res-suggestions" hidden></div>
+          </div>
+        </div>
+
+        <!-- Runner filter -->
+        <div class="tag-filter" id="run-filter">
+          <div class="muted filter-label">Runner:</div>
+          <div class="tag-picker">
+            <div class="tag-picked" id="run-picked"></div>
+            <div class="filter-wrap">
+              <input
+                id="run-search"
+                class="tag-search"
+                type="text"
+                placeholder="Type a runner..."
+                autocomplete="off"
+                inputmode="search"
+                enterkeyhint="done"
+                aria-label="Filter runs by runner"
+              />
+            </div>
+            <div class="tag-suggestions" id="run-suggestions" hidden></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Date filter (simple text match) -->
+      <div class="filter-wrap" style="margin: 0.25rem 0 0.75rem 0;">
         <input
-          id="cat-search"
-          class="tag-search"
+          id="date-q"
+          class="filter"
           type="text"
-          placeholder="Type a category..."
+          placeholder="Filter by date (ex: 2025 or 2025-01)..."
           autocomplete="off"
           inputmode="search"
-          enterkeyhint="done"
-          aria-label="Filter runs by category"
+          enterkeyhint="search"
+          aria-label="Filter runs by date"
         />
       </div>
-      <div class="tag-suggestions" id="cat-suggestions" hidden></div>
-    </div>
-  </div>
 
-  <!-- Challenge filter -->
-  <div class="tag-filter" id="ch-filter">
-    <div class="muted filter-label">Challenge:</div>
-    <div class="tag-picker">
-      <div class="tag-picked" id="ch-picked"></div>
-      <div class="filter-wrap">
-        <input
-          id="ch-search"
-          class="tag-search"
-          type="text"
-          placeholder="Type a challenge..."
-          autocomplete="off"
-          inputmode="search"
-          enterkeyhint="done"
-          aria-label="Filter runs by challenge"
-        />
+      <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin: 0 0 0.75rem 0;">
+        <button class="btn" id="runs-clear" type="button">Clear filters</button>
       </div>
-      <div class="tag-suggestions" id="ch-suggestions" hidden></div>
-    </div>
-  </div>
 
-  <!-- Restrictions filter -->
-  <div class="tag-filter" id="res-filter">
-    <div class="muted filter-label">Restrictions:</div>
-    <div class="tag-picker">
-      <div class="tag-picked" id="res-picked"></div>
-      <div class="filter-wrap">
-        <input
-          id="res-search"
-          class="tag-search"
-          type="text"
-          placeholder="Type a restriction..."
-          autocomplete="off"
-          inputmode="search"
-          enterkeyhint="done"
-          aria-label="Filter runs by restriction"
-        />
+      <!-- =========================================================
+           Runs table
+           ========================================================= -->
+      <div id="runs-list">
+        {% assign runs = site.data.runs | where: "game_id", page.game_id | sort: "date_completed" | reverse %}
+
+        {% if runs and runs.size > 0 %}
+          <div class="table-wrap">
+            <table class="runs-table">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Challenge</th>
+                  <th>Restrictions</th>
+                  <th>Runner</th>
+                  <th>Date Completed</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {% for run in runs %}
+                  <tr
+                    class="run-row"
+                    data-category="{{ run.category | default: '' | downcase }}"
+                    data-challenge-id="{{ run.challenge_id | default: '' | downcase }}"
+                    data-restriction-ids="{{ run.restriction_ids | default: empty | join: ',' | downcase }}"
+                    data-runner="{{ run.runner_id | default: run.runner | default: '' | downcase }}"
+                    data-date="{{ run.date_completed | default: '' }}"
+                  >
+                    <td>{{ run.category | default: "" }}</td>
+
+                    <td>
+                      {% if run.challenge %}
+                        <span class="tag">{{ run.challenge }}</span>
+                      {% endif %}
+                    </td>
+
+                    <td>
+                      {% if run.restrictions and run.restrictions.size > 0 %}
+                        {% for r in run.restrictions %}
+                          <span class="tag">{{ r }}</span>
+                        {% endfor %}
+                      {% endif %}
+                    </td>
+
+                    <td>
+                      {% if run.runner_id %}
+                        <a href="{{ '/runners/' | relative_url }}{{ run.runner_id | slugify }}/">
+                          {{ run.runner | default: run.runner_id }}
+                        </a>
+                      {% else %}
+                        {{ run.runner | default: "" }}
+                      {% endif %}
+                    </td>
+
+                    <td>{{ run.date_completed | default: "" }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="muted">No runs have been added yet.</p>
+        {% endif %}
       </div>
-      <div class="tag-suggestions" id="res-suggestions" hidden></div>
-    </div>
-  </div>
 
-  <!-- Runner filter -->
-  <div class="tag-filter" id="run-filter">
-    <div class="muted filter-label">Runner:</div>
-    <div class="tag-picker">
-      <div class="tag-picked" id="run-picked"></div>
-      <div class="filter-wrap">
-        <input
-          id="run-search"
-          class="tag-search"
-          type="text"
-          placeholder="Type a runner..."
-          autocomplete="off"
-          inputmode="search"
-          enterkeyhint="done"
-          aria-label="Filter runs by runner"
-        />
+      <!-- =========================================================
+           Pagination controls
+           ========================================================= -->
+      <div style="margin: 0.5rem 0 0.75rem 0;">
+        <label class="muted" for="runs-limit">Show:</label>
+        <select id="runs-limit" class="select">
+          <option value="10" selected>10</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+          <option value="0">All</option>
+        </select>
       </div>
-      <div class="tag-suggestions" id="run-suggestions" hidden></div>
-    </div>
-  </div>
 
-</div>
+      <div class="pager" id="runs-pager" style="display:none; margin-top: 0.75rem;">
+        <button class="btn" id="runs-prev" type="button">Prev</button>
+        <span class="muted" id="runs-page" style="padding: 0 0.5rem;"></span>
+        <button class="btn" id="runs-next" type="button">Next</button>
+      </div>
 
-<!-- Date filter (simple text match) -->
-<div class="filter-wrap" style="margin: 0.25rem 0 0.75rem 0;">
-  <input
-    id="date-q"
-    class="filter"
-    type="text"
-    placeholder="Filter by date (ex: 2025 or 2025-01)..."
-    autocomplete="off"
-    inputmode="search"
-    enterkeyhint="search"
-    aria-label="Filter runs by date"
-  />
-</div>
+      <script>
+      /* =========================================================
+         Completed Runs – Column Filters + Pagination
+         Filters:
+         - Category (multi)
+         - Challenge (multi)
+         - Restrictions (multi; requires all selected)
+         - Runner (multi)
+         - Date text match
+         Pagination:
+         - Applies after filtering
+         ========================================================= */
+      (function () {
+        const root = document.getElementById("runs-list");
+        if (!root) return;
 
-<div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin: 0 0 0.75rem 0;">
-  <button class="btn" id="runs-clear" type="button">Clear filters</button>
-</div>
+        const rows = Array.from(root.querySelectorAll(".run-row"));
 
-<!-- =========================================================
-     Runs table
-     ========================================================= -->
-<div id="runs-list">
-  {% assign runs = site.data.runs | where: "game_id", page.game_id | sort: "date_completed" | reverse %}
+        const limitEl = document.getElementById("runs-limit");
+        const countEl = document.getElementById("runs-count");
 
-  {% if runs and runs.size > 0 %}
-    <div class="table-wrap">
-      <table class="runs-table">
-        <thead>
-          <tr>
-            <th>Category</th>
-            <th>Challenge</th>
-            <th>Restrictions</th>
-            <th>Runner</th>
-            <th>Date Completed</th>
-          </tr>
-        </thead>
+        const pager = document.getElementById("runs-pager");
+        const prevBtn = document.getElementById("runs-prev");
+        const nextBtn = document.getElementById("runs-next");
+        const pageLabel = document.getElementById("runs-page");
 
-        <tbody>
-          {% for run in runs %}
-            <tr
-              class="run-row"
-              data-category="{{ run.category | default: '' | downcase }}"
-              data-challenge-id="{{ run.challenge_id | default: '' | downcase }}"
-              data-restriction-ids="{{ run.restriction_ids | default: empty | join: ',' | downcase }}"
-              data-runner="{{ run.runner_id | default: run.runner | default: '' | downcase }}"
-              data-date="{{ run.date_completed | default: '' }}"
-            >
-              <td>{{ run.category | default: "" }}</td>
+        const dateQ = document.getElementById("date-q");
+        const clearBtn = document.getElementById("runs-clear");
 
-              <td>
-                {% if run.challenge %}
-                  <span class="tag">{{ run.challenge }}</span>
-                {% endif %}
-              </td>
+        const norm = (s) => (s || "").trim().toLowerCase();
 
-              <td>
-                {% if run.restrictions and run.restrictions.size > 0 %}
-                  {% for r in run.restrictions %}
-                    <span class="tag">{{ r }}</span>
-                  {% endfor %}
-                {% endif %}
-              </td>
-
-              <td>
-                {% if run.runner_id %}
-                  <a href="{{ '/runners/' | relative_url }}{{ run.runner_id | slugify }}/">
-                    {{ run.runner | default: run.runner_id }}
-                  </a>
-                {% else %}
-                  {{ run.runner | default: "" }}
-                {% endif %}
-              </td>
-
-              <td>{{ run.date_completed | default: "" }}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  {% else %}
-    <p class="muted">No runs have been added yet.</p>
-  {% endif %}
-</div>
-
-<!-- =========================================================
-     Pagination controls
-     ========================================================= -->
-<div style="margin: 0.5rem 0 0.75rem 0;">
-  <label class="muted" for="runs-limit">Show:</label>
-  <select id="runs-limit" class="select">
-    <option value="10" selected>10</option>
-    <option value="25">25</option>
-    <option value="50">50</option>
-    <option value="100">100</option>
-    <option value="0">All</option>
-  </select>
-</div>
-
-<div class="pager" id="runs-pager" style="display:none; margin-top: 0.75rem;">
-  <button class="btn" id="runs-prev" type="button">Prev</button>
-  <span class="muted" id="runs-page" style="padding: 0 0.5rem;"></span>
-  <button class="btn" id="runs-next" type="button">Next</button>
-</div>
-
-<script>
-/* =========================================================
-   Completed Runs – Column Filters + Pagination
-   Filters:
-   - Category (multi)
-   - Challenge (multi)
-   - Restrictions (multi; requires all selected)
-   - Runner (multi)
-   - Date text match
-   Pagination:
-   - Applies after filtering
-   ========================================================= */
-(function () {
-  const root = document.getElementById("runs-list");
-  if (!root) return;
-
-  const rows = Array.from(root.querySelectorAll(".run-row"));
-
-  const limitEl = document.getElementById("runs-limit");
-  const countEl = document.getElementById("runs-count");
-
-  const pager = document.getElementById("runs-pager");
-  const prevBtn = document.getElementById("runs-prev");
-  const nextBtn = document.getElementById("runs-next");
-  const pageLabel = document.getElementById("runs-page");
-
-  const dateQ = document.getElementById("date-q");
-  const clearBtn = document.getElementById("runs-clear");
-
-  const norm = s => (s || "").trim().toLowerCase();
-
-  function uniq(arr) {
-    return Array.from(new Set(arr.filter(Boolean)));
-  }
-
-  function buildOptions() {
-    const cats = [];
-    const runners = [];
-    const challenges = [];
-    const restrictions = [];
-
-    const catLabelById = new Map();     // id: normalized label string, label: original cell label
-    const runLabelById = new Map();     // id: dataset-runner, label: visible link/text
-    const chLabelById = new Map();      // id: challenge_id, label: tag label
-    const resLabelById = new Map();     // id: restriction_id, label: tag label
-
-    rows.forEach(row => {
-      const catId = norm(row.dataset.category);
-      const runnerId = norm(row.dataset.runner);
-      const chId = norm(row.dataset.challengeId);
-      const resIds = (row.dataset.restrictionIds || "").split(",").map(norm).filter(Boolean);
-
-      if (catId) {
-        cats.push(catId);
-        const cell = row.children[0];
-        if (cell && !catLabelById.has(catId)) catLabelById.set(catId, cell.textContent.trim());
-      }
-
-      if (runnerId) {
-        runners.push(runnerId);
-        const cell = row.children[3];
-        if (cell && !runLabelById.has(runnerId)) runLabelById.set(runnerId, cell.textContent.trim());
-      }
-
-      if (chId) {
-        challenges.push(chId);
-        const cell = row.children[1];
-        const tag = cell ? cell.querySelector(".tag") : null;
-        if (tag && !chLabelById.has(chId)) chLabelById.set(chId, tag.textContent.trim());
-      }
-
-      if (resIds.length) {
-        resIds.forEach((id, idx) => {
-          restrictions.push(id);
-          if (!resLabelById.has(id)) {
-            const cell = row.children[2];
-            const tags = cell ? Array.from(cell.querySelectorAll(".tag")) : [];
-            const label = tags[idx] ? tags[idx].textContent.trim() : id;
-            resLabelById.set(id, label);
-          }
-        });
-      }
-    });
-
-    function toList(ids, map) {
-      return uniq(ids)
-        .map(id => ({ id, label: map.get(id) || id }))
-        .sort((a, b) => a.label.localeCompare(b.label));
-    }
-
-    return {
-      categories: toList(cats, catLabelById),
-      runners: toList(runners, runLabelById),
-      challenges: toList(challenges, chLabelById),
-      restrictions: toList(restrictions, resLabelById)
-    };
-  }
-
-  const OPTIONS = buildOptions();
-
-  const activeCats = new Set();
-  const activeChallenges = new Set();
-  const activeRestrictions = new Set();
-  const activeRunners = new Set();
-
-  function renderPicked(set, list, el, { onRemove } = {}) {
-    el.innerHTML = "";
-
-    for (const id of set) {
-      const meta = list.find(x => x.id === id);
-      const label = meta ? meta.label : id;
-
-      const chip = document.createElement("button");
-      chip.type = "button";
-      chip.className = "tag-chip";
-      chip.textContent = label;
-
-      chip.addEventListener("click", () => {
-        set.delete(id);
-        if (onRemove) onRemove();
-      });
-
-      el.appendChild(chip);
-    }
-
-    el.classList.toggle("is-empty", set.size === 0);
-  }
-
-  function renderSuggestions(query, set, list, sugEl, { onPick } = {}) {
-    const q = norm(query);
-    sugEl.innerHTML = "";
-
-    const results = list
-      .filter(x => {
-        if (set.has(x.id)) return false;
-        if (!q) return true;
-        return norm(x.label).includes(q) || x.id.includes(q);
-      })
-      .slice(0, 30);
-
-    if (results.length === 0) {
-      const empty = document.createElement("div");
-      empty.className = "tag-suggestion is-empty";
-      empty.textContent = "No matches.";
-      sugEl.appendChild(empty);
-      sugEl.hidden = false;
-      return;
-    }
-
-    results.forEach(x => {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "tag-suggestion";
-      btn.textContent = x.label;
-
-      btn.addEventListener("click", () => {
-        set.add(x.id);
-        if (onPick) onPick();
-        sugEl.hidden = true;
-      });
-
-      sugEl.appendChild(btn);
-    });
-
-    sugEl.hidden = false;
-  }
-
-  function wireDropdown({ filterEl, searchEl, sugEl, set, list, pickedEl }) {
-    function close() { sugEl.hidden = true; }
-
-    function onRemoveChip() {
-      searchEl.value = "";
-      renderPicked(set, list, pickedEl, { onRemove: onRemoveChip });
-      page = 1;
-      render();
-      close();
-      searchEl.blur();
-    }
-
-    function open() {
-      renderSuggestions(searchEl.value, set, list, sugEl, {
-        onPick: () => {
-          searchEl.value = "";
-          renderPicked(set, list, pickedEl, { onRemove: onRemoveChip });
-          page = 1;
-          render();
-          close();
-          searchEl.blur();
+        function uniq(arr) {
+          return Array.from(new Set(arr.filter(Boolean)));
         }
-      });
-    }
 
-    renderPicked(set, list, pickedEl, { onRemove: onRemoveChip });
+        function buildOptions() {
+          const cats = [];
+          const runners = [];
+          const challenges = [];
+          const restrictions = [];
 
-    searchEl.addEventListener("focus", () => {
-      if (sugEl.hidden) open();
-    });
+          const catLabelById = new Map();
+          const runLabelById = new Map();
+          const chLabelById = new Map();
+          const resLabelById = new Map();
 
-    searchEl.addEventListener("pointerdown", () => {
-      if (sugEl.hidden) open();
-      else close();
-    });
+          rows.forEach((row) => {
+            const catId = norm(row.dataset.category);
+            const runnerId = norm(row.dataset.runner);
+            const chId = norm(row.dataset.challengeId);
+            const resIds = (row.dataset.restrictionIds || "")
+              .split(",")
+              .map(norm)
+              .filter(Boolean);
 
-    searchEl.addEventListener("input", open);
+            if (catId) {
+              cats.push(catId);
+              const cell = row.children[0];
+              if (cell && !catLabelById.has(catId)) catLabelById.set(catId, cell.textContent.trim());
+            }
 
-    searchEl.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        close();
-        searchEl.blur();
-      }
-    });
+            if (runnerId) {
+              runners.push(runnerId);
+              const cell = row.children[3];
+              if (cell && !runLabelById.has(runnerId)) runLabelById.set(runnerId, cell.textContent.trim());
+            }
 
-    document.addEventListener("pointerdown", (e) => {
-      if (!filterEl.contains(e.target)) close();
-    }, true);
-  }
+            if (chId) {
+              challenges.push(chId);
+              const cell = row.children[1];
+              const tag = cell ? cell.querySelector(".tag") : null;
+              if (tag && !chLabelById.has(chId)) chLabelById.set(chId, tag.textContent.trim());
+            }
 
-  // Wire: Category
-  wireDropdown({
-    filterEl: document.getElementById("cat-filter"),
-    searchEl: document.getElementById("cat-search"),
-    sugEl: document.getElementById("cat-suggestions"),
-    set: activeCats,
-    list: OPTIONS.categories,
-    pickedEl: document.getElementById("cat-picked")
-  });
+            if (resIds.length) {
+              resIds.forEach((id, idx) => {
+                restrictions.push(id);
+                if (!resLabelById.has(id)) {
+                  const cell = row.children[2];
+                  const tags = cell ? Array.from(cell.querySelectorAll(".tag")) : [];
+                  const label = tags[idx] ? tags[idx].textContent.trim() : id;
+                  resLabelById.set(id, label);
+                }
+              });
+            }
+          });
 
-  // Wire: Challenge
-  wireDropdown({
-    filterEl: document.getElementById("ch-filter"),
-    searchEl: document.getElementById("ch-search"),
-    sugEl: document.getElementById("ch-suggestions"),
-    set: activeChallenges,
-    list: OPTIONS.challenges,
-    pickedEl: document.getElementById("ch-picked")
-  });
+          function toList(ids, map) {
+            return uniq(ids)
+              .map((id) => ({ id, label: map.get(id) || id }))
+              .sort((a, b) => a.label.localeCompare(b.label));
+          }
 
-  // Wire: Restrictions
-  wireDropdown({
-    filterEl: document.getElementById("res-filter"),
-    searchEl: document.getElementById("res-search"),
-    sugEl: document.getElementById("res-suggestions"),
-    set: activeRestrictions,
-    list: OPTIONS.restrictions,
-    pickedEl: document.getElementById("res-picked")
-  });
+          return {
+            categories: toList(cats, catLabelById),
+            runners: toList(runners, runLabelById),
+            challenges: toList(challenges, chLabelById),
+            restrictions: toList(restrictions, resLabelById)
+          };
+        }
 
-  // Wire: Runner
-  wireDropdown({
-    filterEl: document.getElementById("run-filter"),
-    searchEl: document.getElementById("run-search"),
-    sugEl: document.getElementById("run-suggestions"),
-    set: activeRunners,
-    list: OPTIONS.runners,
-    pickedEl: document.getElementById("run-picked")
-  });
+        const OPTIONS = buildOptions();
 
-  let page = 1;
+        const activeCats = new Set();
+        const activeChallenges = new Set();
+        const activeRestrictions = new Set();
+        const activeRunners = new Set();
 
-  function getLimit() {
-    if (!limitEl) return 10;
-    const v = parseInt(limitEl.value, 10);
-    return Number.isFinite(v) ? v : 10;
-  }
+        function renderPicked(set, list, el, { onRemove } = {}) {
+          el.innerHTML = "";
 
-  function passesFilters(row) {
-    const cat = norm(row.dataset.category);
-    const ch = norm(row.dataset.challengeId);
-    const runner = norm(row.dataset.runner);
-    const date = (row.dataset.date || "").trim();
-    const res = (row.dataset.restrictionIds || "").split(",").map(norm).filter(Boolean);
+          for (const id of set) {
+            const meta = list.find((x) => x.id === id);
+            const label = meta ? meta.label : id;
 
-    if (activeCats.size && !activeCats.has(cat)) return false;
-    if (activeChallenges.size && !activeChallenges.has(ch)) return false;
-    if (activeRunners.size && !activeRunners.has(runner)) return false;
+            const chip = document.createElement("button");
+            chip.type = "button";
+            chip.className = "tag-chip";
+            chip.textContent = label;
 
-    if (activeRestrictions.size) {
-      const need = Array.from(activeRestrictions);
-      const okAll = need.every(x => res.includes(x));
-      if (!okAll) return false;
-    }
+            chip.addEventListener("click", () => {
+              set.delete(id);
+              if (onRemove) onRemove();
+            });
 
-    const dq = norm(dateQ ? dateQ.value : "");
-    if (dq && !norm(date).includes(dq)) return false;
+            el.appendChild(chip);
+          }
 
-    return true;
-  }
+          el.classList.toggle("is-empty", set.size === 0);
+        }
 
-  function anyFiltersActive() {
-    return (
-      activeCats.size ||
-      activeChallenges.size ||
-      activeRestrictions.size ||
-      activeRunners.size ||
-      (dateQ && norm(dateQ.value))
-    );
-  }
+        function renderSuggestions(query, set, list, sugEl, { onPick } = {}) {
+          const q = norm(query);
+          sugEl.innerHTML = "";
 
-  function render() {
-    const totalAll = rows.length;
-    const filtered = rows.filter(passesFilters);
-    const total = filtered.length;
+          const results = list
+            .filter((x) => {
+              if (set.has(x.id)) return false;
+              if (!q) return true;
+              return norm(x.label).includes(q) || x.id.includes(q);
+            })
+            .slice(0, 30);
 
-    const limit = getLimit();
+          if (results.length === 0) {
+            const empty = document.createElement("div");
+            empty.className = "tag-suggestion is-empty";
+            empty.textContent = "No matches.";
+            sugEl.appendChild(empty);
+            sugEl.hidden = false;
+            return;
+          }
 
-    if (countEl) {
-      if (!anyFiltersActive()) {
-        countEl.textContent = total === 1 ? "1 run" : `${total} runs`;
-      } else {
-        countEl.textContent = `${total} match${total === 1 ? "" : "es"} (of ${totalAll})`;
-      }
-    }
+          results.forEach((x) => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "tag-suggestion";
+            btn.textContent = x.label;
 
-    // Hide everything first
-    rows.forEach(r => (r.style.display = "none"));
+            btn.addEventListener("click", () => {
+              set.add(x.id);
+              if (onPick) onPick();
+              sugEl.hidden = true;
+            });
 
-    if (limit === 0) {
-      filtered.forEach(r => (r.style.display = ""));
-      if (pager) pager.style.display = "none";
-      return;
-    }
+            sugEl.appendChild(btn);
+          });
 
-    const pages = Math.max(1, Math.ceil(total / limit));
-    if (page > pages) page = pages;
+          sugEl.hidden = false;
+        }
 
-    const start = (page - 1) * limit;
-    const end = start + limit;
+        function wireDropdown({ filterEl, searchEl, sugEl, set, list, pickedEl }) {
+          function close() {
+            sugEl.hidden = true;
+          }
 
-    filtered.slice(start, end).forEach(r => (r.style.display = ""));
+          function syncPickedAndRender() {
+            searchEl.value = "";
+            renderPicked(set, list, pickedEl, { onRemove: syncPickedAndRender });
+            page = 1;
+            render();
+            close();
+            searchEl.blur();
+          }
 
-    if (pager) pager.style.display = pages > 1 ? "" : "none";
-    if (pageLabel) pageLabel.textContent = `Page ${page} / ${pages}`;
+          function open() {
+            renderSuggestions(searchEl.value, set, list, sugEl, { onPick: syncPickedAndRender });
+          }
 
-    if (prevBtn) prevBtn.disabled = page <= 1;
-    if (nextBtn) nextBtn.disabled = page >= pages;
-  }
+          renderPicked(set, list, pickedEl, { onRemove: syncPickedAndRender });
 
-  if (prevBtn) {
-    prevBtn.addEventListener("click", () => {
-      page -= 1;
-      render();
-    });
-  }
+          searchEl.addEventListener("focus", () => {
+            if (sugEl.hidden) open();
+          });
 
-  if (nextBtn) {
-    nextBtn.addEventListener("click", () => {
-      page += 1;
-      render();
-    });
-  }
+          searchEl.addEventListener("pointerdown", () => {
+            if (sugEl.hidden) open();
+            else close();
+          });
 
-  if (limitEl) {
-    limitEl.addEventListener("change", () => {
-      page = 1;
-      render();
-    });
-  }
+          searchEl.addEventListener("input", open);
 
-  if (dateQ) {
-    dateQ.addEventListener("input", () => {
-      page = 1;
-      render();
-    });
-  }
+          searchEl.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") {
+              close();
+              searchEl.blur();
+            }
+          });
 
-  if (clearBtn) {
-    clearBtn.addEventListener("click", () => {
-      activeCats.clear();
-      activeChallenges.clear();
-      activeRestrictions.clear();
-      activeRunners.clear();
-      if (dateQ) dateQ.value = "";
+          document.addEventListener(
+            "pointerdown",
+            (e) => {
+              if (!filterEl.contains(e.target)) close();
+            },
+            true
+          );
+        }
 
-      // Re-render picked chips with real behavior
-      renderPicked(activeCats, OPTIONS.categories, document.getElementById("cat-picked"), {
-           onRemove: () => { page = 1; render(); }
-      renderPicked(activeChallenges, OPTIONS.challenges, document.getElementById("ch-picked"), {
-           onRemove: () => { page = 1; render(); }
-      renderPicked(activeRestrictions, OPTIONS.restrictions, document.getElementById("res-picked"), {
-           onRemove: () => { page = 1; render(); }
-      renderPicked(activeRunners, OPTIONS.runners, document.getElementById("run-picked"), {
-           onRemove: () => { page = 1; render(); }
+        wireDropdown({
+          filterEl: document.getElementById("cat-filter"),
+          searchEl: document.getElementById("cat-search"),
+          sugEl: document.getElementById("cat-suggestions"),
+          set: activeCats,
+          list: OPTIONS.categories,
+          pickedEl: document.getElementById("cat-picked")
+        });
 
-      page = 1;
-      render();
-    });
-  }
+        wireDropdown({
+          filterEl: document.getElementById("ch-filter"),
+          searchEl: document.getElementById("ch-search"),
+          sugEl: document.getElementById("ch-suggestions"),
+          set: activeChallenges,
+          list: OPTIONS.challenges,
+          pickedEl: document.getElementById("ch-picked")
+        });
 
-  render();
-})();
-</script>
+        wireDropdown({
+          filterEl: document.getElementById("res-filter"),
+          searchEl: document.getElementById("res-search"),
+          sugEl: document.getElementById("res-suggestions"),
+          set: activeRestrictions,
+          list: OPTIONS.restrictions,
+          pickedEl: document.getElementById("res-picked")
+        });
+
+        wireDropdown({
+          filterEl: document.getElementById("run-filter"),
+          searchEl: document.getElementById("run-search"),
+          sugEl: document.getElementById("run-suggestions"),
+          set: activeRunners,
+          list: OPTIONS.runners,
+          pickedEl: document.getElementById("run-picked")
+        });
+
+        let page = 1;
+
+        function getLimit() {
+          if (!limitEl) return 10;
+          const v = parseInt(limitEl.value, 10);
+          return Number.isFinite(v) ? v : 10;
+        }
+
+        function passesFilters(row) {
+          const cat = norm(row.dataset.category);
+          const ch = norm(row.dataset.challengeId);
+          const runner = norm(row.dataset.runner);
+          const date = (row.dataset.date || "").trim();
+          const res = (row.dataset.restrictionIds || "").split(",").map(norm).filter(Boolean);
+
+          if (activeCats.size && !activeCats.has(cat)) return false;
+          if (activeChallenges.size && !activeChallenges.has(ch)) return false;
+          if (activeRunners.size && !activeRunners.has(runner)) return false;
+
+          if (activeRestrictions.size) {
+            const need = Array.from(activeRestrictions);
+            const okAll = need.every((x) => res.includes(x));
+            if (!okAll) return false;
+          }
+
+          const dq = norm(dateQ ? dateQ.value : "");
+          if (dq && !norm(date).includes(dq)) return false;
+
+          return true;
+        }
+
+        function anyFiltersActive() {
+          return (
+            activeCats.size ||
+            activeChallenges.size ||
+            activeRestrictions.size ||
+            activeRunners.size ||
+            (dateQ && norm(dateQ.value))
+          );
+        }
+
+        function render() {
+          const totalAll = rows.length;
+          const filtered = rows.filter(passesFilters);
+          const total = filtered.length;
+
+          const limit = getLimit();
+
+          if (countEl) {
+            if (!anyFiltersActive()) {
+              countEl.textContent = total === 1 ? "1 run" : `${total} runs`;
+            } else {
+              countEl.textContent = `${total} match${total === 1 ? "" : "es"} (of ${totalAll})`;
+            }
+          }
+
+          rows.forEach((r) => (r.style.display = "none"));
+
+          if (limit === 0) {
+            filtered.forEach((r) => (r.style.display = ""));
+            if (pager) pager.style.display = "none";
+            return;
+          }
+
+          const pages = Math.max(1, Math.ceil(total / limit));
+          if (page > pages) page = pages;
+
+          const start = (page - 1) * limit;
+          const end = start + limit;
+
+          filtered.slice(start, end).forEach((r) => (r.style.display = ""));
+
+          if (pager) pager.style.display = pages > 1 ? "" : "none";
+          if (pageLabel) pageLabel.textContent = `Page ${page} / ${pages}`;
+
+          if (prevBtn) prevBtn.disabled = page <= 1;
+          if (nextBtn) nextBtn.disabled = page >= pages;
+        }
+
+        if (prevBtn) {
+          prevBtn.addEventListener("click", () => {
+            page -= 1;
+            render();
+          });
+        }
+
+        if (nextBtn) {
+          nextBtn.addEventListener("click", () => {
+            page += 1;
+            render();
+          });
+        }
+
+        if (limitEl) {
+          limitEl.addEventListener("change", () => {
+            page = 1;
+            render();
+          });
+        }
+
+        if (dateQ) {
+          dateQ.addEventListener("input", () => {
+            page = 1;
+            render();
+          });
+        }
+
+        if (clearBtn) {
+          clearBtn.addEventListener("click", () => {
+            activeCats.clear();
+            activeChallenges.clear();
+            activeRestrictions.clear();
+            activeRunners.clear();
+            if (dateQ) dateQ.value = "";
+
+            renderPicked(activeCats, OPTIONS.categories, document.getElementById("cat-picked"), {
+              onRemove: () => {
+                page = 1;
+                render();
+              }
+            });
+
+            renderPicked(activeChallenges, OPTIONS.challenges, document.getElementById("ch-picked"), {
+              onRemove: () => {
+                page = 1;
+                render();
+              }
+            });
+
+            renderPicked(activeRestrictions, OPTIONS.restrictions, document.getElementById("res-picked"), {
+              onRemove: () => {
+                page = 1;
+                render();
+              }
+            });
+
+            renderPicked(activeRunners, OPTIONS.runners, document.getElementById("run-picked"), {
+              onRemove: () => {
+                page = 1;
+                render();
+              }
+            });
+
+            page = 1;
+            render();
+          });
+        }
+
+        render();
+      })();
+      </script>
+
+    </div>
+  </section>
+</div>
