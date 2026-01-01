@@ -2,108 +2,118 @@
 layout: default
 ---
 
-{% assign tabs_cfg = page.tabs | default: {} %}
-{% assign show_challenges = tabs_cfg.challenges | default: true %}
-{% assign show_categories = tabs_cfg.categories | default: true %}
-{% assign show_runs       = tabs_cfg.runs       | default: true %}
-{% assign show_resources  = tabs_cfg.resources  | default: true %}
-{% assign show_guides     = tabs_cfg.guides     | default: true %}
-{% assign show_forums     = tabs_cfg.forums     | default: true %}
-{% assign show_history    = tabs_cfg.history    | default: true %}
-
-<!-- Back link -->
+<!-- =========================================================
+     Back link to Games index
+     ========================================================= -->
 <div class="page-width">
   <p class="muted page-back">
     <a href="{{ '/games/' | relative_url }}">← Games</a>
   </p>
 </div>
 
+<!-- =========================================================
+     Game hero
+     ========================================================= -->
+{% if page.cover %}
 <div class="page-width">
-  {% if page.cover %}
-    <div class="game-shell">
-      <section
-        class="game-hero"
-        style="
-          background-image: url('{{ page.cover | relative_url }}');
-          background-position: {{ page.cover_position | default: 'center' }};
-        "
-      >
-        <div class="game-hero__overlay">
-          <div class="game-hero__content">
-            <h1>{{ page.name }}</h1>
+  <section
+    class="game-hero"
+    style="
+      background-image: url('{{ page.cover | relative_url }}');
+      background-position: {{ page.cover_position | default: 'center' }};
+    "
+  >
+    <div class="game-hero__overlay">
+      <div class="game-hero__content">
+        <h1>{{ page.name }}</h1>
 
-            {% if page.status %}
-              <p class="muted">{{ page.status }}</p>
-            {% endif %}
-
-            {% if page.tags and page.tags.size > 0 %}
-              <div class="game-tags">
-                {% for tag in page.tags %}
-                  {% assign meta = site.data.tags[tag] %}
-                  <span class="tag">{{ meta.label | default: tag }}</span>
-                {% endfor %}
-              </div>
-            {% endif %}
-          </div>
-        </div>
-      </section>
-    </div>
-  {% endif %}
-
-  {% if show_challenges or show_categories or show_runs or show_resources or show_guides or show_forums or show_history %}
-    <div class="game-shell">
-      <nav class="runner-tabs game-tabs" id="game-tabs">
-        {% if show_challenges %}
-          <a class="tab active" href="{{ page.url | relative_url }}">Challenges</a>
+        {% if page.status %}
+          <p class="muted">{{ page.status }}</p>
         {% endif %}
 
-        {% if show_categories %}
-          <a class="tab" href="{{ page.url | relative_url }}categories/">Categories</a>
-        {% endif %}
-
-        {% if show_runs %}
-          <a class="tab" href="{{ page.url | relative_url }}game-runs/">Runs</a>
-        {% endif %}
-
-        {% if show_resources %}
-          <a class="tab" href="{{ page.url | relative_url }}resources/">Resources</a>
-        {% endif %}
-
-        {% if show_guides %}
-          <a class="tab" href="{{ page.url | relative_url }}guides/">Guides</a>
-        {% endif %}
-
-        {% if show_forums %}
-          <a class="tab" href="{{ page.url | relative_url }}forums/">Forums</a>
-        {% endif %}
-
-        {% if show_history %}
-          <a class="tab" href="{{ page.url | relative_url }}history/">History</a>
-        {% endif %}
-      </nav>
-
-      <section class="tab-panel active">
-        <div class="card">
-          <h2>Challenges</h2>
-
-          {% if page.challenges and page.challenges.size > 0 %}
-            <div class="game-tags">
-              {% for c in page.challenges %}
-                {% assign meta = site.data.challenges[c] %}
-                <span class="tag">{{ meta.label | default: c }}</span>
-              {% endfor %}
-            </div>
-          {% else %}
-            <p class="muted">No challenges listed yet.</p>
-          {% endif %}
-        </div>
-
-        {% if content and content != "" %}
-          <div class="card">
-            {{ content }}
+        {% if page.tags %}
+          <div class="game-tags">
+            {% for tag in page.tags %}
+              {% assign meta = site.data.tags[tag] %}
+              <span class="tag">{{ meta.label | default: tag }}</span>
+            {% endfor %}
           </div>
         {% endif %}
-      </section>
+      </div>
     </div>
-  {% endif %}
+  </section>
 </div>
+{% endif %}
+
+<!-- =========================================================
+     Game tabs
+     ========================================================= -->
+<nav class="runner-tabs game-tabs" id="game-tabs">
+  <button class="tab active" data-tab="overview" type="button">Overview</button>
+  <button class="tab" data-tab="categories" type="button">Categories</button>
+  <a
+    class="tab"
+    href="{{ page.url | relative_url | append: 'game-runs/' }}"
+  >
+    Runs
+  </a>
+</nav>
+
+<!-- =========================================================
+     Tab panels
+     ========================================================= -->
+<div class="page-width">
+
+  <!-- Overview -->
+  <section class="tab-panel active" data-panel="overview">
+    {% if content %}
+      <div class="card">
+        {{ content }}
+      </div>
+    {% endif %}
+  </section>
+
+  <!-- Categories -->
+  <section class="tab-panel" data-panel="categories">
+    <div class="card">
+      <h2>Categories</h2>
+
+      {% if page.categories %}
+        <ul class="list">
+          {% for c in page.categories %}
+            <li>
+              <a href="{{ page.url | relative_url }}categories/{{ c | slugify }}/">
+                {{ c }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="muted">No categories listed.</p>
+      {% endif %}
+    </div>
+  </section>
+
+</div>
+
+<!-- =========================================================
+     Tabs script
+     ========================================================= -->
+<script>
+(function () {
+  const tabs = [...document.querySelectorAll("#game-tabs .tab[data-tab]")];
+  const panels = [...document.querySelectorAll(".tab-panel[data-panel]")];
+
+  function activate(name) {
+    tabs.forEach(t => t.classList.toggle("active", t.dataset.tab === name));
+    panels.forEach(p => p.classList.toggle("active", p.dataset.panel === name));
+  }
+
+  tabs.forEach(t => {
+    t.addEventListener("click", e => {
+      e.preventDefault();
+      activate(t.dataset.tab);
+    });
+  });
+})();
+</script>
