@@ -2,666 +2,74 @@
 layout: default
 ---
 
-{% assign game = site.games | where: "game_id", page.game_id | first %}
-
-<!-- Back link -->
+<!-- =========================================================
+     Back link to Game page
+     ========================================================= -->
 <div class="page-width">
   <p class="muted page-back">
-    <a href="{{ '/games/' | relative_url }}">← Games</a>
-    {% if game %}
-      <span class="muted"> / </span>
-      <a href="{{ game.url | relative_url }}">{{ game.name }}</a>
-    {% endif %}
+    <a href="{{ page.game_url | relative_url }}">← {{ page.game_name }}</a>
   </p>
 </div>
 
-<!-- Hero -->
-{% if game and game.cover %}
-  <div class="page-width">
-    <div class="game-shell">
-      <section
-        class="game-hero"
-        style="
-          background-image: url('{{ game.cover | relative_url }}');
-          background-position: {{ game.cover_position | default: 'center' }};
-        "
-      >
-        <div class="game-hero__overlay">
-          <div class="game-hero__content">
-            <h1>{{ game.name }}</h1>
-
-            {% if game.status %}
-              <p class="muted">{{ game.status }}</p>
-            {% endif %}
-
-            {% if game.tags and game.tags.size > 0 %}
-              <div class="game-tags">
-                {% for tag in game.tags %}
-                  {% assign meta = site.data.tags[tag] %}
-                  <span class="tag">{{ meta.label | default: tag }}</span>
-                {% endfor %}
-              </div>
-            {% endif %}
-          </div>
-        </div>
-      </section>
-    </div>
-  </div>
-{% else %}
-  <div class="page-width">
-    <h1>{{ page.game_name | default: page.game_id }}</h1>
-  </div>
-{% endif %}
-
-<!-- Tabs -->
-{% assign tabs_cfg = game.tabs | default: {} %}
-{% unless game %}{% assign tabs_cfg = {} %}{% endunless %}
-{% assign show_challenges = tabs_cfg.challenges | default: true %}
-{% assign show_categories = tabs_cfg.categories | default: true %}
-{% assign show_runs       = tabs_cfg.runs       | default: true %}
-{% assign show_resources  = tabs_cfg.resources  | default: true %}
-{% assign show_guides     = tabs_cfg.guides     | default: true %}
-{% assign show_forums     = tabs_cfg.forums     | default: true %}
-{% assign show_history    = tabs_cfg.history    | default: true %}
-
+<!-- =========================================================
+     Page header
+     ========================================================= -->
 <div class="page-width">
-  <div class="game-shell">
-    <nav class="runner-tabs game-tabs">
-      {% if show_challenges %}
-        <a class="tab" href="{{ game.url | relative_url }}">Challenges</a>
-      {% endif %}
-
-      {% if show_categories %}
-        <a class="tab" href="{{ game.url | relative_url }}categories/">Categories</a>
-      {% endif %}
-
-      {% if show_runs %}
-        <a class="tab active" href="{{ page.url | relative_url }}">Runs</a>
-      {% endif %}
-
-      {% if show_resources %}
-        <a class="tab" href="{{ game.url | relative_url }}resources/">Resources</a>
-      {% endif %}
-
-      {% if show_guides %}
-        <a class="tab" href="{{ game.url | relative_url }}guides/">Guides</a>
-      {% endif %}
-
-      {% if show_forums %}
-        <a class="tab" href="{{ game.url | relative_url }}forums/">Forums</a>
-      {% endif %}
-
-      {% if show_history %}
-        <a class="tab" href="{{ game.url | relative_url }}history/">History</a>
-      {% endif %}
-    </nav>
-  </div>
+  <h1>{{ page.game_name }} Runs</h1>
+  <p class="muted">All recorded runs for this game.</p>
 </div>
 
-<!-- Runs table -->
+<!-- =========================================================
+     Runs list
+     ========================================================= -->
 <div class="page-width">
-  <div class="game-shell">
-    <section class="tab-panel active">
-      <div class="card">
-        <h2>Runs</h2>
-        <p class="muted" id="runs-count"></p>
 
-        <div id="runs-list">
-          {% assign runs = site.data.runs | where: "game_id", page.game_id | sort: "date_completed" | reverse %}
+  {% assign runs = site.data.runs | where: "game_id", page.game_id %}
+
+  {% if runs and runs.size > 0 %}
+    <div class="table-wrap">
+      <table class="runs-table">
+        <thead>
+          <tr>
+            <th>Runner</th>
+            <th>Category</th>
+            <th>Challenge</th>
+            <th>Time</th>
+            <th>Date</th>
+            <th>Video</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in runs %}
+            <tr>
+              <td>
+                <a href="{{ '/runners/' | relative_url }}{{ r.runner_id }}/">
+                  {{ r.runner }}
+                </a>
+              </td>
+              <td>{{ r.category }}</td>
+              <td>
+                {% assign meta = site.data.challenges[r.challenge_id] %}
+                {{ meta.label | default: r.challenge_id }}
+              </td>
+              <td>{{ r.time | default: "—" }}</td>
+              <td>{{ r.date_completed }}</td>
+              <td>
+                {% if r.video %}
+                  <a href="{{ r.video }}" target="_blank" rel="noopener">Link</a>
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="card">
+      <p class="muted">No runs recorded yet.</p>
+    </div>
+  {% endif %}
 
-          {% if runs and runs.size > 0 %}
-            <div class="table-wrap">
-              <table class="runs-table" id="runs-table">
-                <thead>
-                  <tr>
-                    <th><span>Runner(s)</span></th>
-
-                    <th class="th-filter">
-                      <span>Category</span>
-                      <button class="th-caret" type="button" aria-label="Filter Category" data-filter-btn="category">▾</button>
-                    </th>
-
-                    <th class="th-filter">
-                      <span>Challenge Type</span>
-                      <button class="th-caret" type="button" aria-label="Filter Challenge" data-filter-btn="challenge">▾</button>
-                    </th>
-
-                    <th class="th-filter">
-                      <span>Restrictions</span>
-                      <button class="th-caret" type="button" aria-label="Filter Restrictions" data-filter-btn="restrictions">▾</button>
-                    </th>
-
-                    <th><span>Time</span></th>
-                    <th><span>Video</span></th>
-                    <th><span>Verified By</span></th>
-
-                    <th class="th-filter th-date">
-                      <div class="th-title">
-                        <span>Date Completed</span>
-                      </div>
-                      <div class="th-date-sort" aria-label="Sort Date Completed">
-                        <button class="th-sort" id="th-sort-asc" type="button" title="Sort oldest to newest">↑</button>
-                        <button class="th-sort" id="th-sort-desc" type="button" title="Sort newest to oldest">↓</button>
-                      </div>
-                    </th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {% for run in runs %}
-                    {% assign run_video = run.video_link | default: run.video | default: "" %}
-                    {% assign run_date  = run.date_completed | default: run.date | default: "" %}
-                    {% assign run_time  = run.time | default: "" %}
-                    {% assign run_vby   = run.verified_by | default: "" %}
-                    {% assign has_verified = false %}
-                    {% if run.verified == true or run.verified == "true" %}
-                      {% assign has_verified = true %}
-                    {% elsif run_vby and run_vby != "" and run_vby != "N/A" %}
-                      {% assign has_verified = true %}
-                    {% endif %}
-
-                    <tr
-                      class="run-row"
-                      data-runner="{{ run.runner_id | default: run.runner | default: '' | downcase }}"
-                      data-category="{{ run.category | default: '' | downcase }}"
-                      data-challenge-id="{{ run.challenge_id | default: '' | downcase }}"
-                      data-restriction-ids="{{ run.restriction_ids | default: empty | join: ',' | downcase }}"
-                      data-date="{{ run_date }}"
-                      data-time="{{ run_time }}"
-                      data-verified="{{ has_verified }}"
-                      data-video="{{ run_video }}"
-                    >
-                      <td>
-                        {% if run.runner_id %}
-                          <a href="{{ '/runners/' | relative_url }}{{ run.runner_id | slugify }}/">
-                            {{ run.runner | default: run.runner_id }}
-                          </a>
-                        {% else %}
-                          {{ run.runner | default: "" }}
-                        {% endif %}
-                      </td>
-
-                      <td>{{ run.category | default: "" }}</td>
-
-                      <td>
-                        {% if run.challenge_id %}
-                          {% assign chmeta = site.data.challenges[run.challenge_id] %}
-                          <span class="tag">{{ chmeta.label | default: run.challenge_id }}</span>
-                        {% endif %}
-                      </td>
-
-                      <td>
-                        {% assign rtexts = run.restrictions | default: empty %}
-                        {% assign rids   = run.restriction_ids | default: empty %}
-
-                        {% if rtexts and rtexts.size > 0 %}
-                          {% for r in rtexts %}
-                            <span class="tag">{{ r }}</span>
-                          {% endfor %}
-                        {% elsif rids and rids.size > 0 %}
-                          {% for rid in rids %}
-                            <span class="tag">{{ rid }}</span>
-                          {% endfor %}
-                        {% endif %}
-                      </td>
-
-                      <td>
-                        {% if run_time and run_time != "" %}
-                          {{ run_time }}
-                        {% else %}
-                          <span class="muted">—</span>
-                        {% endif %}
-                      </td>
-
-                      <td>
-                        {% if run_video and run_video != "" %}
-                          <a href="{{ run_video }}" target="_blank" rel="noopener">Video</a>
-                        {% else %}
-                          <span class="muted">—</span>
-                        {% endif %}
-                      </td>
-
-                      <td>
-                        {% if has_verified %}
-                          {% if run_vby and run_vby != "" %}
-                            <span class="muted">✓ {{ run_vby }}</span>
-                          {% else %}
-                            <span class="muted">✓ Verified</span>
-                          {% endif %}
-                        {% else %}
-                          <span class="muted">—</span>
-                        {% endif %}
-                      </td>
-
-                      <td>{{ run_date }}</td>
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-
-              <!-- Excel-style header filter menu -->
-              <div class="th-menu" id="th-menu" hidden>
-                <div class="th-menu__top">
-                  <input
-                    id="th-menu-q"
-                    class="filter th-menu__q"
-                    type="text"
-                    placeholder="Search..."
-                    autocomplete="off"
-                  />
-                </div>
-
-                <div class="th-menu__list" id="th-menu-list"></div>
-
-                <div class="th-menu__actions">
-                  <button class="btn" id="th-menu-clear" type="button">Clear</button>
-                  <button class="btn" id="th-menu-close" type="button">Close</button>
-                </div>
-              </div>
-            </div>
-          {% else %}
-            <p class="muted">No runs have been added yet.</p>
-          {% endif %}
-        </div>
-
-        <!-- Pagination -->
-        <div style="margin: 0.5rem 0 0.75rem 0;">
-          <label class="muted" for="runs-limit">Show:</label>
-          <select id="runs-limit" class="select">
-            <option value="10" selected>10</option>
-            <option value="25">25</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-            <option value="0">All</option>
-          </select>
-        </div>
-
-        <div class="pager" id="runs-pager" style="display:none; margin-top: 0.75rem;">
-          <button class="btn" id="runs-prev" type="button">Prev</button>
-          <span class="muted" id="runs-page" style="padding: 0 0.5rem;"></span>
-          <button class="btn" id="runs-next" type="button">Next</button>
-        </div>
-
-        <script>
-(function () {
-  const root = document.getElementById("runs-list");
-  if (!root) return;
-
-  const rows = Array.from(root.querySelectorAll(".run-row"));
-  const tbody = document.querySelector("#runs-table tbody");
-
-  rows.forEach((r, i) => (r.dataset._i = String(i)));
-
-  const limitEl = document.getElementById("runs-limit");
-  const countEl = document.getElementById("runs-count");
-
-  const pager = document.getElementById("runs-pager");
-  const prevBtn = document.getElementById("runs-prev");
-  const nextBtn = document.getElementById("runs-next");
-  const pageLabel = document.getElementById("runs-page");
-
-  const thMenu = document.getElementById("th-menu");
-  const thMenuQ = document.getElementById("th-menu-q");
-  const thMenuList = document.getElementById("th-menu-list");
-  const thMenuClear = document.getElementById("th-menu-clear");
-  const thMenuClose = document.getElementById("th-menu-close");
-
-  const thSortAsc = document.getElementById("th-sort-asc");
-  const thSortDesc = document.getElementById("th-sort-desc");
-
-  const norm = (s) => (s || "").trim().toLowerCase();
-
-  function uniq(arr) { return Array.from(new Set(arr)); }
-
-  function parseDateToNumber(s) {
-    const v = (s || "").trim();
-    if (!v) return NaN;
-
-    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(v);
-    if (m) {
-      const y = parseInt(m[1], 10);
-      const mo = parseInt(m[2], 10);
-      const d = parseInt(m[3], 10);
-      if (Number.isFinite(y) && Number.isFinite(mo) && Number.isFinite(d)) {
-        return Date.UTC(y, mo - 1, d);
-      }
-    }
-
-    const t = Date.parse(v);
-    return Number.isFinite(t) ? t : NaN;
-  }
-
-  function buildOptions() {
-    const cats = [];
-    const challenges = [];
-    const restrictions = [];
-
-    const catLabelById = new Map();
-    const chLabelById = new Map();
-    const resLabelById = new Map();
-
-    rows.forEach((row) => {
-      const catId = norm(row.dataset.category);
-      const chId = norm(row.dataset.challengeId);
-      const resIds = (row.dataset.restrictionIds || "").split(",").map(norm).filter(Boolean);
-
-      if (catId) {
-        cats.push(catId);
-        const cell = row.children[1];
-        if (cell && !catLabelById.has(catId)) catLabelById.set(catId, cell.textContent.trim());
-      }
-
-      if (chId) {
-        challenges.push(chId);
-        const cell = row.children[2];
-        const tag = cell ? cell.querySelector(".tag") : null;
-        if (tag && !chLabelById.has(chId)) chLabelById.set(chId, tag.textContent.trim());
-      }
-
-      if (resIds.length) {
-        resIds.forEach((id, idx) => {
-          restrictions.push(id);
-          if (!resLabelById.has(id)) {
-            const cell = row.children[3];
-            const tags = cell ? Array.from(cell.querySelectorAll(".tag")) : [];
-            const label = tags[idx] ? tags[idx].textContent.trim() : id;
-            resLabelById.set(id, label);
-          }
-        });
-      }
-    });
-
-    function toList(ids, map) {
-      return uniq(ids.filter(Boolean))
-        .map((id) => ({ id, label: map.get(id) || id }))
-        .sort((a, b) => a.label.localeCompare(b.label));
-    }
-
-    return {
-      categories: toList(cats, catLabelById),
-      challenges: toList(challenges, chLabelById),
-      restrictions: toList(restrictions, resLabelById)
-    };
-  }
-
-  const OPTIONS = buildOptions();
-
-  const activeCats = new Set();
-  const activeChallenges = new Set();
-  const activeRestrictions = new Set();
-  const activeDates = new Set();
-
-  let page = 1;
-  let dateSortDir = "desc";
-
-  function anyFiltersActive() {
-    return activeCats.size || activeChallenges.size || activeRestrictions.size || activeDates.size;
-  }
-
-  function getLimit() {
-    if (!limitEl) return 10;
-    const v = parseInt(limitEl.value, 10);
-    return Number.isFinite(v) ? v : 10;
-  }
-
-  function passesFilters(row) {
-    const cat = norm(row.dataset.category);
-    const ch = norm(row.dataset.challengeId);
-    const date = (row.dataset.date || "").trim();
-    const res = (row.dataset.restrictionIds || "").split(",").map(norm).filter(Boolean);
-
-    if (activeCats.size && !activeCats.has(cat)) return false;
-    if (activeChallenges.size && !activeChallenges.has(ch)) return false;
-
-    if (activeRestrictions.size) {
-      const need = Array.from(activeRestrictions);
-      const okAll = need.every((x) => res.includes(x));
-      if (!okAll) return false;
-    }
-
-    if (activeDates.size && !activeDates.has(date)) return false;
-
-    return true;
-  }
-
-  function sortRowsByDate(list) {
-    const dir = dateSortDir;
-
-    return list.sort((a, b) => {
-      const aDate = parseDateToNumber(a.dataset.date);
-      const bDate = parseDateToNumber(b.dataset.date);
-
-      const aBad = !Number.isFinite(aDate);
-      const bBad = !Number.isFinite(bDate);
-
-      if (aBad && bBad) {
-        return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
-      }
-      if (aBad) return 1;
-      if (bBad) return -1;
-
-      if (aDate === bDate) {
-        return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
-      }
-
-      return dir === "asc" ? aDate - bDate : bDate - aDate;
-    });
-  }
-
-  function render() {
-    const totalAll = rows.length;
-    let filtered = rows.filter(passesFilters);
-    const total = filtered.length;
-
-    filtered = sortRowsByDate(filtered);
-
-    if (tbody) filtered.forEach(r => tbody.appendChild(r));
-
-    const limit = getLimit();
-
-    if (countEl) {
-      if (!anyFiltersActive()) {
-        countEl.textContent = total === 1 ? "1 run" : `${total} runs`;
-      } else {
-        countEl.textContent = `${total} match${total === 1 ? "" : "es"} (of ${totalAll})`;
-      }
-    }
-
-    rows.forEach((r) => (r.style.display = "none"));
-
-    if (limit === 0) {
-      filtered.forEach((r) => (r.style.display = ""));
-      if (pager) pager.style.display = "none";
-      return;
-    }
-
-    const pages = Math.max(1, Math.ceil(total / limit));
-    if (page > pages) page = pages;
-
-    const start = (page - 1) * limit;
-    const end = start + limit;
-
-    filtered.slice(start, end).forEach((r) => (r.style.display = ""));
-
-    if (pager) pager.style.display = pages > 1 ? "" : "none";
-    if (pageLabel) pageLabel.textContent = `Page ${page} / ${pages}`;
-
-    if (prevBtn) prevBtn.disabled = page <= 1;
-    if (nextBtn) nextBtn.disabled = page >= pages;
-  }
-
-  if (prevBtn) prevBtn.addEventListener("click", () => { page -= 1; render(); });
-  if (nextBtn) nextBtn.addEventListener("click", () => { page += 1; render(); });
-  if (limitEl) limitEl.addEventListener("change", () => { page = 1; render(); });
-
-  let thActiveCol = null;
-
-  function closeThMenu() {
-    thMenu.hidden = true;
-    thActiveCol = null;
-  }
-
-  function getSetForCol(col) {
-    if (col === "category") return activeCats;
-    if (col === "challenge") return activeChallenges;
-    if (col === "restrictions") return activeRestrictions;
-    if (col === "date") return activeDates;
-    return null;
-  }
-
-  function getOptionsForCol(col) {
-    if (col === "category") return OPTIONS.categories;
-    if (col === "challenge") return OPTIONS.challenges;
-    if (col === "restrictions") return OPTIONS.restrictions;
-
-    if (col === "date") {
-      const dates = uniq(rows.map(r => (r.dataset.date || "").trim()).filter(Boolean));
-      return dates.map(d => ({ id: d, label: d })).sort((a, b) => a.label.localeCompare(b.label));
-    }
-
-    return [];
-  }
-
-  function renderThMenuList() {
-    if (!thActiveCol) return;
-
-    const q = norm(thMenuQ.value);
-    const list = getOptionsForCol(thActiveCol);
-    const set = getSetForCol(thActiveCol);
-
-    thMenuList.innerHTML = "";
-
-    const filtered = list.filter(x => {
-      if (!q) return true;
-      return norm(x.label).includes(q) || norm(x.id).includes(q);
-    });
-
-    if (filtered.length === 0) {
-      const empty = document.createElement("div");
-      empty.className = "th-menu__empty muted";
-      empty.textContent = "No matches.";
-      thMenuList.appendChild(empty);
-      return;
-    }
-
-    filtered.slice(0, 250).forEach(x => {
-      const lab = document.createElement("label");
-      lab.className = "th-menu__item";
-
-      const cb = document.createElement("input");
-      cb.type = "checkbox";
-      cb.checked = set.has(x.id);
-
-      cb.addEventListener("change", () => {
-        if (cb.checked) set.add(x.id);
-        else set.delete(x.id);
-
-        page = 1;
-        render();
-      });
-
-      const txt = document.createElement("span");
-      txt.textContent = x.label;
-
-      lab.appendChild(cb);
-      lab.appendChild(txt);
-      thMenuList.appendChild(lab);
-    });
-  }
-
-  function openThMenuFor(col, anchorEl) {
-    thActiveCol = col;
-
-    thMenu.hidden = false;
-
-    const r = anchorEl.getBoundingClientRect();
-    const menuW = thMenu.offsetWidth || 320;
-    const menuH = thMenu.offsetHeight || 300;
-
-    const left = Math.min(window.innerWidth - menuW - 12, Math.max(12, r.left));
-    const top = Math.min(window.innerHeight - menuH - 12, r.bottom + 8);
-
-    thMenu.style.left = left + "px";
-    thMenu.style.top = top + "px";
-
-    thMenuQ.value = "";
-    renderThMenuList();
-    thMenuQ.focus();
-  }
-
-  document.querySelectorAll("[data-filter-btn]").forEach(btn => {
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const col = btn.getAttribute("data-filter-btn");
-      if (!thMenu.hidden && thActiveCol === col) {
-        closeThMenu();
-        return;
-      }
-      openThMenuFor(col, btn);
-    });
-  });
-
-  if (thMenuQ) thMenuQ.addEventListener("input", renderThMenuList);
-
-  if (thMenuClear) {
-    thMenuClear.addEventListener("click", () => {
-      if (!thActiveCol) return;
-      const set = getSetForCol(thActiveCol);
-      if (!set) return;
-
-      set.clear();
-      page = 1;
-      render();
-      renderThMenuList();
-    });
-  }
-
-  if (thMenuClose) thMenuClose.addEventListener("click", closeThMenu);
-
-  function updateDateSortButtons() {
-    if (thSortAsc) thSortAsc.disabled = dateSortDir === "asc";
-    if (thSortDesc) thSortDesc.disabled = dateSortDir === "desc";
-  }
-
-  if (thSortAsc) {
-    thSortAsc.addEventListener("click", () => {
-      dateSortDir = "asc";
-      updateDateSortButtons();
-      page = 1;
-      render();
-    });
-  }
-
-  if (thSortDesc) {
-    thSortDesc.addEventListener("click", () => {
-      dateSortDir = "desc";
-      updateDateSortButtons();
-      page = 1;
-      render();
-    });
-  }
-
-  document.addEventListener("pointerdown", (e) => {
-    if (thMenu.hidden) return;
-    if (thMenu.contains(e.target)) return;
-
-    const isCaret = e.target && e.target.closest && e.target.closest("[data-filter-btn]");
-    if (isCaret) return;
-
-    closeThMenu();
-  }, true);
-
-  window.addEventListener("resize", () => {
-    if (!thMenu.hidden) closeThMenu();
-  });
-
-  updateDateSortButtons();
-  render();
-})();
-        </script>
-      </div>
-    </section>
-  </div>
 </div>
