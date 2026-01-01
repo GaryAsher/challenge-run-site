@@ -10,6 +10,8 @@
   - hestia-only
   - no-hexes
   time: "00:27:41"
+  verified_by: Self
+  video: https://www.youtube.com/watch?v=XXXXXXXX
   date_completed: 2025-01-03
 
 - game_id: hades-2
@@ -20,4 +22,6 @@
   restrictions: []
   restriction_ids: []
   time: []
+  verified_by: N/A
+  video: https://www.youtube.com/watch?v=XXXXXXXX
   date_completed: 2025-01-05
