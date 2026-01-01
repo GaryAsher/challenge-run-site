@@ -2,23 +2,23 @@
 layout: default
 ---
 
-<!-- =========================================================
-     Back link to the Games index
-     ========================================================= -->
+{% assign tabs_cfg = page.tabs | default: {} %}
+{% assign show_challenges = tabs_cfg.challenges | default: true %}
+{% assign show_categories = tabs_cfg.categories | default: true %}
+{% assign show_runs       = tabs_cfg.runs       | default: true %}
+{% assign show_resources  = tabs_cfg.resources  | default: true %}
+{% assign show_guides     = tabs_cfg.guides     | default: true %}
+{% assign show_forums     = tabs_cfg.forums     | default: true %}
+{% assign show_history    = tabs_cfg.history    | default: true %}
+
+<!-- Back link -->
 <div class="page-width">
   <p class="muted page-back">
     <a href="{{ '/games/' | relative_url }}">← Games</a>
   </p>
 </div>
 
-<!-- =========================================================
-     STANDARDIZED WIDTH WRAPPER
-     ========================================================= -->
 <div class="page-width">
-
-  <!-- =========================================================
-       Game hero section (constrained via game-shell)
-       ========================================================= -->
   {% if page.cover %}
     <div class="game-shell">
       <section
@@ -49,18 +49,6 @@ layout: default
       </section>
     </div>
   {% endif %}
-
-  <!-- =========================================================
-       Game Tabs (link-based, uniform)
-       ========================================================= -->
-  {% assign tabs_cfg = page.tabs | default: {} %}
-  {% assign show_challenges = tabs_cfg.challenges | default: true %}
-  {% assign show_categories = tabs_cfg.categories | default: true %}
-  {% assign show_runs       = tabs_cfg.runs       | default: true %}
-  {% assign show_resources  = tabs_cfg.resources  | default: true %}
-  {% assign show_guides     = tabs_cfg.guides     | default: true %}
-  {% assign show_forums     = tabs_cfg.forums     | default: true %}
-  {% assign show_history    = tabs_cfg.history    | default: true %}
 
   {% if show_challenges or show_categories or show_runs or show_resources or show_guides or show_forums or show_history %}
     <div class="game-shell">
@@ -94,14 +82,11 @@ layout: default
         {% endif %}
       </nav>
 
-      <!-- =========================================================
-           Main Page Content (Challenges)
-           ========================================================= -->
       <section class="tab-panel active">
         <div class="card">
           <h2>Challenges</h2>
 
-          {% if page.challenges %}
+          {% if page.challenges and page.challenges.size > 0 %}
             <div class="game-tags">
               {% for c in page.challenges %}
                 {% assign meta = site.data.challenges[c] %}
@@ -113,14 +98,12 @@ layout: default
           {% endif %}
         </div>
 
-        {% if content %}
+        {% if content and content != "" %}
           <div class="card">
             {{ content }}
           </div>
         {% endif %}
       </section>
-
     </div>
   {% endif %}
-
 </div>
