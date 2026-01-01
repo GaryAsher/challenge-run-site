@@ -4,7 +4,8 @@ layout: default
 
 {% assign game = site.games | where: "game_id", page.game_id | first %}
 {% assign runs_all = site.data.runs | where: "game_id", page.game_id %}
-{% assign runs = runs_all | where: "category", page.category | sort: "date_completed" | reverse %}
+{% assign {% assign cat_slug = page.category | slugify %}
+{% assign runs = runs_all | where_exp: "r", "r.category and r.category | slugify == cat_slug" | sort: "date_completed" | reverse %}
 
 <div class="page-width">
   <p class="muted page-back">
@@ -39,7 +40,7 @@ layout: default
   </div>
 {% else %}
   <div class="page-width">
-    <h1>{{ page.game_name }}</h1>
+    <h1>{% if game %}{{ game.name }}{% else %}{{ page.game_id }}{% endif %}</h1>
     <p class="muted">Category: {{ page.category }}</p>
   </div>
 {% endif %}
