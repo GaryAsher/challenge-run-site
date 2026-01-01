@@ -4,18 +4,18 @@ layout: default
 
 {% assign game = site.games | where: "game_id", page.game_id | first %}
 
-<!-- =========================================================
-     Back link to the Games index
-     ========================================================= -->
+<!-- Back link -->
 <div class="page-width">
   <p class="muted page-back">
     <a href="{{ '/games/' | relative_url }}">← Games</a>
+    {% if game %}
+      <span class="muted"> / </span>
+      <a href="{{ game.url | relative_url }}">{{ game.name }}</a>
+    {% endif %}
   </p>
 </div>
 
-<!-- =========================================================
-     Game hero section (same as _layouts/game.html)
-     ========================================================= -->
+<!-- Hero -->
 {% if game and game.cover %}
   <div class="page-width">
     <div class="game-shell">
@@ -49,13 +49,11 @@ layout: default
   </div>
 {% else %}
   <div class="page-width">
-    <h1>{{ page.game_name }}</h1>
+    <h1>{{ page.game_name | default: page.game_id }}</h1>
   </div>
 {% endif %}
 
-<!-- =========================================================
-     Tabs (same look, links back to the main game page)
-     ========================================================= -->
+<!-- Tabs -->
 {% assign tabs_cfg = game.tabs | default: {} %}
 {% unless game %}{% assign tabs_cfg = {} %}{% endunless %}
 {% assign show_challenges = tabs_cfg.challenges | default: true %}
@@ -68,13 +66,13 @@ layout: default
 
 <div class="page-width">
   <div class="game-shell">
-    <nav class="runner-tabs" id="game-tabs">
+    <nav class="runner-tabs game-tabs">
       {% if show_challenges %}
-        <a class="tab" href="{{ game.url | relative_url }}#challenges">Challenges</a>
+        <a class="tab" href="{{ game.url | relative_url }}">Challenges</a>
       {% endif %}
 
       {% if show_categories %}
-        <a class="tab" href="{{ game.url | relative_url }}#categories">Categories</a>
+        <a class="tab" href="{{ game.url | relative_url }}categories/">Categories</a>
       {% endif %}
 
       {% if show_runs %}
@@ -82,27 +80,25 @@ layout: default
       {% endif %}
 
       {% if show_resources %}
-        <a class="tab" href="{{ game.url | relative_url }}#resources">Resources</a>
+        <a class="tab" href="{{ game.url | relative_url }}resources/">Resources</a>
       {% endif %}
 
       {% if show_guides %}
-        <a class="tab" href="{{ game.url | relative_url }}#guides">Guides</a>
+        <a class="tab" href="{{ game.url | relative_url }}guides/">Guides</a>
       {% endif %}
 
       {% if show_forums %}
-        <a class="tab" href="{{ game.url | relative_url }}#forums">Forums</a>
+        <a class="tab" href="{{ game.url | relative_url }}forums/">Forums</a>
       {% endif %}
 
       {% if show_history %}
-        <a class="tab" href="{{ game.url | relative_url }}#history">History</a>
+        <a class="tab" href="{{ game.url | relative_url }}history/">History</a>
       {% endif %}
     </nav>
   </div>
 </div>
 
-<!-- =========================================================
-     Runs – Table + Excel-style Header Filters + Pagination
-     ========================================================= -->
+<!-- Runs table -->
 <div class="page-width">
   <div class="game-shell">
     <section class="tab-panel active">
@@ -110,9 +106,6 @@ layout: default
         <h2>Runs</h2>
         <p class="muted" id="runs-count"></p>
 
-        <!-- =========================================================
-             Runs table
-             ========================================================= -->
         <div id="runs-list">
           {% assign runs = site.data.runs | where: "game_id", page.game_id | sort: "date_completed" | reverse %}
 
@@ -121,9 +114,7 @@ layout: default
               <table class="runs-table" id="runs-table">
                 <thead>
                   <tr>
-                    <th>
-                      <span>Runner(s)</span>
-                    </th>
+                    <th><span>Runner(s)</span></th>
 
                     <th class="th-filter">
                       <span>Category</span>
@@ -140,23 +131,14 @@ layout: default
                       <button class="th-caret" type="button" aria-label="Filter Restrictions" data-filter-btn="restrictions">▾</button>
                     </th>
 
-                    <th>
-                      <span>Time</span>
-                    </th>
-
-                    <th>
-                      <span>Video</span>
-                    </th>
-
-                    <th>
-                      <span>Verified By</span>
-                    </th>
+                    <th><span>Time</span></th>
+                    <th><span>Video</span></th>
+                    <th><span>Verified By</span></th>
 
                     <th class="th-filter th-date">
                       <div class="th-title">
                         <span>Date Completed</span>
                       </div>
-
                       <div class="th-date-sort" aria-label="Sort Date Completed">
                         <button class="th-sort" id="th-sort-asc" type="button" title="Sort oldest to newest">↑</button>
                         <button class="th-sort" id="th-sort-desc" type="button" title="Sort newest to oldest">↓</button>
@@ -167,18 +149,28 @@ layout: default
 
                 <tbody>
                   {% for run in runs %}
+                    {% assign run_video = run.video_link | default: run.video | default: "" %}
+                    {% assign run_date  = run.date_completed | default: run.date | default: "" %}
+                    {% assign run_time  = run.time | default: "" %}
+                    {% assign run_vby   = run.verified_by | default: "" %}
+                    {% assign has_verified = false %}
+                    {% if run.verified == true or run.verified == "true" %}
+                      {% assign has_verified = true %}
+                    {% elsif run_vby and run_vby != "" and run_vby != "N/A" %}
+                      {% assign has_verified = true %}
+                    {% endif %}
+
                     <tr
                       class="run-row"
                       data-runner="{{ run.runner_id | default: run.runner | default: '' | downcase }}"
                       data-category="{{ run.category | default: '' | downcase }}"
                       data-challenge-id="{{ run.challenge_id | default: '' | downcase }}"
                       data-restriction-ids="{{ run.restriction_ids | default: empty | join: ',' | downcase }}"
-                      data-date="{{ run.date_completed | default: '' }}"
-                      data-time="{{ run.time | default: '' }}"
-                      data-verified="{{ run.verified | default: false }}"
-                      data-video="{{ run.video_link | default: '' }}"
+                      data-date="{{ run_date }}"
+                      data-time="{{ run_time }}"
+                      data-verified="{{ has_verified }}"
+                      data-video="{{ run_video }}"
                     >
-                      <!-- Runner(s) -->
                       <td>
                         {% if run.runner_id %}
                           <a href="{{ '/runners/' | relative_url }}{{ run.runner_id | slugify }}/">
@@ -189,10 +181,8 @@ layout: default
                         {% endif %}
                       </td>
 
-                      <!-- Category -->
                       <td>{{ run.category | default: "" }}</td>
 
-                      <!-- Challenge -->
                       <td>
                         {% if run.challenge_id %}
                           {% assign chmeta = site.data.challenges[run.challenge_id] %}
@@ -200,12 +190,11 @@ layout: default
                         {% endif %}
                       </td>
 
-                      <!-- Restrictions -->
                       <td>
                         {% assign rtexts = run.restrictions | default: empty %}
                         {% assign rids   = run.restriction_ids | default: empty %}
 
-                        {% if rtexts.size > 0 %}
+                        {% if rtexts and rtexts.size > 0 %}
                           {% for r in rtexts %}
                             <span class="tag">{{ r }}</span>
                           {% endfor %}
@@ -216,29 +205,26 @@ layout: default
                         {% endif %}
                       </td>
 
-                      <!-- Time -->
                       <td>
-                        {% if run.time %}
-                          {{ run.time }}
+                        {% if run_time and run_time != "" %}
+                          {{ run_time }}
                         {% else %}
                           <span class="muted">—</span>
                         {% endif %}
                       </td>
 
-                      <!-- Video -->
                       <td>
-                        {% if run.video_link %}
-                          <a href="{{ run.video_link }}" target="_blank" rel="noopener">Video</a>
+                        {% if run_video and run_video != "" %}
+                          <a href="{{ run_video }}" target="_blank" rel="noopener">Video</a>
                         {% else %}
                           <span class="muted">—</span>
                         {% endif %}
                       </td>
 
-                      <!-- Verified By -->
                       <td>
-                        {% if run.verified %}
-                          {% if run.verified_by %}
-                            <span class="muted">✓ {{ run.verified_by }}</span>
+                        {% if has_verified %}
+                          {% if run_vby and run_vby != "" %}
+                            <span class="muted">✓ {{ run_vby }}</span>
                           {% else %}
                             <span class="muted">✓ Verified</span>
                           {% endif %}
@@ -247,14 +233,13 @@ layout: default
                         {% endif %}
                       </td>
 
-                      <!-- Date Completed -->
-                      <td>{{ run.date_completed | default: "" }}</td>
+                      <td>{{ run_date }}</td>
                     </tr>
                   {% endfor %}
                 </tbody>
               </table>
 
-              <!-- Excel-style header filter menu (single instance) -->
+              <!-- Excel-style header filter menu -->
               <div class="th-menu" id="th-menu" hidden>
                 <div class="th-menu__top">
                   <input
@@ -279,9 +264,7 @@ layout: default
           {% endif %}
         </div>
 
-        <!-- =========================================================
-             Pagination controls
-             ========================================================= -->
+        <!-- Pagination -->
         <div style="margin: 0.5rem 0 0.75rem 0;">
           <label class="muted" for="runs-limit">Show:</label>
           <select id="runs-limit" class="select">
@@ -328,11 +311,8 @@ layout: default
 
   const norm = (s) => (s || "").trim().toLowerCase();
 
-  function uniq(arr) {
-    return Array.from(new Set(arr));
-  }
+  function uniq(arr) { return Array.from(new Set(arr)); }
 
-  // YYYY-MM-DD parsing
   function parseDateToNumber(s) {
     const v = (s || "").trim();
     if (!v) return NaN;
@@ -363,10 +343,7 @@ layout: default
     rows.forEach((row) => {
       const catId = norm(row.dataset.category);
       const chId = norm(row.dataset.challengeId);
-      const resIds = (row.dataset.restrictionIds || "")
-        .split(",")
-        .map(norm)
-        .filter(Boolean);
+      const resIds = (row.dataset.restrictionIds || "").split(",").map(norm).filter(Boolean);
 
       if (catId) {
         cats.push(catId);
@@ -415,17 +392,10 @@ layout: default
   const activeDates = new Set();
 
   let page = 1;
-
-  // Date sort state (default: newest first)
-  let dateSortDir = "desc"; // "asc" | "desc"
+  let dateSortDir = "desc";
 
   function anyFiltersActive() {
-    return (
-      activeCats.size ||
-      activeChallenges.size ||
-      activeRestrictions.size ||
-      activeDates.size
-    );
+    return activeCats.size || activeChallenges.size || activeRestrictions.size || activeDates.size;
   }
 
   function getLimit() {
@@ -454,7 +424,6 @@ layout: default
     return true;
   }
 
-  // Sort filtered rows by date_completed before paginating
   function sortRowsByDate(list) {
     const dir = dateSortDir;
 
@@ -465,7 +434,6 @@ layout: default
       const aBad = !Number.isFinite(aDate);
       const bBad = !Number.isFinite(bDate);
 
-      // Put invalid/blank dates at the bottom (both asc/desc)
       if (aBad && bBad) {
         return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
       }
@@ -485,12 +453,9 @@ layout: default
     let filtered = rows.filter(passesFilters);
     const total = filtered.length;
 
-    // Apply date sort
     filtered = sortRowsByDate(filtered);
 
-    if (tbody) {
-      filtered.forEach(r => tbody.appendChild(r));
-    }
+    if (tbody) filtered.forEach(r => tbody.appendChild(r));
 
     const limit = getLimit();
 
@@ -525,30 +490,10 @@ layout: default
     if (nextBtn) nextBtn.disabled = page >= pages;
   }
 
-  if (prevBtn) {
-    prevBtn.addEventListener("click", () => {
-      page -= 1;
-      render();
-    });
-  }
+  if (prevBtn) prevBtn.addEventListener("click", () => { page -= 1; render(); });
+  if (nextBtn) nextBtn.addEventListener("click", () => { page += 1; render(); });
+  if (limitEl) limitEl.addEventListener("change", () => { page = 1; render(); });
 
-  if (nextBtn) {
-    nextBtn.addEventListener("click", () => {
-      page += 1;
-      render();
-    });
-  }
-
-  if (limitEl) {
-    limitEl.addEventListener("change", () => {
-      page = 1;
-      render();
-    });
-  }
-
-  // =========================================================
-  // Excel-style header filter menu
-  // =========================================================
   let thActiveCol = null;
 
   function closeThMenu() {
@@ -571,9 +516,7 @@ layout: default
 
     if (col === "date") {
       const dates = uniq(rows.map(r => (r.dataset.date || "").trim()).filter(Boolean));
-      return dates
-        .map(d => ({ id: d, label: d }))
-        .sort((a, b) => a.label.localeCompare(b.label));
+      return dates.map(d => ({ id: d, label: d })).sort((a, b) => a.label.localeCompare(b.label));
     }
 
     return [];
@@ -642,7 +585,6 @@ layout: default
     thMenu.style.top = top + "px";
 
     thMenuQ.value = "";
-
     renderThMenuList();
     thMenuQ.focus();
   }
@@ -653,13 +595,10 @@ layout: default
       e.stopPropagation();
 
       const col = btn.getAttribute("data-filter-btn");
-
-      // Toggle: clicking same caret closes it
       if (!thMenu.hidden && thActiveCol === col) {
         closeThMenu();
         return;
       }
-
       openThMenuFor(col, btn);
     });
   });
@@ -686,7 +625,6 @@ layout: default
     if (thSortDesc) thSortDesc.disabled = dateSortDir === "desc";
   }
 
-  // Sort button actions
   if (thSortAsc) {
     thSortAsc.addEventListener("click", () => {
       dateSortDir = "asc";
