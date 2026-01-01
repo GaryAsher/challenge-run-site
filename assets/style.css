@@ -138,11 +138,18 @@ a:hover {
    ============================================================ */
 .filters-grid{
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.9rem;
   align-items: start;
   margin: 0 0 0.9rem 0;
   width: 100%;
+}
+
+/* Runs page: 4 columns on wide screens */
+@media (min-width: 981px){
+  .filters-grid.runs-filters{
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 /* 2 columns on medium screens */
@@ -333,13 +340,6 @@ a:hover {
   text-align: center;
   font-weight: 600;
   margin-bottom: 0.35rem;
-}
-
-.filters-grid .tag-filter {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-  padding: 0.75rem;
 }
 
 .tag-picker {
