@@ -25,14 +25,19 @@ game_id: hades-2
 
       {% assign cats_raw = runs | map: "category" | sort | uniq %}
       <div class="tag-picker" style="margin-top: 0.75rem;">
-        {% for cat in cats_raw %}
-          {% if cat and cat != "" %}
-            {% assign slug = cat | slugify %}
-            <a class="tag" href="{{ '/games/' | relative_url }}{{ page.game_id | slugify }}/categories/{{ slug }}/">
-              {{ cat }}
-            </a>
-          {% endif %}
-        {% endfor %}
+        <div class="tag-picked">
+          {% for cat in cats_raw %}
+            {% if cat and cat != "" %}
+              {% assign slug = cat | slugify %}
+              <a
+                class="tag-chip"
+                href="{{ '/games/' | relative_url }}{{ page.game_id | slugify }}/categories/{{ slug }}/"
+              >
+                {{ cat }}
+              </a>
+            {% endif %}
+          {% endfor %}
+        </div>
       </div>
     </div>
   </div>
