@@ -112,64 +112,60 @@ layout: default
         {% assign runs = site.data.runs | where: "game_id", page.game_id | sort: "date_completed" | reverse %}
 
         {% if runs and runs.size > 0 %}
-          {% for run in runs %}
-            <article
-              class="run-item"
-              data-challenge-id="{{ run.challenge_id | default: '' | downcase }}"
-              data-restriction-ids="{{ run.restriction_ids | default: empty | join: ',' | downcase }}"
-              style="padding: 0.9rem 0; border-top: 1px solid var(--border);"
-            >
-              <div class="muted" style="margin-bottom: 0.25rem;">
-                {% if run.date_completed %}{{ run.date_completed }}{% endif %}
-                {% if run.platform %}
-                  {% if run.date_completed %} • {% endif %}
-                  {{ run.platform }}
-                {% endif %}
-              </div>
+          <div class="table-wrap">
+            <table class="runs-table">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Challenge</th>
+                  <th>Restrictions</th>
+                  <th>Runner</th>
+                  <th>Date Completed</th>
+                </tr>
+              </thead>
 
-              <h3 style="margin: 0 0 0.35rem 0;">
-                {{ run.category | default: "Run" }}
-              </h3>
+              <tbody>
+                {% for run in runs %}
+                  <tr
+                    class="run-row"
+                    data-challenge-id="{{ run.challenge_id | default: '' | downcase }}"
+                    data-restriction-ids="{{ run.restriction_ids | default: empty | join: ',' | downcase }}"
+                    data-category="{{ run.category | default: '' | downcase }}"
+                    data-runner="{{ run.runner_id | default: run.runner | default: '' | downcase }}"
+                    data-date="{{ run.date_completed | default: '' }}"
+                  >
+                    <td>{{ run.category | default: "" }}</td>
 
-              <p class="muted" style="margin: 0 0 0.5rem 0;">
-                {% if run.runner %}
-                  Runner:
-                  {% if run.runner_id %}
-                    <a href="{{ '/runners/' | relative_url }}{{ run.runner_id | slugify }}/">
-                      {{ run.runner }}
-                    </a>
-                  {% else %}
-                    {{ run.runner }}
-                  {% endif %}
-                {% elsif run.runner_id %}
-                  Runner:
-                  <a href="{{ '/runners/' | relative_url }}{{ run.runner_id | slugify }}/">
-                    {{ run.runner_id | replace: "-", " " | capitalize }}
-                  </a>
-                {% endif %}
+                    <td>
+                      {% if run.challenge %}
+                        <span class="tag">{{ run.challenge }}</span>
+                      {% endif %}
+                    </td>
 
-                {% if run.challenge %}
-                  {% if run.runner or run.runner_id %} • {% endif %}
-                  Challenge:
-                  <span class="tag">{{ run.challenge }}</span>
-                {% endif %}
+                    <td>
+                      {% if run.restrictions and run.restrictions.size > 0 %}
+                        {% for r in run.restrictions %}
+                          <span class="tag">{{ r }}</span>
+                        {% endfor %}
+                      {% endif %}
+                    </td>
 
-                {% if run.restrictions and run.restrictions.size > 0 %}
-                  {% if run.runner or run.runner_id or run.challenge %} • {% endif %}
-                  Restrictions:
-                  {% for r in run.restrictions %}
-                    <span class="tag">{{ r }}</span>
-                  {% endfor %}
-                {% endif %}
-              </p>
+                    <td>
+                      {% if run.runner_id %}
+                        <a href="{{ '/runners/' | relative_url }}{{ run.runner_id | slugify }}/">
+                          {{ run.runner | default: run.runner_id }}
+                        </a>
+                      {% else %}
+                        {{ run.runner | default: "" }}
+                      {% endif %}
+                    </td>
 
-              {% if run.video %}
-                <p style="margin: 0;">
-                  <a href="{{ run.video }}" target="_blank" rel="noopener">Watch</a>
-                </p>
-              {% endif %}
-            </article>
-          {% endfor %}
+                    <td>{{ run.date_completed | default: "" }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
         {% else %}
           <p class="muted">No runs have been added yet.</p>
         {% endif %}
@@ -197,11 +193,14 @@ layout: default
 </div>
 
 <script>
+/* =========================================================
+   Completed Runs – Client-side Pagination
+   ========================================================= */
 (function () {
   const list = document.getElementById("runs-list");
   if (!list) return;
 
-  const items = Array.from(list.querySelectorAll(".run-item"));
+  const items = Array.from(list.querySelectorAll(".run-row"));
   const limitEl = document.getElementById("runs-limit");
   const countEl = document.getElementById("runs-count");
 
