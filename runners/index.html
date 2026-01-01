@@ -65,7 +65,6 @@ title: Runners
   </div>
 </div>
 
-
 <script>
 // =========================================================
 // DOM: cache runner items + helpers
@@ -108,15 +107,20 @@ function applyFilter() {
   for (let i = 0; i < shown; i++) matches[i].style.display = "";
 
   if (status) {
-    status.textContent = `${shown} shown of ${matches.length} matches${hashMode ? ` (section: ${hashMode})` : ""}`;
+    status.textContent =
+      `${shown} shown of ${matches.length} matches` +
+      (hashMode ? ` (section: ${hashMode})` : "");
   }
 }
 
 window.addEventListener("hashchange", applyFilter);
-  
+
 if (input) input.addEventListener("input", applyFilter);
 if (limitSelect) limitSelect.addEventListener("change", applyFilter);
 
+// =========================================================
+// UX: blur controls when clicking outside the controls block
+// =========================================================
 const controlsRoot = document.getElementById("runners-controls");
 
 document.addEventListener("pointerdown", (e) => {
@@ -124,6 +128,6 @@ document.addEventListener("pointerdown", (e) => {
   if (input) input.blur();
   if (limitSelect) limitSelect.blur();
 });
-  
+
 applyFilter();
 </script>
