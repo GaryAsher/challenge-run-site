@@ -670,11 +670,15 @@ layout: default
       activeRunners.clear();
       if (dateQ) dateQ.value = "";
 
-      // Re-render picked chips
-      renderPicked(activeCats, OPTIONS.categories, document.getElementById("cat-picked"), { onRemove: () => {} });
-      renderPicked(activeChallenges, OPTIONS.challenges, document.getElementById("ch-picked"), { onRemove: () => {} });
-      renderPicked(activeRestrictions, OPTIONS.restrictions, document.getElementById("res-picked"), { onRemove: () => {} });
-      renderPicked(activeRunners, OPTIONS.runners, document.getElementById("run-picked"), { onRemove: () => {} });
+      // Re-render picked chips with real behavior
+      renderPicked(activeCats, OPTIONS.categories, document.getElementById("cat-picked"), {
+           onRemove: () => { page = 1; render(); }
+      renderPicked(activeChallenges, OPTIONS.challenges, document.getElementById("ch-picked"), {
+           onRemove: () => { page = 1; render(); }
+      renderPicked(activeRestrictions, OPTIONS.restrictions, document.getElementById("res-picked"), {
+           onRemove: () => { page = 1; render(); }
+      renderPicked(activeRunners, OPTIONS.runners, document.getElementById("run-picked"), {
+           onRemove: () => { page = 1; render(); }
 
       page = 1;
       render();
