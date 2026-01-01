@@ -637,6 +637,12 @@ layout: default
       e.preventDefault();
       e.stopPropagation();
       const col = btn.getAttribute("data-filter-btn");
+             
+      if (!thMenu.hidden && thActiveCol === col) {
+        closeThMenu();
+        return;
+    }
+         
       openThMenuFor(col, btn);
     });
   });
