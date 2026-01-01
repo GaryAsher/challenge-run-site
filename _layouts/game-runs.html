@@ -1,21 +1,22 @@
 {% assign game = site.games | where: "game_id", page.game_id | first %}
-{% if game == nil %}
-  {% assign game = page %}
-{% endif %}
 
 <!-- =========================================================
      Back link to Game page
      ========================================================= -->
 <div class="page-width">
   <p class="muted page-back">
-    <a href="{{ game.url | relative_url }}">← {{ game.name | default: page.game_name }}</a>
+    {% if game %}
+      <a href="{{ game.url | relative_url }}">← {{ game.name }}</a>
+    {% else %}
+      <a href="{{ '/games/' | relative_url }}">← Games</a>
+    {% endif %}
   </p>
 </div>
 
 <!-- =========================================================
-     Game hero + tags
+     Game hero (match _layouts/game.html)
      ========================================================= -->
-{% if game.cover %}
+{% if game and game.cover %}
   <div class="page-width">
     <section
       class="game-hero"
@@ -26,7 +27,7 @@
     >
       <div class="game-hero__overlay">
         <div class="game-hero__content">
-          <h1>{{ game.name | default: page.game_name }}</h1>
+          <h1>{{ game.name }}</h1>
 
           {% if game.status %}
             <p class="muted">{{ game.status }}</p>
@@ -46,20 +47,28 @@
   </div>
 {% else %}
   <div class="page-width">
-    <h1>{{ game.name | default: page.game_name }}</h1>
-    <p class="muted">All recorded runs for this game.</p>
+    <h1>{{ game.name | default: "Runs" }}</h1>
   </div>
 {% endif %}
 
 <!-- =========================================================
-     Tabs (Runs active)
+     Game tabs (match style; Runs active)
      ========================================================= -->
 <div class="page-width">
-  <nav class="runner-tabs game-tabs" id="game-tabs">
-    <a class="tab" href="{{ game.url | relative_url }}#overview">Overview</a>
-    <a class="tab" href="{{ game.url | relative_url }}#categories">Categories</a>
-    <a class="tab active" href="{{ game.url | relative_url }}game-runs/">Runs</a>
-  </nav>
+  <div class="game-shell">
+    <nav class="runner-tabs game-tabs" id="game-tabs">
+      <a class="tab" href="{{ game.url | relative_url }}#overview">Overview</a>
+      <a class="tab" href="{{ game.url | relative_url }}#categories">Categories</a>
+      <a class="tab active" href="{{ page.url | relative_url }}">Runs</a>
+    </nav>
+  </div>
+</div>
+
+<!-- =========================================================
+     Page intro
+     ========================================================= -->
+<div class="page-width">
+  <p class="muted">All recorded runs for this game.</p>
 </div>
 
 <!-- =========================================================
