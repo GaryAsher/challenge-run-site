@@ -190,25 +190,31 @@ layout: default
                 </tbody>
               </table>
 
-              <!-- Excel-style header filter menu (single instance) -->
-              <div class="th-menu__top">
-                  <!-- Date sorting (only shown when filtering the Date column) -->
-                  <div class="th-menu__sort" id="th-menu-sort" hidden>
-                    <button class="btn" id="th-sort-asc" type="button" title="Sort oldest to newest">Sort ↑</button>
-                    <button class="btn" id="th-sort-desc" type="button" title="Sort newest to oldest">Sort ↓</button>
-                  </div>
-
-                  <input id="th-menu-q" class="filter th-menu__q" type="text" placeholder="Search..." autocomplete="off" />
-                </div>
-                 
-                <div class="th-menu__list" id="th-menu-list"></div>
-
-                <div class="th-menu__actions">
-                  <button class="btn" id="th-menu-clear" type="button">Clear</button>
-                  <button class="btn" id="th-menu-close" type="button">Close</button>
-                </div>
-              </div>
-
+               <!-- Excel-style header filter menu (single instance) -->
+               <div class="th-menu" id="th-menu" hidden>
+                 <div class="th-menu__top">
+                   <!-- Date sorting (only shown when filtering the Date column) -->
+                   <div class="th-menu__sort" id="th-menu-sort" hidden>
+                     <button class="btn" id="th-sort-asc" type="button" title="Sort oldest to newest">Sort ↑</button>
+                     <button class="btn" id="th-sort-desc" type="button" title="Sort newest to oldest">Sort ↓</button>
+                   </div>
+               
+                   <input
+                     id="th-menu-q"
+                     class="filter th-menu__q"
+                     type="text"
+                     placeholder="Search..."
+                     autocomplete="off"
+                   />
+                 </div>
+               
+                 <div class="th-menu__list" id="th-menu-list"></div>
+               
+                 <div class="th-menu__actions">
+                   <button class="btn" id="th-menu-clear" type="button">Clear</button>
+                   <button class="btn" id="th-menu-close" type="button">Close</button>
+                 </div>
+               </div>
             </div>
           {% else %}
             <p class="muted">No runs have been added yet.</p>
