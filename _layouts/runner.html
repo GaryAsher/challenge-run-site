@@ -2,38 +2,22 @@
 layout: default
 ---
 
-<!-- ============================================================
-     Runner Tabs (Profile / Runs / Other)
-     ============================================================ -->
 <nav class="runner-tabs" id="runner-tabs">
   <button class="tab active" data-tab="profile" type="button">Profile</button>
   <button class="tab" data-tab="runs" type="button">Completed Runs</button>
   <button class="tab" data-tab="other" type="button">Something Else</button>
 </nav>
 
-<!-- ============================================================
-     Back Link (kept in page-width for alignment)
-     ============================================================ -->
 <div class="page-width">
   <p class="muted">
     <a href="{{ '/runners/' | relative_url }}">← Runners</a>
   </p>
 </div>
 
-<!-- ============================================================
-     Runner Avatar Source (fallback if cover is missing)
-     ============================================================ -->
 {% assign avatar = page.cover | default: "/assets/img/site/default-runner.png" %}
 
-<!-- ============================================================
-     Runner Header Row (Avatar left, Socials right)
-     ============================================================ -->
 <div class="page-width">
   <section class="runner-top">
-
-    <!-- ========================================================
-         Left: Avatar + Name + Status
-         ======================================================== -->
     <div class="runner-left">
       <div
         class="runner-avatar"
@@ -49,74 +33,45 @@ layout: default
       </div>
     </div>
 
-    <!-- ========================================================
-         Right: Social Links (icon + label)
-         ======================================================== -->
     <div class="runner-right">
       <div class="runner-links">
-
-        <!-- Twitch -->
         {% if page.twitch %}
           <a class="runner-link" href="{{ page.twitch }}" target="_blank" rel="noreferrer">
-            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path fill="currentColor" d="M4 3h17v11l-5 5h-4l-3 3H7v-3H4V3zm2 2v14h3v3l3-3h5l4-4V5H6zm6 3h2v6h-2V8zm5 0h2v6h-2V8z"/>
-            </svg>
             <span>Twitch</span>
           </a>
         {% endif %}
 
-        <!-- YouTube -->
         {% if page.youtube %}
           <a class="runner-link" href="{{ page.youtube }}" target="_blank" rel="noreferrer">
-            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path fill="currentColor" d="M21.6 7.2c-.2-.8-.9-1.5-1.7-1.7C18.3 5 12 5 12 5s-6.3 0-7.9.5c-.8.2-1.5.9-1.7 1.7C2 8.8 2 12 2 12s0 3.2.4 4.8c.2.8.9 1.5 1.7 1.7C5.7 19 12 19 12 19s6.3 0 7.9-.5c.8-.2 1.5-.9 1.7-1.7.4-1.6.4-4.8.4-4.8s0-3.2-.4-4.8zM10 15V9l6 3-6 3z"/>
-            </svg>
             <span>YouTube</span>
           </a>
         {% endif %}
 
-        <!-- Discord -->
         {% if page.discord %}
           <a class="runner-link" href="{{ page.discord }}" target="_blank" rel="noreferrer">
-            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path fill="currentColor" d="M20 4.7A16.6 16.6 0 0 0 15.9 3l-.2.4a14.6 14.6 0 0 1 3.3 1.6c-3-1.4-6-1.4-9 0A14.6 14.6 0 0 1 13.3 3l-.2-.4A16.6 16.6 0 0 0 9 4.7C6.7 8.1 6.1 11.4 6.3 14.6c1.4 1.1 2.8 1.7 4.2 2l.5-1.7c-.5-.2-1-.4-1.4-.7l.3-.2c2.6 1.2 5.4 1.2 8 0l.3.2c-.4.3-.9.5-1.4.7l.5 1.7c1.4-.3 2.8-1 4.2-2 .3-3.2-.3-6.5-2.6-9.9zM10.2 13c-.7 0-1.3-.7-1.3-1.5S9.5 10 10.2 10s1.3.7 1.3 1.5S10.9 13 10.2 13zm3.6 0c-.7 0-1.3-.7-1.3-1.5S13.1 10 13.8 10s1.3.7 1.3 1.5S14.5 13 13.8 13z"/>
-            </svg>
             <span>Discord</span>
           </a>
         {% endif %}
 
-        <!-- Twitter / X -->
         {% if page.twitter %}
           <a class="runner-link" href="{{ page.twitter }}" target="_blank" rel="noreferrer">
-            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path fill="currentColor" d="M18.9 2H22l-6.8 7.8L23 22h-6.7l-5.2-6.7L5.3 22H2l7.3-8.4L1 2h6.9l4.7 6.1L18.9 2zm-1.2 18h1.7L6.8 3.9H5L17.7 20z"/>
-            </svg>
             <span>Twitter/X</span>
           </a>
         {% endif %}
-
       </div>
     </div>
-
   </section>
 </div>
+
 <div class="page-width">
-
-  <!-- ==========================================================
-       PROFILE PANEL
-       ========================================================== -->
   <section class="tab-panel active" data-panel="profile">
-
-    <!-- Bio / About content from the runner page body -->
     {% if content and content != "" %}
       <div class="card">{{ content }}</div>
     {% endif %}
 
-    <!-- Games list rendered using the same card tiles as /games/ -->
-    {% if page.games %}
+    {% if page.games and page.games.size > 0 %}
       <div class="card">
         <h2>Games</h2>
-
         <div class="grid">
           {% for gid in page.games %}
             {% assign g = site.games | where: "game_id", gid | first %}
@@ -134,113 +89,102 @@ layout: default
         </div>
       </div>
     {% endif %}
-
   </section>
 
-<!-- ==========================================================
-     RUNS PANEL
-     ========================================================== -->
-<section class="tab-panel" data-panel="runs">
-  {% assign all_runs = site.data.runs | default: empty %}
+  <section class="tab-panel" data-panel="runs">
+    {% assign all_runs = site.data.runs | default: empty %}
+    {% assign rid = page.runner_id | default: "" | strip | downcase %}
+    {% assign runs = "" | split: "" %}
 
-  {% assign rid = page.runner_id | default: "" | strip | downcase %}
+    {% for r in all_runs %}
+      {% assign r_rid = r.runner_id | default: "" | strip | downcase %}
+      {% if r_rid == rid %}
+        {% assign runs = runs | push: r %}
+      {% endif %}
+    {% endfor %}
 
-  {% assign runs = "" | split: "" %}
-  {% for r in all_runs %}
-    {% assign r_rid = r.runner_id | default: "" | strip | downcase %}
-    {% if r_rid == rid %}
-      {% assign runs = runs | push: r %}
-    {% endif %}
-  {% endfor %}
+    {% assign runs = runs | sort: "date_completed" | reverse %}
 
-  {% assign runs = runs | sort: "date_completed" | reverse %}
+    {% if runs and runs.size > 0 %}
+      <div class="card">
+        <h2>Completed Runs</h2>
+        <p class="muted">{{ runs.size }} run{% if runs.size != 1 %}s{% endif %}</p>
+      </div>
 
-  {% if runs and runs.size > 0 %}
-    <div id="runner-runs" class="list-paged" data-page-size="25">
-      <div class="list-items">
-        {% for r in runs %}
-          {% assign g = site.games | where: "game_id", r.game_id | first %}
+      {% for r in runs %}
+        {% assign g = site.games | where: "game_id", r.game_id | first %}
+        {% assign r_video = r.video_link | default: r.video | default: "" %}
+        {% assign r_date  = r.date_completed | default: r.date | default: "" %}
+        {% assign r_time  = r.time | default: "" %}
 
-          <article class="card list-item"
-            data-game="{{ r.game_id | default: '' | strip | downcase }}"
-            data-category="{{ r.category | default: '' | strip | downcase }}"
-            data-date="{{ r.date_completed | default: '' }}"
-          >
-            <strong>
-              {% if g %}
-                <a href="{{ g.url | relative_url }}">{{ g.name }}</a>
-              {% else %}
-                {{ r.game_id }}
-              {% endif %}
-            </strong>
+        <article class="card">
+          <strong>
+            {% if g %}
+              <a href="{{ g.url | relative_url }}">{{ g.name }}</a>
+            {% else %}
+              {{ r.game_id }}
+            {% endif %}
+          </strong>
 
-            {% if r.category and r.category != "" %}
-              — {{ r.category | strip }}
+          {% if r.category and r.category != "" %}
+            <span class="muted"> · {{ r.category }}</span>
+          {% endif %}
+
+          <div class="muted" style="margin-top: 0.35rem;">
+            {% if r.challenge_id %}
+              {% assign chmeta = site.data.challenges[r.challenge_id] %}
+              <span class="tag">{{ chmeta.label | default: r.challenge_id }}</span>
             {% endif %}
 
-            <div class="muted">
-              <time datetime="{{ r.date_completed }}">{{ r.date_completed }}</time>
-              {% if r.video_link and r.video_link != "" %}
-                • <a href="{{ r.video_link }}" target="_blank" rel="noopener">Video</a>
-              {% endif %}
+            {% if r_time and r_time != "" %}
+              <span class="muted"> · {{ r_time }}</span>
+            {% endif %}
+
+            {% if r_date and r_date != "" %}
+              <span class="muted"> · <time datetime="{{ r_date }}">{{ r_date }}</time></span>
+            {% endif %}
+
+            {% if r_video and r_video != "" %}
+              <span class="muted"> · <a href="{{ r_video }}" target="_blank" rel="noopener">Video</a></span>
+            {% endif %}
+          </div>
+
+          {% if r.restrictions and r.restrictions.size > 0 %}
+            <div style="margin-top: 0.5rem;">
+              {% for x in r.restrictions %}
+                <span class="tag">{{ x }}</span>
+              {% endfor %}
             </div>
-
-            {% if r.time and r.time != "" %}
-              <div class="muted">Time: {{ r.time }}</div>
-            {% endif %}
-
-            {% if r.notes and r.notes != "" %}
-              <div class="muted">{{ r.notes }}</div>
-            {% endif %}
-          </article>
-        {% endfor %}
+          {% endif %}
+        </article>
+      {% endfor %}
+    {% else %}
+      <div class="card">
+        <p class="muted">No runs have been added yet.</p>
       </div>
+    {% endif %}
+  </section>
 
-      <div class="list-controls list-controls--bottom">
-        <div class="muted" data-status></div>
-
-        <div class="pager">
-          <button type="button" class="btn" data-prev>Prev</button>
-          <span class="muted" data-page-label></span>
-          <div class="page-numbers" data-pages></div>
-          <button type="button" class="btn" data-next>Next</button>
-        </div>
-      </div>
-    </div>
-  {% else %}
-    <div class="card">
-      <p class="muted">No runs have been added yet.</p>
-    </div>
-  {% endif %}
-</section>
-
-  <!-- ==========================================================
-       OTHER PANEL
-       ========================================================== -->
   <section class="tab-panel" data-panel="other">
     <div class="card">
       <h2>Something Else</h2>
       <p class="muted">Placeholder tab.</p>
     </div>
   </section>
-
 </div>
 
-<!-- ============================================================
-     Tabs Script (switch panels without changing pages)
-     ============================================================ -->
 <script>
-  (function () {
-    const tabs = Array.from(document.querySelectorAll(".runner-tabs .tab"));
-    const panels = Array.from(document.querySelectorAll(".tab-panel[data-panel]"));
+(function () {
+  const tabs = Array.from(document.querySelectorAll("#runner-tabs .tab"));
+  const panels = Array.from(document.querySelectorAll(".tab-panel[data-panel]"));
 
-    function setActive(name) {
-      for (const t of tabs) t.classList.toggle("active", t.dataset.tab === name);
-      for (const p of panels) p.classList.toggle("active", p.dataset.panel === name);
-    }
+  function setActive(name) {
+    for (const t of tabs) t.classList.toggle("active", t.dataset.tab === name);
+    for (const p of panels) p.classList.toggle("active", p.dataset.panel === name);
+  }
 
-    tabs.forEach(t => {
-      t.addEventListener("click", () => setActive(t.dataset.tab));
-    });
-  })();
+  tabs.forEach(t => {
+    t.addEventListener("click", () => setActive(t.dataset.tab));
+  });
+})();
 </script>
