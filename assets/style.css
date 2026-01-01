@@ -995,6 +995,35 @@ textarea,
 }
 
 /* ============================================================
+   Runs table: tag wrapping + column ergonomics
+   ============================================================ */
+
+.runs-table td .tag {
+  display: inline-flex;
+  align-items: center;
+  margin: 0.15rem 0.25rem 0 0;
+  max-width: 100%;
+  white-space: normal;
+}
+
+.runs-table td .tag {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.runs-table th:nth-child(4),
+.runs-table td:nth-child(4),
+.runs-table th:nth-child(5),
+.runs-table td:nth-child(5) {
+  white-space: nowrap;
+}
+
+.runs-table td:nth-child(4),
+.runs-table td:nth-child(5) {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
    Runs: header filter caret + floating menu
    ============================================================ */
 .th-filter {
