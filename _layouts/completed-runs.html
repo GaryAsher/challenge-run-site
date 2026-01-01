@@ -127,7 +127,7 @@ layout: default
                     </th>
 
                     <th class="th-filter">
-                      <span>Challenge</span>
+                      <span>Challenge Type</span>
                       <button class="th-caret" type="button" aria-label="Filter Challenge" data-filter-btn="challenge">▾</button>
                     </th>
 
@@ -136,9 +136,8 @@ layout: default
                       <button class="th-caret" type="button" aria-label="Filter Restrictions" data-filter-btn="restrictions">▾</button>
                     </th>
 
-                    <th class="th-filter">
+                    <th>
                       <span>Runner</span>
-                      <button class="th-caret" type="button" aria-label="Filter Runner" data-filter-btn="runner">▾</button>
                     </th>
 
                     <th class="th-filter th-date">
@@ -330,13 +329,6 @@ layout: default
         if (cell && !catLabelById.has(catId)) catLabelById.set(catId, cell.textContent.trim());
       }
 
-      if (!runnerId) hasBlankRunner = true;
-      else {
-        runners.push(runnerId);
-        const cell = row.children[3];
-        if (cell && !runLabelById.has(runnerId)) runLabelById.set(runnerId, cell.textContent.trim());
-      }
-
       if (chId) {
         challenges.push(chId);
         const cell = row.children[1];
@@ -363,15 +355,8 @@ layout: default
         .sort((a, b) => a.label.localeCompare(b.label));
     }
 
-    const runnerList = toList(runners, runLabelById);
-
-    if (hasBlankRunner) {
-      runnerList.unshift({ id: "__blank__", label: "(blank)" });
-    }
-
     return {
       categories: toList(cats, catLabelById),
-      runners: runnerList,
       challenges: toList(challenges, chLabelById),
       restrictions: toList(restrictions, resLabelById)
     };
@@ -382,7 +367,6 @@ layout: default
   const activeCats = new Set();
   const activeChallenges = new Set();
   const activeRestrictions = new Set();
-  const activeRunners = new Set();
   const activeDates = new Set();
 
   let page = 1;
@@ -406,15 +390,6 @@ layout: default
     if (activeCats.size && !activeCats.has(cat)) return false;
     if (activeChallenges.size && !activeChallenges.has(ch)) return false;
 
-    if (activeRunners.size) {
-      const wantsBlank = activeRunners.has("__blank__");
-      const runnerMatches =
-        (runner && activeRunners.has(runner)) ||
-        (!runner && wantsBlank);
-
-      if (!runnerMatches) return false;
-    }
-
     if (activeRestrictions.size) {
       const need = Array.from(activeRestrictions);
       const okAll = need.every((x) => res.includes(x));
@@ -424,16 +399,6 @@ layout: default
     if (activeDates.size && !activeDates.has(date)) return false;
 
     return true;
-  }
-
-  function anyFiltersActive() {
-    return (
-      activeCats.size ||
-      activeChallenges.size ||
-      activeRestrictions.size ||
-      activeRunners.size ||
-      activeDates.size
-    );
   }
 
   // Sort filtered rows by date_completed before paginating
@@ -542,7 +507,6 @@ layout: default
     if (col === "category") return activeCats;
     if (col === "challenge") return activeChallenges;
     if (col === "restrictions") return activeRestrictions;
-    if (col === "runner") return activeRunners;
     if (col === "date") return activeDates;
     return null;
   }
@@ -551,7 +515,6 @@ layout: default
     if (col === "category") return OPTIONS.categories;
     if (col === "challenge") return OPTIONS.challenges;
     if (col === "restrictions") return OPTIONS.restrictions;
-    if (col === "runner") return OPTIONS.runners;
 
     if (col === "date") {
       const dates = uniq(rows.map(r => (r.dataset.date || "").trim()).filter(Boolean));
