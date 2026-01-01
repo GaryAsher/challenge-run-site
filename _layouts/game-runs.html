@@ -78,7 +78,7 @@ layout: default
       {% endif %}
 
       {% if show_runs %}
-        <a class="tab active" href="{{ page.url | relative_url }}">Completed Runs</a>
+        <a class="tab active" href="{{ page.url | relative_url }}">Runs</a>
       {% endif %}
 
       {% if show_resources %}
@@ -101,13 +101,13 @@ layout: default
 </div>
 
 <!-- =========================================================
-     Completed Runs – Table + Excel-style Header Filters + Pagination
+     Runs – Table + Excel-style Header Filters + Pagination
      ========================================================= -->
 <div class="page-width">
   <div class="game-shell">
     <section class="tab-panel active">
       <div class="card">
-        <h2>Completed Runs</h2>
+        <h2>Runs</h2>
         <p class="muted" id="runs-count"></p>
 
         <!-- =========================================================
