@@ -125,6 +125,7 @@ title: Games
         <div class="game-card__bg" style="background-image: url('{{ game_cover | relative_url }}');"></div>
         <div class="game-card__overlay">
           <div class="game-card__title">{{ g.name }}</div>
+          <div class="game-card__meta muted" data-challenge-labels></div>
         </div>
       </a>
     {% endfor %}
@@ -134,7 +135,7 @@ title: Games
 <script>
 // =========================================================
 // DOM: cache everything once for speed + clarity
-// =========================================================  
+// =========================================================
 const items = Array.from(document.querySelectorAll(".game-item"));
 const input = document.getElementById("q");
 const status = document.getElementById("status");
@@ -172,79 +173,30 @@ const CHALLENGES = [
 ].sort((a,b)=>a.label.localeCompare(b.label));
 
 // =========================================================
-// Normalize user input + IDs so matching is consistent.
+// Normalize user input + IDs so matching is consistent
 // =========================================================
 const norm = s => (s || "").trim().toLowerCase();
 
 // =========================================================
-// UI: render selected chips (click chip = remove)
+// Populate challenge labels inside game cards
 // =========================================================
-function renderPicked(set, list, el, { onRemove } = {}) {
-  el.innerHTML = "";
+items.forEach(card => {
+  const raw = card.dataset.challenges || "";
+  if (!raw) return;
 
-  for (const id of set) {
-    const meta = list.find(x => norm(x.id) === id);
-    const label = meta ? meta.label : id;
+  const ids = raw.split(",").map(s => s.trim()).filter(Boolean);
+  if (!ids.length) return;
 
-    const chip = document.createElement("button");
-    chip.type = "button";
-    chip.className = "tag-chip";
-    chip.textContent = label;
-
-    chip.addEventListener("click", () => {
-      set.delete(id);
-      if (onRemove) onRemove();
-    });
-
-    el.appendChild(chip);
-  }
-
-  el.classList.toggle("is-empty", set.size === 0);
-}
-
-// =========================================================
-// UI: render dropdown suggestions (click suggestion = select)
-// =========================================================
-function renderSuggestions(query, set, list, sugEl, { onPick } = {}) {
-  const q = norm(query);
-  sugEl.innerHTML = "";
-
-  const results = list
-    .filter(x => {
-      const id = norm(x.id);
-      const label = norm(x.label);
-      if (set.has(id)) return false;
-      if (!q) return true;
-      return id.includes(q) || label.includes(q);
+  const labels = ids
+    .map(id => {
+      const meta = CHALLENGES.find(c => c.id === id);
+      return meta ? meta.label : id;
     })
-    .slice(0, 24);
+    .join(", ");
 
-  if (results.length === 0) {
-    const empty = document.createElement("div");
-    empty.className = "tag-suggestion is-empty";
-    empty.textContent = "No matches.";
-    sugEl.appendChild(empty);
-    sugEl.hidden = false;
-    return;
-  }
-
-  for (const x of results) {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "tag-suggestion";
-    btn.textContent = x.label;
-
-    btn.addEventListener("click", () => {
-      set.add(norm(x.id));
-      if (onPick) onPick();
-      sugEl.hidden = true;
-    });
-
-    sugEl.appendChild(btn);
-  }
-
-  sugEl.hidden = false;
-}
+  const target = card.querySelector("[data-challenge-labels]");
+  if (target) target.textContent = labels;
+});
 
 // =========================================================
 // Filtering: search + tags + challenges
@@ -271,7 +223,7 @@ function applyFilter() {
       (hashMode === "0-9" && startsWithDigit) ||
       (hashMode === "OTHER" && !startsWithDigit && !startsWithAtoZ) ||
       (hashMode.length === 1 && letter === hashMode);
-       
+
     const ok =
       okHash &&
       (!q || name.includes(q)) &&
@@ -285,7 +237,9 @@ function applyFilter() {
   const shown = limit === 0 ? matches.length : Math.min(limit, matches.length);
   for (let i = 0; i < shown; i++) matches[i].style.display = "";
 
-  status.textContent = `${shown} shown of ${matches.length} matches${hashMode ? ` (section: ${hashMode})` : ""}`;
+  status.textContent =
+    `${shown} shown of ${matches.length} matches` +
+    (hashMode ? ` (section: ${hashMode})` : "");
 }
 
 // =========================================================
@@ -335,17 +289,13 @@ function wireDropdown({ filterEl, searchEl, sugEl, set, list, pickedEl }) {
     }
   });
 
-  document.addEventListener(
-    "pointerdown",
-    (e) => {
-      if (!filterEl.contains(e.target)) close();
-    },
-    true
-  );
+  document.addEventListener("pointerdown", (e) => {
+    if (!filterEl.contains(e.target)) close();
+  }, true);
 }
 
 // =========================================================
-// Init: wire both dropdowns and attach global filter events
+// Init
 // =========================================================
 wireDropdown({
   filterEl: tagFilterEl,
@@ -364,24 +314,10 @@ wireDropdown({
   list: CHALLENGES,
   pickedEl: challengePickedEl
 });
-     
-  window.addEventListener("hashchange", applyFilter);
-  input.addEventListener("input", applyFilter);
-  limitSelect.addEventListener("change", applyFilter);
-     
-// =========================================================
-// UX: clicking outside the whole filter area removes focus (caret)
-// =========================================================
-const controlsRoot = document.getElementById("games-controls");
 
-document.addEventListener("pointerdown", (e) => {
-  if (controlsRoot && controlsRoot.contains(e.target)) return;
-
-  input.blur();
-  tagSearchEl.blur();
-  challengeSearchEl.blur();
-  limitSelect.blur();
-});
+window.addEventListener("hashchange", applyFilter);
+input.addEventListener("input", applyFilter);
+limitSelect.addEventListener("change", applyFilter);
 
 applyFilter();
 </script>
