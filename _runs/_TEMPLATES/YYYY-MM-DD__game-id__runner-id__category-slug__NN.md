@@ -17,9 +17,8 @@ challenge_id: challenge-id
 # =========================================================
 # User-submitted (core info)
 # =========================================================
-runner: Runner Name
-category: Category Name
-challenge: Challenge Name
+runner: "Runner Name"
+category: "Category Name"
 date_completed: YYYY-MM-DD
 video_link: https://example.com/VIDEO
 
@@ -30,16 +29,16 @@ restrictions: []
 restriction_ids: []
 
 # Timing (optional unless the run is time-based)
-timing_method_primary:            # RTA | IGT | LRT
-time_primary:                     # "HH:MM:SS" or "HH:MM:SS.MMM"
+timing_method_primary: null        # RTA | IGT | LRT
+time_primary: null                 # "HH:MM:SS" or "HH:MM:SS.MMM"
 
-timing_method_secondary:          # RTA | IGT | LRT
-time_secondary:                   # "HH:MM:SS" or "HH:MM:SS.MMM"
+timing_method_secondary: null      # RTA | IGT | LRT
+time_secondary: null               # "HH:MM:SS" or "HH:MM:SS.MMM"
 
 # =========================================================
 # Moderator actions
 # =========================================================
-status: pending           # pending | approved | rejected
+status: pending                    # pending | approved | rejected
 verified: false
-verified_by:
+verified_by: null
 ---
