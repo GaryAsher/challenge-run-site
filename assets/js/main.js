@@ -16,8 +16,6 @@
     const pageLabelEl = root.querySelector("[data-page-label]");
     const pagesWrap = root.querySelector("[data-pages]");
 
-    // If you have multiple lists on one page, give each wrapper an id.
-    // Otherwise they’ll share the same ?page= param.
     const paramKey = root.id ? `${root.id}-page` : "page";
     let currentPage = 1;
 
@@ -57,7 +55,6 @@
 
       if (pageLabelEl) pageLabelEl.textContent = `Page ${safePage} / ${totalPages}`;
 
-      // Render numbered pages
       if (pagesWrap) {
         pagesWrap.innerHTML = "";
 
@@ -93,7 +90,6 @@
       return;
     }
 
-    // Wire buttons
     if (btnPrev) {
       btnPrev.addEventListener("click", () => {
         render(currentPage - 1);
@@ -135,7 +131,7 @@
     const thSortAsc = document.getElementById("th-sort-asc");
     const thSortDesc = document.getElementById("th-sort-desc");
 
-    // Top buttons + chips
+    // Toolbar button labels + active filter chips
     const btnCat = document.getElementById("filter-category");
     const btnCh = document.getElementById("filter-challenge");
     const btnRes = document.getElementById("filter-restrictions");
@@ -188,7 +184,6 @@
         const catId = norm(row.dataset.category);
         const chId = norm(row.dataset.challengeId);
 
-        // Keep label casing
         const chLabel = (row.dataset.challengeLabel || "").toString().trim();
         const resRaw = parseRestrictionsRaw(row);
 
@@ -265,16 +260,20 @@
     }
 
     function updateTopButtonLabels() {
-      // Your layout already has labels above each button.
-      // Keep the button text compact (All/Any + count).
       if (btnCat) {
-        btnCat.textContent = activeCats.size ? `${activeCats.size} selected ▾` : "All ▾";
+        btnCat.textContent = activeCats.size
+          ? `Category (${activeCats.size}) ▾`
+          : "Category ▾";
       }
       if (btnCh) {
-        btnCh.textContent = activeChallenges.size ? `${activeChallenges.size} selected ▾` : "All ▾";
+        btnCh.textContent = activeChallenges.size
+          ? `Challenge (${activeChallenges.size}) ▾`
+          : "Challenge ▾";
       }
       if (btnRes) {
-        btnRes.textContent = activeRestrictions.size ? `${activeRestrictions.size} selected ▾` : "Any ▾";
+        btnRes.textContent = activeRestrictions.size
+          ? `Restrictions (${activeRestrictions.size}) ▾`
+          : "Restrictions ▾";
       }
     }
 
@@ -294,32 +293,35 @@
       });
 
       activeRestrictions.forEach((id) => {
-        chips.push({ col: "restrictions", id, label: getLabelFor("restrictions", id) });
+        chips.push({
+          col: "restrictions",
+          id,
+          label: getLabelFor("restrictions", id)
+        });
       });
 
       if (!chips.length) return;
 
-      function prettyCol(col) {
-        if (col === "category") return "Category";
-        if (col === "challenge") return "Challenge";
-        return "Restrictions";
+      function makeChip(text, onRemove) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "tag";
+        b.textContent = text + " ×";
+        b.addEventListener("click", onRemove);
+        return b;
       }
 
       chips.forEach((c) => {
-        const b = document.createElement("button");
-        b.type = "button";
-        b.className = "tag"; // style via CSS: .active-filters .tag { ... }
-        b.setAttribute("aria-label", `Remove filter ${prettyCol(c.col)}: ${c.label}`);
-        b.textContent = `${prettyCol(c.col)}: ${c.label} ×`;
-
-        b.addEventListener("click", () => {
-          const set = getSetForCol(c.col);
-          if (!set) return;
-          set.delete(c.id);
-          render();
-        });
-
-        activeFiltersWrap.appendChild(b);
+        const chip = makeChip(
+          `${c.col === "category" ? "Category" : c.col === "challenge" ? "Challenge" : "Restrictions"}: ${c.label}`,
+          () => {
+            const set = getSetForCol(c.col);
+            if (!set) return;
+            set.delete(c.id);
+            render();
+          }
+        );
+        activeFiltersWrap.appendChild(chip);
       });
 
       const clearAll = document.createElement("button");
@@ -424,7 +426,8 @@
       });
 
       if (status) {
-        status.textContent = "Showing " + Math.min(lim, total) + " of " + total + " matching runs.";
+        status.textContent =
+          "Showing " + Math.min(lim, total) + " of " + total + " matching runs.";
       }
 
       updateTopButtonLabels();
@@ -476,7 +479,6 @@
       });
     }
 
-    // Open the single shared menu for whichever column is active
     function openThMenuFor(col, anchorEl) {
       if (!thMenu) return;
 
@@ -520,9 +522,12 @@
       });
     }
 
-    // Scope filter buttons to the runs area so other pages do not accidentally bind
+    // IMPORTANT FIX:
+    // The top filter buttons live ABOVE #runs-list, so scoping to #runs-list
+    // prevents them from getting click handlers.
+    // Scope to a parent that contains BOTH the toolbar AND the table/menu.
     const runsRoot =
-      document.getElementById("runs-list") ||
+      table.closest(".game-shell") ||
       table.closest(".page-width") ||
       document;
 
