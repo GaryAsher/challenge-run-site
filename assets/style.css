@@ -318,7 +318,7 @@ a:hover {
   background: var(--surface);
 }
 
-/* Runs page: 4 columns on wide screens (kept for other pages if you still use it) */
+/* page: 4 columns on wide screens (kept for other pages if you still use it) */
 @media (min-width: 981px) {
   .filters-grid.runs-filters {
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -419,25 +419,17 @@ a:hover {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-
   padding: 0.15rem 0.5rem;
   border-radius: 999px;
-
-  background: var(--bg-soft);
   border: 1px solid var(--border);
+  background: var(--bg-soft);
   color: var(--text-muted);
-
   font-size: 0.85rem;
   line-height: 1.25;
-
   cursor: pointer;
-  user-select: none;
 }
+.active-filters .tag:hover { background: var(--panel); color: var(--fg); }
 
-.active-filters .tag:hover {
-  background: var(--panel);
-  color: var(--fg);
-}
 
 /* Mobile wrap */
 @media (max-width: 900px) {
