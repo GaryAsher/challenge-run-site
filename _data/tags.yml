@@ -33,6 +33,7 @@ hack-and-slash:
 # M
 metroidvania:
   label: Metroidvania
+  
 mythology:
   label: Mythology
 
@@ -43,6 +44,7 @@ mythology:
 # P
 platformer:
   label: Platformer
+  
 puzzle:
   label: Puzzle
 
@@ -51,6 +53,7 @@ puzzle:
 # R
 roguelike:
   label: Roguelike
+  
 roguelite:
   label: Roguelite
 
