@@ -1,81 +1,89 @@
+// scripts/promote-runs.js
+// Promote approved queued runs from _queue_runs/ -> _runs/
+
 const fs = require("fs");
 const path = require("path");
-const yaml = require("js-yaml");
 
-const QUEUE_DIR = path.join(process.cwd(), "_queue_runs");
-const RUNS_DIR = path.join(process.cwd(), "_runs");
+const ROOT = process.cwd();
+const QUEUE_DIR = path.join(ROOT, "_queue_runs");
+const RUNS_DIR = path.join(ROOT, "_runs");
 
-function readFrontMatter(raw) {
-  const m = raw.match(/^---\s*\n([\s\S]*?)\n---\s*\n?/);
-  if (!m) return { data: null, body: raw, error: "Missing YAML front matter." };
-  try {
-    const data = yaml.load(m[1]) || {};
-    const body = raw.slice(m[0].length);
-    return { data, body, error: null };
-  } catch (e) {
-    return { data: null, body: raw, error: `YAML parse error: ${e.message}` };
-  }
+function ensureDir(p) {
+  if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
 }
 
-function writeFrontMatter(data, body) {
-  const fm = yaml.dump(data, { lineWidth: 120 }).trimEnd();
-  return `---\n${fm}\n---\n${body || ""}`;
+function readFrontMatter(filePath) {
+  const raw = fs.readFileSync(filePath, "utf8");
+  if (!raw.startsWith("---")) return { data: {}, raw };
+
+  const end = raw.indexOf("\n---", 3);
+  if (end === -1) return { data: {}, raw };
+
+  const fm = raw.slice(3, end).trim();
+  const body = raw.slice(end + 4);
+
+  // Tiny YAML-ish parser for simple "key: value" lines.
+  // Good enough for status: approved/pending.
+  const data = {};
+  fm.split("\n").forEach((line) => {
+    const m = /^([A-Za-z0-9_]+)\s*:\s*(.*)\s*$/.exec(line);
+    if (!m) return;
+    const key = m[1];
+    let val = m[2] || "";
+    val = val.replace(/^"(.*)"$/, "$1").replace(/^'(.*)'$/, "$1");
+    data[key] = val;
+  });
+
+  return { data, raw };
 }
 
 function main() {
+  ensureDir(RUNS_DIR);
+
   if (!fs.existsSync(QUEUE_DIR)) {
-    console.log("No _queue_runs folder found. Nothing to promote.");
+    console.log("No _queue_runs/ directory found. Nothing to promote.");
     return;
   }
-  if (!fs.existsSync(RUNS_DIR)) fs.mkdirSync(RUNS_DIR, { recursive: true });
 
   const files = fs
     .readdirSync(QUEUE_DIR)
     .filter((f) => f.endsWith(".md"))
-    .map((f) => path.join(QUEUE_DIR, f));
+    .filter((f) => f !== ".gitkeep");
 
-  if (!files.length) {
-    console.log("No queued .md files to promote.");
+  if (files.length === 0) {
+    console.log("No queued .md files found. Nothing to promote.");
     return;
   }
 
-  let moved = 0;
+  let promoted = 0;
+  let skipped = 0;
 
-  for (const fp of files) {
-    const raw = fs.readFileSync(fp, "utf8");
-    const { data, body, error } = readFrontMatter(raw);
+  for (const file of files) {
+    const from = path.join(QUEUE_DIR, file);
+    const { data } = readFrontMatter(from);
 
-    if (error) {
-      console.log(`Skipping ${path.basename(fp)}: ${error}`);
+    const status = (data.status || "").toLowerCase().trim();
+
+    if (status !== "approved") {
+      console.log(`SKIP (status=${status || "missing"}): ${file}`);
+      skipped += 1;
       continue;
     }
 
-    const status = String(data.status || "").trim().toLowerCase();
-    if (status !== "approved") continue;
+    const to = path.join(RUNS_DIR, file);
 
-    // Optional: stamp verified fields if you want
-    data.verified = true;
-
-    const outName = path.basename(fp);
-    const dest = path.join(RUNS_DIR, outName);
-
-    // Avoid overwrite
-    if (fs.existsSync(dest)) {
-      console.log(`Skipping ${outName}: file already exists in _runs/`);
+    if (fs.existsSync(to)) {
+      console.log(`SKIP (already exists in _runs): ${file}`);
+      skipped += 1;
       continue;
     }
 
-    fs.writeFileSync(dest, writeFrontMatter(data, body), "utf8");
-    fs.unlinkSync(fp);
-    moved++;
-    console.log(`Promoted: ${outName}`);
+    fs.renameSync(from, to);
+    console.log(`PROMOTED: ${file}`);
+    promoted += 1;
   }
 
-  if (!moved) {
-    console.log("No approved runs found to promote.");
-  } else {
-    console.log(`Done. Promoted ${moved} run(s).`);
-  }
+  console.log(`Done. Promoted: ${promoted}. Skipped: ${skipped}.`);
 }
 
 main();
