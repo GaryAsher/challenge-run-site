@@ -24,24 +24,18 @@ layout: default
       <div class="card">
         <h2>Categories</h2>
 
-        {% assign runs_for_game = site.runs | where: "game_id", page.game_id %}
-        {% assign cats_raw = runs_for_game | map: "category" | uniq | sort %}
-
-        {% if cats_raw and cats_raw.size > 0 %}
-          <div class="tag-picker" style="margin-top: 0.75rem;">
-            <div class="tag-picked">
-              {% for cat in cats_raw %}
-                {% if cat and cat != "" %}
-                  {% assign slug = cat | slugify %}
-                  <a class="tag-chip" href="{{ page.url | relative_url }}categories/{{ slug }}/">
-                    {{ cat }}
-                  </a>
-                {% endif %}
-              {% endfor %}
-            </div>
-          </div>
+        {% if page.categories and page.categories.size > 0 %}
+          <ul class="list">
+            {% for c in page.categories %}
+              <li>
+                <a href="{{ page.url | relative_url }}categories/{{ c | slugify }}/">
+                  {{ c }}
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
         {% else %}
-          <p class="muted">No categories found yet.</p>
+          <p class="muted">No categories listed.</p>
         {% endif %}
       </div>
     </section>
@@ -50,7 +44,7 @@ layout: default
 </div>
 
 <!-- =========================================================
-     Hash-based panel switcher + tab active sync
+     Hash-based panel switcher + tab highlight sync
      - default: Overview
      - #categories: Categories
      ========================================================= -->
@@ -59,21 +53,37 @@ layout: default
   const panels = Array.from(document.querySelectorAll(".tab-panel[data-panel]"));
   if (!panels.length) return;
 
-  const tabsRoot = document.getElementById("game-tabs");
-  const tabs = tabsRoot ? Array.from(tabsRoot.querySelectorAll(".tab[data-tab]")) : [];
+  const tabNav = document.querySelector(".game-tabs");
+  const tabs = tabNav ? Array.from(tabNav.querySelectorAll(".tab")) : [];
 
-  function setActive(name) {
+  function setActivePanel(name) {
     panels.forEach(p => p.classList.toggle("active", p.dataset.panel === name));
+  }
 
-    if (tabs.length) {
-      tabs.forEach(t => t.classList.toggle("active", (t.dataset.tab || "") === name));
+  function setActiveTab(name) {
+    if (!tabs.length) return;
+
+    tabs.forEach(a => a.classList.remove("active"));
+
+    if (name === "categories") {
+      const t = tabs.find(a => (a.getAttribute("href") || "").indexOf("#categories") !== -1);
+      if (t) t.classList.add("active");
+      return;
     }
+
+    const t = tabs.find(a => (a.getAttribute("href") || "").indexOf("#") === -1 && (a.getAttribute("href") || "").indexOf("game-runs") === -1);
+    if (t) t.classList.add("active");
   }
 
   function syncFromHash() {
     const h = (window.location.hash || "").replace("#", "").toLowerCase();
-    if (h === "categories") setActive("categories");
-    else setActive("overview");
+    if (h === "categories") {
+      setActivePanel("categories");
+      setActiveTab("categories");
+    } else {
+      setActivePanel("overview");
+      setActiveTab("overview");
+    }
   }
 
   window.addEventListener("hashchange", syncFromHash);
