@@ -318,7 +318,7 @@ a:hover {
   background: var(--surface);
 }
 
-/* Runs page: 4 columns on wide screens */
+/* Runs page: 4 columns on wide screens (kept for other pages if you still use it) */
 @media (min-width: 981px) {
   .filters-grid.runs-filters {
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -357,9 +357,9 @@ a:hover {
 }
 
 /* ============================================================
-   Runs: top filter bar (all on one line)
+   Runs: top filter bar (updated for new game.runs.html markup)
    ============================================================ */
-.runs-filters-bar {
+.runs-filters {
   display: grid;
   grid-template-columns: 1fr auto auto auto auto;
   gap: 0.75rem;
@@ -376,7 +376,9 @@ a:hover {
   margin: 0;
 }
 
-.th-open.select {
+/* Top-row filter buttons are <button class="select th-caret">...</button> */
+.runs-filters .select.th-caret {
+  appearance: none;
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
@@ -384,25 +386,36 @@ a:hover {
 
   width: auto;
   min-width: 9.5rem;
-  padding: 0.45rem 0.65rem;
-  cursor: pointer;
 
+  cursor: pointer;
   text-align: left;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
 
-.th-open.select:hover {
+.runs-filters .select.th-caret:hover {
   background: var(--panel);
+  text-decoration: none;
 }
 
-.th-open.select:active {
+.runs-filters .select.th-caret:active {
   transform: translateY(0.5px);
 }
 
-/* mobile wrap */
+/* Active filter chips row */
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.active-filters:empty {
+  display: none;
+}
+
+/* Mobile wrap */
 @media (max-width: 900px) {
-  .runs-filters-bar {
+  .runs-filters {
     grid-template-columns: 1fr 1fr;
     align-items: start;
   }
@@ -411,18 +424,18 @@ a:hover {
     grid-column: 1 / -1;
   }
 
-  .th-open.select {
+  .runs-filters .select.th-caret {
     width: 100%;
     min-width: 0;
   }
 }
 
 @media (max-width: 560px) {
-  .runs-filters-bar {
+  .runs-filters {
     grid-template-columns: 1fr;
   }
 
-  .th-open.select {
+  .runs-filters .select.th-caret {
     width: 100%;
   }
 }
