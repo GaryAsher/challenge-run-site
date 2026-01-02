@@ -404,7 +404,7 @@ a:hover {
 
 /* Active filter chips row */
 .active-filters {
-  margin-top: 0.5rem; /* replaces inline style */
+  margin-top: 0.5rem;
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
