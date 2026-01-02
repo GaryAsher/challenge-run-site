@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
-Validate queued run submissions in _queue_runs/.
+Validate queued run submissions in _queue_runs/<game_id>/...
 */
 
 const fs = require("fs");
@@ -25,7 +25,6 @@ function parseScalar(raw) {
   if (v === "") return "";
   if (v === "true") return true;
   if (v === "false") return false;
-  // keep numbers as strings; IDs like 01 matter
   return v;
 }
 
@@ -131,17 +130,32 @@ function existsDir(p) {
   }
 }
 
-function listQueueFiles() {
-  if (!existsDir(QUEUE_DIR)) return [];
-  return fs
-    .readdirSync(QUEUE_DIR)
-    .filter((f) => f.endsWith(".md"))
-    .filter((f) => f !== ".gitkeep")
-    .map((f) => path.join(QUEUE_DIR, f));
+function listMdFilesRecursive(rootDir) {
+  if (!existsDir(rootDir)) return [];
+  const out = [];
+
+  function walk(dir) {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const ent of entries) {
+      if (ent.name === ".gitkeep") continue;
+
+      const full = path.join(dir, ent.name);
+      if (ent.isDirectory()) {
+        walk(full);
+        continue;
+      }
+      if (ent.isFile() && ent.name.endsWith(".md")) {
+        out.push(full);
+      }
+    }
+  }
+
+  walk(rootDir);
+  return out;
 }
 
-function parseFilename(fileRel) {
-  const base = path.basename(fileRel);
+function parseFilename(filePath) {
+  const base = path.basename(filePath);
   const m =
     /^(\d{4}-\d{2}-\d{2})__([a-z0-9-]+)__([a-z0-9-]+)__([a-z0-9-]+)__([0-9]{2,3})\.md$/.exec(
       base
@@ -162,13 +176,22 @@ function asArray(v) {
   if (Array.isArray(v)) return v;
   if (typeof v === "string" && v.trim() === "") return [];
   if (typeof v === "string") {
-    // accept comma-separated fallback
     return v
       .split(",")
       .map((x) => x.trim())
       .filter(Boolean);
   }
   return [];
+}
+
+function getRelToQueue(filePath) {
+  return path.relative(QUEUE_DIR, filePath).replace(/\\/g, "/");
+}
+
+function getGameFolderFromQueuePath(filePath) {
+  const relToQueue = getRelToQueue(filePath);
+  const parts = relToQueue.split("/").filter(Boolean);
+  return parts.length ? parts[0] : "";
 }
 
 function validateOne(filePath) {
@@ -178,12 +201,30 @@ function validateOne(filePath) {
 
   if (!hasFrontMatter) fail(fileRel, "Missing YAML front matter (--- ... ---).");
 
-  const fn = parseFilename(fileRel);
+  const fn = parseFilename(filePath);
   if (!fn) {
     fail(
       fileRel,
       "Bad filename. Expected: YYYY-MM-DD__game-id__runner-id__category-slug__NN.md"
     );
+  }
+
+  // Enforce folder routing: _queue_runs/<game_id>/...
+  const folderGame = getGameFolderFromQueuePath(filePath);
+  if (!folderGame) {
+    fail(fileRel, "Queued runs must live under _queue_runs/<game_id>/");
+  }
+  if (folderGame !== fn.game_id) {
+    fail(
+      fileRel,
+      `game_id mismatch (folder=${folderGame}, filename=${fn.game_id})`
+    );
+  }
+
+  const relToQueue = getRelToQueue(filePath);
+  const parts = relToQueue.split("/").filter(Boolean);
+  if (parts.length > 2) {
+    console.log(`WARN ${fileRel}: extra subfolders under game_id folder are allowed but not recommended.`);
   }
 
   // Required routing + display fields
@@ -262,7 +303,7 @@ function validateOne(filePath) {
   if (t2 && !m2) fail(fileRel, "time_secondary provided but timing_method_secondary is empty");
   if (m2 && !t2) fail(fileRel, "timing_method_secondary provided but time_secondary is empty");
 
-  // Arrays: normalize + ensure types
+  // Arrays
   const restrictions = asArray(data.restrictions);
   const restriction_ids = asArray(data.restriction_ids);
 
@@ -280,7 +321,12 @@ function validateOne(filePath) {
 }
 
 function main() {
-  const files = listQueueFiles();
+  if (!existsDir(QUEUE_DIR)) {
+    console.log("No _queue_runs/ directory found.");
+    return;
+  }
+
+  const files = listMdFilesRecursive(QUEUE_DIR);
   if (!files.length) {
     console.log("No queued run files found in _queue_runs/.");
     return;
