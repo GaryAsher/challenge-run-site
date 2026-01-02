@@ -2,91 +2,7 @@
 layout: default
 ---
 
-<!-- =========================================================
-     Back link to Games index
-     ========================================================= -->
-<div class="page-width">
-  <p class="muted page-back">
-    <a href="{{ '/games/' | relative_url }}">← Games</a>
-  </p>
-</div>
-
-<!-- =========================================================
-     Game hero
-     ========================================================= -->
-{% if page.cover %}
-  <div class="page-width">
-    <div class="game-shell">
-      <section
-        class="game-hero"
-        style="
-          background-image: url('{{ page.cover | relative_url }}');
-          background-position: {{ page.cover_position | default: 'center' }};
-        "
-      >
-        <div class="game-hero__overlay">
-          <div class="game-hero__content">
-            <h1>{{ page.name }}</h1>
-
-            {% if page.status %}
-              <p class="muted">{{ page.status }}</p>
-            {% endif %}
-
-            {% if page.tags and page.tags.size > 0 %}
-              <div class="game-tags">
-                {% for tag in page.tags %}
-                  {% assign meta = site.data.tags[tag] %}
-                  <span class="tag">{{ meta.label | default: tag }}</span>
-                {% endfor %}
-              </div>
-            {% endif %}
-          </div>
-        </div>
-      </section>
-    </div>
-  </div>
-{% else %}
-  <div class="page-width">
-    <h1>{{ page.name }}</h1>
-
-    {% if page.status %}
-      <p class="muted">{{ page.status }}</p>
-    {% endif %}
-
-    {% if page.tags and page.tags.size > 0 %}
-      <div class="game-tags" style="margin-top: 0.5rem;">
-        {% for tag in page.tags %}
-          {% assign meta = site.data.tags[tag] %}
-          <span class="tag">{{ meta.label | default: tag }}</span>
-        {% endfor %}
-      </div>
-    {% endif %}
-  </div>
-{% endif %}
-
-<!-- =========================================================
-     Game tabs (Overview / Categories / Runs)
-     ========================================================= -->
-<div class="page-width">
-  <div class="game-shell">
-    <nav class="runner-tabs game-tabs" id="game-tabs">
-      <button class="tab active" data-tab="overview" type="button">
-        Overview
-      </button>
-
-      <button class="tab" data-tab="categories" type="button">
-        Categories
-      </button>
-
-      <a
-        class="tab"
-        href="{{ '/games/' | relative_url | append: page.game_id | append: '/game-runs/' }}"
-      >
-        Runs
-      </a>
-    </nav>
-  </div>
-</div>
+{% include game-header-tabs.html game=page active="overview" %}
 
 <!-- =========================================================
      Tab panels
@@ -104,7 +20,7 @@ layout: default
     </section>
 
     <!-- Categories -->
-    <section class="tab-panel" data-panel="categories">
+    <section class="tab-panel" data-panel="categories" id="categories">
       <div class="card">
         <h2>Categories</h2>
 
