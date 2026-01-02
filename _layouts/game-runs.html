@@ -30,7 +30,7 @@ layout: default
       {% endif %}
     {% endfor %}
 
-    {% assign runs = cleaned | where: "game_id", page.game_id %}
+    {% assign runs = cleaned | where: "game_id", page.game_id | sort: "date_completed" | reverse %}
 
     {% if runs and runs.size > 0 %}
 
@@ -142,7 +142,6 @@ layout: default
                 {% endif %}
               {% endfor %}
               {% assign r_texts = r_clean | uniq %}
-              {% assign r_join_for_data = r_texts | join: "," %}
 
               {% assign video_url = r.video_link | default: r.video %}
 
