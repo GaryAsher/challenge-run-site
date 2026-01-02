@@ -9,7 +9,15 @@ game_id: hades-2
      ========================================================= -->
 <section class="tab-panel active" data-panel="categories" id="categories">
 
-  {% assign runs = site.runs | where: "game_id", page.game_id %}
+  <!-- Collect runs from the _runs collection -->
+  {% assign cleaned = "" | split: "" %}
+  {% for r in site.runs %}
+    {% if r and r.game_id and r.category %}
+      {% assign cleaned = cleaned | push: r %}
+    {% endif %}
+  {% endfor %}
+
+  {% assign runs = cleaned | where: "game_id", page.game_id %}
 
   <div class="card">
     <h1>Categories</h1>
