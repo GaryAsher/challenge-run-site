@@ -389,6 +389,7 @@
       });
     }
 
+    // UPDATED: reduce visible "jump" by clamping before measuring
     function openThMenuFor(col, anchorEl) {
       if (!thMenu) return;
 
@@ -397,34 +398,39 @@
 
       const r = anchorEl.getBoundingClientRect();
 
-      // Initial placement
-      thMenu.style.left = Math.max(12, r.left) + "px";
+      const approxMenuW = 320;
+      const left = Math.min(
+        window.innerWidth - approxMenuW - 12,
+        Math.max(12, r.left)
+      );
+
+      thMenu.style.left = left + "px";
       thMenu.style.top = r.bottom + 8 + "px";
 
       if (thMenuQ) thMenuQ.value = "";
       renderThMenuList();
 
-      // Focus after it is visible, and clamp within viewport
-      if (thMenuQ) {
-        requestAnimationFrame(() => {
-          if (!thMenuQ || thMenu.hidden) return;
+      requestAnimationFrame(() => {
+        if (!thMenuQ || thMenu.hidden) return;
 
-          const menuW = thMenu.offsetWidth || 320;
-          const menuH = thMenu.offsetHeight || 300;
+        const menuW = thMenu.offsetWidth || approxMenuW;
+        const menuH = thMenu.offsetHeight || 300;
 
-          const left = Math.min(
-            window.innerWidth - menuW - 12,
-            Math.max(12, r.left)
-          );
+        const clampedLeft = Math.min(
+          window.innerWidth - menuW - 12,
+          Math.max(12, r.left)
+        );
 
-          const top = Math.min(window.innerHeight - menuH - 12, r.bottom + 8);
+        const clampedTop = Math.min(
+          window.innerHeight - menuH - 12,
+          r.bottom + 8
+        );
 
-          thMenu.style.left = left + "px";
-          thMenu.style.top = top + "px";
+        thMenu.style.left = clampedLeft + "px";
+        thMenu.style.top = clampedTop + "px";
 
-          thMenuQ.focus();
-        });
-      }
+        thMenuQ.focus();
+      });
     }
 
     document.querySelectorAll("[data-filter-btn]").forEach((btn) => {
