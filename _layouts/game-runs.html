@@ -50,7 +50,7 @@ layout: default
       Prefer r.category_slug if present, else slugify r.category.
     {%- endcomment -%}
     {% if active_cat_slug != "" %}
-      {% assign runs = runs | where_exp: "r", "((r.category_slug | default: (r.category | slugify)) == active_cat_slug)" %}
+      {% assign runs = runs | where_exp: "r", "(r.category_slug == active_cat_slug)" %}
     {% endif %}
 
     {% if runs and runs.size > 0 %}
