@@ -29,7 +29,21 @@ layout: default
      Runs filtered by category
      ========================================================= -->
 <div class="page-width">
-  {% assign runs = site.runs | where: "game_id", page.game_id | where: "category", page.category | sort: "date_completed" | reverse %}
+
+  <!-- Normalize + clean runs so Liquid filters do not crash -->
+  {% assign cleaned = "" | split: "" %}
+  {% for r in site.runs %}
+    {% if r and r.game_id and r.category %}
+      {% assign cleaned = cleaned | push: r %}
+    {% endif %}
+  {% endfor %}
+
+  {% assign runs = cleaned
+    | where: "game_id", page.game_id
+    | where: "category", page.category
+    | sort: "date_completed"
+    | reverse
+  %}
 
   {% if runs and runs.size > 0 %}
     <div class="table-wrap">
@@ -65,7 +79,7 @@ layout: default
                 {% endif %}
               </td>
 
-              <td>{{ challenge_label | default: "—" }}</td>
+              <td>{{ challenge_label }}</td>
 
               <td>{{ r.time | default: "—" }}</td>
 
