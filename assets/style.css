@@ -1074,9 +1074,7 @@ a:hover {
   display: block;
   width: 100%;
   text-align: center;
-
-  padding-right: 2.25rem; /* room for caret */
-  padding-left: 2.25rem;  /* visual balance */
+  padding: 0;
 }
 
 /* Caret aligned to the right edge, centered vertically */
