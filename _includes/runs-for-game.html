@@ -1,0 +1,5 @@
+{% assign gid = include.game_id | default: page.game_id %}
+
+{% assign runs = site.runs | where: "game_id", gid | sort: "date_completed" | reverse %}
+
+{% assign include = include | merge: { "runs": runs } %}
