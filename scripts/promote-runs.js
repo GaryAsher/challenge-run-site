@@ -6,6 +6,10 @@ Rules:
   - status: approved  -> move to _runs/
   - status: rejected  -> move to _runs/rejected/
   - status: pending   -> leave in _queue_runs/
+
+Dry-run:
+  node scripts/promote-runs.js --dry-run
+  or DRY_RUN=1 node scripts/promote-runs.js
 */
 
 const fs = require("fs");
@@ -15,6 +19,12 @@ const ROOT = process.cwd();
 const QUEUE_DIR = path.join(ROOT, "_queue_runs");
 const RUNS_DIR = path.join(ROOT, "_runs");
 const REJECTED_DIR = path.join(RUNS_DIR, "rejected");
+
+const DRY_RUN =
+  process.argv.includes("--dry-run") ||
+  process.argv.includes("-n") ||
+  String(process.env.DRY_RUN || "").trim() === "1" ||
+  String(process.env.DRY_RUN || "").trim().toLowerCase() === "true";
 
 function parseFrontMatter(fileText) {
   const lines = fileText.split(/\r?\n/);
@@ -45,37 +55,52 @@ function parseFrontMatter(fileText) {
 }
 
 function ensureDir(p) {
+  if (DRY_RUN) return;
   fs.mkdirSync(p, { recursive: true });
 }
 
-function listQueueFiles() {
+function existsDir(p) {
   try {
-    return fs
-      .readdirSync(QUEUE_DIR)
-      .filter((f) => f.endsWith(".md"))
-      .filter((f) => f !== ".gitkeep")
-      .map((f) => path.join(QUEUE_DIR, f));
+    return fs.statSync(p).isDirectory();
   } catch {
-    return [];
+    return false;
   }
 }
 
+function listQueueFiles() {
+  if (!existsDir(QUEUE_DIR)) return [];
+  return fs
+    .readdirSync(QUEUE_DIR)
+    .filter((f) => f.endsWith(".md"))
+    .filter((f) => f !== ".gitkeep")
+    .map((f) => path.join(QUEUE_DIR, f));
+}
+
 function moveFile(src, destDir) {
-  ensureDir(destDir);
   const base = path.basename(src);
   const dest = path.join(destDir, base);
 
   if (fs.existsSync(dest)) {
     throw new Error(
-      `Refusing to overwrite existing file: ${path.relative(ROOT, dest).replace(/\\/g, "/")}`
+      `Refusing to overwrite existing file: ${path
+        .relative(ROOT, dest)
+        .replace(/\\/g, "/")}`
     );
   }
 
+  if (DRY_RUN) return dest;
+
+  ensureDir(destDir);
   fs.renameSync(src, dest);
   return dest;
 }
 
 function main() {
+  if (!existsDir(QUEUE_DIR)) {
+    console.log("No _queue_runs/ directory found.");
+    return;
+  }
+
   ensureDir(RUNS_DIR);
   ensureDir(REJECTED_DIR);
 
@@ -85,9 +110,12 @@ function main() {
     return;
   }
 
-  let promoted = 0;
+  let approved = 0;
   let rejected = 0;
   let pending = 0;
+  let skipped = 0;
+
+  if (DRY_RUN) console.log("DRY RUN enabled. No files will be moved.");
 
   for (const file of files) {
     const rel = path.relative(ROOT, file).replace(/\\/g, "/");
@@ -96,30 +124,40 @@ function main() {
 
     if (!hasFrontMatter) {
       console.log(`SKIP ${rel} (missing front matter)`);
+      skipped++;
       continue;
     }
 
     const status = String(data.status || "").trim().toLowerCase();
 
     if (status === "approved") {
-      const movedTo = moveFile(file, RUNS_DIR);
-      console.log(`APPROVED -> ${path.relative(ROOT, movedTo).replace(/\\/g, "/")}`);
-      promoted++;
+      const dest = moveFile(file, RUNS_DIR);
+      console.log(
+        `${DRY_RUN ? "WOULD MOVE" : "MOVED"} APPROVED: ${rel} -> ${path
+          .relative(ROOT, dest)
+          .replace(/\\/g, "/")}`
+      );
+      approved++;
       continue;
     }
 
     if (status === "rejected") {
-      const movedTo = moveFile(file, REJECTED_DIR);
-      console.log(`REJECTED -> ${path.relative(ROOT, movedTo).replace(/\\/g, "/")}`);
+      const dest = moveFile(file, REJECTED_DIR);
+      console.log(
+        `${DRY_RUN ? "WOULD MOVE" : "MOVED"} REJECTED: ${rel} -> ${path
+          .relative(ROOT, dest)
+          .replace(/\\/g, "/")}`
+      );
       rejected++;
       continue;
     }
 
+    console.log(`KEEP PENDING: ${rel}`);
     pending++;
   }
 
   console.log(
-    `Done. approved=${promoted}, rejected=${rejected}, pending=${pending}`
+    `Done. approved=${approved}, rejected=${rejected}, pending=${pending}, skipped=${skipped}`
   );
 }
 
