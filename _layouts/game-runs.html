@@ -21,9 +21,16 @@ layout: default
   <div class="game-shell">
 
     <!-- =========================================================
-         Runs from collection: _runs/*.md
+         Pull runs from the _runs collection, then clean + filter
          ========================================================= -->
-    {% assign runs = site.runs | where: "game_id", page.game_id | sort: "date_completed" | reverse %}
+    {% assign cleaned = "" | split: "" %}
+    {% for r in site.runs %}
+      {% if r and r.game_id %}
+        {% assign cleaned = cleaned | push: r %}
+      {% endif %}
+    {% endfor %}
+
+    {% assign runs = cleaned | where: "game_id", page.game_id | sort: "date_completed" | reverse %}
 
     {% if runs and runs.size > 0 %}
 
