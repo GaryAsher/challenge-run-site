@@ -3,25 +3,29 @@ name: Promote queued runs
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 9 * * 1" # Mondays 09:00 UTC (change whenever you want)
+    - cron: "0 9 * * 1" # Mondays 09:00 UTC
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   promote:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      - name: Install YAML dependency
-        run: npm i js-yaml
+      - name: Install dependencies (local only)
+        run: npm install js-yaml --no-save
 
       - name: Validate queued runs
         run: node scripts/validate-runs.js
@@ -29,14 +33,28 @@ jobs:
       - name: Promote approved runs
         run: node scripts/promote-runs.js
 
-      - name: Commit and push if changed
+      - name: Create PR if changes exist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          if [[ -z "$(git status --porcelain)" ]]; then
+            echo "No changes to promote."
+            exit 0
+          fi
+
+          BRANCH="promote-runs-$(date +%Y%m%d-%H%M%S)"
+
+          git checkout -b "$BRANCH"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if [[ -n "$(git status --porcelain)" ]]; then
-            git add -A
-            git commit -m "Promote approved queued runs"
-            git push
-          else
-            echo "No changes to commit."
-          fi
+
+          git add -A
+          git commit -m "Promote approved queued runs"
+
+          git push origin "$BRANCH"
+
+          gh pr create \
+            --title "Promote approved queued runs" \
+            --body "Automated promotion of moderator-approved runs from _queue_runs into _runs." \
+            --base main \
+            --head "$BRANCH"
