@@ -329,6 +329,18 @@ a:hover {
   }
 }
 
+.filters-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.filters-row .select {
+  width: auto;
+  min-width: 5.5rem;
+}
+
 /* ============================================================
    Games: Tag Filter (index) - Searchable picker
    ============================================================ */
