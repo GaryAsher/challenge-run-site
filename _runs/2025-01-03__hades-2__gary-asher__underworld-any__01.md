@@ -1,4 +1,5 @@
 ---
+layout: null
 game_id: hades-2
 
 runner: "Gary Asher"
@@ -16,9 +17,10 @@ restriction_ids:
   - hestia-only
   - no-hexes
 
-time: "00:27:41"
-timing_method: IGT
-timing_method_secondary:
+time_primary: "00:27:41"
+timing_method_primary: IGT
+time_secondary:
+timing_method_secondary: 
 
 verified: true
 verified_by: Self
