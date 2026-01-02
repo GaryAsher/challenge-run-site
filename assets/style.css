@@ -1032,11 +1032,24 @@ a:hover {
 .runs-table td .tag {
   display: inline-flex;
   align-items: center;
+  gap: 0.35rem;
+
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+
   margin: 0.15rem 0.25rem 0 0;
+
   max-width: 100%;
   white-space: normal;
   overflow-wrap: anywhere;
   word-break: break-word;
+
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+
+  font-size: 0.85rem;
+  line-height: 1.25;
 }
 
 .runs-table th:nth-child(5),
@@ -1056,28 +1069,30 @@ a:hover {
   white-space: nowrap;
 }
 
+/* Center label, reserve equal space left/right so it doesn't look shifted */
 .th-filter > span {
   display: block;
   width: 100%;
   text-align: center;
-  padding-right: 1.5rem; /* caret space */
-  padding-left: 1.5rem;  /* balance the caret space */
+
+  padding-right: 2.25rem; /* room for caret */
+  padding-left: 2.25rem;  /* visual balance */
 }
 
 /* Caret aligned to the right edge, centered vertically */
 .th-filter .th-caret {
   position: absolute;
-  right: 0.5rem;
+  right: 0.55rem;
   top: 50%;
   transform: translateY(-50%);
 
   appearance: none;
   border: 1px solid var(--border);
-  background: transparent;
+  background: rgba(255, 255, 255, 0.02);
   color: var(--text-dim);
 
-  border-radius: 8px;
-  padding: 0.15rem 0.4rem;
+  border-radius: 10px;
+  padding: 0.18rem 0.45rem;
 
   line-height: 1;
   cursor: pointer;
@@ -1086,17 +1101,23 @@ a:hover {
 .th-filter .th-caret:hover {
   background: var(--panel);
   color: var(--fg);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
-/* Sort buttons */
+.th-filter .th-caret:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Sort buttons (match caret vibe) */
 .th-sort {
   appearance: none;
   border: 1px solid var(--border);
-  background: transparent;
+  background: rgba(255, 255, 255, 0.02);
   color: var(--text-dim);
 
-  border-radius: 8px;
-  padding: 0.15rem 0.4rem;
+  border-radius: 10px;
+  padding: 0.18rem 0.45rem;
 
   line-height: 1;
   cursor: pointer;
@@ -1105,6 +1126,7 @@ a:hover {
 .th-sort:hover {
   background: var(--panel);
   color: var(--fg);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 .th-sort:disabled {
@@ -1112,7 +1134,7 @@ a:hover {
   cursor: not-allowed;
 }
 
-/* Date header layout: label left, sort controls locked to far right */
+/* Date header layout: label + sort group look like a deliberate "two-line" header */
 .th-date {
   position: relative;
 }
@@ -1120,20 +1142,19 @@ a:hover {
 .th-date .th-title {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center; /* center the label */
   gap: 0.5rem;
+
+  padding-right: 0.25rem; /* tiny optical tweak */
 }
 
 .th-date-sort {
   display: inline-flex;
   gap: 0.35rem;
   align-items: center;
-  justify-content: flex-end;
-}
+  justify-content: center;
 
-/* Optional: make ↑/↓ feel like “right edge controls” (same vibe as carets) */
-.runs-table thead th.th-date {
-  padding-right: 0.85rem;
+  margin-top: 0.25rem; /* give breathing room under label */
 }
 
 /* Optional: equal-ish button footprint */
@@ -1178,8 +1199,8 @@ a:hover {
   align-items: center;
   gap: 0.5rem;
 
-  padding: 0.35rem 0.4rem;
-  border-radius: 8px;
+  padding: 0.4rem 0.5rem;
+  border-radius: 10px;
   cursor: pointer;
   user-select: none;
 }
