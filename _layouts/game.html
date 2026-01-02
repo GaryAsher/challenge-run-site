@@ -11,7 +11,7 @@ layout: default
   <div class="game-shell">
 
     <!-- Overview -->
-    <section class="tab-panel active" data-panel="overview">
+    <section class="tab-panel active" data-panel="overview" id="overview">
       {% if content %}
         <div class="card">
           {{ content }}
@@ -44,26 +44,26 @@ layout: default
 </div>
 
 <!-- =========================================================
-     Tabs script
+     Hash-based panel switcher
+     - default: Overview
+     - #categories: Categories
      ========================================================= -->
 <script>
 (function () {
-  const root = document.getElementById("game-tabs");
-  if (!root) return;
-
-  const tabs = Array.from(root.querySelectorAll(".tab[data-tab]"));
   const panels = Array.from(document.querySelectorAll(".tab-panel[data-panel]"));
+  if (!panels.length) return;
 
-  function activate(name) {
-    tabs.forEach(t => t.classList.toggle("active", t.dataset.tab === name));
+  function setActive(name) {
     panels.forEach(p => p.classList.toggle("active", p.dataset.panel === name));
   }
 
-  tabs.forEach(t => {
-    t.addEventListener("click", (e) => {
-      e.preventDefault();
-      activate(t.dataset.tab);
-    });
-  });
+  function syncFromHash() {
+    const h = (window.location.hash || "").replace("#", "").toLowerCase();
+    if (h === "categories") setActive("categories");
+    else setActive("overview");
+  }
+
+  window.addEventListener("hashchange", syncFromHash);
+  syncFromHash();
 })();
 </script>
