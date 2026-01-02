@@ -1,4 +1,5 @@
 ---
+layout: null
 game_id: hades-2
 runner: Gary_Asher
 runner_id: gary-asher
