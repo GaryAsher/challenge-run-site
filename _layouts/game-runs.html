@@ -148,12 +148,11 @@ layout: default
 
               <tr
                 class="run-row"
-                data-runner="{{ r.runner_id | default: runner_label | default: '' | downcase | escape }}"
-                data-category="{{ cat_label | default: '' | downcase | escape }}"
-                data-category-slug="{{ cat_slug | escape }}"
-                data-challenge-id="{{ r.challenge_id | default: '' | downcase | escape }}"
-                data-challenge-label="{{ challenge_label | default: '' | downcase | escape }}"
-                data-restrictions="{{ r_join_for_data | downcase | escape }}"
+                data-runner="{{ r.runner_id | default: r.runner | default: '' | escape }}"
+                data-category="{{ r.category | default: '' | escape }}"
+                data-challenge-id="{{ r.challenge_id | default: '' | escape }}"
+                data-challenge-label="{{ challenge_label | default: '' | escape }}"
+                data-restrictions="{{ r_texts | join: '||' | escape }}"
                 data-date="{{ r.date_completed | default: '' | escape }}"
                 data-time="{{ r.time | default: '' | escape }}"
               >
