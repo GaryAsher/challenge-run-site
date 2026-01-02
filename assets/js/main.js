@@ -1,7 +1,7 @@
 // =========================================================
 // Client-side pagination for any .list-paged block
 // + Runs table filtering (Search + Header filters + Date sort + Limit)
-// + Category dropdown NAVIGATES to category subpages
+// + Category dropdown uses ?category=<category_slug> and filters rows
 // =========================================================
 (function () {
   // =========================================================
@@ -111,7 +111,7 @@
 
   // =========================================================
   // Runs table filtering (Search + Header filters + Date sort + Limit)
-  // + Category dropdown NAVIGATES to category subpages
+  // + Category dropdown uses ?category=<category_slug> and filters rows
   // =========================================================
   function initRunsTable() {
     const table = document.getElementById("runs-table");
@@ -133,7 +133,6 @@
     const thSortAsc = document.getElementById("th-sort-asc");
     const thSortDesc = document.getElementById("th-sort-desc");
 
-    // Toolbar button labels + active filter chips
     const btnCat = document.getElementById("filter-category");
     const btnCh = document.getElementById("filter-challenge");
     const btnRes = document.getElementById("filter-restrictions");
@@ -186,10 +185,30 @@
         .filter(Boolean);
     }
 
+    // =========================================================
+    // Category from URL: ?category=<slug>
+    // =========================================================
+    function getCategoryFromUrl() {
+      const u = new URL(window.location.href);
+      const v = (u.searchParams.get("category") || "").trim();
+      return v;
+    }
+
+    function setCategoryInUrl(slugOrEmpty) {
+      const u = new URL(window.location.href);
+      if (slugOrEmpty) u.searchParams.set("category", slugOrEmpty);
+      else u.searchParams.delete("category");
+      history.replaceState(null, "", u);
+    }
+
+    let activeCategorySlug = getCategoryFromUrl();
+
+    // =========================================================
+    // Build options for challenge + restrictions (filters)
+    // =========================================================
     function buildOptions() {
       const chIds = [];
       const chLabelById = new Map();
-
       const restrictionsRaw = [];
 
       rows.forEach((row) => {
@@ -223,15 +242,11 @@
 
     const OPTIONS = buildOptions();
 
-    // Category is now NAVIGATION, not a filter set.
     const activeChallenges = new Set();
     const activeRestrictions = new Set();
 
     let dateSortDir = "desc";
     let thActiveCol = null;
-
-    // Cached category nav items while the menu is open
-    let categoryNavItemsCache = null;
 
     function closeThMenu() {
       if (!thMenu) return;
@@ -242,9 +257,6 @@
       thMenu.hidden = true;
       thActiveCol = null;
 
-      categoryNavItemsCache = null;
-
-      // Restore default button label if we changed it for category nav.
       if (thMenuClear) thMenuClear.textContent = "Clear";
     }
 
@@ -266,15 +278,30 @@
       return hit ? hit.label : id;
     }
 
+    function getCategoryLabelForSlug(slug) {
+      if (!slug) return "";
+      for (const row of rows) {
+        const s = (row.dataset.categorySlug || "").trim();
+        if (s === slug) return (row.dataset.category || "").trim() || slug;
+      }
+      return slug;
+    }
+
     function updateTopButtonLabels() {
-      // Category button is navigation, keep label stable.
-      if (btnCat) btnCat.textContent = "Category ▾";
+      if (btnCat) {
+        if (activeCategorySlug) {
+          btnCat.textContent = `Category: ${getCategoryLabelForSlug(activeCategorySlug)} ▾`;
+        } else {
+          btnCat.textContent = "Category ▾";
+        }
+      }
 
       if (btnCh) {
         btnCh.textContent = activeChallenges.size
           ? `Challenge (${activeChallenges.size}) ▾`
           : "Challenge ▾";
       }
+
       if (btnRes) {
         btnRes.textContent = activeRestrictions.size
           ? `Restrictions (${activeRestrictions.size}) ▾`
@@ -286,19 +313,22 @@
       if (!activeFiltersWrap) return;
 
       activeFiltersWrap.innerHTML = "";
-
       const chips = [];
 
+      if (activeCategorySlug) {
+        chips.push({
+          kind: "category",
+          slug: activeCategorySlug,
+          label: getCategoryLabelForSlug(activeCategorySlug)
+        });
+      }
+
       activeChallenges.forEach((id) => {
-        chips.push({ col: "challenge", id, label: getLabelFor("challenge", id) });
+        chips.push({ kind: "challenge", id, label: getLabelFor("challenge", id) });
       });
 
       activeRestrictions.forEach((id) => {
-        chips.push({
-          col: "restrictions",
-          id,
-          label: getLabelFor("restrictions", id)
-        });
+        chips.push({ kind: "restrictions", id, label: getLabelFor("restrictions", id) });
       });
 
       if (!chips.length) return;
@@ -313,16 +343,25 @@
       }
 
       chips.forEach((c) => {
-        const chip = makeChip(
-          `${c.col === "challenge" ? "Challenge" : "Restrictions"}: ${c.label}`,
-          () => {
-            const set = getSetForCol(c.col);
-            if (!set) return;
+        if (c.kind === "category") {
+          activeFiltersWrap.appendChild(
+            makeChip(`Category: ${c.label}`, () => {
+              activeCategorySlug = "";
+              setCategoryInUrl("");
+              render();
+            })
+          );
+          return;
+        }
+
+        const colLabel = c.kind === "challenge" ? "Challenge" : "Restrictions";
+        activeFiltersWrap.appendChild(
+          makeChip(`${colLabel}: ${c.label}`, () => {
+            const set = c.kind === "challenge" ? activeChallenges : activeRestrictions;
             set.delete(c.id);
             render();
-          }
+          })
         );
-        activeFiltersWrap.appendChild(chip);
       });
 
       const clearAll = document.createElement("button");
@@ -330,6 +369,8 @@
       clearAll.className = "btn";
       clearAll.textContent = "Clear All";
       clearAll.addEventListener("click", () => {
+        activeCategorySlug = "";
+        setCategoryInUrl("");
         activeChallenges.clear();
         activeRestrictions.clear();
         render();
@@ -346,6 +387,12 @@
 
     function passesFilters(row) {
       const needle = norm(q && q.value);
+
+      // Category param filter
+      if (activeCategorySlug) {
+        const rowSlug = (row.dataset.categorySlug || "").trim();
+        if (rowSlug !== activeCategorySlug) return false;
+      }
 
       const ch = norm(row.dataset.challengeId);
 
@@ -484,8 +531,8 @@
       thMenu.hidden = false;
 
       const r = anchorEl.getBoundingClientRect();
-
       const approxMenuW = 320;
+
       const left = Math.min(
         window.innerWidth - approxMenuW - 12,
         Math.max(12, r.left)
@@ -521,27 +568,8 @@
     }
 
     // =========================================================
-    // Category NAV menu (uses data-category-slug for URLs)
+    // Category NAV menu (uses data-category-slug and sets ?category=)
     // =========================================================
-    function getRunsBasePath() {
-      // Prefer server-provided base path if present
-      const runsListEl = document.getElementById("runs-list");
-      const fromData =
-        runsListEl && runsListEl.dataset && runsListEl.dataset.gameRunsBase
-          ? String(runsListEl.dataset.gameRunsBase).trim()
-          : "";
-
-      if (fromData) {
-        return fromData.endsWith("/") ? fromData : fromData + "/";
-      }
-
-      // Fallback: derive from URL
-      const path = window.location.pathname;
-      const idx = path.indexOf("/game-runs/");
-      if (idx === -1) return "/game-runs/";
-      return path.slice(0, idx + "/game-runs/".length);
-    }
-
     function buildCategoryNavItems() {
       const map = new Map(); // slug -> label
 
@@ -589,8 +617,10 @@
         b.innerHTML = `<span>${escapeHtml(it.label)}</span>`;
 
         b.addEventListener("click", () => {
-          const base = getRunsBasePath();
-          window.location.href = `${base}?category=${encodeURIComponent(it.slug)}`;
+          activeCategorySlug = it.slug;
+          setCategoryInUrl(it.slug);
+          closeThMenu();
+          render();
         });
 
         thMenuList.appendChild(b);
@@ -603,7 +633,6 @@
       thActiveCol = "category-nav";
       thMenu.hidden = false;
 
-      // Clear button becomes "All Runs" navigation.
       if (thMenuClear) thMenuClear.textContent = "All Runs";
 
       const r = anchorEl.getBoundingClientRect();
@@ -619,8 +648,8 @@
 
       if (thMenuQ) thMenuQ.value = "";
 
-      categoryNavItemsCache = buildCategoryNavItems();
-      renderCategoryNavList(categoryNavItemsCache);
+      const items = buildCategoryNavItems();
+      renderCategoryNavList(items);
 
       requestAnimationFrame(() => {
         if (!thMenuQ || thMenu.hidden) return;
@@ -645,8 +674,6 @@
       });
     }
 
-    // IMPORTANT FIX (kept):
-    // Scope to a parent that contains BOTH the toolbar AND the table/menu.
     const runsRoot =
       table.closest(".game-shell") ||
       table.closest(".page-width") ||
@@ -659,7 +686,6 @@
         e.preventDefault();
         e.stopPropagation();
 
-        // Category becomes NAVIGATION
         if (col === "category") {
           if (thMenu && !thMenu.hidden && thActiveCol === "category-nav") {
             closeThMenu();
@@ -669,7 +695,6 @@
           return;
         }
 
-        // Other columns remain as checkbox filters
         if (thMenu && !thMenu.hidden && thActiveCol === col) {
           closeThMenu();
           return;
@@ -679,11 +704,10 @@
       });
     });
 
-    // Search within the open menu
     if (thMenuQ) {
       thMenuQ.addEventListener("input", () => {
         if (thActiveCol === "category-nav") {
-          renderCategoryNavList(categoryNavItemsCache || buildCategoryNavItems());
+          renderCategoryNavList(buildCategoryNavItems());
           return;
         }
         renderThMenuList();
@@ -692,13 +716,14 @@
 
     if (thMenuClear) {
       thMenuClear.addEventListener("click", () => {
-        // In category nav mode, "All Runs" navigation
         if (thActiveCol === "category-nav") {
-          window.location.href = getRunsBasePath();
+          activeCategorySlug = "";
+          setCategoryInUrl("");
+          closeThMenu();
+          render();
           return;
         }
 
-        // Normal filter clearing
         if (!thActiveCol) return;
         const set = getSetForCol(thActiveCol);
         if (!set) return;
@@ -749,13 +774,19 @@
     if (q) q.addEventListener("input", render);
     if (limitEl) limitEl.addEventListener("change", render);
 
+    // Re-render if user changes URL with back/forward
+    window.addEventListener("popstate", () => {
+      activeCategorySlug = getCategoryFromUrl();
+      render();
+    });
+
     updateDateSortButtons();
     updateTopButtonLabels();
     render();
   }
 
   // =========================================================
-  // Game tabs navigation helper (Overview/Categories click on runs page)
+  // Game tabs navigation helper
   // =========================================================
   function initGameTabsNav() {
     const root = document.getElementById("game-tabs");
