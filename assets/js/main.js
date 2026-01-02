@@ -1,6 +1,7 @@
 // =========================================================
 // Client-side pagination for any .list-paged block
 // + Runs table filtering (Search + Header filters + Date sort + Limit)
+// + Category dropdown NAVIGATES to category subpages
 // =========================================================
 (function () {
   // =========================================================
@@ -110,6 +111,7 @@
 
   // =========================================================
   // Runs table filtering (Search + Header filters + Date sort + Limit)
+  // + Category dropdown NAVIGATES to category subpages
   // =========================================================
   function initRunsTable() {
     const table = document.getElementById("runs-table");
@@ -142,6 +144,19 @@
     const norm = (s) => (s || "").toString().trim().toLowerCase();
     const uniq = (arr) => Array.from(new Set(arr));
 
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) => {
+        switch (c) {
+          case "&": return "&amp;";
+          case "<": return "&lt;";
+          case ">": return "&gt;";
+          case '"': return "&quot;";
+          case "'": return "&#39;";
+          default: return c;
+        }
+      });
+    }
+
     function parseDateToNumber(s) {
       const v = (s || "").trim();
       if (!v) return NaN;
@@ -172,28 +187,15 @@
     }
 
     function buildOptions() {
-      const cats = [];
-      const catLabelById = new Map();
-
       const chIds = [];
       const chLabelById = new Map();
 
       const restrictionsRaw = [];
 
       rows.forEach((row) => {
-        const catId = norm(row.dataset.category);
         const chId = norm(row.dataset.challengeId);
-
         const chLabel = (row.dataset.challengeLabel || "").toString().trim();
         const resRaw = parseRestrictionsRaw(row);
-
-        if (catId) {
-          cats.push(catId);
-          if (!catLabelById.has(catId)) {
-            const cell = row.children[1];
-            if (cell) catLabelById.set(catId, cell.textContent.trim());
-          }
-        }
 
         if (chId) {
           chIds.push(chId);
@@ -214,7 +216,6 @@
       }
 
       return {
-        categories: toList(cats, catLabelById),
         challenges: toList(chIds, chLabelById),
         restrictions: toList(restrictionsRaw)
       };
@@ -222,7 +223,7 @@
 
     const OPTIONS = buildOptions();
 
-    const activeCats = new Set();
+    // Category is now NAVIGATION, not a filter set.
     const activeChallenges = new Set();
     const activeRestrictions = new Set();
 
@@ -237,17 +238,18 @@
 
       thMenu.hidden = true;
       thActiveCol = null;
+
+      // Restore default button label if we changed it for category nav.
+      if (thMenuClear) thMenuClear.textContent = "Clear";
     }
 
     function getSetForCol(col) {
-      if (col === "category") return activeCats;
       if (col === "challenge") return activeChallenges;
       if (col === "restrictions") return activeRestrictions;
       return null;
     }
 
     function getOptionsForCol(col) {
-      if (col === "category") return OPTIONS.categories;
       if (col === "challenge") return OPTIONS.challenges;
       if (col === "restrictions") return OPTIONS.restrictions;
       return [];
@@ -260,11 +262,9 @@
     }
 
     function updateTopButtonLabels() {
-      if (btnCat) {
-        btnCat.textContent = activeCats.size
-          ? `Category (${activeCats.size}) ▾`
-          : "Category ▾";
-      }
+      // Category button is navigation, keep label stable.
+      if (btnCat) btnCat.textContent = "Category ▾";
+
       if (btnCh) {
         btnCh.textContent = activeChallenges.size
           ? `Challenge (${activeChallenges.size}) ▾`
@@ -283,10 +283,6 @@
       activeFiltersWrap.innerHTML = "";
 
       const chips = [];
-
-      activeCats.forEach((id) => {
-        chips.push({ col: "category", id, label: getLabelFor("category", id) });
-      });
 
       activeChallenges.forEach((id) => {
         chips.push({ col: "challenge", id, label: getLabelFor("challenge", id) });
@@ -313,7 +309,7 @@
 
       chips.forEach((c) => {
         const chip = makeChip(
-          `${c.col === "category" ? "Category" : c.col === "challenge" ? "Challenge" : "Restrictions"}: ${c.label}`,
+          `${c.col === "challenge" ? "Challenge" : "Restrictions"}: ${c.label}`,
           () => {
             const set = getSetForCol(c.col);
             if (!set) return;
@@ -329,7 +325,6 @@
       clearAll.className = "btn";
       clearAll.textContent = "Clear All";
       clearAll.addEventListener("click", () => {
-        activeCats.clear();
         activeChallenges.clear();
         activeRestrictions.clear();
         render();
@@ -347,13 +342,11 @@
     function passesFilters(row) {
       const needle = norm(q && q.value);
 
-      const cat = norm(row.dataset.category);
       const ch = norm(row.dataset.challengeId);
 
       const resRaw = parseRestrictionsRaw(row);
       const resNorm = resRaw.map(norm);
 
-      if (activeCats.size && !activeCats.has(cat)) return false;
       if (activeChallenges.size && !activeChallenges.has(ch)) return false;
       if (!matchesAllRestrictions(resNorm)) return false;
 
@@ -522,118 +515,8 @@
       });
     }
 
-    // IMPORTANT FIX:
-    // The top filter buttons live ABOVE #runs-list, so scoping to #runs-list
-    // prevents them from getting click handlers.
-    // Scope to a parent that contains BOTH the toolbar AND the table/menu.
-    const runsRoot =
-      table.closest(".game-shell") ||
-      table.closest(".page-width") ||
-      document;
-
-    runsRoot.querySelectorAll("[data-filter-btn]").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const col = btn.getAttribute("data-filter-btn");
-
-        if (thMenu && !thMenu.hidden && thActiveCol === col) {
-          closeThMenu();
-          return;
-        }
-
-        openThMenuFor(col, btn);
-      });
-    });
-
-    if (thMenuQ) thMenuQ.addEventListener("input", renderThMenuList);
-
-    if (thMenuClear) {
-      thMenuClear.addEventListener("click", () => {
-        if (!thActiveCol) return;
-        const set = getSetForCol(thActiveCol);
-        if (!set) return;
-
-        set.clear();
-        render();
-        renderThMenuList();
-      });
-    }
-
-    if (thMenuClose) thMenuClose.addEventListener("click", closeThMenu);
-
-    document.addEventListener(
-      "pointerdown",
-      (e) => {
-        if (!thMenu || thMenu.hidden) return;
-        if (thMenu.contains(e.target)) return;
-
-        const isCaret =
-          e.target && e.target.closest && e.target.closest("[data-filter-btn]");
-        if (isCaret) return;
-
-        closeThMenu();
-      },
-      true
-    );
-
-    window.addEventListener("resize", () => {
-      if (thMenu && !thMenu.hidden) closeThMenu();
-    });
-
-    if (thSortAsc) {
-      thSortAsc.addEventListener("click", () => {
-        dateSortDir = "asc";
-        updateDateSortButtons();
-        render();
-      });
-    }
-
-    if (thSortDesc) {
-      thSortDesc.addEventListener("click", () => {
-        dateSortDir = "desc";
-        updateDateSortButtons();
-        render();
-      });
-    }
-
-    if (q) q.addEventListener("input", render);
-    if (limitEl) limitEl.addEventListener("change", render);
-
-    updateDateSortButtons();
-    updateTopButtonLabels();
-    render();
-  }
-
-  // =========================================================
-  // Game tabs navigation helper (Overview/Categories click on runs page)
-  // =========================================================
-  function initGameTabsNav() {
-    const root = document.getElementById("game-tabs");
-    if (!root) return;
-
-    const overview = root.querySelector('.tab[data-tab="overview"]');
-    const categories = root.querySelector('.tab[data-tab="categories"]');
-
-    if (overview) {
-      overview.addEventListener("click", () => {
-        const href = overview.getAttribute("data-href");
-        if (href) window.location.href = href;
-      });
-    }
-
-    if (categories) {
-      categories.addEventListener("click", () => {
-        const href = categories.getAttribute("data-href");
-        if (href) window.location.href = href;
-      });
-    }
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll(".list-paged").forEach(initPagedList);
-    initRunsTable();
-    initGameTabsNav();
-  });
-})();
+    // =========================================================
+    // Category NAV menu (uses data-category-slug for URLs)
+    // =========================================================
+    function getRunsBasePath() {
+      const path = window.loc
