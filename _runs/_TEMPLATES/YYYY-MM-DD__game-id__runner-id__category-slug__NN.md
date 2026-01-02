@@ -5,27 +5,40 @@
 
 layout: null
 
+# =========================================================
+# IDs (machine keys, scripts validate these first)
+# =========================================================
 game_id: GAME-ID
-
-runner: Runner Name
 runner_id: runner-id
-
-category: Category Name
 category_slug: category-slug
-
 challenge_id: challenge-id
 
+# =========================================================
+# User-submitted (core info)
+# =========================================================
+runner: Runner Name
+category: Category Name
+challenge: Challenge Name
+date_completed: YYYY-MM-DD
+video_link: https://example.com/VIDEO
+
+# =========================================================
+# User-submitted (optional)
+# =========================================================
 restrictions: []
 restriction_ids: []
 
-time: "HH:MM:SS"          # or "HH:MM:SS.MMM"
-timing_method: RTA        # RTA | IGT | LRT
-timing_method_secondary:  # optional: RTA | IGT | LRT
+# Timing (optional unless the run is time-based)
+timing_method_primary:            # RTA | IGT | LRT
+time_primary:                     # "HH:MM:SS" or "HH:MM:SS.MMM"
 
+timing_method_secondary:          # RTA | IGT | LRT
+time_secondary:                   # "HH:MM:SS" or "HH:MM:SS.MMM"
+
+# =========================================================
+# Moderator actions
+# =========================================================
+status: pending           # pending | approved | rejected
 verified: false
 verified_by:
-
-video_link:
-
-date_completed: YYYY-MM-DD
 ---
