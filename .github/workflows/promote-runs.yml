@@ -12,7 +12,6 @@ permissions:
 jobs:
   promote:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,18 +37,18 @@ jobs:
           fi
 
           BRANCH="promote-runs-$(date +%Y%m%d-%H%M%S)"
-          git checkout -b "$BRANCH"
 
+          git checkout -b "$BRANCH"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           git add -A
-          git commit -m "Promote approved/rejected queued runs"
+          git commit -m "Promote approved queued runs"
 
           git push origin "$BRANCH"
 
           gh pr create \
-            --title "Promote approved/rejected queued runs" \
-            --body "Automated promotion of moderator-reviewed runs from _queue_runs into _runs (approved) and _runs/rejected (rejected)." \
+            --title "Promote approved queued runs" \
+            --body "Automated promotion of moderator-reviewed runs from _queue_runs into _runs (approved) or _runs/rejected (rejected)." \
             --base main \
             --head "$BRANCH"
