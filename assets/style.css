@@ -207,6 +207,12 @@ a:hover {
   background: var(--surface);
 }
 
+/* Make form labels sit consistently above controls (Search matches Show) */
+.card label.muted {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
 /* ============================================================
    Buttons
    ============================================================ */
@@ -243,7 +249,6 @@ a:hover {
   width: 100%;
   max-width: 520px;
   padding: 0.6rem 0.75rem;
-  margin: var(--space-3) 0 var(--space-4) 0;
 
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
@@ -283,6 +288,7 @@ a:hover {
   margin: 0;
 }
 
+/* Only add left spacing when label + select are inline */
 .results-controls .select {
   margin-left: 0.4rem;
 }
@@ -298,6 +304,13 @@ a:hover {
   gap: 0.5rem;
   flex-wrap: wrap;
   margin: 0.25rem 0 0.75rem 0;
+}
+
+/* Center + soften the "Showing X of Y..." status */
+#status {
+  text-align: center;
+  color: var(--placeholder-dim);
+  font-size: 0.9rem;
 }
 
 /* ============================================================
@@ -333,6 +346,7 @@ a:hover {
   }
 }
 
+/* Search + Show (side-by-side) */
 .filters-row {
   display: grid;
   grid-template-columns: 1fr auto;
