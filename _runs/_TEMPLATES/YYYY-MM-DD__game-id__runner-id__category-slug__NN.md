@@ -4,6 +4,7 @@
 # Do not commit this file as a real run
 
 layout: null
+date_submitted: YYYY-MM-DD
 
 # =========================================================
 # IDs (machine keys, scripts validate these first)
