@@ -29,8 +29,16 @@ layout: default
      Runs filtered by category
      ========================================================= -->
 <div class="page-width">
-  {% assign all_runs = site.data.runs[page.game_id] | default: site.data.runs %}
-  {% assign runs = all_runs | where: "game_id", page.game_id | where: "category", page.category %}
+
+  <!-- Normalize site.data.runs into a list (works whether runs is a list or a map) -->
+  {% assign runs_raw = site.data.runs %}
+  {% assign runs_list = runs_raw %}
+
+  {% if runs_raw and runs_raw.first and runs_raw.first[0] %}
+    {% assign runs_list = runs_raw | map: "last" %}
+  {% endif %}
+
+  {% assign runs = runs_list | where: "game_id", page.game_id | where: "category", page.category | sort: "date_completed" | reverse %}
 
   {% if runs and runs.size > 0 %}
     <div class="table-wrap">
