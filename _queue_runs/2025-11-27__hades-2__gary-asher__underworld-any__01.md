@@ -1,6 +1,6 @@
 ---
 layout: null
-status: pending
+status: approved
 
 game_id: hades-2
 runner_id: gary-asher
