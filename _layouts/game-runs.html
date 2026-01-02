@@ -120,8 +120,12 @@ layout: default
                 {% assign challenge_label = meta.label %}
               {% endif %}
 
-              {% assign r_texts = "" | split: "" %}
+              {% assign runner_label = r.runner | default: r.runner_id | default: "—" | replace: "_", " " %}
 
+              {% assign cat_slug = r.category_slug | default: "" | downcase %}
+              {% assign cat_label = r.category | default: "—" %}
+
+              {% assign r_texts = "" | split: "" %}
               {% if r.restrictions %}
                 {% if r.restrictions.first %}
                   {% assign r_texts = r.restrictions %}
@@ -130,15 +134,23 @@ layout: default
                 {% endif %}
               {% endif %}
 
-              {% assign r_texts = r_texts | map: "strip" | uniq %}
+              {% assign r_clean = "" | split: "" %}
+              {% for rr in r_texts %}
+                {% assign t = rr | strip %}
+                {% if t != "" %}
+                  {% assign r_clean = r_clean | push: t %}
+                {% endif %}
+              {% endfor %}
+              {% assign r_texts = r_clean | uniq %}
               {% assign r_join_for_data = r_texts | join: "," %}
 
               {% assign video_url = r.video_link | default: r.video %}
 
               <tr
                 class="run-row"
-                data-runner="{{ r.runner_id | default: r.runner | default: '' | downcase | escape }}"
-                data-category="{{ r.category | default: '' | downcase | escape }}"
+                data-runner="{{ r.runner_id | default: runner_label | default: '' | downcase | escape }}"
+                data-category="{{ cat_label | default: '' | downcase | escape }}"
+                data-category-slug="{{ cat_slug | escape }}"
                 data-challenge-id="{{ r.challenge_id | default: '' | downcase | escape }}"
                 data-challenge-label="{{ challenge_label | default: '' | downcase | escape }}"
                 data-restrictions="{{ r_join_for_data | downcase | escape }}"
@@ -147,13 +159,13 @@ layout: default
               >
                 <td>
                   {% if r.runner_id %}
-                    <a href="{{ '/runners/' | relative_url }}{{ r.runner_id }}/">{{ r.runner | default: r.runner_id }}</a>
+                    <a href="{{ '/runners/' | relative_url }}{{ r.runner_id }}/">{{ runner_label }}</a>
                   {% else %}
-                    {{ r.runner | default: "—" }}
+                    {{ runner_label }}
                   {% endif %}
                 </td>
 
-                <td>{{ r.category | default: "—" }}</td>
+                <td>{{ cat_label }}</td>
 
                 <td>{{ challenge_label | default: "—" }}</td>
 
