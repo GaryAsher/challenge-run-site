@@ -75,6 +75,7 @@
         class="tab {% if include.active == 'overview' %}active{% endif %}"
         data-tab="overview"
         href="{{ game.url | relative_url }}"
+        data-href="{{ game.url | relative_url }}"
       >
         Overview
       </a>
@@ -83,6 +84,7 @@
         class="tab {% if include.active == 'categories' %}active{% endif %}"
         data-tab="categories"
         href="{{ game.url | relative_url }}#categories"
+        data-href="{{ game.url | relative_url }}#categories"
       >
         Categories
       </a>
@@ -91,6 +93,7 @@
         class="tab {% if include.active == 'runs' %}active{% endif %}"
         data-tab="runs"
         href="{{ game.url | relative_url }}game-runs/"
+        data-href="{{ game.url | relative_url }}game-runs/"
       >
         Runs
       </a>
