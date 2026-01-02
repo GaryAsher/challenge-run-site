@@ -156,6 +156,15 @@
       return Number.isFinite(v) ? v : 10;
     }
 
+    function parseRestrictionsRaw(row) {
+      // Expecting restrictions stored as display labels joined by "||"
+      // Example: data-restrictions="Hestia Only||No Hexes"
+      return (row.dataset.restrictions || "")
+        .split("||")
+        .map((s) => (s || "").toString().trim())
+        .filter(Boolean);
+    }
+
     function buildOptions() {
       const cats = [];
       const catLabelById = new Map();
@@ -163,22 +172,22 @@
       const chIds = [];
       const chLabelById = new Map();
 
-      const restrictions = [];
+      const restrictionsRaw = [];
 
       rows.forEach((row) => {
-        const cat = norm(row.dataset.category);
+        const catId = norm(row.dataset.category);
         const chId = norm(row.dataset.challengeId);
-        const chLabel = (row.dataset.challengeLabel || "").trim();
-        const res = (row.dataset.restrictions || "")
-          .split(",")
-          .map(norm)
-          .filter(Boolean);
 
-        if (cat) {
-          cats.push(cat);
-          if (!catLabelById.has(cat)) {
+        // IMPORTANT: do not lower-case the stored label
+        const chLabel = (row.dataset.challengeLabel || "").toString().trim();
+
+        const resRaw = parseRestrictionsRaw(row);
+
+        if (catId) {
+          cats.push(catId);
+          if (!catLabelById.has(catId)) {
             const cell = row.children[1];
-            if (cell) catLabelById.set(cat, cell.textContent.trim());
+            if (cell) catLabelById.set(catId, cell.textContent.trim());
           }
         }
 
@@ -187,19 +196,23 @@
           if (!chLabelById.has(chId)) chLabelById.set(chId, chLabel || chId);
         }
 
-        if (res.length) restrictions.push(...res);
+        if (resRaw.length) restrictionsRaw.push(...resRaw);
       });
 
-      function toList(ids, map) {
-        return uniq(ids.filter(Boolean))
-          .map((id) => ({ id, label: (map && map.get(id)) || id }))
+      function toList(values, map) {
+        return uniq(values.filter(Boolean))
+          .map((v) => {
+            const id = norm(v);
+            const label = (map && map.get(id)) || v;
+            return { id, label };
+          })
           .sort((a, b) => a.label.localeCompare(b.label));
       }
 
       return {
         categories: toList(cats, catLabelById),
         challenges: toList(chIds, chLabelById),
-        restrictions: toList(restrictions)
+        restrictions: toList(restrictionsRaw)
       };
     }
 
@@ -232,10 +245,10 @@
       return [];
     }
 
-    function matchesAllRestrictions(rowResList) {
+    function matchesAllRestrictions(rowResListNorm) {
       if (!activeRestrictions.size) return true;
       const need = Array.from(activeRestrictions);
-      return need.every((x) => rowResList.includes(x));
+      return need.every((x) => rowResListNorm.includes(x));
     }
 
     function passesFilters(row) {
@@ -243,18 +256,20 @@
 
       const cat = norm(row.dataset.category);
       const ch = norm(row.dataset.challengeId);
-      const res = (row.dataset.restrictions || "").split(",").map(norm).filter(Boolean);
+
+      const resRaw = parseRestrictionsRaw(row);
+      const resNorm = resRaw.map(norm);
 
       if (activeCats.size && !activeCats.has(cat)) return false;
       if (activeChallenges.size && !activeChallenges.has(ch)) return false;
-      if (!matchesAllRestrictions(res)) return false;
+      if (!matchesAllRestrictions(resNorm)) return false;
 
       if (needle) {
         const hay =
           norm(row.dataset.runner) + " " +
           norm(row.dataset.category) + " " +
           norm(row.dataset.challengeLabel) + " " +
-          norm(row.dataset.restrictions);
+          norm(resRaw.join(" "));
 
         if (!hay.includes(needle)) return false;
       }
@@ -409,15 +424,19 @@
 
     if (thMenuClose) thMenuClose.addEventListener("click", closeThMenu);
 
-    document.addEventListener("pointerdown", (e) => {
-      if (!thMenu || thMenu.hidden) return;
-      if (thMenu.contains(e.target)) return;
+    document.addEventListener(
+      "pointerdown",
+      (e) => {
+        if (!thMenu || thMenu.hidden) return;
+        if (thMenu.contains(e.target)) return;
 
-      const isCaret = e.target && e.target.closest && e.target.closest("[data-filter-btn]");
-      if (isCaret) return;
+        const isCaret = e.target && e.target.closest && e.target.closest("[data-filter-btn]");
+        if (isCaret) return;
 
-      closeThMenu();
-    }, true);
+        closeThMenu();
+      },
+      true
+    );
 
     window.addEventListener("resize", () => {
       if (thMenu && !thMenu.hidden) closeThMenu();
