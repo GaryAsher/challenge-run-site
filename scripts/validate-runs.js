@@ -1,193 +1,208 @@
 #!/usr/bin/env node
-/* =========================================================
-   validate-runs.js (no dependencies)
-   - Validates queued run files in _queue_runs/
-   - Enforces: URLs use category_slug, display uses category
-   - Hardened checks + helpful error output
-   ========================================================= */
+/*
+Validate queued run submissions in _queue_runs/.
+
+No external deps.
+Enforces:
+  - filename: YYYY-MM-DD__game-id__runner-id__category-slug__NN.md
+  - required keys exist
+  - category_slug is the routing key; category is display label
+  - timing fields are internally consistent
+*/
 
 const fs = require("fs");
 const path = require("path");
 
-const QUEUE_DIR = path.join(process.cwd(), "_queue_runs");
+const ROOT = process.cwd();
+const QUEUE_DIR = path.join(ROOT, "_queue_runs");
 
-const ALLOWED_STATUS = new Set(["pending", "approved", "rejected"]);
-const ALLOWED_TIMING = new Set(["RTA", "IGT", "LRT"]);
-
-// ---------- tiny YAML-ish front matter parser (subset) ----------
-function parseFrontMatter(md) {
-  const trimmed = md.replace(/^\uFEFF/, "");
-  if (!trimmed.startsWith("---")) {
-    return { data: {}, body: md, errors: ["Missing front matter (must start with ---)."] };
+// ---------- tiny front-matter parser (subset of YAML) ----------
+function stripQuotes(s) {
+  const v = String(s ?? "").trim();
+  if (
+    (v.startsWith('"') && v.endsWith('"')) ||
+    (v.startsWith("'") && v.endsWith("'"))
+  ) {
+    return v.slice(1, -1);
   }
+  return v;
+}
 
-  const parts = trimmed.split("\n");
-  // find second ---
-  let endIdx = -1;
-  for (let i = 1; i < parts.length; i++) {
-    if (parts[i].trim() === "---") {
-      endIdx = i;
+function parseScalar(raw) {
+  const v = stripQuotes(raw);
+  if (v === "") return "";
+  if (v === "true") return true;
+  if (v === "false") return false;
+  // keep numbers as strings; IDs like 01 matter
+  return v;
+}
+
+function parseFrontMatter(fileText) {
+  const lines = fileText.split(/\r?\n/);
+  if (lines[0] !== "---") return { data: {}, hasFrontMatter: false };
+
+  let end = -1;
+  for (let i = 1; i < lines.length; i++) {
+    if (lines[i] === "---") {
+      end = i;
       break;
     }
   }
-  if (endIdx === -1) {
-    return { data: {}, body: md, errors: ["Front matter not closed (missing ending ---)."] };
-  }
+  if (end === -1) return { data: {}, hasFrontMatter: false };
 
-  const fmLines = parts.slice(1, endIdx);
-  const body = parts.slice(endIdx + 1).join("\n");
-
+  const fm = lines.slice(1, end);
   const data = {};
-  const errors = [];
+  let i = 0;
 
-  function unquote(s) {
-    const v = String(s);
-    if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
-      return v.slice(1, -1);
-    }
-    return v;
-  }
+  while (i < fm.length) {
+    const line = fm[i];
 
-  for (let i = 0; i < fmLines.length; i++) {
-    const raw = fmLines[i];
-    const line = raw.replace(/\t/g, "  ");
-    const t = line.trim();
-
-    if (!t || t.startsWith("#")) continue;
-
-    // list item lines are only valid when we are in a list context (handled below)
-    if (t.startsWith("- ")) {
-      errors.push(`Unexpected list item without a key on line ${i + 1}: "${t}"`);
+    if (!line || /^\s*$/.test(line) || /^\s*#/.test(line)) {
+      i++;
       continue;
     }
 
     const m = /^([A-Za-z0-9_]+)\s*:\s*(.*)$/.exec(line);
     if (!m) {
-      errors.push(`Invalid front matter line ${i + 1}: "${t}"`);
+      i++;
       continue;
     }
 
     const key = m[1];
-    let rest = (m[2] ?? "").trim();
+    const rest = m[2] ?? "";
 
-    // empty value -> null
-    if (rest === "") {
-      // Check if this starts a YAML list:
-      // key:
-      //   - a
-      //   - b
-      const list = [];
+    // List block:
+    // key:
+    //   - a
+    //   - b
+    if (rest.trim() === "") {
+      const items = [];
       let j = i + 1;
-      while (j < fmLines.length) {
-        const nxtRaw = fmLines[j];
-        const nxt = nxtRaw.trim();
-        if (!nxt) {
+
+      while (j < fm.length) {
+        const ln = fm[j];
+        if (!ln || /^\s*$/.test(ln) || /^\s*#/.test(ln)) {
           j++;
           continue;
         }
-        // next key starts
-        if (/^[A-Za-z0-9_]+\s*:/.test(nxt)) break;
 
-        const li = /^\-\s+(.*)$/.exec(nxt);
-        if (!li) {
-          errors.push(`Invalid list item line ${j + 1}: "${nxt}"`);
+        const li = /^\s*-\s*(.*)$/.exec(ln);
+        if (li) {
+          const item = stripQuotes(li[1] ?? "").trim();
+          if (item !== "") items.push(item);
           j++;
           continue;
         }
-        list.push(unquote(li[1].trim()));
-        j++;
+
+        // next key
+        break;
       }
 
-      if (j > i + 1) {
-        data[key] = list;
-        i = j - 1;
-      } else {
-        data[key] = null;
-      }
+      // If no list items found, set empty string (acts like null-ish)
+      data[key] = items.length ? items : "";
+      i = j;
       continue;
     }
 
-    // inline list: key: [a, b]
-    if (rest.startsWith("[") && rest.endsWith("]")) {
-      const inner = rest.slice(1, -1).trim();
+    // Inline list: key: [a, b]
+    const trimmed = rest.trim();
+    if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+      const inner = trimmed.slice(1, -1).trim();
       if (!inner) {
         data[key] = [];
       } else {
         data[key] = inner
           .split(",")
-          .map((x) => unquote(x.trim()))
+          .map((x) => stripQuotes(x).trim())
           .filter(Boolean);
       }
+      i++;
       continue;
     }
 
-    // booleans
-    if (rest === "true" || rest === "false") {
-      data[key] = rest === "true";
-      continue;
-    }
-
-    // numbers (only if it is clearly numeric)
-    if (/^-?\d+(\.\d+)?$/.test(rest)) {
-      // keep as number, but it’s fine if you want string behavior later
-      data[key] = Number(rest);
-      continue;
-    }
-
-    data[key] = unquote(rest);
+    data[key] = parseScalar(rest.trim());
+    i++;
   }
 
-  return { data, body, errors };
+  return { data, hasFrontMatter: true };
 }
 
-// ---------- validators ----------
-function isNonEmptyString(v) {
-  return typeof v === "string" && v.trim() !== "";
+// ---------- validation helpers ----------
+const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_RE = /^\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?$/;
+const STATUS_SET = new Set(["pending", "approved", "rejected"]);
+const TIMING_SET = new Set(["RTA", "IGT", "LRT"]);
+
+function fail(fileRel, msg) {
+  throw new Error(`${fileRel}: ${msg}`);
 }
 
-function isSlug(v) {
-  if (!isNonEmptyString(v)) return false;
-  return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(v.trim());
+function existsDir(p) {
+  try {
+    return fs.statSync(p).isDirectory();
+  } catch {
+    return false;
+  }
 }
 
-function isDateYYYYMMDD(v) {
-  if (!isNonEmptyString(v)) return false;
-  return /^\d{4}-\d{2}-\d{2}$/.test(v.trim());
-}
-
-function isTimeHMS(v) {
-  if (!isNonEmptyString(v)) return false;
-  // "HH:MM:SS" or "HH:MM:SS.MMM"
-  return /^\d{2}:\d{2}:\d{2}(\.\d{1,3})?$/.test(v.trim());
-}
-
-function norm(v) {
-  return String(v ?? "").trim();
-}
-
-// ---------- main ----------
-function listMarkdownFiles(dir) {
-  if (!fs.existsSync(dir)) return [];
+function listQueueFiles() {
+  if (!existsDir(QUEUE_DIR)) return [];
   return fs
-    .readdirSync(dir)
-    .filter((f) => f.toLowerCase().endsWith(".md"))
-    .map((f) => path.join(dir, f));
+    .readdirSync(QUEUE_DIR)
+    .filter((f) => f.endsWith(".md"))
+    .filter((f) => f !== ".gitkeep")
+    .map((f) => path.join(QUEUE_DIR, f));
 }
 
-function fail(msg) {
-  console.error(msg);
-  process.exitCode = 1;
+function parseFilename(fileRel) {
+  const base = path.basename(fileRel);
+  const m =
+    /^(\d{4}-\d{2}-\d{2})__([a-z0-9-]+)__([a-z0-9-]+)__([a-z0-9-]+)__([0-9]{2,3})\.md$/.exec(
+      base
+    );
+
+  if (!m) return null;
+
+  return {
+    dateSubmitted: m[1],
+    game_id: m[2],
+    runner_id: m[3],
+    category_slug: m[4],
+    nn: m[5],
+  };
 }
 
-function validateFile(fp) {
-  const raw = fs.readFileSync(fp, "utf8");
-  const { data, errors: fmErrors } = parseFrontMatter(raw);
+function asArray(v) {
+  if (Array.isArray(v)) return v;
+  if (typeof v === "string" && v.trim() === "") return [];
+  if (typeof v === "string") {
+    // accept comma-separated fallback
+    return v
+      .split(",")
+      .map((x) => x.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
 
-  const errs = [...fmErrors];
+function validateOne(filePath) {
+  const fileRel = path.relative(ROOT, filePath).replace(/\\/g, "/");
+  const raw = fs.readFileSync(filePath, "utf8");
+  const { data, hasFrontMatter } = parseFrontMatter(raw);
 
-  // Required keys for all queued files
+  if (!hasFrontMatter) fail(fileRel, "Missing YAML front matter (--- ... ---).");
+
+  const fn = parseFilename(fileRel);
+  if (!fn) {
+    fail(
+      fileRel,
+      "Bad filename. Expected: YYYY-MM-DD__game-id__runner-id__category-slug__NN.md"
+    );
+  }
+
+  // Required routing + display fields
   const required = [
-    "status",
     "game_id",
     "runner_id",
     "category_slug",
@@ -195,91 +210,111 @@ function validateFile(fp) {
     "runner",
     "category",
     "date_completed",
-    "video_link"
+    "status",
   ];
 
-  required.forEach((k) => {
-    if (!isNonEmptyString(data[k])) errs.push(`Missing or empty required field: ${k}`);
-  });
-
-  // status
-  const status = norm(data.status).toLowerCase();
-  if (status && !ALLOWED_STATUS.has(status)) {
-    errs.push(`Invalid status "${data.status}" (must be pending | approved | rejected)`);
-  }
-
-  // slug rules
-  if (data.category_slug && !isSlug(data.category_slug)) {
-    errs.push(`category_slug must be kebab-case (example: underworld-any). Got: "${data.category_slug}"`);
-  }
-
-  // date format
-  if (data.date_completed && !isDateYYYYMMDD(data.date_completed)) {
-    errs.push(`date_completed must be YYYY-MM-DD. Got: "${data.date_completed}"`);
-  }
-
-  // timing checks (optional)
-  const tm1 = norm(data.timing_method_primary);
-  const t1 = norm(data.time_primary);
-  const tm2 = norm(data.timing_method_secondary);
-  const t2 = norm(data.time_secondary);
-
-  if (t1 && !isTimeHMS(t1)) errs.push(`time_primary must be "HH:MM:SS" or "HH:MM:SS.MMM". Got: "${t1}"`);
-  if (t2 && !isTimeHMS(t2)) errs.push(`time_secondary must be "HH:MM:SS" or "HH:MM:SS.MMM". Got: "${t2}"`);
-
-  if (t1 && !tm1) errs.push(`time_primary is set but timing_method_primary is empty.`);
-  if (tm1 && !ALLOWED_TIMING.has(tm1)) errs.push(`timing_method_primary must be RTA | IGT | LRT. Got: "${tm1}"`);
-
-  if ((t2 && !tm2) || (tm2 && !t2)) {
-    errs.push(`Secondary timing must include BOTH time_secondary and timing_method_secondary.`);
-  }
-  if (tm2 && !ALLOWED_TIMING.has(tm2)) errs.push(`timing_method_secondary must be RTA | IGT | LRT. Got: "${tm2}"`);
-
-  // restrictions must be list if present
-  if (data.restrictions != null && !Array.isArray(data.restrictions)) {
-    errs.push(`restrictions must be a YAML list (e.g., restrictions: ["A", "B"] or dash-lines).`);
-  }
-  if (data.restriction_ids != null && !Array.isArray(data.restriction_ids)) {
-    errs.push(`restriction_ids must be a YAML list.`);
-  }
-
-  // If approved/rejected, strongly recommend audit fields
-  if (status === "approved" || status === "rejected") {
-    if (!isNonEmptyString(data.verified_by)) {
-      errs.push(`When status is ${status}, verified_by should be set (audit trail).`);
+  for (const k of required) {
+    const v = data[k];
+    if (v === undefined || v === null || String(v).trim() === "") {
+      fail(fileRel, `Missing required field: ${k}`);
     }
   }
 
-  return errs;
+  // Filename must match content IDs
+  if (String(data.game_id).trim() !== fn.game_id)
+    fail(fileRel, `game_id mismatch (filename=${fn.game_id}, frontmatter=${data.game_id})`);
+  if (String(data.runner_id).trim() !== fn.runner_id)
+    fail(fileRel, `runner_id mismatch (filename=${fn.runner_id}, frontmatter=${data.runner_id})`);
+  if (String(data.category_slug).trim() !== fn.category_slug)
+    fail(
+      fileRel,
+      `category_slug mismatch (filename=${fn.category_slug}, frontmatter=${data.category_slug})`
+    );
+
+  // Enforce slugs
+  if (!SLUG_RE.test(String(data.game_id)))
+    fail(fileRel, `game_id must be a slug (lowercase, hyphen). Got: ${data.game_id}`);
+  if (!SLUG_RE.test(String(data.runner_id)))
+    fail(fileRel, `runner_id must be a slug (lowercase, hyphen). Got: ${data.runner_id}`);
+  if (!SLUG_RE.test(String(data.category_slug)))
+    fail(fileRel, `category_slug must be a slug (lowercase, hyphen). Got: ${data.category_slug}`);
+  if (!SLUG_RE.test(String(data.challenge_id)))
+    fail(fileRel, `challenge_id must be a slug (lowercase, hyphen). Got: ${data.challenge_id}`);
+
+  // Status
+  const st = String(data.status).trim().toLowerCase();
+  if (!STATUS_SET.has(st))
+    fail(fileRel, `status must be one of: pending, approved, rejected. Got: ${data.status}`);
+
+  // Dates
+  if (!DATE_RE.test(String(data.date_completed).trim()))
+    fail(fileRel, `date_completed must be YYYY-MM-DD. Got: ${data.date_completed}`);
+
+  if (!DATE_RE.test(String(fn.dateSubmitted)))
+    fail(fileRel, `filename date must be YYYY-MM-DD. Got: ${fn.dateSubmitted}`);
+
+  // Approved expectations
+  if (st === "approved") {
+    if (data.verified !== true) fail(fileRel, "approved runs must have verified: true");
+    if (!data.verified_by || String(data.verified_by).trim() === "")
+      fail(fileRel, "approved runs must have verified_by filled in");
+  }
+
+  // Timing checks (optional)
+  const t1 = String(data.time_primary ?? "").trim();
+  const m1 = String(data.timing_method_primary ?? "").trim();
+  const t2 = String(data.time_secondary ?? "").trim();
+  const m2 = String(data.timing_method_secondary ?? "").trim();
+
+  if (t1 && !TIME_RE.test(t1)) fail(fileRel, `time_primary invalid. Use HH:MM:SS or HH:MM:SS.MMM. Got: ${t1}`);
+  if (t2 && !TIME_RE.test(t2)) fail(fileRel, `time_secondary invalid. Use HH:MM:SS or HH:MM:SS.MMM. Got: ${t2}`);
+
+  if (m1 && !TIMING_SET.has(m1)) fail(fileRel, `timing_method_primary must be RTA|IGT|LRT. Got: ${m1}`);
+  if (m2 && !TIMING_SET.has(m2)) fail(fileRel, `timing_method_secondary must be RTA|IGT|LRT. Got: ${m2}`);
+
+  if (t1 && !m1) fail(fileRel, "time_primary provided but timing_method_primary is empty");
+  if (m1 && !t1) fail(fileRel, "timing_method_primary provided but time_primary is empty");
+  if (t2 && !m2) fail(fileRel, "time_secondary provided but timing_method_secondary is empty");
+  if (m2 && !t2) fail(fileRel, "timing_method_secondary provided but time_secondary is empty");
+
+  // Arrays: normalize + ensure types
+  const restrictions = asArray(data.restrictions);
+  const restriction_ids = asArray(data.restriction_ids);
+
+  if (restriction_ids.some((x) => !SLUG_RE.test(String(x)))) {
+    fail(fileRel, `restriction_ids must be slugs. Got: ${JSON.stringify(restriction_ids)}`);
+  }
+
+  // If one is present, the other should typically be same length (not required, but warn-ish via fail? keep soft)
+  if (restriction_ids.length && restrictions.length && restriction_ids.length !== restrictions.length) {
+    // Keep as warning in logs, not hard fail
+    console.log(
+      `WARN ${fileRel}: restrictions and restriction_ids lengths differ (${restrictions.length} vs ${restriction_ids.length})`
+    );
+  }
+
+  return true;
 }
 
 function main() {
-  const files = listMarkdownFiles(QUEUE_DIR);
-
+  const files = listQueueFiles();
   if (!files.length) {
-    console.log("No queued run files found in _queue_runs/. Nothing to validate.");
+    console.log("No queued run files found in _queue_runs/.");
     return;
   }
 
-  let anyErrors = false;
-
-  for (const fp of files) {
-    const errs = validateFile(fp);
-    if (errs.length) {
-      anyErrors = true;
-      console.error(`\n❌ Validation failed: ${path.relative(process.cwd(), fp)}`);
-      errs.forEach((e) => console.error("  - " + e));
-    } else {
-      console.log(`✅ OK: ${path.relative(process.cwd(), fp)}`);
-    }
+  let ok = 0;
+  for (const f of files) {
+    validateOne(f);
+    ok++;
   }
 
-  if (anyErrors) {
-    console.error("\nValidation failed. Fix the errors above and re-run.");
-    process.exit(1);
-  }
-
-  console.log("\nAll queued runs validated successfully.");
+  console.log(`Validated ${ok} queued run file(s).`);
 }
 
-main();
+try {
+  main();
+} catch (err) {
+  console.error(String(err && err.message ? err.message : err));
+  process.exit(1);
+}
