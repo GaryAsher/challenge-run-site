@@ -24,18 +24,24 @@ layout: default
       <div class="card">
         <h2>Categories</h2>
 
-        {% if page.categories and page.categories.size > 0 %}
-          <ul class="list">
-            {% for c in page.categories %}
-              <li>
-                <a href="{{ page.url | relative_url }}categories/{{ c | slugify }}/">
-                  {{ c }}
-                </a>
-              </li>
-            {% endfor %}
-          </ul>
+        {% assign runs_for_game = site.runs | where: "game_id", page.game_id %}
+        {% assign cats_raw = runs_for_game | map: "category" | uniq | sort %}
+
+        {% if cats_raw and cats_raw.size > 0 %}
+          <div class="tag-picker" style="margin-top: 0.75rem;">
+            <div class="tag-picked">
+              {% for cat in cats_raw %}
+                {% if cat and cat != "" %}
+                  {% assign slug = cat | slugify %}
+                  <a class="tag-chip" href="{{ page.url | relative_url }}categories/{{ slug }}/">
+                    {{ cat }}
+                  </a>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
         {% else %}
-          <p class="muted">No categories listed.</p>
+          <p class="muted">No categories found yet.</p>
         {% endif %}
       </div>
     </section>
@@ -44,7 +50,7 @@ layout: default
 </div>
 
 <!-- =========================================================
-     Hash-based panel switcher
+     Hash-based panel switcher + tab active sync
      - default: Overview
      - #categories: Categories
      ========================================================= -->
@@ -53,8 +59,15 @@ layout: default
   const panels = Array.from(document.querySelectorAll(".tab-panel[data-panel]"));
   if (!panels.length) return;
 
+  const tabsRoot = document.getElementById("game-tabs");
+  const tabs = tabsRoot ? Array.from(tabsRoot.querySelectorAll(".tab[data-tab]")) : [];
+
   function setActive(name) {
     panels.forEach(p => p.classList.toggle("active", p.dataset.panel === name));
+
+    if (tabs.length) {
+      tabs.forEach(t => t.classList.toggle("active", (t.dataset.tab || "") === name));
+    }
   }
 
   function syncFromHash() {
