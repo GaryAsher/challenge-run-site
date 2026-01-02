@@ -19,8 +19,8 @@ restriction_ids:
 
 time_primary: "00:27:41"
 timing_method_primary: IGT
-time_secondary:
-timing_method_secondary: 
+time_secondary: null
+timing_method_secondary: null
 
 verified: true
 verified_by: Self
