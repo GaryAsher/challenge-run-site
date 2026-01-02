@@ -132,6 +132,22 @@
     const thSortAsc = document.getElementById("th-sort-asc");
     const thSortDesc = document.getElementById("th-sort-desc");
 
+    // Defensive reset: prevent restored focus from showing a stray caret
+    if (thMenu) thMenu.hidden = true;
+    
+    if (thMenuQ) {
+      thMenuQ.value = "";
+      thMenuQ.blur();
+    }
+    
+    window.addEventListener("pageshow", () => {
+      if (thMenu) thMenu.hidden = true;
+      if (thMenuQ) {
+        thMenuQ.value = "";
+        thMenuQ.blur();
+      }
+    });
+
     rows.forEach((r, i) => (r.dataset._i = String(i)));
 
     const norm = (s) => (s || "").toString().trim().toLowerCase();
