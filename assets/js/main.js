@@ -590,7 +590,7 @@
 
         b.addEventListener("click", () => {
           const base = getRunsBasePath();
-          window.location.href = `${base}categories/${encodeURIComponent(it.slug)}/`;
+          window.location.href = `${base}?category=${encodeURIComponent(it.slug)}`;
         });
 
         thMenuList.appendChild(b);
