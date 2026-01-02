@@ -30,7 +30,7 @@ layout: default
       {% endif %}
     {% endfor %}
 
-    {% assign runs = cleaned | where: "game_id", page.game_id | sort: "date_completed" | reverse %}
+    {% assign runs = cleaned | where: "game_id", page.game_id %}
 
     {% if runs and runs.size > 0 %}
 
