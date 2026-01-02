@@ -26,13 +26,13 @@ layout: default
     {% if runs and runs.size > 0 %}
 
       <!-- =========================================================
-           Filter controls (Search + Limit only)
+           Filter controls (Search + Category/Challenge/Restrictions + Limit)
            ========================================================= -->
       <div class="card" style="margin: 0 0 1rem 0;">
-           
-        <div class="filters-row">
+
+        <div class="runs-filters">
           <!-- Search -->
-          <div>
+          <div class="runs-filter">
             <label class="muted" for="q">Search</label>
             <input
               id="q"
@@ -45,10 +45,34 @@ layout: default
             >
           </div>
 
-          <!-- Limit -->
-          <div>
+          <!-- Category -->
+          <div class="runs-filter">
+            <label class="muted" for="cat">Category</label>
+            <select id="cat" class="select">
+              <option value="">All</option>
+            </select>
+          </div>
+
+          <!-- Challenge -->
+          <div class="runs-filter">
+            <label class="muted" for="ch">Challenge</label>
+            <select id="ch" class="select">
+              <option value="">All</option>
+            </select>
+          </div>
+
+          <!-- Restrictions -->
+          <div class="runs-filter">
+            <label class="muted" for="res">Restrictions</label>
+            <select id="res" class="select">
+              <option value="">Any</option>
+            </select>
+          </div>
+
+          <!-- Show -->
+          <div class="runs-filter runs-filter--show">
             <label class="muted" for="limit">Show</label>
-            <select id="limit" class="select" style="width: 100%; margin-left: 0;">
+            <select id="limit" class="select">
               <option value="10" selected>10</option>
               <option value="25">25</option>
               <option value="50">50</option>
@@ -57,9 +81,9 @@ layout: default
               <option value="0">All</option>
             </select>
           </div>
-
-          <p class="muted" id="status" style="margin: 0;"></p>
         </div>
+
+        <p class="muted" id="status" style="margin: 0.5rem 0 0 0;"></p>
       </div>
 
       <!-- =========================================================
