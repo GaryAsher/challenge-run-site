@@ -519,4 +519,252 @@
     // Category NAV menu (uses data-category-slug for URLs)
     // =========================================================
     function getRunsBasePath() {
-      const path = window.loc
+      const path = window.location.pathname;
+      const idx = path.indexOf("/game-runs/");
+      if (idx === -1) return "/game-runs/";
+      return path.slice(0, idx + "/game-runs/".length);
+    }
+
+    function buildCategoryNavItems() {
+      const map = new Map(); // slug -> label
+
+      rows.forEach((row) => {
+        const slug = (row.dataset.categorySlug || "").trim();
+        if (!slug) return;
+
+        const label = (row.dataset.category || "").trim();
+        if (!map.has(slug)) map.set(slug, label || slug);
+      });
+
+      return Array.from(map.entries())
+        .map(([slug, label]) => ({ slug, label }))
+        .sort((a, b) => a.label.localeCompare(b.label));
+    }
+
+    function renderCategoryNavList(items) {
+      if (!thMenuList || !thMenuQ) return;
+
+      const qv = norm(thMenuQ.value);
+      thMenuList.innerHTML = "";
+
+      const filtered = items.filter((it) => {
+        if (!qv) return true;
+        return norm(it.label).includes(qv) || norm(it.slug).includes(qv);
+      });
+
+      if (!filtered.length) {
+        const empty = document.createElement("div");
+        empty.className = "th-menu__empty muted";
+        empty.textContent = "No matches.";
+        thMenuList.appendChild(empty);
+        return;
+      }
+
+      filtered.slice(0, 250).forEach((it) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "th-menu__item";
+        b.style.width = "100%";
+        b.style.border = "0";
+        b.style.background = "transparent";
+        b.style.textAlign = "left";
+
+        b.innerHTML = `<span>${escapeHtml(it.label)}</span>`;
+
+        b.addEventListener("click", () => {
+          const base = getRunsBasePath();
+          window.location.href = `${base}categories/${encodeURIComponent(it.slug)}/`;
+        });
+
+        thMenuList.appendChild(b);
+      });
+    }
+
+    function openCategoryNavMenu(anchorEl) {
+      if (!thMenu) return;
+
+      thActiveCol = "category-nav";
+      thMenu.hidden = false;
+
+      // Clear button becomes "All Runs" navigation.
+      if (thMenuClear) thMenuClear.textContent = "All Runs";
+
+      const r = anchorEl.getBoundingClientRect();
+      const approxMenuW = 320;
+
+      const left = Math.min(
+        window.innerWidth - approxMenuW - 12,
+        Math.max(12, r.left)
+      );
+
+      thMenu.style.left = left + "px";
+      thMenu.style.top = r.bottom + 8 + "px";
+
+      if (thMenuQ) thMenuQ.value = "";
+
+      const items = buildCategoryNavItems();
+      renderCategoryNavList(items);
+
+      requestAnimationFrame(() => {
+        if (!thMenuQ || thMenu.hidden) return;
+
+        const menuW = thMenu.offsetWidth || approxMenuW;
+        const menuH = thMenu.offsetHeight || 300;
+
+        const clampedLeft = Math.min(
+          window.innerWidth - menuW - 12,
+          Math.max(12, r.left)
+        );
+
+        const clampedTop = Math.min(
+          window.innerHeight - menuH - 12,
+          r.bottom + 8
+        );
+
+        thMenu.style.left = clampedLeft + "px";
+        thMenu.style.top = clampedTop + "px";
+
+        thMenuQ.focus();
+      });
+    }
+
+    // IMPORTANT FIX (kept):
+    // Scope to a parent that contains BOTH the toolbar AND the table/menu.
+    const runsRoot =
+      table.closest(".game-shell") ||
+      table.closest(".page-width") ||
+      document;
+
+    runsRoot.querySelectorAll("[data-filter-btn]").forEach((btn) => {
+      const col = btn.getAttribute("data-filter-btn");
+
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Category becomes NAVIGATION
+        if (col === "category") {
+          if (thMenu && !thMenu.hidden && thActiveCol === "category-nav") {
+            closeThMenu();
+            return;
+          }
+          openCategoryNavMenu(btn);
+          return;
+        }
+
+        // Other columns remain as checkbox filters
+        if (thMenu && !thMenu.hidden && thActiveCol === col) {
+          closeThMenu();
+          return;
+        }
+
+        openThMenuFor(col, btn);
+      });
+    });
+
+    // Search within the open menu
+    if (thMenuQ) {
+      thMenuQ.addEventListener("input", () => {
+        if (thActiveCol === "category-nav") {
+          renderCategoryNavList(buildCategoryNavItems());
+          return;
+        }
+        renderThMenuList();
+      });
+    }
+
+    if (thMenuClear) {
+      thMenuClear.addEventListener("click", () => {
+        // In category nav mode, "All Runs" navigation
+        if (thActiveCol === "category-nav") {
+          window.location.href = getRunsBasePath();
+          return;
+        }
+
+        // Normal filter clearing
+        if (!thActiveCol) return;
+        const set = getSetForCol(thActiveCol);
+        if (!set) return;
+
+        set.clear();
+        render();
+        renderThMenuList();
+      });
+    }
+
+    if (thMenuClose) thMenuClose.addEventListener("click", closeThMenu);
+
+    document.addEventListener(
+      "pointerdown",
+      (e) => {
+        if (!thMenu || thMenu.hidden) return;
+        if (thMenu.contains(e.target)) return;
+
+        const isCaret =
+          e.target && e.target.closest && e.target.closest("[data-filter-btn]");
+        if (isCaret) return;
+
+        closeThMenu();
+      },
+      true
+    );
+
+    window.addEventListener("resize", () => {
+      if (thMenu && !thMenu.hidden) closeThMenu();
+    });
+
+    if (thSortAsc) {
+      thSortAsc.addEventListener("click", () => {
+        dateSortDir = "asc";
+        updateDateSortButtons();
+        render();
+      });
+    }
+
+    if (thSortDesc) {
+      thSortDesc.addEventListener("click", () => {
+        dateSortDir = "desc";
+        updateDateSortButtons();
+        render();
+      });
+    }
+
+    if (q) q.addEventListener("input", render);
+    if (limitEl) limitEl.addEventListener("change", render);
+
+    updateDateSortButtons();
+    updateTopButtonLabels();
+    render();
+  }
+
+  // =========================================================
+  // Game tabs navigation helper (Overview/Categories click on runs page)
+  // =========================================================
+  function initGameTabsNav() {
+    const root = document.getElementById("game-tabs");
+    if (!root) return;
+
+    const overview = root.querySelector('.tab[data-tab="overview"]');
+    const categories = root.querySelector('.tab[data-tab="categories"]');
+
+    if (overview) {
+      overview.addEventListener("click", () => {
+        const href = overview.getAttribute("data-href");
+        if (href) window.location.href = href;
+      });
+    }
+
+    if (categories) {
+      categories.addEventListener("click", () => {
+        const href = categories.getAttribute("data-href");
+        if (href) window.location.href = href;
+      });
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".list-paged").forEach(initPagedList);
+    initRunsTable();
+    initGameTabsNav();
+  });
+})();
