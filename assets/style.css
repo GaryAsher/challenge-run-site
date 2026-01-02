@@ -1053,10 +1053,11 @@ a:hover {
   white-space: nowrap;
 }
 
-/* Leave room on the right for the caret */
 .th-filter > span {
-  display: inline-block;
-  padding-right: 1.5rem;
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding-right: 1.5rem; /* room for the caret on the right */
 }
 
 /* Caret aligned to the right edge, centered vertically */
