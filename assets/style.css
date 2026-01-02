@@ -309,11 +309,14 @@ a:hover {
   margin: 0.25rem 0 0.75rem 0;
 }
 
-/* Center + soften the "Showing X of Y..." status */
-#status {
+/* Result / submission status text */
+#status,
+[data-status] {
+  display: block;
   text-align: center;
   color: var(--placeholder-dim);
   font-size: 0.9rem;
+  margin-top: 0.5rem;
 }
 
 /* ============================================================
