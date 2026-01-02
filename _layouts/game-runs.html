@@ -105,7 +105,13 @@ layout: default
           <tbody id="runs-body">
             {% for r in runs %}
               {% assign meta = site.data.challenges[r.challenge_id] %}
-              {% assign challenge_label = meta.label | default: r.challenge_id %}
+               
+              {% if meta %}
+                 {% assign challenge_label = meta.label | default: r.challenge_id %}
+              {% else %}
+                 {%- assign meta2 = site.data.challenges | where: "id", r.challenge_id | first -%}
+                 {%- assign challenge_label = meta2.label | default: r.challenge_id -%}
+              {% endif %}
 
               {% assign r_texts = r.restrictions | default: empty %}
               {% assign r_join_for_data = "" %}
