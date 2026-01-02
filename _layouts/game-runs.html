@@ -21,34 +21,9 @@ layout: default
   <div class="game-shell">
 
     <!-- =========================================================
-         Collect runs from _data/runs/*.yml (folder) OR _data/runs.yml (single file)
-         and flatten into a single list of run objects
+         Runs source (Collection): _runs/*.md
          ========================================================= -->
-    {% assign runs_raw = site.data.runs %}
-    {% assign runs_flat = "" | split: "" %}
-
-    {% if runs_raw and runs_raw.first and runs_raw.first[0] %}
-      <!-- runs_raw is a HASH (folder of files): { filename => [runs...] } -->
-      {% for pair in runs_raw %}
-        {% assign bucket = pair[1] %}
-        {% if bucket %}
-          {% for r in bucket %}
-            {% if r %}
-              {% assign runs_flat = runs_flat | push: r %}
-            {% endif %}
-          {% endfor %}
-        {% endif %}
-      {% endfor %}
-    {% else %}
-      <!-- runs_raw is already a LIST -->
-      {% for r in runs_raw %}
-        {% if r %}
-          {% assign runs_flat = runs_flat | push: r %}
-        {% endif %}
-      {% endfor %}
-    {% endif %}
-
-    {% assign runs = runs_flat | where: "game_id", page.game_id | sort: "date_completed" | reverse %}
+    {% assign runs = site.runs | where: "game_id", page.game_id | sort: "date_completed" | reverse %}
 
     {% if runs and runs.size > 0 %}
 
