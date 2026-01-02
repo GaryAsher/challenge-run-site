@@ -6,234 +6,186 @@ layout: default
 {% include game-header-tabs.html game=game active="runs" %}
 
 <!-- =========================================================
-     Game hero (match _layouts/game.html)
-     ========================================================= -->
-{% if game and game.cover %}
-  <div class="page-width">
-    <section
-      class="game-hero"
-      style="
-        background-image: url('{{ game.cover | relative_url }}');
-        background-position: {{ game.cover_position | default: 'center' }};
-      "
-    >
-      <div class="game-hero__overlay">
-        <div class="game-hero__content">
-          <h1>{{ game.name }}</h1>
-
-          {% if game.status %}
-            <p class="muted">{{ game.status }}</p>
-          {% endif %}
-
-          {% if game.tags and game.tags.size > 0 %}
-            <div class="game-tags">
-              {% for tag in game.tags %}
-                {% assign meta = site.data.tags[tag] %}
-                <span class="tag">{{ meta.label | default: tag }}</span>
-              {% endfor %}
-            </div>
-          {% endif %}
-        </div>
-      </div>
-    </section>
-  </div>
-{% else %}
-  <div class="page-width">
-    <h1>{{ game.name | default: "Runs" }}</h1>
-  </div>
-{% endif %}
-
-<!-- =========================================================
-     Game tabs (match style; Runs active)
-     ========================================================= -->
-<div class="page-width">
-  <div class="game-shell">
-    <nav class="runner-tabs game-tabs" id="game-tabs">
-      <a class="tab" href="{{ game.url | relative_url }}#overview">Overview</a>
-      <a class="tab" href="{{ game.url | relative_url }}#categories">Categories</a>
-      <a class="tab active" href="{{ page.url | relative_url }}">Runs</a>
-    </nav>
-  </div>
-</div>
-
-<!-- =========================================================
      Page intro
      ========================================================= -->
 <div class="page-width">
-  <p class="muted">All recorded runs for this game.</p>
+  <div class="game-shell">
+    <p class="muted">All recorded runs for this game.</p>
+  </div>
 </div>
 
 <!-- =========================================================
      Runs + Filters
      ========================================================= -->
 <div class="page-width">
+  <div class="game-shell">
 
-  {% assign runs = site.data.runs | where: "game_id", page.game_id | sort: "date_completed" | reverse %}
+    {% assign runs = site.data.runs | where: "game_id", page.game_id | sort: "date_completed" | reverse %}
 
-  {% if runs and runs.size > 0 %}
+    {% if runs and runs.size > 0 %}
 
-    <!-- =========================================================
-         Filter controls (Search + Limit only)
-         ========================================================= -->
-    <div class="card" style="margin: 0 0 1rem 0;">
-      <div style="display: grid; gap: 0.75rem; grid-template-columns: 1fr;">
+      <!-- =========================================================
+           Filter controls (Search + Limit only)
+           ========================================================= -->
+      <div class="card" style="margin: 0 0 1rem 0;">
+        <div style="display: grid; gap: 0.75rem; grid-template-columns: 1fr;">
 
-        <!-- Search -->
-        <div>
-          <label class="muted" for="q">Search</label>
-          <input
-            id="q"
-            class="filter"
-            type="text"
-            placeholder="Search runner, category, challenge, restrictions..."
-            autocomplete="off"
-            inputmode="search"
-            enterkeyhint="search"
-          >
-        </div>
-
-        <!-- Limit -->
-        <div>
-          <label class="muted" for="limit">Show</label>
-          <select id="limit" class="select" style="width: 100%; margin-left: 0;">
-            <option value="10" selected>10</option>
-            <option value="25">25</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-            <option value="250">250</option>
-            <option value="0">All</option>
-          </select>
-        </div>
-
-        <p class="muted" id="status" style="margin: 0;"></p>
-      </div>
-    </div>
-
-    <!-- =========================================================
-         Runs table (Header filter carets + Date sort)
-         ========================================================= -->
-    <div class="table-wrap" id="runs-list">
-      <table class="runs-table" id="runs-table">
-        <thead>
-          <tr>
-            <th>Runner</th>
-
-            <th class="th-filter">
-              <span>Category</span>
-              <button class="th-caret" type="button" aria-label="Filter Category" data-filter-btn="category">▾</button>
-            </th>
-
-            <th class="th-filter">
-              <span>Challenge</span>
-              <button class="th-caret" type="button" aria-label="Filter Challenge" data-filter-btn="challenge">▾</button>
-            </th>
-
-            <th class="th-filter">
-              <span>Restrictions</span>
-              <button class="th-caret" type="button" aria-label="Filter Restrictions" data-filter-btn="restrictions">▾</button>
-            </th>
-
-            <th>Time</th>
-
-            <th class="th-filter th-date">
-              <div class="th-title">
-                <span>Date</span>
-              </div>
-
-              <div class="th-date-sort" aria-label="Sort Date">
-                <button class="th-sort" id="th-sort-asc" type="button" title="Sort oldest to newest">↑</button>
-                <button class="th-sort" id="th-sort-desc" type="button" title="Sort newest to oldest">↓</button>
-              </div>
-            </th>
-
-            <th>Video</th>
-          </tr>
-        </thead>
-
-        <tbody id="runs-body">
-          {% for r in runs %}
-            {% assign meta = site.data.challenges[r.challenge_id] %}
-            {% assign challenge_label = meta.label | default: r.challenge_id %}
-
-            {% assign r_texts = r.restrictions | default: empty %}
-            {% assign r_join_for_data = "" %}
-            {% if r_texts and r_texts.size > 0 %}
-              {% assign r_join_for_data = r_texts | join: "," %}
-            {% endif %}
-
-            <tr
-              class="run-row"
-              data-runner="{{ r.runner_id | default: r.runner | default: '' | downcase | escape }}"
-              data-category="{{ r.category | default: '' | downcase | escape }}"
-              data-challenge-id="{{ r.challenge_id | default: '' | downcase | escape }}"
-              data-challenge-label="{{ challenge_label | default: '' | downcase | escape }}"
-              data-restrictions="{{ r_join_for_data | downcase | escape }}"
-              data-date="{{ r.date_completed | default: '' | escape }}"
-              data-time="{{ r.time | default: '' | escape }}"
+          <!-- Search -->
+          <div>
+            <label class="muted" for="q">Search</label>
+            <input
+              id="q"
+              class="filter"
+              type="text"
+              placeholder="Search runner, category, challenge, restrictions..."
+              autocomplete="off"
+              inputmode="search"
+              enterkeyhint="search"
             >
-              <td>
-                {% if r.runner_id %}
-                  <a href="{{ '/runners/' | relative_url }}{{ r.runner_id }}/">{{ r.runner | default: r.runner_id }}</a>
-                {% else %}
-                  {{ r.runner | default: "—" }}
-                {% endif %}
-              </td>
+          </div>
 
-              <td>{{ r.category | default: "—" }}</td>
+          <!-- Limit -->
+          <div>
+            <label class="muted" for="limit">Show</label>
+            <select id="limit" class="select" style="width: 100%; margin-left: 0;">
+              <option value="10" selected>10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+              <option value="250">250</option>
+              <option value="0">All</option>
+            </select>
+          </div>
 
-              <td>{{ challenge_label }}</td>
-
-              <td>
-                {% if r_texts and r_texts.size > 0 %}
-                  {% for rr in r_texts %}
-                    <span class="tag">{{ rr }}</span>
-                  {% endfor %}
-                {% else %}
-                  —
-                {% endif %}
-              </td>
-
-              <td>{{ r.time | default: "—" }}</td>
-
-              <td>{{ r.date_completed | default: "—" }}</td>
-
-              <td>
-                {% if r.video %}
-                  <a href="{{ r.video }}" target="_blank" rel="noopener">Link</a>
-                {% else %}
-                  —
-                {% endif %}
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-
-      <!-- Excel-style header filter menu (single instance) -->
-      <div class="th-menu" id="th-menu" hidden>
-        <div class="th-menu__top">
-          <input
-            id="th-menu-q"
-            class="filter th-menu__q"
-            type="text"
-            placeholder="Search..."
-            autocomplete="off"
-          />
-        </div>
-
-        <div class="th-menu__list" id="th-menu-list"></div>
-
-        <div class="th-menu__actions">
-          <button class="btn" id="th-menu-clear" type="button">Clear</button>
-          <button class="btn" id="th-menu-close" type="button">Close</button>
+          <p class="muted" id="status" style="margin: 0;"></p>
         </div>
       </div>
-    </div>
 
-    <!-- =========================================================
-         Filtering script (Search + Header filters + Date sort + Limit)
-         ========================================================= -->
-    <script>
+      <!-- =========================================================
+           Runs table (Header filter carets + Date sort)
+           ========================================================= -->
+      <div class="table-wrap" id="runs-list">
+        <table class="runs-table" id="runs-table">
+          <thead>
+            <tr>
+              <th>Runner</th>
+
+              <th class="th-filter">
+                <span>Category</span>
+                <button class="th-caret" type="button" aria-label="Filter Category" data-filter-btn="category">▾</button>
+              </th>
+
+              <th class="th-filter">
+                <span>Challenge</span>
+                <button class="th-caret" type="button" aria-label="Filter Challenge" data-filter-btn="challenge">▾</button>
+              </th>
+
+              <th class="th-filter">
+                <span>Restrictions</span>
+                <button class="th-caret" type="button" aria-label="Filter Restrictions" data-filter-btn="restrictions">▾</button>
+              </th>
+
+              <th>Time</th>
+
+              <th class="th-filter th-date">
+                <div class="th-title">
+                  <span>Date</span>
+                </div>
+
+                <div class="th-date-sort" aria-label="Sort Date">
+                  <button class="th-sort" id="th-sort-asc" type="button" title="Sort oldest to newest">↑</button>
+                  <button class="th-sort" id="th-sort-desc" type="button" title="Sort newest to oldest">↓</button>
+                </div>
+              </th>
+
+              <th>Video</th>
+            </tr>
+          </thead>
+
+          <tbody id="runs-body">
+            {% for r in runs %}
+              {% assign meta = site.data.challenges[r.challenge_id] %}
+              {% assign challenge_label = meta.label | default: r.challenge_id %}
+
+              {% assign r_texts = r.restrictions | default: empty %}
+              {% assign r_join_for_data = "" %}
+              {% if r_texts and r_texts.size > 0 %}
+                {% assign r_join_for_data = r_texts | join: "," %}
+              {% endif %}
+
+              <tr
+                class="run-row"
+                data-runner="{{ r.runner_id | default: r.runner | default: '' | downcase | escape }}"
+                data-category="{{ r.category | default: '' | downcase | escape }}"
+                data-challenge-id="{{ r.challenge_id | default: '' | downcase | escape }}"
+                data-challenge-label="{{ challenge_label | default: '' | downcase | escape }}"
+                data-restrictions="{{ r_join_for_data | downcase | escape }}"
+                data-date="{{ r.date_completed | default: '' | escape }}"
+                data-time="{{ r.time | default: '' | escape }}"
+              >
+                <td>
+                  {% if r.runner_id %}
+                    <a href="{{ '/runners/' | relative_url }}{{ r.runner_id }}/">{{ r.runner | default: r.runner_id }}</a>
+                  {% else %}
+                    {{ r.runner | default: "—" }}
+                  {% endif %}
+                </td>
+
+                <td>{{ r.category | default: "—" }}</td>
+
+                <td>{{ challenge_label }}</td>
+
+                <td>
+                  {% if r_texts and r_texts.size > 0 %}
+                    {% for rr in r_texts %}
+                      <span class="tag">{{ rr }}</span>
+                    {% endfor %}
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+
+                <td>{{ r.time | default: "—" }}</td>
+
+                <td>{{ r.date_completed | default: "—" }}</td>
+
+                <td>
+                  {% if r.video %}
+                    <a href="{{ r.video }}" target="_blank" rel="noopener">Link</a>
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <!-- Excel-style header filter menu (single instance) -->
+        <div class="th-menu" id="th-menu" hidden>
+          <div class="th-menu__top">
+            <input
+              id="th-menu-q"
+              class="filter th-menu__q"
+              type="text"
+              placeholder="Search..."
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="th-menu__list" id="th-menu-list"></div>
+
+          <div class="th-menu__actions">
+            <button class="btn" id="th-menu-clear" type="button">Clear</button>
+            <button class="btn" id="th-menu-close" type="button">Close</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- =========================================================
+           Filtering script (Search + Header filters + Date sort + Limit)
+           ========================================================= -->
+      <script>
 (function () {
   const q = document.getElementById("q");
   const limitEl = document.getElementById("limit");
@@ -278,7 +230,6 @@ layout: default
     return Number.isFinite(v) ? v : 10;
   }
 
-  // Build options from the rendered rows
   function buildOptions() {
     const cats = [];
     const catLabelById = new Map();
@@ -300,7 +251,6 @@ layout: default
       if (cat) {
         cats.push(cat);
         if (!catLabelById.has(cat)) {
-          // Category is column index 1
           const cell = row.children[1];
           if (cell) catLabelById.set(cat, cell.textContent.trim());
         }
@@ -501,7 +451,6 @@ layout: default
     if (thMenuQ) thMenuQ.focus();
   }
 
-  // Toggle behavior: clicking same caret closes the popup
   document.querySelectorAll("[data-filter-btn]").forEach(btn => {
     btn.addEventListener("click", (e) => {
       e.preventDefault();
@@ -570,16 +519,12 @@ layout: default
   updateDateSortButtons();
   render();
 })();
-    </script>
+      </script>
 
-  {% else %}
-    <div class="card">
-      <p class="muted">No runs recorded yet.</p>
-    </div>
-  {% endif %}
-
-</div>
-<script>
+      <!-- =========================================================
+           Make Overview/Categories buttons navigate back to game page
+           ========================================================= -->
+      <script>
 (function () {
   const root = document.getElementById("game-tabs");
   if (!root) return;
@@ -599,4 +544,13 @@ layout: default
     });
   }
 })();
-</script>
+      </script>
+
+    {% else %}
+      <div class="card">
+        <p class="muted">No runs recorded yet.</p>
+      </div>
+    {% endif %}
+
+  </div>
+</div>
