@@ -93,29 +93,7 @@ a:hover {
 /* ============================================================
    Hidden utility (force true removal from layout)
    ============================================================ */
-[hidden] {
-  display: none !important;
-}
-
-/* ============================================================
-   Caret control: only show in real text inputs/editable fields
-   ============================================================ */
-
-/* Hide caret almost everywhere */
-html, body, * {
-  caret-color: transparent;
-}
-
-select {
-  caret-color: transparent;
-}
-
-/* Re-enable caret where typing actually happens */
-input,
-textarea,
-[contenteditable="true"] {
-  caret-color: auto;
-}
+[hidden] { display: none !important; }
 
 /* ============================================================
    Layout Containers
