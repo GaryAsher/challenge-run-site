@@ -21,7 +21,7 @@ layout: default
   <div class="game-shell">
 
     <!-- =========================================================
-         Runs source (Collection): _runs/*.md
+         Runs source: _runs collection
          ========================================================= -->
     {% assign runs = site.runs | where: "game_id", page.game_id | sort: "date_completed" | reverse %}
 
