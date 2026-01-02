@@ -1,17 +1,9 @@
-{% assign game = site.games | where: "game_id", page.game_id | first %}
+---
+layout: default
+---
 
-<!-- =========================================================
-     Back link to Game page
-     ========================================================= -->
-<div class="page-width">
-  <p class="muted page-back">
-    {% if game %}
-      <a href="{{ game.url | relative_url }}">← {{ game.name }}</a>
-    {% else %}
-      <a href="{{ '/games/' | relative_url }}">← Games</a>
-    {% endif %}
-  </p>
-</div>
+{% assign game = site.games | where: "game_id", page.game_id | first %}
+{% include game-header-tabs.html game=game active="runs" %}
 
 <!-- =========================================================
      Game hero (match _layouts/game.html)
@@ -587,3 +579,24 @@
   {% endif %}
 
 </div>
+<script>
+(function () {
+  const root = document.getElementById("game-tabs");
+  if (!root) return;
+
+  const overview = root.querySelector('.tab[data-tab="overview"]');
+  const categories = root.querySelector('.tab[data-tab="categories"]');
+
+  if (overview) {
+    overview.addEventListener("click", () => {
+      window.location.href = "{{ game.url | relative_url }}";
+    });
+  }
+
+  if (categories) {
+    categories.addEventListener("click", () => {
+      window.location.href = "{{ game.url | relative_url }}#categories";
+    });
+  }
+})();
+</script>
