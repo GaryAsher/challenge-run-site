@@ -26,14 +26,22 @@ layout: default
     {% if runs and runs.size > 0 %}
 
       <!-- =========================================================
-           Filter controls (Search + Category/Challenge/Restrictions + Limit)
-           NOTE: these select ids are what your main.js will hook into.
+           Filter controls row
+           Goal: Use the Excel-style header filter UX, but in the top row.
+           We keep:
+           - #q (search input)
+           - #limit (show select)
+           We REMOVE:
+           - #cat #ch #res selects (your old left filters)
+           We ADD:
+           - toolbar filter buttons that reuse your existing th-menu (#th-menu)
+           - optional active chips container (#active-filters) for your main.js to populate
            ========================================================= -->
       <div class="card" style="margin: 0 0 1rem 0;">
 
         <div class="runs-filters">
           <!-- Search -->
-          <div class="runs-filter">
+          <div class="runs-filter runs-filter--search">
             <label class="muted" for="q">Search</label>
             <input
               id="q"
@@ -46,28 +54,46 @@ layout: default
             >
           </div>
 
-          <!-- Category -->
+          <!-- Category (Excel-style menu trigger) -->
           <div class="runs-filter">
-            <label class="muted" for="cat">Category</label>
-            <select id="cat" class="select">
-              <option value="">All</option>
-            </select>
+            <label class="muted" for="filter-category">Category</label>
+            <button
+              id="filter-category"
+              class="select th-caret"
+              type="button"
+              aria-label="Filter Category"
+              data-filter-btn="category"
+            >
+              All ▾
+            </button>
           </div>
 
-          <!-- Challenge -->
+          <!-- Challenge (Excel-style menu trigger) -->
           <div class="runs-filter">
-            <label class="muted" for="ch">Challenge</label>
-            <select id="ch" class="select">
-              <option value="">All</option>
-            </select>
+            <label class="muted" for="filter-challenge">Challenge</label>
+            <button
+              id="filter-challenge"
+              class="select th-caret"
+              type="button"
+              aria-label="Filter Challenge"
+              data-filter-btn="challenge"
+            >
+              All ▾
+            </button>
           </div>
 
-          <!-- Restrictions -->
+          <!-- Restrictions (Excel-style menu trigger) -->
           <div class="runs-filter">
-            <label class="muted" for="res">Restrictions</label>
-            <select id="res" class="select">
-              <option value="">Any</option>
-            </select>
+            <label class="muted" for="filter-restrictions">Restrictions</label>
+            <button
+              id="filter-restrictions"
+              class="select th-caret"
+              type="button"
+              aria-label="Filter Restrictions"
+              data-filter-btn="restrictions"
+            >
+              Any ▾
+            </button>
           </div>
 
           <!-- Show -->
@@ -84,33 +110,25 @@ layout: default
           </div>
         </div>
 
+        <!-- Active filters chips (your JS can populate) -->
+        <div id="active-filters" class="active-filters" style="margin-top: 0.5rem;"></div>
+
         <p class="muted" id="status" style="margin: 0.5rem 0 0 0;"></p>
       </div>
 
       <!-- =========================================================
-           Runs table (Header filter carets + Date sort)
+           Runs table
+           Change: remove the header caret buttons so you do not have duplicate controls.
+           Date sort stays.
            ========================================================= -->
       <div class="table-wrap" id="runs-list">
         <table class="runs-table" id="runs-table">
           <thead>
             <tr>
               <th>Runner</th>
-
-              <th class="th-filter">
-                <span>Category</span>
-                <button class="th-caret" type="button" aria-label="Filter Category" data-filter-btn="category">▾</button>
-              </th>
-
-              <th class="th-filter">
-                <span>Challenge</span>
-                <button class="th-caret" type="button" aria-label="Filter Challenge" data-filter-btn="challenge">▾</button>
-              </th>
-
-              <th class="th-filter">
-                <span>Restrictions</span>
-                <button class="th-caret" type="button" aria-label="Filter Restrictions" data-filter-btn="restrictions">▾</button>
-              </th>
-
+              <th>Category</th>
+              <th>Challenge</th>
+              <th>Restrictions</th>
               <th>Time</th>
 
               <th class="th-filter th-date">
@@ -209,7 +227,7 @@ layout: default
           </tbody>
         </table>
 
-        <!-- Excel-style header filter menu (single instance) -->
+        <!-- Excel-style filter menu (single instance, reused by top buttons) -->
         <div class="th-menu" id="th-menu" hidden>
           <div class="th-menu__top">
             <input
