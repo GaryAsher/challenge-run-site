@@ -1,0 +1,8 @@
+global:
+  - "@GaryAsher"
+
+games:
+  dark-souls-1:
+    - ""
+  hades-2:
+    - "@GaryAsher"
