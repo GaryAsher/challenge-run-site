@@ -9,3 +9,5 @@ collections:
   runners:
     output: true
     permalink: /runners/:name/
+  runs:
+    output: false
