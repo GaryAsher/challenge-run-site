@@ -70,19 +70,16 @@
      ========================================================= -->
 <div class="page-width">
   <div class="game-shell">
-    <nav class="runner-tabs game-tabs" id="game-tabs">
-      <button class="tab {% if include.active == 'overview' %}active{% endif %}" data-tab="overview" type="button">
+    <nav class="runner-tabs game-tabs">
+      <a class="tab {% if include.active == 'overview' %}active{% endif %}" href="{{ game.url | relative_url }}">
         Overview
-      </button>
+      </a>
 
-      <button class="tab {% if include.active == 'categories' %}active{% endif %}" data-tab="categories" type="button">
+      <a class="tab {% if include.active == 'categories' %}active{% endif %}" href="{{ game.url | relative_url }}#categories">
         Categories
-      </button>
+      </a>
 
-      <a
-        class="tab {% if include.active == 'runs' %}active{% endif %}"
-        href="{{ '/games/' | relative_url | append: game.game_id | append: '/game-runs/' }}"
-      >
+      <a class="tab {% if include.active == 'runs' %}active{% endif %}" href="{{ game.url | relative_url }}game-runs/">
         Runs
       </a>
     </nav>
