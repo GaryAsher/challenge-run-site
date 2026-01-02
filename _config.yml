@@ -22,3 +22,4 @@ defaults:
 exclude:
   - _queue_runs
   - scripts
+  - node_modules
