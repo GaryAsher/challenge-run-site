@@ -1,0 +1,11 @@
+{
+  "name": "challenge-run-site",
+  "private": true,
+  "scripts": {
+    "validate:runs": "node scripts/validate-runs.js",
+    "promote:runs": "node scripts/promote-runs.js"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  }
+}
