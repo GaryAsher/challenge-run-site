@@ -1,0 +1,42 @@
+name: Promote queued runs
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 9 * * 1" # Mondays 09:00 UTC (change whenever you want)
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install YAML dependency
+        run: npm i js-yaml
+
+      - name: Validate queued runs
+        run: node scripts/validate-runs.js
+
+      - name: Promote approved runs
+        run: node scripts/promote-runs.js
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git add -A
+            git commit -m "Promote approved queued runs"
+            git push
+          else
+            echo "No changes to commit."
+          fi
