@@ -230,6 +230,9 @@
     let dateSortDir = "desc";
     let thActiveCol = null;
 
+    // Cached category nav items while the menu is open
+    let categoryNavItemsCache = null;
+
     function closeThMenu() {
       if (!thMenu) return;
 
@@ -238,6 +241,8 @@
 
       thMenu.hidden = true;
       thActiveCol = null;
+
+      categoryNavItemsCache = null;
 
       // Restore default button label if we changed it for category nav.
       if (thMenuClear) thMenuClear.textContent = "Clear";
@@ -519,6 +524,18 @@
     // Category NAV menu (uses data-category-slug for URLs)
     // =========================================================
     function getRunsBasePath() {
+      // Prefer server-provided base path if present
+      const runsListEl = document.getElementById("runs-list");
+      const fromData =
+        runsListEl && runsListEl.dataset && runsListEl.dataset.gameRunsBase
+          ? String(runsListEl.dataset.gameRunsBase).trim()
+          : "";
+
+      if (fromData) {
+        return fromData.endsWith("/") ? fromData : fromData + "/";
+      }
+
+      // Fallback: derive from URL
       const path = window.location.pathname;
       const idx = path.indexOf("/game-runs/");
       if (idx === -1) return "/game-runs/";
@@ -602,8 +619,8 @@
 
       if (thMenuQ) thMenuQ.value = "";
 
-      const items = buildCategoryNavItems();
-      renderCategoryNavList(items);
+      categoryNavItemsCache = buildCategoryNavItems();
+      renderCategoryNavList(categoryNavItemsCache);
 
       requestAnimationFrame(() => {
         if (!thMenuQ || thMenu.hidden) return;
@@ -666,7 +683,7 @@
     if (thMenuQ) {
       thMenuQ.addEventListener("input", () => {
         if (thActiveCol === "category-nav") {
-          renderCategoryNavList(buildCategoryNavItems());
+          renderCategoryNavList(categoryNavItemsCache || buildCategoryNavItems());
           return;
         }
         renderThMenuList();
