@@ -1,0 +1,49 @@
+---
+layout: default
+title: Hades II Categories
+game_id: hades-2
+permalink: /games/hades-2/game-runs/categories/
+---
+
+{% assign game = site.games | where: "game_id", page.game_id | first %}
+{% include game-header-tabs.html game=game active="runs" %}
+
+<div class="page-width">
+  <div class="game-shell">
+    <div class="card">
+      <h1>Categories</h1>
+      <p class="muted">Pick a category to view runs.</p>
+
+      {% assign cleaned = "" | split: "" %}
+      {% for r in site.runs %}
+        {% if r and r.game_id == page.game_id and r.category_slug and r.category %}
+          {% assign cleaned = cleaned | push: r %}
+        {% endif %}
+      {% endfor %}
+
+      {% assign slugs = cleaned | map: "category_slug" | uniq | sort %}
+
+      {% if slugs and slugs.size > 0 %}
+        <div class="tag-picker" style="margin-top: 0.75rem;">
+          <div class="tag-picked">
+            {% for s in slugs %}
+              {% assign label = s %}
+              {% for r in cleaned %}
+                {% if r.category_slug == s and r.category %}
+                  {% assign label = r.category %}
+                  {% break %}
+                {% endif %}
+              {% endfor %}
+
+              <a class="tag-chip" href="{{ '/games/' | relative_url }}{{ page.game_id }}/game-runs/categories/{{ s }}/">
+                {{ label }}
+              </a>
+            {% endfor %}
+          </div>
+        </div>
+      {% else %}
+        <p class="muted">No categories found yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
