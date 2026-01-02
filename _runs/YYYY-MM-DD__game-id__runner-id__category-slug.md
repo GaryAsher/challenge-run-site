@@ -4,6 +4,7 @@ game_id: hades-2
 runner: Gary_Asher
 runner_id: gary-asher
 category: Underworld Any%
+category_slug: underworld-any
 challenge_id: no-hit-no-damage
 restrictions:
   - Hestia Only
