@@ -1,57 +1,50 @@
 ---
-layout: default
+layout: game
 title: Hades 2 Categories
 game_id: hades-2
 ---
 
-{% assign game = site.games | where: "game_id", page.game_id | first %}
-
 <!-- =========================================================
-     Flatten runs from _data/runs/*.yml (folder) OR _data/runs.yml (single file)
+     Categories tab content
      ========================================================= -->
-{% assign runs_raw = site.data.runs %}
-{% assign runs_flat = "" | split: "" %}
+<section class="tab-panel active" data-panel="categories" id="categories">
 
-{% if runs_raw and runs_raw.first and runs_raw.first[0] %}
-  <!-- runs_raw is a HASH (folder of files): { filename => [runs...] } -->
-  {% for pair in runs_raw %}
-    {% assign bucket = pair[1] %}
-    {% if bucket %}
-      {% for r in bucket %}
-        {% if r %}
-          {% assign runs_flat = runs_flat | push: r %}
-        {% endif %}
-      {% endfor %}
-    {% endif %}
-  {% endfor %}
-{% else %}
-  <!-- runs_raw is already a LIST -->
-  {% for r in runs_raw %}
-    {% if r %}
-      {% assign runs_flat = runs_flat | push: r %}
-    {% endif %}
-  {% endfor %}
-{% endif %}
+  <!-- =========================================================
+       Flatten runs from _data/runs/*.yml (folder) OR _data/runs.yml (single file)
+       ========================================================= -->
+  {% assign runs_raw = site.data.runs %}
+  {% assign runs_flat = "" | split: "" %}
 
-{% assign runs = runs_flat | where: "game_id", page.game_id %}
+  {% if runs_raw and runs_raw.first and runs_raw.first[0] %}
+    <!-- runs_raw is a HASH (folder of files): { filename => [runs...] } -->
+    {% for pair in runs_raw %}
+      {% assign bucket = pair[1] %}
+      {% if bucket %}
+        {% for r in bucket %}
+          {% if r %}
+            {% assign runs_flat = runs_flat | push: r %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+  {% else %}
+    <!-- runs_raw is already a LIST -->
+    {% for r in runs_raw %}
+      {% if r %}
+        {% assign runs_flat = runs_flat | push: r %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
 
-<div class="page-width">
-  <p class="muted page-back">
-    <a href="{{ '/games/' | relative_url }}">← Games</a>
-    {% if game %}
-      <span class="muted"> / </span>
-      <a href="{{ game.url | relative_url }}">{{ game.name }}</a>
-    {% endif %}
-  </p>
-</div>
+  {% assign runs = runs_flat | where: "game_id", page.game_id %}
 
-<div class="page-width">
-  <div class="game-shell">
-    <div class="card">
-      <h1>{% if game %}{{ game.name }}{% else %}Game{% endif %} Categories</h1>
-      <p class="muted">Pick a category to view completed runs.</p>
+  <div class="card">
+    <h1>Categories</h1>
+    <p class="muted">Pick a category to view completed runs.</p>
 
-      {% assign cats_raw = runs | map: "category" | sort | uniq %}
+    {% assign cats_raw = runs | map: "category" | sort | uniq %}
+
+    {% if cats_raw and cats_raw.size > 0 %}
       <div class="tag-picker" style="margin-top: 0.75rem;">
         <div class="tag-picked">
           {% for cat in cats_raw %}
@@ -67,6 +60,9 @@ game_id: hades-2
           {% endfor %}
         </div>
       </div>
-    </div>
+    {% else %}
+      <p class="muted">No categories found yet.</p>
+    {% endif %}
   </div>
-</div>
+
+</section>
