@@ -188,7 +188,13 @@ layout: default
 
                 <td>{{ cat_label }}</td>
 
-                <td>{{ challenge_label | default: "—" }}</td>
+                <td>    
+                 {% if challenge_label and challenge_label != "" and challenge_label != "—" %}
+                   <span class="tag">{{ challenge_label }}</span>
+                 {% else %}
+                   —
+                 {% endif %}
+                </td>
 
                 <td>
                   {% if r_texts and r_texts.size > 0 %}
