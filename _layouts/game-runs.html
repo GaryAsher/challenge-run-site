@@ -28,7 +28,7 @@ layout: default
       <!-- =========================================================
            Filter controls row
            ========================================================= -->
-      <div class="card" style="margin: 0 0 1rem 0;">
+      <div class="card card--compact">
 
         <div class="runs-filters">
           <!-- Search -->
@@ -55,7 +55,7 @@ layout: default
               aria-label="Filter Category"
               data-filter-btn="category"
             >
-              Category ▾
+              All ▾
             </button>
           </div>
 
@@ -69,7 +69,7 @@ layout: default
               aria-label="Filter Challenge"
               data-filter-btn="challenge"
             >
-              Challenge ▾
+              All ▾
             </button>
           </div>
 
@@ -83,7 +83,7 @@ layout: default
               aria-label="Filter Restrictions"
               data-filter-btn="restrictions"
             >
-              Restrictions ▾
+              Any ▾
             </button>
           </div>
 
@@ -104,7 +104,7 @@ layout: default
         <!-- Active filters chips -->
         <div id="active-filters" class="active-filters"></div>
 
-        <p class="muted" id="status" style="margin: 0.5rem 0 0 0;"></p>
+        <p class="muted" id="status"></p>
       </div>
 
       <!-- =========================================================
@@ -139,7 +139,6 @@ layout: default
             {% for r in runs %}
               {% assign meta = site.data.challenges[r.challenge_id] %}
               {% assign challenge_label = r.challenge_id %}
-
               {% if meta and meta.label %}
                 {% assign challenge_label = meta.label %}
               {% endif %}
