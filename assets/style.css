@@ -29,7 +29,9 @@
   --hero-mid: rgba(15, 15, 15, 0.65);
   --hero-light: rgba(15, 15, 15, 0.45);
 
-  /* Responsive layout scale (desktop default) */
+  /* ============================================================
+     Responsive layout scale (desktop default)
+     ============================================================ */
   --page-max: 960px;
   --gutter: 1.5rem;
   --section-pad-y: 3rem;
@@ -91,9 +93,7 @@ a:hover {
 /* ============================================================
    Hidden utility (force true removal from layout)
    ============================================================ */
-[hidden] {
-  display: none !important;
-}
+[hidden] { display: none !important; }
 
 /* ============================================================
    Layout Containers
@@ -115,16 +115,11 @@ a:hover {
   opacity: 0.8;
 }
 
-.page-back a {
-  color: var(--text-dim);
-}
-
-.page-back a:hover {
-  color: var(--fg);
-}
+.page-back a { color: var(--text-dim); }
+.page-back a:hover { color: var(--fg); }
 
 /* IMPORTANT:
-   Do NOT constrain page width here.
+   Keep widths consistent across the site.
    page-width is the single source of truth for layout width. */
 .game-shell {
   max-width: none;
@@ -168,8 +163,10 @@ a:hover {
 .nav a {
   display: inline-flex;
   align-items: center;
+
   min-height: var(--tap);
   padding: 0.35rem 0.65rem;
+
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
 }
@@ -190,13 +187,8 @@ a:hover {
 /* ============================================================
    Components: Shared (used across pages)
    ============================================================ */
-.muted {
-  color: var(--text-muted);
-}
-
-.muted a {
-  color: inherit;
-}
+.muted { color: var(--text-muted); }
+.muted a { color: inherit; }
 
 .card {
   border: 1px solid var(--border);
@@ -248,16 +240,16 @@ a:hover {
   width: 100%;
   max-width: 520px;
   padding: 0.6rem 0.75rem;
+
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--fg);
+
   min-height: var(--tap);
 }
 
-.filter::placeholder {
-  color: var(--placeholder);
-}
+.filter::placeholder { color: var(--placeholder); }
 
 .filter-wrap {
   position: relative;
@@ -265,28 +257,24 @@ a:hover {
   max-width: 520px;
 }
 
-.filter-wrap::after {
-  content: none !important;
-}
+.filter-wrap::after { content: none !important; }
 
-.tag-picker .filter-wrap {
-  max-width: none;
-}
+.tag-picker .filter-wrap { max-width: none; }
 
 .select {
   min-height: var(--tap);
   padding: 0.45rem 0.6rem;
+
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--fg);
+
   margin: 0;
 }
 
 /* Only add left spacing when label + select are inline */
-.results-controls .select {
-  margin-left: 0.4rem;
-}
+.results-controls .select { margin-left: 0.4rem; }
 
 :where(a, button, input, select, textarea, .tag-chip, .tag-suggestion, .tab):focus-visible {
   outline: 2px solid var(--focus);
@@ -312,7 +300,7 @@ a:hover {
 }
 
 /* ============================================================
-   Filters Grid (Games index + Runs page)
+   Filters Grid (Games index + general)
    ============================================================ */
 .filters-grid {
   display: grid;
@@ -339,12 +327,10 @@ a:hover {
 
 /* 1 column on small screens */
 @media (max-width: 560px) {
-  .filters-grid {
-    grid-template-columns: 1fr;
-  }
+  .filters-grid { grid-template-columns: 1fr; }
 }
 
-/* Search + Show (side-by-side) */
+/* Legacy: Search + Show (side-by-side) */
 .filters-row {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -352,7 +338,6 @@ a:hover {
   align-items: end;
 }
 
-/* Let the select size naturally in the right column */
 .filters-row .select {
   width: auto;
   min-width: 5.5rem;
@@ -369,6 +354,60 @@ a:hover {
     width: 100%;
     min-width: 0;
   }
+}
+
+/* ============================================================
+   Runs: Filters Card Layout (Search + 3 filter buttons + Limit)
+   ============================================================ */
+.runs-filters__search .filter {
+  max-width: none;
+}
+
+.runs-filters__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  align-items: end;
+}
+
+.runs-filters__cell {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.runs-filter-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.runs-filter-btn::after {
+  content: "▾";
+  opacity: 0.85;
+  margin-left: 0.75rem;
+}
+
+.runs-filters__limit .select {
+  width: 100%;
+}
+
+.runs-filters #status {
+  margin-top: 0.75rem;
+  text-align: center;
+  color: var(--placeholder-dim);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 900px) {
+  .runs-filters__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .runs-filters__grid { grid-template-columns: 1fr; }
 }
 
 /* ============================================================
@@ -406,14 +445,13 @@ a:hover {
   cursor: pointer;
   font: inherit;
   font-size: 0.85rem;
+
   min-height: 32px;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
 
-.tag-chip:hover {
-  background: var(--panel);
-}
+.tag-chip:hover { background: var(--panel); }
 
 .tag-search {
   width: 100%;
@@ -425,9 +463,7 @@ a:hover {
   outline: none;
 }
 
-.tag-search::placeholder {
-  color: var(--placeholder-dim);
-}
+.tag-search::placeholder { color: var(--placeholder-dim); }
 
 .tag-suggestions {
   position: absolute;
@@ -534,14 +570,10 @@ a:hover {
     scrollbar-width: none;
   }
 
-  .az::-webkit-scrollbar {
-    display: none;
-  }
+  .az::-webkit-scrollbar { display: none; }
 }
 
-.list {
-  padding-left: 1.2rem;
-}
+.list { padding-left: 1.2rem; }
 
 /* ============================================================
    Grid Utility
@@ -553,9 +585,7 @@ a:hover {
 }
 
 @media (min-width: 1200px) {
-  .grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-  }
+  .grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 }
 
 /* ============================================================
@@ -595,6 +625,7 @@ a:hover {
   max-width: 100%;
 }
 
+/* Keep the compact hero aligned to page width without extra constraints */
 .game-hero--compact {
   max-width: none;
   margin-left: 0;
@@ -679,13 +710,8 @@ a:hover {
   font-size: 0.85rem;
 }
 
-.game-card:hover .game-card__bg {
-  opacity: 0.6;
-}
-
-.game-card:hover {
-  text-decoration: none;
-}
+.game-card:hover .game-card__bg { opacity: 0.6; }
+.game-card:hover { text-decoration: none; }
 
 /* ============================================================
    Runners: Cards (for /runners/)
@@ -732,13 +758,8 @@ a:hover {
   z-index: 2;
 }
 
-.runner-card:hover {
-  text-decoration: none;
-}
-
-.runner-card:hover .runner-card__bg {
-  opacity: 1;
-}
+.runner-card:hover { text-decoration: none; }
+.runner-card:hover .runner-card__bg { opacity: 1; }
 
 /* ============================================================
    Runner Profile Header (avatar left, socials right)
@@ -785,9 +806,7 @@ a:hover {
   flex: 0 0 auto;
 }
 
-.runner-avatar.is-logo {
-  background-size: contain;
-}
+.runner-avatar.is-logo { background-size: contain; }
 
 .runner-name h1 {
   margin: 0;
@@ -920,7 +939,6 @@ a:hover {
   margin: 0 0 1rem 0;
 }
 
-/* Fix typo from earlier */
 .page-width + .page-width .table-wrap {
   margin-top: 0.75rem;
 }
@@ -943,9 +961,7 @@ a:hover {
   margin-top: -1px;
 }
 
-.tab-panel.active {
-  display: block;
-}
+.tab-panel.active { display: block; }
 
 /* ============================================================
    Runs Page: Table + Date Row + Pagination
@@ -966,9 +982,8 @@ a:hover {
   font-size: 0.95rem;
 }
 
-/* Headers: remove the big right padding that was reserved for buttons */
 .runs-table thead th {
-  text-align: center;
+  text-align: left;
   vertical-align: top;
   font-weight: 700;
   color: var(--fg);
@@ -997,9 +1012,7 @@ a:hover {
   background: rgba(59, 195, 110, 0.06);
 }
 
-.runs-table tbody tr:last-child td {
-  border-bottom: none;
-}
+.runs-table tbody tr:last-child td { border-bottom: none; }
 
 .runs-date-row {
   display: flex;
@@ -1024,9 +1037,7 @@ a:hover {
   align-items: center;
 }
 
-.pager .muted {
-  white-space: nowrap;
-}
+.pager .muted { white-space: nowrap; }
 
 /* ============================================================
    Runs table: tag wrapping + column ergonomics
@@ -1064,57 +1075,8 @@ a:hover {
 }
 
 /* ============================================================
-   Runs: header filter caret + floating menu
-   - Filter button bottom-left of header cell
+   Runs: Date sort buttons (header)
    ============================================================ */
-.th-filter {
-  position: relative;
-  white-space: nowrap;
-
-  /* space for the bottom-left button */
-  padding-bottom: 1.45rem;
-}
-
-.th-filter > span {
-  display: block;
-  width: 100%;
-  text-align: center;
-  padding: 0;
-}
-
-/* Bottom-left caret */
-.th-filter .th-caret {
-  position: absolute;
-  left: 0.55rem;
-  bottom: 0.45rem;
-  top: auto;
-  right: auto;
-  transform: none;
-
-  appearance: none;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.02);
-  color: var(--text-dim);
-
-  border-radius: 10px;
-  padding: 0.18rem 0.45rem;
-
-  line-height: 1;
-  cursor: pointer;
-}
-
-.th-filter .th-caret:hover {
-  background: var(--panel);
-  color: var(--fg);
-  border-color: rgba(255, 255, 255, 0.18);
-}
-
-.th-filter .th-caret:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
-}
-
-/* Sort buttons */
 .th-sort {
   appearance: none;
   border: 1px solid var(--border);
@@ -1139,12 +1101,10 @@ a:hover {
   cursor: not-allowed;
 }
 
-/* Date header: keep sort controls on the second line, centered */
+/* Date header: two-line with centered label and centered sort controls */
 .th-date .th-title {
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 0.5rem;
 }
 
 .th-date-sort {
@@ -1152,7 +1112,7 @@ a:hover {
   gap: 0.35rem;
   align-items: center;
   justify-content: center;
-  margin-top: 0.25rem;
+  margin-top: 0.35rem;
 }
 
 .th-date-sort .th-sort {
@@ -1160,7 +1120,9 @@ a:hover {
   text-align: center;
 }
 
-/* Floating menu */
+/* ============================================================
+   Floating filter menu (used by the filter buttons)
+   ============================================================ */
 .th-menu {
   position: fixed;
   z-index: 999;
@@ -1176,9 +1138,7 @@ a:hover {
   padding: 0.6rem;
 }
 
-.th-menu__top {
-  margin-bottom: 0.5rem;
-}
+.th-menu__top { margin-bottom: 0.5rem; }
 
 .th-menu__q {
   margin: 0;
@@ -1202,13 +1162,8 @@ a:hover {
   user-select: none;
 }
 
-.th-menu__item:hover {
-  background: var(--panel);
-}
-
-.th-menu__item input {
-  margin: 0;
-}
+.th-menu__item:hover { background: var(--panel); }
+.th-menu__item input { margin: 0; }
 
 .th-menu__actions {
   display: flex;
@@ -1217,9 +1172,7 @@ a:hover {
   margin-top: 0.6rem;
 }
 
-.th-menu__empty {
-  padding: 0.6rem 0.4rem;
-}
+.th-menu__empty { padding: 0.6rem 0.4rem; }
 
 /* ============================================================
    Pagination (shared utilities)
@@ -1233,13 +1186,8 @@ a:hover {
   margin: 0.75rem 0;
 }
 
-.list-controls--bottom {
-  justify-content: center;
-}
-
-.list-controls--bottom [data-status] {
-  display: none;
-}
+.list-controls--bottom { justify-content: center; }
+.list-controls--bottom [data-status] { display: none; }
 
 .page-numbers {
   display: inline-flex;
@@ -1305,22 +1253,16 @@ a:hover {
     gap: 0.5rem;
   }
 
-  .runner-tabs {
-    flex-wrap: wrap;
-  }
+  .runner-tabs { flex-wrap: wrap; }
 
-  .runner-top {
-    flex-direction: column;
-  }
+  .runner-top { flex-direction: column; }
 
   .runner-right {
     justify-content: flex-start;
     min-width: 0;
   }
 
-  .runner-links {
-    justify-content: flex-start;
-  }
+  .runner-links { justify-content: flex-start; }
 }
 
 /* Wide desktop */
