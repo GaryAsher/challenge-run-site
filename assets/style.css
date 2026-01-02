@@ -302,7 +302,6 @@ a:hover {
 
 /* ============================================================
    Tags (global)
-   Use <span class="tag">Label</span> anywhere
    ============================================================ */
 .tag {
   display: inline-flex;
@@ -329,7 +328,6 @@ a:hover {
 
 button.tag { cursor: pointer; }
 
-/* Consistent spacing when multiple tags are rendered in a row */
 .tags {
   display: flex;
   flex-wrap: wrap;
@@ -365,7 +363,6 @@ button.tag { cursor: pointer; }
   .filters-grid { grid-template-columns: 1fr; }
 }
 
-/* Legacy: Search + Show (side-by-side) */
 .filters-row {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -435,7 +432,6 @@ button.tag { cursor: pointer; }
   transform: translateY(0.5px);
 }
 
-/* Active filter chips row */
 .active-filters {
   margin-top: 0.5rem;
   display: flex;
@@ -712,7 +708,6 @@ button.tag { cursor: pointer; }
   margin-top: 0.5rem;
 }
 
-/* Slightly smaller tags in the game header area only */
 .game-tags .tag {
   font-size: 0.75rem;
   padding: 0.2rem 0.5rem;
@@ -1027,7 +1022,7 @@ button.tag { cursor: pointer; }
 .tab-panel.active { display: block; }
 
 /* ============================================================
-   Runner run meta spacing (replaces inline margin)
+   Runner run meta spacing
    ============================================================ */
 .runner-run-meta {
   margin-top: 0.35rem;
@@ -1096,7 +1091,6 @@ button.tag { cursor: pointer; }
 
 .pager .muted { white-space: nowrap; }
 
-/* Only add extra spacing between multiple tags inside table cells */
 .runs-table td :is(.tag, .tags) .tag {
   margin: 0;
 }
@@ -1107,7 +1101,6 @@ button.tag { cursor: pointer; }
   gap: 0.35rem;
 }
 
-/* Time column stays compact */
 .runs-table th:nth-child(5),
 .runs-table td:nth-child(5) {
   white-space: nowrap;
