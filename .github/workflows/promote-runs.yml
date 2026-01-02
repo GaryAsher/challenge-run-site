@@ -2,6 +2,11 @@ name: Promote queued runs
 
 on:
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (no file moves, no PR)"
+        required: false
+        default: "false"
   schedule:
     - cron: "0 9 * * 1" # Mondays 09:00 UTC
 
@@ -24,10 +29,18 @@ jobs:
       - name: Validate queued runs
         run: node scripts/validate-runs.js
 
-      - name: Promote approved/rejected runs
-        run: node scripts/promote-runs.js
+      - name: Promote approved/rejected runs (or dry-run)
+        env:
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+        run: |
+          if [[ "${DRY_RUN}" == "true" ]]; then
+            node scripts/promote-runs.js --dry-run
+          else
+            node scripts/promote-runs.js
+          fi
 
-      - name: Create PR if changed
+      - name: Create PR if changed (skip on dry-run)
+        if: ${{ github.event.inputs.dry_run != 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
