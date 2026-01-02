@@ -1,1 +1,6 @@
-/_runs/ @YOUR_GITHUB_USERNAME @MOD_GITHUB_USERNAME
+# Global coverage (optional)
+* @GaryAsher
+
+# Scripts/workflows always owned by core maintainers
+/scripts/ @GaryAsher
+/.github/workflows/ @GaryAsher
