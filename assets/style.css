@@ -1052,13 +1052,13 @@ a:hover {
   white-space: nowrap;
 }
 
-/* Ensure the title leaves room for a right-aligned caret */
+/* Leave room on the right for the caret */
 .th-filter > span {
   display: inline-block;
   padding-right: 1.5rem;
 }
 
-/* Align caret to the right edge of its header cell, centered */
+/* Caret aligned to the right edge, centered vertically */
 .th-filter .th-caret {
   position: absolute;
   right: 0.5rem;
@@ -1082,6 +1082,7 @@ a:hover {
   color: var(--fg);
 }
 
+/* Sort buttons */
 .th-sort {
   appearance: none;
   border: 1px solid var(--border);
@@ -1105,6 +1106,11 @@ a:hover {
   cursor: not-allowed;
 }
 
+/* Date header layout: label left, sort controls locked to far right */
+.th-date {
+  position: relative;
+}
+
 .th-date .th-title {
   display: flex;
   align-items: center;
@@ -1116,8 +1122,21 @@ a:hover {
   display: inline-flex;
   gap: 0.35rem;
   align-items: center;
+  justify-content: flex-end;
 }
 
+/* Optional: make ↑/↓ feel like “right edge controls” (same vibe as carets) */
+.runs-table thead th.th-date {
+  padding-right: 0.85rem;
+}
+
+/* Optional: equal-ish button footprint */
+.th-date-sort .th-sort {
+  min-width: 32px;
+  text-align: center;
+}
+
+/* Floating menu */
 .th-menu {
   position: fixed;
   z-index: 999;
