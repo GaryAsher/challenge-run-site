@@ -48,7 +48,7 @@ hitless:
 # N
 
 no-hit-no-damage:
-  label: No-Hit No-Damage
+  label: No-Hit / No-Damage
   aliases: ["NHND"]
   
 # O
