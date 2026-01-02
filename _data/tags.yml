@@ -57,6 +57,7 @@ roguelite:
 # S
 soulslike:
   label: Soulslike
+  aliases: ["Souls-like"]
 
 # T
 
