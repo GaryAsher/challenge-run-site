@@ -29,9 +29,7 @@
   --hero-mid: rgba(15, 15, 15, 0.65);
   --hero-light: rgba(15, 15, 15, 0.45);
 
-  /* ============================================================
-     Responsive layout scale (desktop default)
-     ============================================================ */
+  /* Responsive layout scale (desktop default) */
   --page-max: 960px;
   --gutter: 1.5rem;
   --section-pad-y: 3rem;
@@ -170,10 +168,8 @@ a:hover {
 .nav a {
   display: inline-flex;
   align-items: center;
-
   min-height: var(--tap);
   padding: 0.35rem 0.65rem;
-
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
 }
@@ -252,12 +248,10 @@ a:hover {
   width: 100%;
   max-width: 520px;
   padding: 0.6rem 0.75rem;
-
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--fg);
-
   min-height: var(--tap);
 }
 
@@ -282,12 +276,10 @@ a:hover {
 .select {
   min-height: var(--tap);
   padding: 0.45rem 0.6rem;
-
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--fg);
-
   margin: 0;
 }
 
@@ -414,7 +406,6 @@ a:hover {
   cursor: pointer;
   font: inherit;
   font-size: 0.85rem;
-
   min-height: 32px;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -451,7 +442,7 @@ a:hover {
 
   max-height: 260px;
   overflow: auto;
-  scrollbar-gutter: s;
+  scrollbar-gutter: stable;
 
   padding: 0.35rem;
 }
@@ -591,7 +582,12 @@ a:hover {
   display: flex;
   align-items: flex-end;
 
-  background: linear-gradient(to top, var(--hero-strong), var(--hero-mid), var(--hero-light));
+  background: linear-gradient(
+    to top,
+    var(--hero-strong),
+    var(--hero-mid),
+    var(--hero-light)
+  );
 }
 
 .game-hero__content {
@@ -603,12 +599,6 @@ a:hover {
   max-width: none;
   margin-left: 0;
   margin-right: 0;
-}
-
-@media (max-width: 640px) {
-  .game-hero--compact {
-    max-width: none;
-  }
 }
 
 @supports not (aspect-ratio: 2 / 1) {
@@ -668,7 +658,12 @@ a:hover {
   inset: 0;
   display: flex;
   align-items: flex-end;
-  background: linear-gradient(to top, var(--overlay-strong), var(--overlay-mid), var(--overlay-light));
+  background: linear-gradient(
+    to top,
+    var(--overlay-strong),
+    var(--overlay-mid),
+    var(--overlay-light)
+  );
 }
 
 .game-card__title {
@@ -721,7 +716,12 @@ a:hover {
   inset: 0;
   display: flex;
   align-items: flex-end;
-  background: linear-gradient(to top, var(--overlay-strong), var(--overlay-mid), var(--overlay-light));
+  background: linear-gradient(
+    to top,
+    var(--overlay-strong),
+    var(--overlay-mid),
+    var(--overlay-light)
+  );
 }
 
 .runner-card__title {
@@ -920,7 +920,8 @@ a:hover {
   margin: 0 0 1rem 0;
 }
 
-.page-width + .page-width .-wrap {
+/* Fix typo from earlier */
+.page-width + .page-width .table-wrap {
   margin-top: 0.75rem;
 }
 
@@ -965,6 +966,7 @@ a:hover {
   font-size: 0.95rem;
 }
 
+/* Headers: remove the big right padding that was reserved for buttons */
 .runs-table thead th {
   text-align: center;
   vertical-align: top;
@@ -972,7 +974,7 @@ a:hover {
   color: var(--fg);
   background: rgba(255, 255, 255, 0.03);
 
-  padding: 0.75rem 2.25rem 0.75rem 0.85rem;
+  padding: 0.75rem 0.85rem;
   border-bottom: 1px solid var(--border);
 }
 
@@ -1063,13 +1065,16 @@ a:hover {
 
 /* ============================================================
    Runs: header filter caret + floating menu
+   - Filter button bottom-left of header cell
    ============================================================ */
 .th-filter {
   position: relative;
   white-space: nowrap;
+
+  /* space for the bottom-left button */
+  padding-bottom: 1.45rem;
 }
 
-/* Center label, reserve equal space left/right so it doesn't look shifted */
 .th-filter > span {
   display: block;
   width: 100%;
@@ -1077,12 +1082,14 @@ a:hover {
   padding: 0;
 }
 
-/* Caret aligned to the right edge, centered vertically */
+/* Bottom-left caret */
 .th-filter .th-caret {
   position: absolute;
-  right: 0.55rem;
-  top: 50%;
-  transform: translateY(-50%);
+  left: 0.55rem;
+  bottom: 0.45rem;
+  top: auto;
+  right: auto;
+  transform: none;
 
   appearance: none;
   border: 1px solid var(--border);
@@ -1107,7 +1114,7 @@ a:hover {
   outline-offset: 2px;
 }
 
-/* Sort buttons (match caret vibe) */
+/* Sort buttons */
 .th-sort {
   appearance: none;
   border: 1px solid var(--border);
@@ -1132,18 +1139,12 @@ a:hover {
   cursor: not-allowed;
 }
 
-/* Date header layout: label + sort group look like a deliberate "two-line" header */
-.th-date {
-  position: relative;
-}
-
+/* Date header: keep sort controls on the second line, centered */
 .th-date .th-title {
   display: flex;
   align-items: center;
-  justify-content: center; /* center the label */
+  justify-content: center;
   gap: 0.5rem;
-
-  padding-right: 0.25rem; /* tiny optical tweak */
 }
 
 .th-date-sort {
@@ -1151,11 +1152,9 @@ a:hover {
   gap: 0.35rem;
   align-items: center;
   justify-content: center;
-
-  margin-top: 0.25rem; /* give breathing room under label */
+  margin-top: 0.25rem;
 }
 
-/* Optional: equal-ish button footprint */
 .th-date-sort .th-sort {
   min-width: 32px;
   text-align: center;
@@ -1276,6 +1275,7 @@ a:hover {
 /* ============================================================
    Responsive scale tweaks
    ============================================================ */
+
 /* Tablet and down */
 @media (max-width: 900px) {
   :root {
