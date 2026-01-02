@@ -28,7 +28,6 @@ function validateOne(filePath) {
 
   if (error) return { rel, ok: false, issues: [error] };
 
-  // Required for routing + display + integrity
   const required = [
     "game_id",
     "runner_id",
@@ -52,7 +51,6 @@ function validateOne(filePath) {
     }
   }
 
-  // Slug rules
   if (!isEmpty(data.category_slug)) {
     const slug = String(data.category_slug).trim();
     if (!SLUG_RE.test(slug)) {
@@ -60,7 +58,6 @@ function validateOne(filePath) {
     }
   }
 
-  // Timing consistency (optional)
   const hasPrimaryTime = !isEmpty(data.time_primary);
   const hasPrimaryMethod = !isEmpty(data.timing_method_primary);
   if (hasPrimaryTime !== hasPrimaryMethod) {
