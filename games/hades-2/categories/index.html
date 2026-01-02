@@ -9,34 +9,7 @@ game_id: hades-2
      ========================================================= -->
 <section class="tab-panel active" data-panel="categories" id="categories">
 
-  <!-- =========================================================
-       Flatten runs from _data/runs/*.yml (folder) OR _data/runs.yml (single file)
-       ========================================================= -->
-  {% assign runs_raw = site.data.runs %}
-  {% assign runs_flat = "" | split: "" %}
-
-  {% if runs_raw and runs_raw.first and runs_raw.first[0] %}
-    <!-- runs_raw is a HASH (folder of files): { filename => [runs...] } -->
-    {% for pair in runs_raw %}
-      {% assign bucket = pair[1] %}
-      {% if bucket %}
-        {% for r in bucket %}
-          {% if r %}
-            {% assign runs_flat = runs_flat | push: r %}
-          {% endif %}
-        {% endfor %}
-      {% endif %}
-    {% endfor %}
-  {% else %}
-    <!-- runs_raw is already a LIST -->
-    {% for r in runs_raw %}
-      {% if r %}
-        {% assign runs_flat = runs_flat | push: r %}
-      {% endif %}
-    {% endfor %}
-  {% endif %}
-
-  {% assign runs = runs_flat | where: "game_id", page.game_id %}
+  {% assign runs = site.runs | where: "game_id", page.game_id %}
 
   <div class="card">
     <h1>Categories</h1>
