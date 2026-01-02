@@ -16,8 +16,6 @@
     const pageLabelEl = root.querySelector("[data-page-label]");
     const pagesWrap = root.querySelector("[data-pages]");
 
-    // If you have multiple lists on one page, give each wrapper an id.
-    // Otherwise they’ll share the same ?page= param.
     const paramKey = root.id ? `${root.id}-page` : "page";
     let currentPage = 1;
 
@@ -57,7 +55,6 @@
 
       if (pageLabelEl) pageLabelEl.textContent = `Page ${safePage} / ${totalPages}`;
 
-      // Render numbered pages
       if (pagesWrap) {
         pagesWrap.innerHTML = "";
 
@@ -93,7 +90,6 @@
       return;
     }
 
-    // Wire buttons
     if (btnPrev) {
       btnPrev.addEventListener("click", () => {
         render(currentPage - 1);
@@ -134,6 +130,12 @@
 
     const thSortAsc = document.getElementById("th-sort-asc");
     const thSortDesc = document.getElementById("th-sort-desc");
+
+    // New toolbar button labels + active filter chips
+    const btnCat = document.getElementById("filter-category");
+    const btnCh = document.getElementById("filter-challenge");
+    const btnRes = document.getElementById("filter-restrictions");
+    const activeFiltersWrap = document.getElementById("active-filters");
 
     rows.forEach((r, i) => (r.dataset._i = String(i)));
 
@@ -182,9 +184,7 @@
         const catId = norm(row.dataset.category);
         const chId = norm(row.dataset.challengeId);
 
-        // Keep label casing
         const chLabel = (row.dataset.challengeLabel || "").toString().trim();
-
         const resRaw = parseRestrictionsRaw(row);
 
         if (catId) {
@@ -251,6 +251,92 @@
       if (col === "challenge") return OPTIONS.challenges;
       if (col === "restrictions") return OPTIONS.restrictions;
       return [];
+    }
+
+    function getLabelFor(col, id) {
+      const list = getOptionsForCol(col);
+      const hit = list.find((x) => x.id === id);
+      return hit ? hit.label : id;
+    }
+
+    function updateTopButtonLabels() {
+      if (btnCat) {
+        btnCat.textContent = activeCats.size
+          ? `Category (${activeCats.size}) ▾`
+          : "Category ▾";
+      }
+      if (btnCh) {
+        btnCh.textContent = activeChallenges.size
+          ? `Challenge (${activeChallenges.size}) ▾`
+          : "Challenge ▾";
+      }
+      if (btnRes) {
+        btnRes.textContent = activeRestrictions.size
+          ? `Restrictions (${activeRestrictions.size}) ▾`
+          : "Restrictions ▾";
+      }
+    }
+
+    function renderActiveFilterChips() {
+      if (!activeFiltersWrap) return;
+
+      activeFiltersWrap.innerHTML = "";
+
+      const chips = [];
+
+      activeCats.forEach((id) => {
+        chips.push({ col: "category", id, label: getLabelFor("category", id) });
+      });
+
+      activeChallenges.forEach((id) => {
+        chips.push({ col: "challenge", id, label: getLabelFor("challenge", id) });
+      });
+
+      activeRestrictions.forEach((id) => {
+        chips.push({
+          col: "restrictions",
+          id,
+          label: getLabelFor("restrictions", id)
+        });
+      });
+
+      if (!chips.length) return;
+
+      function makeChip(text, onRemove) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "tag";
+        b.style.cursor = "pointer";
+        b.textContent = text + " ×";
+        b.addEventListener("click", onRemove);
+        return b;
+      }
+
+      chips.forEach((c) => {
+        const chip = makeChip(
+          `${c.col === "category" ? "Category" : c.col === "challenge" ? "Challenge" : "Restrictions"}: ${c.label}`,
+          () => {
+            const set = getSetForCol(c.col);
+            if (!set) return;
+            set.delete(c.id);
+            render();
+          }
+        );
+        activeFiltersWrap.appendChild(chip);
+      });
+
+      const clearAll = document.createElement("button");
+      clearAll.type = "button";
+      clearAll.className = "btn";
+      clearAll.textContent = "Clear All";
+      clearAll.addEventListener("click", () => {
+        activeCats.clear();
+        activeChallenges.clear();
+        activeRestrictions.clear();
+        render();
+      });
+
+      activeFiltersWrap.appendChild(clearAll);
     }
 
     function matchesAllRestrictions(rowResListNorm) {
@@ -331,6 +417,8 @@
       if (lim === 0) {
         filtered.forEach((r) => (r.style.display = ""));
         if (status) status.textContent = "Showing " + total + " matching runs.";
+        updateTopButtonLabels();
+        renderActiveFilterChips();
         return;
       }
 
@@ -342,6 +430,9 @@
         status.textContent =
           "Showing " + Math.min(lim, total) + " of " + total + " matching runs.";
       }
+
+      updateTopButtonLabels();
+      renderActiveFilterChips();
     }
 
     function renderThMenuList() {
@@ -389,7 +480,6 @@
       });
     }
 
-    // UPDATED: reduce visible "jump" by clamping before measuring
     function openThMenuFor(col, anchorEl) {
       if (!thMenu) return;
 
@@ -433,7 +523,10 @@
       });
     }
 
-    document.querySelectorAll("[data-filter-btn]").forEach((btn) => {
+    // Scope filter buttons to the runs card/table area so other pages don't trigger
+    const runsRoot = document.getElementById("runs-list") || table.closest(".page-width") || document;
+
+    runsRoot.querySelectorAll("[data-filter-btn]").forEach((btn) => {
       btn.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -504,6 +597,7 @@
     if (limitEl) limitEl.addEventListener("change", render);
 
     updateDateSortButtons();
+    updateTopButtonLabels();
     render();
   }
 
