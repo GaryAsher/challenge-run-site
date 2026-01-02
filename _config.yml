@@ -11,4 +11,10 @@ collections:
     permalink: /runners/:name/
   runs:
     output: false
-    permalink: /runs/:name/
+
+defaults:
+  - scope:
+      path: ""
+      type: runs
+    values:
+      layout: null
