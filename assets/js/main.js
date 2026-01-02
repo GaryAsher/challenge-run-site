@@ -135,30 +135,6 @@
     const thSortAsc = document.getElementById("th-sort-asc");
     const thSortDesc = document.getElementById("th-sort-desc");
 
-    // ---------------------------------------------------------
-    // Caret killer: remove accidental focus on load / bfcache
-    // ---------------------------------------------------------
-    function blurAllTypingFocus() {
-      const ae = document.activeElement;
-
-      if (
-        ae &&
-        (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.isContentEditable)
-      ) {
-        ae.blur();
-      }
-
-      if (q) q.blur();
-      if (thMenuQ) thMenuQ.blur();
-
-      if (thMenu) thMenu.hidden = true;
-      if (thMenuQ) thMenuQ.value = "";
-    }
-
-    setTimeout(blurAllTypingFocus, 0);
-    requestAnimationFrame(blurAllTypingFocus);
-    window.addEventListener("pageshow", blurAllTypingFocus);
-
     rows.forEach((r, i) => (r.dataset._i = String(i)));
 
     const norm = (s) => (s || "").toString().trim().toLowerCase();
