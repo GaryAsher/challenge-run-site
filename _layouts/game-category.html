@@ -29,24 +29,7 @@ layout: default
      Runs filtered by category
      ========================================================= -->
 <div class="page-width">
-
-  <!-- Normalize site.data.runs into a list (works whether runs is a list or a map) -->
-  {% assign runs_raw = site.data.runs %}
-  {% assign runs_list = runs_raw %}
-
-  {% if runs_raw and runs_raw.first and runs_raw.first[0] %}
-    {% assign runs_list = runs_raw | map: "last" %}
-  {% endif %}
-
-  <!-- Remove any nil/blank entries so Liquid `where` does not crash -->
-  {% assign cleaned = "" | split: "" %}
-  {% for r in runs_list %}
-    {% if r and r.game_id and r.category %}
-      {% assign cleaned = cleaned | push: r %}
-    {% endif %}
-  {% endfor %}
-
-  {% assign runs = cleaned | where: "game_id", page.game_id | where: "category", page.category | sort: "date_completed" | reverse %}
+  {% assign runs = site.runs | where: "game_id", page.game_id | where: "category", page.category | sort: "date_completed" | reverse %}
 
   {% if runs and runs.size > 0 %}
     <div class="table-wrap">
@@ -64,7 +47,12 @@ layout: default
         <tbody>
           {% for r in runs %}
             {% assign meta = site.data.challenges[r.challenge_id] %}
-            {% assign challenge_label = meta.label | default: r.challenge_id %}
+            {% assign challenge_label = r.challenge_id %}
+            {% if meta and meta.label %}
+              {% assign challenge_label = meta.label %}
+            {% endif %}
+
+            {% assign video_url = r.video_link | default: r.video %}
 
             <tr>
               <td>
@@ -77,15 +65,15 @@ layout: default
                 {% endif %}
               </td>
 
-              <td>{{ challenge_label }}</td>
+              <td>{{ challenge_label | default: "—" }}</td>
 
               <td>{{ r.time | default: "—" }}</td>
 
               <td>{{ r.date_completed | default: "—" }}</td>
 
               <td>
-                {% if r.video %}
-                  <a href="{{ r.video }}" target="_blank" rel="noopener">Link</a>
+                {% if video_url %}
+                  <a href="{{ video_url }}" target="_blank" rel="noopener">Link</a>
                 {% else %}
                   —
                 {% endif %}
