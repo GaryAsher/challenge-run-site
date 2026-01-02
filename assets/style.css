@@ -327,9 +327,13 @@ a:hover {
   text-decoration: none;
 }
 
-/* Make clickable tags feel clickable when they are buttons */
-button.tag {
-  cursor: pointer;
+button.tag { cursor: pointer; }
+
+/* Consistent spacing when multiple tags are rendered in a row */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.35rem;
 }
 
 /* ============================================================
@@ -441,7 +445,6 @@ button.tag {
 
 .active-filters:empty { display: none; }
 
-/* Active filter chips are clickable */
 .active-filters .tag {
   cursor: pointer;
 }
@@ -868,6 +871,11 @@ button.tag {
   color: var(--accent);
 }
 
+/* Replace inline margin on status */
+.runner-status {
+  margin: 0.25rem 0 0 0;
+}
+
 /* ============================================================
    Runner Links Wrapper
    ============================================================ */
@@ -1019,7 +1027,18 @@ button.tag {
 .tab-panel.active { display: block; }
 
 /* ============================================================
-   Runs Page: Table + Date Row + Pagination
+   Runner run meta spacing (replaces inline margin)
+   ============================================================ */
+.runner-run-meta {
+  margin-top: 0.35rem;
+}
+
+.runner-run-tags {
+  margin-top: 0.5rem;
+}
+
+/* ============================================================
+   Runs Page: Table + Pagination
    ============================================================ */
 .table-wrap {
   border: 1px solid var(--border);
@@ -1069,23 +1088,6 @@ button.tag {
 
 .runs-table tbody tr:last-child td { border-bottom: none; }
 
-.runs-date-row {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.runs-date-row .filter-wrap {
-  flex: 1;
-  max-width: none;
-}
-
-.runs-date-row .filter {
-  margin: 0;
-  max-width: none;
-}
-
 .pager {
   display: inline-flex;
   gap: 0.5rem;
@@ -1094,11 +1096,18 @@ button.tag {
 
 .pager .muted { white-space: nowrap; }
 
-/* Tag spacing only (visual style comes from .tag above) */
-.runs-table td .tag {
-  margin: 0.15rem 0.25rem 0 0;
+/* Only add extra spacing between multiple tags inside table cells */
+.runs-table td :is(.tag, .tags) .tag {
+  margin: 0;
+}
+.runs-table td .tag + .tag {
+  margin-left: 0.35rem;
+}
+.runs-table td .tags {
+  gap: 0.35rem;
 }
 
+/* Time column stays compact */
 .runs-table th:nth-child(5),
 .runs-table td:nth-child(5) {
   white-space: nowrap;
