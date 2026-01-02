@@ -125,9 +125,12 @@ a:hover {
   color: var(--fg);
 }
 
+/* IMPORTANT:
+   Do NOT constrain page width here.
+   page-width is the single source of truth for layout width. */
 .game-shell {
   max-width: none;
-  margin: 0 auto;
+  margin: 0;
 }
 
 /* ============================================================
@@ -207,7 +210,7 @@ a:hover {
   background: var(--surface);
 }
 
-/* Make form labels sit consistently above controls (Search matches Show) */
+/* Keep labels consistently above controls */
 .card label.muted {
   display: block;
   margin-bottom: 0.25rem;
@@ -354,6 +357,7 @@ a:hover {
   align-items: end;
 }
 
+/* Let the select size naturally in the right column */
 .filters-row .select {
   width: auto;
   min-width: 5.5rem;
@@ -584,12 +588,7 @@ a:hover {
   display: flex;
   align-items: flex-end;
 
-  background: linear-gradient(
-    to top,
-    var(--hero-strong),
-    var(--hero-mid),
-    var(--hero-light)
-  );
+  background: linear-gradient(to top, var(--hero-strong), var(--hero-mid), var(--hero-light));
 }
 
 .game-hero__content {
@@ -599,12 +598,8 @@ a:hover {
 
 .game-hero--compact {
   max-width: none;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.game-hero--compact .game-hero__content {
-  padding: 1rem;
+  margin-left: 0;
+  margin-right: 0;
 }
 
 @media (max-width: 640px) {
@@ -670,12 +665,7 @@ a:hover {
   inset: 0;
   display: flex;
   align-items: flex-end;
-  background: linear-gradient(
-    to top,
-    var(--overlay-strong),
-    var(--overlay-mid),
-    var(--overlay-light)
-  );
+  background: linear-gradient(to top, var(--overlay-strong), var(--overlay-mid), var(--overlay-light));
 }
 
 .game-card__title {
@@ -728,12 +718,7 @@ a:hover {
   inset: 0;
   display: flex;
   align-items: flex-end;
-  background: linear-gradient(
-    to top,
-    var(--overlay-strong),
-    var(--overlay-mid),
-    var(--overlay-light)
-  );
+  background: linear-gradient(to top, var(--overlay-strong), var(--overlay-mid), var(--overlay-light));
 }
 
 .runner-card__title {
@@ -983,7 +968,7 @@ a:hover {
   color: var(--fg);
   background: rgba(255, 255, 255, 0.03);
 
-  padding: 0.75rem 0.85rem;
+  padding: 0.75rem 2.25rem 0.75rem 0.85rem;
   border-bottom: 1px solid var(--border);
 }
 
@@ -1067,7 +1052,19 @@ a:hover {
   white-space: nowrap;
 }
 
-.th-caret {
+/* Ensure the title leaves room for a right-aligned caret */
+.th-filter > span {
+  display: inline-block;
+  padding-right: 1.5rem;
+}
+
+/* Align caret to the right edge of its header cell, centered */
+.th-filter .th-caret {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+
   appearance: none;
   border: 1px solid var(--border);
   background: transparent;
@@ -1075,13 +1072,12 @@ a:hover {
 
   border-radius: 8px;
   padding: 0.15rem 0.4rem;
-  margin-left: 0.4rem;
 
   line-height: 1;
   cursor: pointer;
 }
 
-.th-caret:hover {
+.th-filter .th-caret:hover {
   background: var(--panel);
   color: var(--fg);
 }
