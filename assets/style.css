@@ -404,6 +404,7 @@ a:hover {
 
 /* Active filter chips row */
 .active-filters {
+  margin-top: 0.5rem; /* replaces inline style */
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
@@ -411,6 +412,31 @@ a:hover {
 
 .active-filters:empty {
   display: none;
+}
+
+/* Make active filter chips match the table restriction tag style */
+.active-filters .tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+
+  font-size: 0.85rem;
+  line-height: 1.25;
+
+  cursor: pointer;
+  user-select: none;
+}
+
+.active-filters .tag:hover {
+  background: var(--panel);
+  color: var(--fg);
 }
 
 /* Mobile wrap */
