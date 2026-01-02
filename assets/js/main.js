@@ -227,6 +227,13 @@
 
     function closeThMenu() {
       if (!thMenu) return;
+    
+      if (thMenuQ && document.activeElement === thMenuQ) {
+        thMenuQ.blur();
+      }
+
+      if (thMenuQ) thMenuQ.value = "";
+    
       thMenu.hidden = true;
       thActiveCol = null;
     }
@@ -373,23 +380,41 @@
 
     function openThMenuFor(col, anchorEl) {
       if (!thMenu) return;
-
+    
       thActiveCol = col;
       thMenu.hidden = false;
-
+    
       const r = anchorEl.getBoundingClientRect();
-      const menuW = thMenu.offsetWidth || 320;
-      const menuH = thMenu.offsetHeight || 300;
-
-      const left = Math.min(window.innerWidth - menuW - 12, Math.max(12, r.left));
-      const top = Math.min(window.innerHeight - menuH - 12, r.bottom + 8);
-
-      thMenu.style.left = left + "px";
-      thMenu.style.top = top + "px";
-
+    
+      thMenu.style.left = Math.max(12, r.left) + "px";
+      thMenu.style.top = r.bottom + 8 + "px";
+    
       if (thMenuQ) thMenuQ.value = "";
       renderThMenuList();
-      if (thMenuQ) thMenuQ.focus();
+    
+      if (thMenuQ) {
+        requestAnimationFrame(() => {
+          if (!thMenuQ || thMenu.hidden) return;
+    
+          const menuW = thMenu.offsetWidth || 320;
+          const menuH = thMenu.offsetHeight || 300;
+    
+          const left = Math.min(
+            window.innerWidth - menuW - 12,
+            Math.max(12, r.left)
+          );
+    
+          const top = Math.min(
+            window.innerHeight - menuH - 12,
+            r.bottom + 8
+          );
+    
+          thMenu.style.left = left + "px";
+          thMenu.style.top = top + "px";
+    
+          thMenuQ.focus();
+        });
+      }
     }
 
     document.querySelectorAll("[data-filter-btn]").forEach((btn) => {
