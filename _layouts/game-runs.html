@@ -27,15 +27,6 @@ layout: default
 
       <!-- =========================================================
            Filter controls row
-           Goal: Use the Excel-style header filter UX, but in the top row.
-           We keep:
-           - #q (search input)
-           - #limit (show select)
-           We REMOVE:
-           - #cat #ch #res selects (your old left filters)
-           We ADD:
-           - toolbar filter buttons that reuse your existing th-menu (#th-menu)
-           - optional active chips container (#active-filters) for your main.js to populate
            ========================================================= -->
       <div class="card" style="margin: 0 0 1rem 0;">
 
@@ -54,7 +45,7 @@ layout: default
             >
           </div>
 
-          <!-- Category (Excel-style menu trigger) -->
+          <!-- Category -->
           <div class="runs-filter">
             <label class="muted" for="filter-category">Category</label>
             <button
@@ -68,7 +59,7 @@ layout: default
             </button>
           </div>
 
-          <!-- Challenge (Excel-style menu trigger) -->
+          <!-- Challenge -->
           <div class="runs-filter">
             <label class="muted" for="filter-challenge">Challenge</label>
             <button
@@ -82,7 +73,7 @@ layout: default
             </button>
           </div>
 
-          <!-- Restrictions (Excel-style menu trigger) -->
+          <!-- Restrictions -->
           <div class="runs-filter">
             <label class="muted" for="filter-restrictions">Restrictions</label>
             <button
@@ -110,16 +101,14 @@ layout: default
           </div>
         </div>
 
-        <!-- Active filters chips (your JS can populate) -->
-        <div id="active-filters" class="active-filters" style="margin-top: 0.5rem;"></div>
+        <!-- Active filters chips -->
+        <div id="active-filters" class="active-filters"></div>
 
         <p class="muted" id="status" style="margin: 0.5rem 0 0 0;"></p>
       </div>
 
       <!-- =========================================================
            Runs table
-           Change: remove the header caret buttons so you do not have duplicate controls.
-           Date sort stays.
            ========================================================= -->
       <div class="table-wrap" id="runs-list">
         <table class="runs-table" id="runs-table">
@@ -227,7 +216,7 @@ layout: default
           </tbody>
         </table>
 
-        <!-- Excel-style filter menu (single instance, reused by top buttons) -->
+        <!-- Excel-style filter menu -->
         <div class="th-menu" id="th-menu" hidden>
           <div class="th-menu__top">
             <input
