@@ -55,7 +55,7 @@ layout: default
               aria-label="Filter Category"
               data-filter-btn="category"
             >
-              All ▾
+              Category ▾
             </button>
           </div>
 
@@ -69,7 +69,7 @@ layout: default
               aria-label="Filter Challenge"
               data-filter-btn="challenge"
             >
-              All ▾
+              Challenge ▾
             </button>
           </div>
 
@@ -83,7 +83,7 @@ layout: default
               aria-label="Filter Restrictions"
               data-filter-btn="restrictions"
             >
-              Any ▾
+              Restrictions ▾
             </button>
           </div>
 
@@ -139,13 +139,12 @@ layout: default
             {% for r in runs %}
               {% assign meta = site.data.challenges[r.challenge_id] %}
               {% assign challenge_label = r.challenge_id %}
+
               {% if meta and meta.label %}
                 {% assign challenge_label = meta.label %}
               {% endif %}
 
               {% assign runner_label = r.runner | default: r.runner_id | default: "—" | replace: "_", " " %}
-
-              {% assign cat_slug = r.category_slug | default: "" | downcase %}
               {% assign cat_label = r.category | default: "—" %}
 
               {% assign r_texts = "" | split: "" %}
@@ -188,12 +187,13 @@ layout: default
 
                 <td>{{ cat_label }}</td>
 
-                <td>    
-                 {% if challenge_label and challenge_label != "" and challenge_label != "—" %}
-                   <span class="tag">{{ challenge_label }}</span>
-                 {% else %}
-                   —
-                 {% endif %}
+                <td>
+                  {% assign ch = challenge_label | default: "" | strip %}
+                  {% if ch != "" and ch != "—" %}
+                    <span class="tag">{{ ch }}</span>
+                  {% else %}
+                    —
+                  {% endif %}
                 </td>
 
                 <td>
