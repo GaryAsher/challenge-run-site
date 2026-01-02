@@ -448,7 +448,7 @@ a:hover {
 
   max-height: 260px;
   overflow: auto;
-  scrollbar-gutter: stable;
+  scrollbar-gutter: s;
 
   padding: 0.35rem;
 }
@@ -917,7 +917,7 @@ a:hover {
   margin: 0 0 1rem 0;
 }
 
-.page-width + .page-width .table-wrap {
+.page-width + .page-width .-wrap {
   margin-top: 0.75rem;
 }
 
@@ -963,7 +963,8 @@ a:hover {
 }
 
 .runs-table thead th {
-  text-align: left;
+  text-align: center;
+  vertical-align: top;
   font-weight: 700;
   color: var(--fg);
   background: rgba(255, 255, 255, 0.03);
