@@ -1,0 +1,19 @@
+name: Check CODEOWNERS is generated
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Verify CODEOWNERS matches reviewers.yml
+        run: node scripts/generate-codeowners.js --check
