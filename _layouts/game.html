@@ -11,7 +11,7 @@ layout: default
   <div class="game-shell">
 
     <!-- Overview -->
-    <section class="tab-panel active" data-panel="overview" id="overview">
+    <section class="tab-panel active" data-panel="overview">
       {% if content %}
         <div class="card">
           {{ content }}
@@ -23,70 +23,15 @@ layout: default
     <section class="tab-panel" data-panel="categories" id="categories">
       <div class="card">
         <h2>Categories</h2>
+        <p class="muted">Categories have moved under Runs.</p>
 
-        {% if page.categories and page.categories.size > 0 %}
-          <ul class="list">
-            {% for c in page.categories %}
-              <li>
-                <a href="{{ page.url | relative_url }}categories/{{ c | slugify }}/">
-                  {{ c }}
-                </a>
-              </li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          <p class="muted">No categories listed.</p>
-        {% endif %}
+        <p style="margin: 0.75rem 0 0 0;">
+          <a class="btn" href="{{ '/games/' | relative_url }}{{ page.game_id }}/game-runs/categories/">
+            View Categories
+          </a>
+        </p>
       </div>
     </section>
 
   </div>
 </div>
-
-<!-- =========================================================
-     Hash-based panel switcher + tab highlight sync
-     - default: Overview
-     - #categories: Categories
-     ========================================================= -->
-<script>
-(function () {
-  const panels = Array.from(document.querySelectorAll(".tab-panel[data-panel]"));
-  if (!panels.length) return;
-
-  const tabNav = document.querySelector(".game-tabs");
-  const tabs = tabNav ? Array.from(tabNav.querySelectorAll(".tab")) : [];
-
-  function setActivePanel(name) {
-    panels.forEach(p => p.classList.toggle("active", p.dataset.panel === name));
-  }
-
-  function setActiveTab(name) {
-    if (!tabs.length) return;
-
-    tabs.forEach(a => a.classList.remove("active"));
-
-    if (name === "categories") {
-      const t = tabs.find(a => (a.getAttribute("href") || "").indexOf("#categories") !== -1);
-      if (t) t.classList.add("active");
-      return;
-    }
-
-    const t = tabs.find(a => (a.getAttribute("href") || "").indexOf("#") === -1 && (a.getAttribute("href") || "").indexOf("game-runs") === -1);
-    if (t) t.classList.add("active");
-  }
-
-  function syncFromHash() {
-    const h = (window.location.hash || "").replace("#", "").toLowerCase();
-    if (h === "categories") {
-      setActivePanel("categories");
-      setActiveTab("categories");
-    } else {
-      setActivePanel("overview");
-      setActiveTab("overview");
-    }
-  }
-
-  window.addEventListener("hashchange", syncFromHash);
-  syncFromHash();
-})();
-</script>
