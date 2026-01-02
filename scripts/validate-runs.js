@@ -1,13 +1,6 @@
 #!/usr/bin/env node
 /*
 Validate queued run submissions in _queue_runs/.
-
-No external deps.
-Enforces:
-  - filename: YYYY-MM-DD__game-id__runner-id__category-slug__NN.md
-  - required keys exist
-  - category_slug is the routing key; category is display label
-  - timing fields are internally consistent
 */
 
 const fs = require("fs");
@@ -16,7 +9,6 @@ const path = require("path");
 const ROOT = process.cwd();
 const QUEUE_DIR = path.join(ROOT, "_queue_runs");
 
-// ---------- tiny front-matter parser (subset of YAML) ----------
 function stripQuotes(s) {
   const v = String(s ?? "").trim();
   if (
@@ -71,10 +63,6 @@ function parseFrontMatter(fileText) {
     const key = m[1];
     const rest = m[2] ?? "";
 
-    // List block:
-    // key:
-    //   - a
-    //   - b
     if (rest.trim() === "") {
       const items = [];
       let j = i + 1;
@@ -94,17 +82,14 @@ function parseFrontMatter(fileText) {
           continue;
         }
 
-        // next key
         break;
       }
 
-      // If no list items found, set empty string (acts like null-ish)
       data[key] = items.length ? items : "";
       i = j;
       continue;
     }
 
-    // Inline list: key: [a, b]
     const trimmed = rest.trim();
     if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
       const inner = trimmed.slice(1, -1).trim();
@@ -285,9 +270,7 @@ function validateOne(filePath) {
     fail(fileRel, `restriction_ids must be slugs. Got: ${JSON.stringify(restriction_ids)}`);
   }
 
-  // If one is present, the other should typically be same length (not required, but warn-ish via fail? keep soft)
   if (restriction_ids.length && restrictions.length && restriction_ids.length !== restrictions.length) {
-    // Keep as warning in logs, not hard fail
     console.log(
       `WARN ${fileRel}: restrictions and restriction_ids lengths differ (${restrictions.length} vs ${restriction_ids.length})`
     );
