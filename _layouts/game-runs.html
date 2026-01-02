@@ -20,14 +20,35 @@ layout: default
 <div class="page-width">
   <div class="game-shell">
 
+    <!-- =========================================================
+         Collect runs from _data/runs/*.yml (folder) OR _data/runs.yml (single file)
+         and flatten into a single list of run objects
+         ========================================================= -->
     {% assign runs_raw = site.data.runs %}
-    {% assign runs_list = runs_raw %}
+    {% assign runs_flat = "" | split: "" %}
 
     {% if runs_raw and runs_raw.first and runs_raw.first[0] %}
-      {% assign runs_list = runs_raw | map: "last" %}
+      <!-- runs_raw is a HASH (folder of files): { filename => [runs...] } -->
+      {% for pair in runs_raw %}
+        {% assign bucket = pair[1] %}
+        {% if bucket %}
+          {% for r in bucket %}
+            {% if r %}
+              {% assign runs_flat = runs_flat | push: r %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+      {% endfor %}
+    {% else %}
+      <!-- runs_raw is already a LIST -->
+      {% for r in runs_raw %}
+        {% if r %}
+          {% assign runs_flat = runs_flat | push: r %}
+        {% endif %}
+      {% endfor %}
     {% endif %}
 
-    {% assign runs = runs_list | where: "game_id", page.game_id | sort: "date_completed" | reverse %}
+    {% assign runs = runs_flat | where: "game_id", page.game_id | sort: "date_completed" | reverse %}
 
     {% if runs and runs.size > 0 %}
 
@@ -112,7 +133,10 @@ layout: default
           <tbody id="runs-body">
             {% for r in runs %}
               {% assign meta = site.data.challenges[r.challenge_id] %}
-              {% assign challenge_label = meta.label | default: r.challenge_id %}
+              {% assign challenge_label = r.challenge_id %}
+              {% if meta and meta.label %}
+                {% assign challenge_label = meta.label %}
+              {% endif %}
 
               {% assign r_texts = "" | split: "" %}
 
@@ -126,6 +150,8 @@ layout: default
 
               {% assign r_texts = r_texts | map: "strip" | uniq %}
               {% assign r_join_for_data = r_texts | join: "," %}
+
+              {% assign video_url = r.video_link | default: r.video %}
 
               <tr
                 class="run-row"
@@ -147,7 +173,7 @@ layout: default
 
                 <td>{{ r.category | default: "—" }}</td>
 
-                <td>{{ challenge_label }}</td>
+                <td>{{ challenge_label | default: "—" }}</td>
 
                 <td>
                   {% if r_texts and r_texts.size > 0 %}
@@ -164,8 +190,8 @@ layout: default
                 <td>{{ r.date_completed | default: "—" }}</td>
 
                 <td>
-                  {% if r.video %}
-                    <a href="{{ r.video }}" target="_blank" rel="noopener">Link</a>
+                  {% if video_url %}
+                    <a href="{{ video_url }}" target="_blank" rel="noopener">Link</a>
                   {% else %}
                     —
                   {% endif %}
