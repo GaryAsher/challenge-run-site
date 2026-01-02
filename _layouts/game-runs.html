@@ -223,6 +223,7 @@ layout: default
                 class="run-row"
                 data-runner="{{ r.runner_id | default: r.runner | default: '' | escape }}"
                 data-category="{{ r.category | default: '' | escape }}"
+                data-category-slug="{{ r.category_slug | default: (r.category | slugify) | escape }}"
                 data-challenge-id="{{ r.challenge_id | default: '' | escape }}"
                 data-challenge-label="{{ challenge_label | default: '' | escape }}"
                 data-restrictions="{{ r_texts | join: '||' | escape }}"
