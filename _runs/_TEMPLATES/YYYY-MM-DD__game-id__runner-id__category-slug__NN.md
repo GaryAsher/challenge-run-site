@@ -6,29 +6,26 @@
 layout: null
 
 game_id: GAME-ID
-runner: RUNNER_NAME
+
+runner: Runner Name
 runner_id: runner-id
 
 category: Category Name
 category_slug: category-slug
+
 challenge_id: challenge-id
 
-restrictions:
-  - Restriction One
-  - Restriction Two
+restrictions: []
+restriction_ids: []
 
-restriction_ids:
-  - restriction-one
-  - restriction-two
-
-time: "HH:MM:SS(.MMM optional)"
-timing_method: RTA
-timing_method_secondary:
+time: "HH:MM:SS"          # or "HH:MM:SS.MMM"
+timing_method: RTA        # RTA | IGT | LRT
+timing_method_secondary:  # optional: RTA | IGT | LRT
 
 verified: false
-verified_by: moderator-name
+verified_by:
 
-video_link: https://youtube.com/VIDEO_ID
+video_link:
 
 date_completed: YYYY-MM-DD
 ---
