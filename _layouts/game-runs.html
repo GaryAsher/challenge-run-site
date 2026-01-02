@@ -8,6 +8,16 @@ layout: default
 {% assign active_cat_slug = page.category_slug | default: "" %}
 {% assign active_cat_label = "" %}
 
+{%- comment -%}
+  Build a stable base path for this game.
+  Prefer the game's actual page URL if it exists, otherwise fall back to /games/<game_id>/.
+{%- endcomment -%}
+{% assign game_base = game.url | default: "" %}
+{% if game_base == "" %}
+  {% assign game_base = "/games/" | append: page.game_id | append: "/" %}
+{% endif %}
+{% assign runs_base = game_base | append: "game-runs/" %}
+
 <!-- =========================================================
      Runs + Filters
      ========================================================= -->
@@ -17,7 +27,7 @@ layout: default
     {% if active_cat_slug != "" %}
       <div class="card card--compact" style="margin-bottom: 1rem;">
         <p class="muted" style="margin: 0;">
-          <a href="{{ '/games/' | relative_url }}{{ game.game_id }}/game-runs/">← All Runs</a>
+          <a href="{{ runs_base | relative_url }}">← All Runs</a>
           <span class="muted"> / Category</span>
         </p>
       </div>
