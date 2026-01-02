@@ -1,7 +1,11 @@
 // =========================================================
 // Client-side pagination for any .list-paged block
+// + Runs table filtering (Search + Header filters + Date sort + Limit)
 // =========================================================
 (function () {
+  // =========================================================
+  // Client-side pagination for any .list-paged block
+  // =========================================================
   function initPagedList(root) {
     const pageSize = parseInt(root.getAttribute("data-page-size") || "25", 10);
     const items = Array.from(root.querySelectorAll(".list-item"));
@@ -105,7 +109,6 @@
     }
 
     render(getPageFromUrl());
-
     window.addEventListener("popstate", () => render(getPageFromUrl()));
   }
 
@@ -125,14 +128,6 @@
 
     const thMenu = document.getElementById("th-menu");
     const thMenuQ = document.getElementById("th-menu-q");
-
-    // Prevent stray caret on initial load
-    requestAnimationFrame(() => {
-      if (document.activeElement && document.activeElement.blur) {
-        document.activeElement.blur();
-      }
-    });
-    
     const thMenuList = document.getElementById("th-menu-list");
     const thMenuClear = document.getElementById("th-menu-clear");
     const thMenuClose = document.getElementById("th-menu-close");
@@ -140,36 +135,47 @@
     const thSortAsc = document.getElementById("th-sort-asc");
     const thSortDesc = document.getElementById("th-sort-desc");
 
-    // Defensive reset: prevent restored focus from showing a stray caret
-    if (thMenu) thMenu.hidden = true;
-    
-    if (thMenuQ) {
-      thMenuQ.value = "";
-      thMenuQ.blur();
-    }
-    
-    window.addEventListener("pageshow", () => {
-      if (thMenu) thMenu.hidden = true;
-      if (thMenuQ) {
-        thMenuQ.value = "";
-        thMenuQ.blur();
+    // ---------------------------------------------------------
+    // Caret killer: remove accidental focus on load / bfcache
+    // ---------------------------------------------------------
+    function blurAllTypingFocus() {
+      const ae = document.activeElement;
+
+      if (
+        ae &&
+        (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.isContentEditable)
+      ) {
+        ae.blur();
       }
-    });
+
+      if (q) q.blur();
+      if (thMenuQ) thMenuQ.blur();
+
+      if (thMenu) thMenu.hidden = true;
+      if (thMenuQ) thMenuQ.value = "";
+    }
+
+    setTimeout(blurAllTypingFocus, 0);
+    requestAnimationFrame(blurAllTypingFocus);
+    window.addEventListener("pageshow", blurAllTypingFocus);
 
     rows.forEach((r, i) => (r.dataset._i = String(i)));
 
     const norm = (s) => (s || "").toString().trim().toLowerCase();
-
-    function uniq(arr) {
-      return Array.from(new Set(arr));
-    }
+    const uniq = (arr) => Array.from(new Set(arr));
 
     function parseDateToNumber(s) {
       const v = (s || "").trim();
       if (!v) return NaN;
 
       const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(v);
-      if (m) return Date.UTC(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10));
+      if (m) {
+        return Date.UTC(
+          parseInt(m[1], 10),
+          parseInt(m[2], 10) - 1,
+          parseInt(m[3], 10)
+        );
+      }
 
       const t = Date.parse(v);
       return Number.isFinite(t) ? t : NaN;
@@ -181,8 +187,6 @@
     }
 
     function parseRestrictionsRaw(row) {
-      // Expecting restrictions stored as display labels joined by "||"
-      // Example: data-restrictions="Hestia Only||No Hexes"
       return (row.dataset.restrictions || "")
         .split("||")
         .map((s) => (s || "").toString().trim())
@@ -202,7 +206,7 @@
         const catId = norm(row.dataset.category);
         const chId = norm(row.dataset.challengeId);
 
-        // IMPORTANT: do not lower-case the stored label
+        // Keep label casing
         const chLabel = (row.dataset.challengeLabel || "").toString().trim();
 
         const resRaw = parseRestrictionsRaw(row);
@@ -251,13 +255,10 @@
 
     function closeThMenu() {
       if (!thMenu) return;
-    
-      if (thMenuQ && document.activeElement === thMenuQ) {
-        thMenuQ.blur();
-      }
 
+      if (thMenuQ && document.activeElement === thMenuQ) thMenuQ.blur();
       if (thMenuQ) thMenuQ.value = "";
-    
+
       thMenu.hidden = true;
       thActiveCol = null;
     }
@@ -297,9 +298,12 @@
 
       if (needle) {
         const hay =
-          norm(row.dataset.runner) + " " +
-          norm(row.dataset.category) + " " +
-          norm(row.dataset.challengeLabel) + " " +
+          norm(row.dataset.runner) +
+          " " +
+          norm(row.dataset.category) +
+          " " +
+          norm(row.dataset.challengeLabel) +
+          " " +
           norm(resRaw.join(" "));
 
         if (!hay.includes(needle)) return false;
@@ -318,11 +322,15 @@
         const aBad = !Number.isFinite(aDate);
         const bBad = !Number.isFinite(bDate);
 
-        if (aBad && bBad) return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
+        if (aBad && bBad) {
+          return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
+        }
         if (aBad) return 1;
         if (bBad) return -1;
 
-        if (aDate === bDate) return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
+        if (aDate === bDate) {
+          return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
+        }
 
         return dir === "asc" ? aDate - bDate : bDate - aDate;
       });
@@ -354,7 +362,10 @@
         r.style.display = idx < lim ? "" : "none";
       });
 
-      if (status) status.textContent = "Showing " + Math.min(lim, total) + " of " + total + " matching runs.";
+      if (status) {
+        status.textContent =
+          "Showing " + Math.min(lim, total) + " of " + total + " matching runs.";
+      }
     }
 
     function renderThMenuList() {
@@ -404,38 +415,37 @@
 
     function openThMenuFor(col, anchorEl) {
       if (!thMenu) return;
-    
+
       thActiveCol = col;
       thMenu.hidden = false;
-    
+
       const r = anchorEl.getBoundingClientRect();
-    
+
+      // Initial placement
       thMenu.style.left = Math.max(12, r.left) + "px";
       thMenu.style.top = r.bottom + 8 + "px";
-    
+
       if (thMenuQ) thMenuQ.value = "";
       renderThMenuList();
-    
+
+      // Focus after it is visible, and clamp within viewport
       if (thMenuQ) {
         requestAnimationFrame(() => {
           if (!thMenuQ || thMenu.hidden) return;
-    
+
           const menuW = thMenu.offsetWidth || 320;
           const menuH = thMenu.offsetHeight || 300;
-    
+
           const left = Math.min(
             window.innerWidth - menuW - 12,
             Math.max(12, r.left)
           );
-    
-          const top = Math.min(
-            window.innerHeight - menuH - 12,
-            r.bottom + 8
-          );
-    
+
+          const top = Math.min(window.innerHeight - menuH - 12, r.bottom + 8);
+
           thMenu.style.left = left + "px";
           thMenu.style.top = top + "px";
-    
+
           thMenuQ.focus();
         });
       }
@@ -479,7 +489,8 @@
         if (!thMenu || thMenu.hidden) return;
         if (thMenu.contains(e.target)) return;
 
-        const isCaret = e.target && e.target.closest && e.target.closest("[data-filter-btn]");
+        const isCaret =
+          e.target && e.target.closest && e.target.closest("[data-filter-btn]");
         if (isCaret) return;
 
         closeThMenu();
