@@ -11,3 +11,4 @@ collections:
     permalink: /runners/:name/
   runs:
     output: false
+    permalink: /runs/:name/
