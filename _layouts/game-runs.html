@@ -47,7 +47,7 @@ layout: default
 
     {%- comment -%}
       If we're on a category subpage, filter runs to that category.
-      Prefer r.category_slug if present, else slugify r.category.
+      ENFORCE category_slug (no slugify fallback).
     {%- endcomment -%}
     {% if active_cat_slug != "" %}
       {% assign runs = runs | where_exp: "r", "(r.category_slug == active_cat_slug)" %}
@@ -223,12 +223,12 @@ layout: default
                 class="run-row"
                 data-runner="{{ r.runner_id | default: r.runner | default: '' | escape }}"
                 data-category="{{ r.category | default: '' | escape }}"
-                data-category-slug="{{ r.category_slug | default: (r.category | slugify) | escape }}"
+                data-category-slug="{{ r.category_slug | default: '' | escape }}"
                 data-challenge-id="{{ r.challenge_id | default: '' | escape }}"
                 data-challenge-label="{{ challenge_label | default: '' | escape }}"
                 data-restrictions="{{ r_texts | join: '||' | escape }}"
                 data-date="{{ r.date_completed | default: '' | escape }}"
-                data-time="{{ r.time | default: '' | escape }}"
+                data-time="{{ r.time_primary | default: r.time | default: '' | escape }}"
               >
                 <td>
                   {% if r.runner_id %}
@@ -259,7 +259,7 @@ layout: default
                   {% endif %}
                 </td>
 
-                <td>{{ r.time | default: "—" }}</td>
+                <td>{{ r.time_primary | default: r.time | default: "—" }}</td>
 
                 <td>{{ r.date_completed | default: "—" }}</td>
 
