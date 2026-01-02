@@ -125,6 +125,14 @@
 
     const thMenu = document.getElementById("th-menu");
     const thMenuQ = document.getElementById("th-menu-q");
+
+    // Prevent stray caret on initial load
+    requestAnimationFrame(() => {
+      if (document.activeElement && document.activeElement.blur) {
+        document.activeElement.blur();
+      }
+    });
+    
     const thMenuList = document.getElementById("th-menu-list");
     const thMenuClear = document.getElementById("th-menu-clear");
     const thMenuClose = document.getElementById("th-menu-close");
