@@ -48,9 +48,11 @@ layout: default
 {% else %}
   <div class="page-width">
     <h1>{{ page.name }}</h1>
+
     {% if page.status %}
       <p class="muted">{{ page.status }}</p>
     {% endif %}
+
     {% if page.tags and page.tags.size > 0 %}
       <div class="game-tags" style="margin-top: 0.5rem;">
         {% for tag in page.tags %}
@@ -64,25 +66,24 @@ layout: default
 
 <!-- =========================================================
      Game tabs (Overview / Categories / Runs)
-     Notes:
-     - Overview + Categories are in-page tab panels
-     - Runs is a real link to the runs page for this game
      ========================================================= -->
 <div class="page-width">
   <div class="game-shell">
     <nav class="runner-tabs game-tabs" id="game-tabs">
-      <button class="tab active" data-tab="overview" type="button">Overview</button>
-      <button class="tab" data-tab="categories" type="button">Categories</button>
+      <button class="tab active" data-tab="overview" type="button">
+        Overview
+      </button>
 
-      <a class="tab" href="{{ page.url | relative_url }}game-runs/">
+      <button class="tab" data-tab="categories" type="button">
+        Categories
+      </button>
+
+      <a
+        class="tab"
+        href="{{ '/games/' | relative_url | append: page.game_id | append: '/game-runs/' }}"
+      >
         Runs
       </a>
-      {%- comment -%}
-      If your runs page is actually:
-        /games/<game-id>/completed-runs/
-      then replace the href above with:
-        href="{{ page.url | relative_url }}completed-runs/"
-      {%- endcomment -%}
     </nav>
   </div>
 </div>
