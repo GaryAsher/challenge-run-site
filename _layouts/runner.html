@@ -160,9 +160,18 @@ layout: default
               {% endif %}
 
               <div class="muted" style="margin-top: 0.35rem;">
-                {% if r.challenge_id %}
-                  {% assign chmeta = site.data.challenges[r.challenge_id] %}
-                  <span class="tag">{{ chmeta.label | default: r.challenge_id }}</span>
+                {% assign ch_id = r.challenge_id | default: "" | strip %}
+                {% if ch_id != "" %}
+                 {% assign chmeta = site.data.challenges[ch_id] %}
+                 {% assign ch_label = ch_id %}
+                 {% if chmeta and chmeta.label %}
+                   {% assign ch_label = chmeta.label %}
+                 {% endif %}
+                
+                 {% assign ch_label = ch_label | strip %}
+                 {% if ch_label != "" and ch_label != "—" %}
+                   <span class="tag">{{ ch_label }}</span>
+                 {% endif %}
                 {% endif %}
 
                 {% if r_time and r_time != "" %}
