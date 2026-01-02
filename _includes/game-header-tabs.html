@@ -1,0 +1,90 @@
+{% assign game = include.game | default: page %}
+
+<!-- =========================================================
+     Back link
+     ========================================================= -->
+<div class="page-width">
+  <p class="muted page-back">
+    <a href="{{ '/games/' | relative_url }}">← Games</a>
+  </p>
+</div>
+
+<!-- =========================================================
+     Game hero
+     ========================================================= -->
+{% if game.cover %}
+  <div class="page-width">
+    <div class="game-shell">
+      <section
+        class="game-hero"
+        style="
+          background-image: url('{{ game.cover | relative_url }}');
+          background-position: {{ game.cover_position | default: 'center' }};
+        "
+      >
+        <div class="game-hero__overlay">
+          <div class="game-hero__content">
+            <h1>{{ game.name }}</h1>
+
+            {% if game.status %}
+              <p class="muted">{{ game.status }}</p>
+            {% endif %}
+
+            {% if game.tags and game.tags.size > 0 %}
+              <div class="game-tags">
+                {% for tag in game.tags %}
+                  {% assign meta = site.data.tags[tag] %}
+                  <span class="tag">{{ meta.label | default: tag }}</span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+{% else %}
+  <div class="page-width">
+    <div class="game-shell">
+      <h1>{{ game.name }}</h1>
+
+      {% if game.status %}
+        <p class="muted">{{ game.status }}</p>
+      {% endif %}
+
+      {% if game.tags and game.tags.size > 0 %}
+        <div class="game-tags" style="margin-top: 0.5rem;">
+          {% for tag in game.tags %}
+            {% assign meta = site.data.tags[tag] %}
+            <span class="tag">{{ meta.label | default: tag }}</span>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}
+
+<!-- =========================================================
+     Game tabs
+     include.active = "overview" | "categories" | "runs"
+     ========================================================= -->
+<div class="page-width">
+  <div class="game-shell">
+    <nav class="runner-tabs game-tabs" id="game-tabs">
+      <button class="tab {% if include.active == 'overview' %}active{% endif %}" data-tab="overview" type="button">
+        Overview
+      </button>
+
+      <button class="tab {% if include.active == 'categories' %}active{% endif %}" data-tab="categories" type="button">
+        Categories
+      </button>
+
+      <a
+        class="tab {% if include.active == 'runs' %}active{% endif %}"
+        href="{{ '/games/' | relative_url | append: game.game_id | append: '/game-runs/' }}"
+      >
+        Runs
+      </a>
+    </nav>
+  </div>
+</div>
