@@ -1,20 +1,34 @@
 ---
+# TEMPLATE FILE
+# Copy this file, rename it, and move it up one level into /_runs/
+# Do not commit this file as a real run
+
 layout: null
-game_id: hades-2
-runner: Gary_Asher
-runner_id: gary-asher
-category: Underworld Any%
-category_slug: underworld-any
-challenge_id: no-hit-no-damage
+
+game_id: GAME-ID
+runner: RUNNER_NAME
+runner_id: runner-id
+
+category: Category Name
+category_slug: category-slug
+challenge_id: challenge-id
+
 restrictions:
-  - Hestia Only
-  - No Hexes
+  - Restriction One
+  - Restriction Two
+
 restriction_ids:
-  - hestia-only
-  - no-hexes
-time: "00:27:41"
-verified: true
-verified_by: Self
-video_link: https://www.youtube.com/watch?v=XXXXXXXX
-date_completed: 2025-01-03
+  - restriction-one
+  - restriction-two
+
+time: "HH:MM:SS(.MMM optional)"
+timing_method: RTA
+timing_method_secondary:
+
+verified: false
+verified_by: moderator-name
+
+video_link: https://youtube.com/VIDEO_ID
+
+date_completed: YYYY-MM-DD
 ---
