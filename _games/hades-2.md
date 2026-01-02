@@ -26,12 +26,17 @@ challenges:
   - no-damage
   - no-hit-no-damage
 
-categories:
-  - Chaos Trials
-  - Underworld Any%
-  - Surface Any%
-  - Underworld VoR4
-  - Surface VoR4
+categories_data:
+  - slug: chaos-trials
+    label: Chaos Trials
+  - slug: underworld-any
+    label: Underworld Any%
+  - slug: surface-any
+    label: Surface Any%
+  - slug: underworld-vor4
+    label: Underworld VoR4
+  - slug: surface-vor4
+    label: Surface VoR4
 
 subcategories:
   - God Only
