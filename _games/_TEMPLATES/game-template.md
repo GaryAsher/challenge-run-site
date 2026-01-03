@@ -1,14 +1,12 @@
 ---
 layout: game
-game_id: hades-2
-name: Hades II
-status: Tracking challenge categories, rules, and notable runs.
+game_id: __GAME_ID__
+name: __GAME_NAME__
+status: __STATUS__
 
-# GitHub review routing (used by scripts/generate-codeowners.js)
-reviewers: []   # or: ["@Somebody", "@AnotherPerson"]
+reviewers: []
 
-tags:
-  - action
-  - roguelike
-...
+tags: []
+cover: /assets/img/games/__FIRST_LETTER__/__GAME_ID__.jpg
+cover_position: center
 ---
