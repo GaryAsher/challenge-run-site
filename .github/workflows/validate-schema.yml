@@ -2,8 +2,22 @@ name: Validate repo schema
 
 on:
   pull_request:
+    paths:
+      - "_data/**"
+      - "_games/**"
+      - "_runners/**"
+      - "_runs/**"
+      - "scripts/validate-schema.js"
+      - "package*.json"
   push:
     branches: [ main ]
+    paths:
+      - "_data/**"
+      - "_games/**"
+      - "_runners/**"
+      - "_runs/**"
+      - "scripts/validate-schema.js"
+      - "package*.json"
 
 jobs:
   validate:
@@ -14,9 +28,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Validate schema
         run: node scripts/validate-schema.js
