@@ -30,7 +30,3 @@ jobs:
           body: "This PR adds package-lock.json so workflows can use npm ci reliably."
           branch: "automation/add-package-lock"
           delete-branch: true
-
-          body: "This PR adds package-lock.json so workflows can use npm ci reliably."
-          branch: "automation/add-package-lock"
-          delete-branch: true
