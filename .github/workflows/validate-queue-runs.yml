@@ -1,0 +1,75 @@
+name: Validate queued run submissions
+
+on:
+  pull_request:
+    paths:
+      - "_queue_runs/**"
+      - "_games/**"
+      - "scripts/validate-runs.js"
+      - "scripts/validate-schema.js"
+      - "package.json"
+      - "package-lock.json"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: validate-queue-runs.yml
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install
+        run: npm ci
+
+      - name: Validate schema
+        run: node scripts/validate-schema.js
+
+      - name: Validate queued runs
+        run: node scripts/validate-runs.js
+
+      - name: Enforce queue folder matches game_id
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Find top-level folders under _queue_runs (excluding README.md)
+          mapfile -t qdirs < <(find _queue_runs -mindepth 1 -maxdepth 1 -type d -printf "%f\n" | sort)
+
+          if [[ ${#qdirs[@]} -eq 0 ]]; then
+            echo "No queue folders found (ok)."
+            exit 0
+          fi
+
+          # Build set of valid game_ids from _games/*.md
+          # This assumes _games files contain a line like: game_id: hades-2
+          valid_ids="$(grep -RhoE '^\s*game_id:\s*[A-Za-z0-9_-]+' _games | sed -E 's/^\s*game_id:\s*//' | sort -u)"
+
+          if [[ -z "${valid_ids}" ]]; then
+            echo "ERROR: Could not find any game_id values in _games/."
+            exit 1
+          fi
+
+          bad=0
+          for d in "${qdirs[@]}"; do
+            if ! echo "${valid_ids}" | grep -qx "${d}"; then
+              echo "ERROR: _queue_runs/${d}/ does not match any known game_id in _games/."
+              bad=1
+            fi
+          done
+
+          if [[ $bad -ne 0 ]]; then
+            echo ""
+            echo "Fix: rename the queue folder(s) to exactly match an existing game_id."
+            exit 1
+          fi
+
+          echo "Queue folder names match known game_id values."
