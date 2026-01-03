@@ -30,6 +30,9 @@ flawless:
 # G
 
 # H
+high-score:
+  label: High Score
+
 hitless:
   label: Hitless
   aliases: ["No-Hit"]
