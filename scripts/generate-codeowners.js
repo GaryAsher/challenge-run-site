@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Generate .github/CODEOWNERS from:
- *   - Global owners: _data/reviewers.yml (global: [...])
+ *   - Global owners: _data/codeowners.yml (global: [...])
  *   - Per-game owners: _games/*.md front matter (reviewers: [...])
  *
  * Usage:
@@ -20,7 +20,7 @@ const path = require("path");
 
 const ROOT = process.cwd();
 
-const GLOBAL_INPUT = path.join(ROOT, "_data", "reviewers.yml");
+const GLOBAL_INPUT = path.join(ROOT, "_data", "codeowners.yml");
 const GAMES_DIR = path.join(ROOT, "_games");
 const OUTPUT = path.join(ROOT, ".github", "CODEOWNERS");
 
