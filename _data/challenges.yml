@@ -1,5 +1,5 @@
 # 0-9
-1CC:
+1cc:
   label: 1CC
   aliases: ["1 Credit Clear"]
   
@@ -14,18 +14,18 @@ blindfolded:
 # D
 damageless:
   label: Damageless
-  aliases: ["No-Damage"]
+  aliases: ["No-Damage, No Damage"]
   
 deathless:
   label: Deathless
-  aliases: ["No-Death"]
+  aliases: ["No-Death, No Death"]
 
 # E
 
 # F
 flawless:
   label: Flawless
-  aliases: ["No-Flaw", "Perfect"]
+  aliases: ["Perfect"]
   
 # G
 
@@ -35,7 +35,7 @@ high-score:
 
 hitless:
   label: Hitless
-  aliases: ["No-Hit"]
+  aliases: ["No-Hit", "No Hit"]
 
 # I
 
@@ -46,12 +46,14 @@ hitless:
 # L
 
 # M
+minimalist:
+  label: Minimalist
 
 # N
 
 no-hit-no-damage:
   label: No-Hit / No-Damage
-  aliases: ["NHND"]
+  aliases: ["No Hit No Damage", "No Hit - No Damage", "NHND"]
   
 # O
 
