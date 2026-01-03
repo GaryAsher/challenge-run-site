@@ -164,7 +164,7 @@ function parseFilename(filePath) {
   if (!m) return null;
 
   return {
-    dateSubmitted: m[1],
+    dateSubmitted: m[1], // from filename
     game_id: m[2],
     runner_id: m[3],
     category_slug: m[4],
@@ -224,7 +224,9 @@ function validateOne(filePath) {
   const relToQueue = getRelToQueue(filePath);
   const parts = relToQueue.split("/").filter(Boolean);
   if (parts.length > 2) {
-    console.log(`WARN ${fileRel}: extra subfolders under game_id folder are allowed but not recommended.`);
+    console.log(
+      `WARN ${fileRel}: extra subfolders under game_id folder are allowed but not recommended.`
+    );
   }
 
   // Required routing + display fields
@@ -235,6 +237,7 @@ function validateOne(filePath) {
     "challenge_id",
     "runner",
     "category",
+    "date_submitted", // NEW: enforced
     "date_completed",
     "status",
   ];
@@ -248,9 +251,15 @@ function validateOne(filePath) {
 
   // Filename must match content IDs
   if (String(data.game_id).trim() !== fn.game_id)
-    fail(fileRel, `game_id mismatch (filename=${fn.game_id}, frontmatter=${data.game_id})`);
+    fail(
+      fileRel,
+      `game_id mismatch (filename=${fn.game_id}, frontmatter=${data.game_id})`
+    );
   if (String(data.runner_id).trim() !== fn.runner_id)
-    fail(fileRel, `runner_id mismatch (filename=${fn.runner_id}, frontmatter=${data.runner_id})`);
+    fail(
+      fileRel,
+      `runner_id mismatch (filename=${fn.runner_id}, frontmatter=${data.runner_id})`
+    );
   if (String(data.category_slug).trim() !== fn.category_slug)
     fail(
       fileRel,
@@ -259,25 +268,56 @@ function validateOne(filePath) {
 
   // Enforce slugs
   if (!SLUG_RE.test(String(data.game_id)))
-    fail(fileRel, `game_id must be a slug (lowercase, hyphen). Got: ${data.game_id}`);
+    fail(
+      fileRel,
+      `game_id must be a slug (lowercase, hyphen). Got: ${data.game_id}`
+    );
   if (!SLUG_RE.test(String(data.runner_id)))
-    fail(fileRel, `runner_id must be a slug (lowercase, hyphen). Got: ${data.runner_id}`);
+    fail(
+      fileRel,
+      `runner_id must be a slug (lowercase, hyphen). Got: ${data.runner_id}`
+    );
   if (!SLUG_RE.test(String(data.category_slug)))
-    fail(fileRel, `category_slug must be a slug (lowercase, hyphen). Got: ${data.category_slug}`);
+    fail(
+      fileRel,
+      `category_slug must be a slug (lowercase, hyphen). Got: ${data.category_slug}`
+    );
   if (!SLUG_RE.test(String(data.challenge_id)))
-    fail(fileRel, `challenge_id must be a slug (lowercase, hyphen). Got: ${data.challenge_id}`);
+    fail(
+      fileRel,
+      `challenge_id must be a slug (lowercase, hyphen). Got: ${data.challenge_id}`
+    );
 
   // Status
   const st = String(data.status).trim().toLowerCase();
   if (!STATUS_SET.has(st))
-    fail(fileRel, `status must be one of: pending, approved, rejected. Got: ${data.status}`);
+    fail(
+      fileRel,
+      `status must be one of: pending, approved, rejected. Got: ${data.status}`
+    );
 
   // Dates
   if (!DATE_RE.test(String(data.date_completed).trim()))
-    fail(fileRel, `date_completed must be YYYY-MM-DD. Got: ${data.date_completed}`);
+    fail(
+      fileRel,
+      `date_completed must be YYYY-MM-DD. Got: ${data.date_completed}`
+    );
 
+  // Filename date validation
   if (!DATE_RE.test(String(fn.dateSubmitted)))
     fail(fileRel, `filename date must be YYYY-MM-DD. Got: ${fn.dateSubmitted}`);
+
+  // NEW: date_submitted must be valid and match filename date
+  const ds = String(data.date_submitted).trim();
+  if (!DATE_RE.test(ds))
+    fail(fileRel, `date_submitted must be YYYY-MM-DD. Got: ${data.date_submitted}`);
+
+  if (ds !== fn.dateSubmitted) {
+    fail(
+      fileRel,
+      `date_submitted must match filename date (filename=${fn.dateSubmitted}, frontmatter=${ds})`
+    );
+  }
 
   // Approved expectations
   if (st === "approved") {
@@ -292,11 +332,15 @@ function validateOne(filePath) {
   const t2 = String(data.time_secondary ?? "").trim();
   const m2 = String(data.timing_method_secondary ?? "").trim();
 
-  if (t1 && !TIME_RE.test(t1)) fail(fileRel, `time_primary invalid. Use HH:MM:SS or HH:MM:SS.MMM. Got: ${t1}`);
-  if (t2 && !TIME_RE.test(t2)) fail(fileRel, `time_secondary invalid. Use HH:MM:SS or HH:MM:SS.MMM. Got: ${t2}`);
+  if (t1 && !TIME_RE.test(t1))
+    fail(fileRel, `time_primary invalid. Use HH:MM:SS or HH:MM:SS.MMM. Got: ${t1}`);
+  if (t2 && !TIME_RE.test(t2))
+    fail(fileRel, `time_secondary invalid. Use HH:MM:SS or HH:MM:SS.MMM. Got: ${t2}`);
 
-  if (m1 && !TIMING_SET.has(m1)) fail(fileRel, `timing_method_primary must be RTA|IGT|LRT. Got: ${m1}`);
-  if (m2 && !TIMING_SET.has(m2)) fail(fileRel, `timing_method_secondary must be RTA|IGT|LRT. Got: ${m2}`);
+  if (m1 && !TIMING_SET.has(m1))
+    fail(fileRel, `timing_method_primary must be RTA|IGT|LRT. Got: ${m1}`);
+  if (m2 && !TIMING_SET.has(m2))
+    fail(fileRel, `timing_method_secondary must be RTA|IGT|LRT. Got: ${m2}`);
 
   if (t1 && !m1) fail(fileRel, "time_primary provided but timing_method_primary is empty");
   if (m1 && !t1) fail(fileRel, "timing_method_primary provided but time_primary is empty");
@@ -308,10 +352,17 @@ function validateOne(filePath) {
   const restriction_ids = asArray(data.restriction_ids);
 
   if (restriction_ids.some((x) => !SLUG_RE.test(String(x)))) {
-    fail(fileRel, `restriction_ids must be slugs. Got: ${JSON.stringify(restriction_ids)}`);
+    fail(
+      fileRel,
+      `restriction_ids must be slugs. Got: ${JSON.stringify(restriction_ids)}`
+    );
   }
 
-  if (restriction_ids.length && restrictions.length && restriction_ids.length !== restrictions.length) {
+  if (
+    restriction_ids.length &&
+    restrictions.length &&
+    restriction_ids.length !== restrictions.length
+  ) {
     console.log(
       `WARN ${fileRel}: restrictions and restriction_ids lengths differ (${restrictions.length} vs ${restriction_ids.length})`
     );
