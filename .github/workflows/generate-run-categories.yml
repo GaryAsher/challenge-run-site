@@ -2,12 +2,24 @@ name: Generate run category pages
 
 on:
   workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - "_runs/**"
+      - "scripts/generate-game-runs-category-pages.js"
+      - "package.json"
+      - "package-lock.json"
 
 permissions:
   contents: write
+  pull-requests: write
+
+concurrency:
+  group: generate-run-categories
+  cancel-in-progress: true
 
 jobs:
-  generate:
+  generate_pr:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -17,6 +29,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: "npm"
 
       - name: Install
         run: npm ci
@@ -24,10 +37,13 @@ jobs:
       - name: Generate
         run: npm run generate:run-categories
 
-      - name: Commit changes
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add games/**/game-runs/**/index.html
-          git diff --cached --quiet || git commit -m "Auto-generate run category pages"
-          git push
+      - name: Create PR if generated files changed
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "Auto-generate run category pages"
+          title: "Auto-generate run category pages"
+          body: "Generated category pages from _runs data."
+          branch: "automation/generate-run-categories"
+          delete-branch: true
+          add-paths: |
+            games/**/game-runs/**/index.html
