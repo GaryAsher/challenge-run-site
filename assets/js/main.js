@@ -1,7 +1,9 @@
 // =========================================================
 // Client-side pagination for any .list-paged block
 // + Runs table filtering (Search + Header filters + Date sort + Limit)
-// + Category dropdown uses ?category=<category_slug> and filters rows
+// + Category dropdown can either:
+//   - Navigate to /game-runs/<category_slug>/ pages (preferred), or
+//   - Fall back to ?category=<category_slug> filtering (legacy)
 // =========================================================
 (function () {
   // =========================================================
@@ -111,7 +113,6 @@
 
   // =========================================================
   // Runs table filtering (Search + Header filters + Date sort + Limit)
-  // + Category dropdown uses ?category=<category_slug> and filters rows
   // =========================================================
   function initRunsTable() {
     const table = document.getElementById("runs-table");
@@ -186,17 +187,77 @@
     }
 
     // =========================================================
-    // Category from URL: ?category=<slug>
+    // Runs base + category slug from path (new routing)
     // =========================================================
-    function getCategoryFromUrl() {
-      const u = new URL(window.location.href);
-      const v = (u.searchParams.get("category") || "").trim();
+    function getRunsBaseFromDom() {
+      const el =
+        document.querySelector("[data-runs-base]") ||
+        table.closest("[data-runs-base]");
+      if (!el) return "";
+      const v = (el.getAttribute("data-runs-base") || "").trim();
       return v;
     }
 
-    function setCategoryInUrl(slugOrEmpty) {
+    function getRunsBaseFromPath() {
+      // Build base like: /games/<game_id>/game-runs/
+      const p = window.location.pathname || "/";
+      const marker = "/game-runs/";
+      const idx = p.indexOf(marker);
+      if (idx === -1) return "";
+      return p.slice(0, idx + marker.length);
+    }
+
+    function getRunsBase() {
+      return getRunsBaseFromDom() || getRunsBaseFromPath();
+    }
+
+    function getCategoryFromQuery() {
       const u = new URL(window.location.href);
-      if (slugOrEmpty) u.searchParams.set("category", slugOrEmpty);
+      return (u.searchParams.get("category") || "").trim();
+    }
+
+    function getCategoryFromPath() {
+      const base = getRunsBaseFromPath();
+      if (!base) return "";
+      const p = window.location.pathname || "/";
+      if (!p.startsWith(base)) return "";
+      let rest = p.slice(base.length);
+      rest = rest.replace(/^\/+/, "").replace(/\/+$/, "");
+      // rest can be "" (base page) or "chaos-trials/heat-16"
+      return rest;
+    }
+
+    function toSlugOrEmpty(v) {
+      return (v || "").toString().trim().replace(/^\/+/, "").replace(/\/+$/, "");
+    }
+
+    function goToCategoryPage(slugOrEmpty) {
+      const base = getRunsBase();
+      const slug = toSlugOrEmpty(slugOrEmpty);
+
+      if (base) {
+        const next = slug ? `${base}${slug}/` : base;
+        window.location.href = next;
+        return true;
+      }
+
+      return false;
+    }
+
+    // =========================================================
+    // Category from URL (supports new pages + legacy query param)
+    // =========================================================
+    function getCategoryFromUrl() {
+      return getCategoryFromQuery() || getCategoryFromPath();
+    }
+
+    function setCategoryInUrl(slugOrEmpty) {
+      // Prefer navigating to real pages; fallback to query param.
+      if (goToCategoryPage(slugOrEmpty)) return;
+
+      const u = new URL(window.location.href);
+      const slug = toSlugOrEmpty(slugOrEmpty);
+      if (slug) u.searchParams.set("category", slug);
       else u.searchParams.delete("category");
       history.replaceState(null, "", u);
     }
@@ -280,9 +341,10 @@
 
     function getCategoryLabelForSlug(slug) {
       if (!slug) return "";
+      const target = toSlugOrEmpty(slug);
       for (const row of rows) {
-        const s = (row.dataset.categorySlug || "").trim();
-        if (s === slug) return (row.dataset.category || "").trim() || slug;
+        const s = toSlugOrEmpty(row.dataset.categorySlug || "");
+        if (s === target) return (row.dataset.category || "").toString().trim() || slug;
       }
       return slug;
     }
@@ -318,7 +380,7 @@
       if (activeCategorySlug) {
         chips.push({
           kind: "category",
-          slug: activeCategorySlug,
+          slug: toSlugOrEmpty(activeCategorySlug),
           label: getCategoryLabelForSlug(activeCategorySlug)
         });
       }
@@ -348,6 +410,8 @@
             makeChip(`Category: ${c.label}`, () => {
               activeCategorySlug = "";
               setCategoryInUrl("");
+              // If navigation happened, the page will reload.
+              // If not, we fall back to filtering.
               render();
             })
           );
@@ -388,10 +452,16 @@
     function passesFilters(row) {
       const needle = norm(q && q.value);
 
-      // Category param filter
+      // Category filter:
+      // Support nested categories: selecting "chaos-trials" should also match "chaos-trials/heat-16"
       if (activeCategorySlug) {
-        const rowSlug = (row.dataset.categorySlug || "").trim();
-        if (rowSlug !== activeCategorySlug) return false;
+        const want = toSlugOrEmpty(activeCategorySlug);
+        const rowSlug = toSlugOrEmpty(row.dataset.categorySlug || "");
+
+        if (rowSlug !== want) {
+          const prefix = want + "/";
+          if (!rowSlug.startsWith(prefix)) return false;
+        }
       }
 
       const ch = norm(row.dataset.challengeId);
@@ -480,7 +550,7 @@
     }
 
     // =========================================================
-    // UPDATED: Hide already-selected options (Challenge + Restrictions)
+    // Hide already-selected options (Challenge + Restrictions)
     // =========================================================
     function renderThMenuList() {
       if (!thMenuList || !thMenuQ || !thActiveCol) return;
@@ -491,7 +561,6 @@
 
       thMenuList.innerHTML = "";
 
-      // Hide already-selected options to match the "template" behavior.
       const available = set ? list.filter((x) => !set.has(x.id)) : list;
 
       const filtered = available.filter((x) => {
@@ -523,7 +592,6 @@
           if (cb.checked) set.add(x.id);
           else set.delete(x.id);
 
-          // Re-render results and refresh the menu so picked items disappear immediately.
           render();
           renderThMenuList();
         });
@@ -581,16 +649,17 @@
     }
 
     // =========================================================
-    // Category NAV menu (uses data-category-slug and sets ?category=)
+    // Category NAV menu
+    // Now: navigates to /game-runs/<slug>/ when possible
     // =========================================================
     function buildCategoryNavItems() {
       const map = new Map(); // slug -> label
 
       rows.forEach((row) => {
-        const slug = (row.dataset.categorySlug || "").trim();
+        const slug = toSlugOrEmpty(row.dataset.categorySlug || "");
         if (!slug) return;
 
-        const label = (row.dataset.category || "").trim();
+        const label = (row.dataset.category || "").toString().trim();
         if (!map.has(slug)) map.set(slug, label || slug);
       });
 
@@ -630,9 +699,13 @@
         b.innerHTML = `<span>${escapeHtml(it.label)}</span>`;
 
         b.addEventListener("click", () => {
-          activeCategorySlug = it.slug;
+          // Prefer real page navigation:
+          // /games/<game_id>/game-runs/<category_slug>/
           setCategoryInUrl(it.slug);
           closeThMenu();
+
+          // If navigation did not happen (no base), fall back to client filtering.
+          activeCategorySlug = it.slug;
           render();
         });
 
@@ -787,7 +860,7 @@
     if (q) q.addEventListener("input", render);
     if (limitEl) limitEl.addEventListener("change", render);
 
-    // Re-render if user changes URL with back/forward
+    // Back/forward: update category from URL
     window.addEventListener("popstate", () => {
       activeCategorySlug = getCategoryFromUrl();
       render();
