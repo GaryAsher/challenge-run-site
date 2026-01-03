@@ -6,13 +6,13 @@
  *
  * Usage:
  *   node scripts/generate-codeowners.js
- *       Writes .github/CODEOWNERS and inserts reviewer stubs if missing.
+ *     Writes .github/CODEOWNERS and inserts reviewer stubs if missing.
  *
  *   node scripts/generate-codeowners.js --check
- *       Exits 1 if CODEOWNERS differs OR if a game is missing a reviewers stub.
+ *     Exits 1 if CODEOWNERS differs OR if a game is missing a reviewers stub.
  *
  *   node scripts/generate-codeowners.js --no-stubs
- *       Writes CODEOWNERS but does not edit game files.
+ *     Writes CODEOWNERS but does not edit game files.
  */
 
 const fs = require("fs");
@@ -58,9 +58,15 @@ function unquote(s) {
 }
 
 // ------------------------------
-// YAML parsing
+// YAML parsing (minimal)
 // ------------------------------
-function parseGlobalReviewersYml(yml) {
+/**
+ * Parses a codeowners.yml shaped like:
+ * global:
+ *   - "@a"
+ *   - "@b"
+ */
+function parseGlobalOwnersYml(yml) {
   const lines = yml.split(/\r?\n/);
   let inGlobal = false;
   const global = [];
@@ -75,13 +81,14 @@ function parseGlobalReviewersYml(yml) {
       continue;
     }
 
+    // Stop if we hit another top-level key
     if (inGlobal && /^[A-Za-z0-9_-]+:\s*$/.test(line.trim()) && !/^global:\s*$/.test(line.trim())) {
       inGlobal = false;
     }
 
     if (inGlobal) {
       const m = /^\s*-\s*(.+)\s*$/.exec(line);
-      if (!m) die(`Invalid global entry on line ${i + 1} in _data/reviewers.yml: ${raw}`);
+      if (!m) die(`Invalid global entry on line ${i + 1} in ${path.relative(ROOT, GLOBAL_INPUT)}: ${raw}`);
       global.push(unquote(m[1]));
     }
   }
@@ -93,6 +100,7 @@ function parseGlobalReviewersYml(yml) {
 // Front matter parsing
 // ------------------------------
 function splitFrontMatter(fileText) {
+  // Jekyll style: ---\n...\n---\n<body>
   if (!fileText.startsWith("---")) return null;
   const parts = fileText.split(/\r?\n---\r?\n/);
   if (parts.length < 2) return null;
@@ -123,8 +131,10 @@ function parseGameFrontMatter(fmText) {
     if (mReviewersKey) {
       hasReviewersKey = true;
       const tail = mReviewersKey[1] || "";
+
       if (tail.startsWith("[")) {
-        const inner = tail.replace(/^\[/, "").replace(/\]$/, "");
+        // reviewers: ["@a", "@b"]
+        const inner = tail.replace(/^\[/, "").replace(/\]\s*$/, "");
         reviewers = inner
           .split(",")
           .map((s) => unquote(s.trim()))
@@ -135,7 +145,8 @@ function parseGameFrontMatter(fmText) {
         reviewers = [unquote(tail)].filter(Boolean);
         inReviewersList = false;
       } else {
-        // reviewers:\n  - "@a"
+        // reviewers:
+        //   - "@a"
         inReviewersList = true;
       }
       continue;
@@ -147,6 +158,7 @@ function parseGameFrontMatter(fmText) {
         reviewers.push(unquote(mItem[1]));
         continue;
       }
+      // next key stops list
       if (/^[A-Za-z0-9_-]+:/.test(line.trim())) {
         inReviewersList = false;
       }
@@ -160,7 +172,7 @@ function parseGameFrontMatter(fmText) {
   };
 }
 
-function ensureReviewerStubInGameFile(gamePath, fileText) {
+function ensureReviewerStubInGameFile(fileText) {
   const parts = splitFrontMatter(fileText);
   if (!parts) return { changed: false, text: fileText, reason: "missing-front-matter" };
 
@@ -168,21 +180,19 @@ function ensureReviewerStubInGameFile(gamePath, fileText) {
   if (!parsed.gameId) return { changed: false, text: fileText, reason: "missing-game_id" };
   if (parsed.hasReviewersKey) return { changed: false, text: fileText, reason: "already-has-reviewers" };
 
-  // Insert `reviewers: []` right after game_id line if possible.
+  // Insert reviewers: [] right after game_id if possible
   const fmLines = parts.fm.split(/\r?\n/);
   const out = [];
   let inserted = false;
 
-  for (let i = 0; i < fmLines.length; i++) {
-    out.push(fmLines[i]);
-    if (!inserted && /^game_id:\s*/.test(fmLines[i].trim())) {
+  for (const line of fmLines) {
+    out.push(line);
+    if (!inserted && /^game_id:\s*/.test(line.trim())) {
       out.push("reviewers: []");
       inserted = true;
     }
   }
-  if (!inserted) {
-    out.unshift("reviewers: []");
-  }
+  if (!inserted) out.unshift("reviewers: []");
 
   const rebuilt = `---\n${out.join("\n")}\n---\n${parts.body}`;
   return { changed: true, text: rebuilt, reason: "inserted" };
@@ -194,7 +204,7 @@ function ownersToString(owners) {
 
 function generateCodeowners({ globalOwners, perGameOwners }) {
   if (!globalOwners.length) {
-    die("_data/reviewers.yml must include at least one global owner under global:");
+    die(`${path.relative(ROOT, GLOBAL_INPUT)} must include at least one global owner under global:`);
   }
 
   const gameIds = Object.keys(perGameOwners).sort((a, b) => a.localeCompare(b));
@@ -203,7 +213,7 @@ function generateCodeowners({ globalOwners, perGameOwners }) {
     "# =========================================================",
     "# AUTO-GENERATED FILE. DO NOT EDIT BY HAND.",
     "# Sources:",
-    "#   - _data/reviewers.yml (global)",
+    `#   - ${path.relative(ROOT, GLOBAL_INPUT)} (global)`,
     "#   - _games/*.md (reviewers)",
     "# Generator: scripts/generate-codeowners.js",
     "# =========================================================",
@@ -214,7 +224,7 @@ function generateCodeowners({ globalOwners, perGameOwners }) {
   lines.push(header);
 
   lines.push("# Core project ownership");
-  lines.push(`/_data/reviewers.yml ${ownersToString(globalOwners)}`);
+  lines.push(`/${path.relative(ROOT, GLOBAL_INPUT)} ${ownersToString(globalOwners)}`);
   lines.push(`/_games/ ${ownersToString(globalOwners)}`);
   lines.push(`/scripts/ ${ownersToString(globalOwners)}`);
   lines.push(`/.github/workflows/ ${ownersToString(globalOwners)}`);
@@ -230,7 +240,6 @@ function generateCodeowners({ globalOwners, perGameOwners }) {
   lines.push("# Per-game ownership (strict routing)");
   for (const gameId of gameIds) {
     const gameOwners = normalizeOwners(perGameOwners[gameId]);
-    // Always include global owners too (so core admins can see everything)
     const combined = normalizeOwners([...gameOwners, ...globalOwners]);
     const ownersStr = ownersToString(combined);
 
@@ -247,7 +256,14 @@ function listGameFiles() {
   if (!fs.existsSync(GAMES_DIR)) return [];
   return fs
     .readdirSync(GAMES_DIR)
-    .filter((f) => f.endsWith(".md") || f.endsWith(".markdown"))
+    .filter((f) => {
+      const lower = f.toLowerCase();
+      if (!(lower.endsWith(".md") || lower.endsWith(".markdown"))) return false;
+      // Documentation or templates inside _games should not be treated as games
+      if (lower === "readme.md") return false;
+      if (lower.includes("template")) return false;
+      return true;
+    })
     .map((f) => path.join(GAMES_DIR, f));
 }
 
@@ -258,17 +274,16 @@ function main() {
   const allowStubs = !noStubs;
 
   if (!fs.existsSync(GLOBAL_INPUT)) {
-    die(`Missing ${path.relative(ROOT, GLOBAL_INPUT)}. Create _data/reviewers.yml first.`);
+    die(`Missing ${path.relative(ROOT, GLOBAL_INPUT)}. Create it with:\n\nglobal:\n  - "@YourHandle"\n`);
   }
 
-  const { global: globalOwners } = parseGlobalReviewersYml(readText(GLOBAL_INPUT));
+  const { global: globalOwners } = parseGlobalOwnersYml(readText(GLOBAL_INPUT));
   if (!globalOwners.length) {
-    die("No global owners found. Add at least one entry under global: in _data/reviewers.yml");
+    die(`No global owners found. Add at least one entry under global: in ${path.relative(ROOT, GLOBAL_INPUT)}`);
   }
 
   const gameFiles = listGameFiles();
   const perGameOwners = {};
-
   const missingReviewerStub = [];
 
   for (const gamePath of gameFiles) {
@@ -286,7 +301,7 @@ function main() {
     if (!parsed.hasReviewersKey) {
       missingReviewerStub.push(path.relative(ROOT, gamePath));
       if (!checkOnly && allowStubs) {
-        const synced = ensureReviewerStubInGameFile(gamePath, original);
+        const synced = ensureReviewerStubInGameFile(original);
         if (synced.changed) {
           writeText(gamePath, synced.text);
         }
