@@ -314,14 +314,18 @@ function applyFilter() {
 // Dropdown behavior: open on focus/click, close on outside/Esc
 // =========================================================
 function wireDropdown({ filterEl, searchEl, sugEl, set, list, pickedEl }) {
+  function afterPick() {
+    searchEl.value = "";
+    renderPicked(set, list, pickedEl, { onRemove: onRemoveChip });
+    applyFilter();
+
+    // Keep the dropdown open for rapid multi-picking, but refresh it.
+    renderSuggestions("", set, list, sugEl, { onPick: afterPick });
+  }
+
   function open() {
     renderSuggestions(searchEl.value, set, list, sugEl, {
-      onPick: () => {
-        searchEl.value = "";
-        renderPicked(set, list, pickedEl, { onRemove: onRemoveChip });
-        applyFilter();
-        searchEl.blur();
-      }
+      onPick: afterPick
     });
   }
 
@@ -334,7 +338,6 @@ function wireDropdown({ filterEl, searchEl, sugEl, set, list, pickedEl }) {
     renderPicked(set, list, pickedEl, { onRemove: onRemoveChip });
     applyFilter();
     close();
-    searchEl.blur();
   }
 
   renderPicked(set, list, pickedEl, { onRemove: onRemoveChip });
