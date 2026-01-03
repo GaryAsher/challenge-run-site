@@ -8,13 +8,13 @@ title: Runners
   <p class="muted">Jump by letter or search.</p>
 
   <div class="az" id="az">
-    <a href="#0-9">#</a>
+    <a href="#0-9" class="az-wide">#</a>
     {% assign letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" | split: "" %}
     {% for L in letters %}
       <a href="#{{ L }}">{{ L }}</a>
     {% endfor %}
-    <a href="#other">Other</a>
-    <a href="#all" class="muted">All</a>
+    <a href="#other" class="az-wide">Other</a>
+    <a href="#all" class="az-wide muted">All</a>
   </div>
 
   <div class="filter-wrap">
