@@ -1,13 +1,6 @@
-## How ownership works
+## Getting started
 
-`.github/CODEOWNERS` is generated automatically.
-
-It comes from:
-- `_data/codeowners.yml` (global owners)
-- `reviewers:` in game files under `_games/`
-
-Please don’t edit `.github/CODEOWNERS` directly.  
-It is regenerated from these sources.
+This guide covers the required steps for adding or updating content in this repository.
 
 ---
 
@@ -27,26 +20,30 @@ Things to check:
 
 ---
 
-Update ownership info by running:
+## Update generated files
+
+After adding or editing a game file, run:
 
     node scripts/generate-codeowners.js
 
-This keeps `.github/CODEOWNERS` in sync.
+This keeps `.github/CODEOWNERS` in sync with the repository data.
 
 ---
 
+## Commit your changes
+
 Commit:
-- the new game file
+- the game file you added or changed
 - `.github/CODEOWNERS`
 
-(If they don’t match, CI will fail.)
+If these are out of sync, CI will fail.
 
 ---
 
 ## Optional checks before pushing
 
 <!--
-This step is helpful but not required.
+This step is recommended but not required.
 It does not modify any files.
 -->
 
@@ -55,20 +52,18 @@ You can run:
     node scripts/validate-schema.js
 
 This checks:
-- ID formats for tags and challenges
+- ID format for tags and challenges
 - required fields in game files
 - filename and `game_id` consistency
 - presence of `reviewers:`
 - duplicate YAML keys
 
-Fix any issues before pushing if something is flagged.
+If something is flagged, fix it before pushing.
 
 ---
 
-## A note on automation
+## Notes
 
-<!-- Informational only -->
-
-- `scripts/generate-codeowners.js` is the only way to update `.github/CODEOWNERS`
-- `scripts/validate-schema.js` only validates and does not write files
-- More automation may be added later
+- `.github/CODEOWNERS` is generated automatically and should not be edited by hand
+- Validation scripts only check structure and do not write files
+- Additional automation may be added later
