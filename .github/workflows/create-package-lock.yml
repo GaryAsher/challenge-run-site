@@ -1,16 +1,16 @@
 # Ensure the repo has a correct lockfile.
 # Safe to run multiple times. Only commits if package-lock.json changes.
-
-name: Create package-lock.json
+name: One-time: Create package-lock.json (PR)
 
 on:
   workflow_dispatch:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
-  lockfile:
+  lockfile_pr:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -24,10 +24,15 @@ jobs:
       - name: Install dependencies (generate lockfile)
         run: npm install
 
-      - name: Commit package-lock.json
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add package-lock.json
-          git diff --cached --quiet || git commit -m "Add package-lock.json"
-          git push
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "Add package-lock.json"
+          title: "Add package-lock.json"
+          body: "This PR adds package-lock.json so workflows can use npm ci reliably."
+          branch: "automation/add-package-lock"
+          delete-branch: true
+
+          body: "This PR adds package-lock.json so workflows can use npm ci reliably."
+          branch: "automation/add-package-lock"
+          delete-branch: true
