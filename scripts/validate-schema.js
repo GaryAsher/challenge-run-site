@@ -2,15 +2,17 @@
 /*
 Repo schema validation (read-only).
 
+Key feature:
+- Challenge + tag alias resolution:
+  Accepts canonical IDs, labels, and aliases (plus common formatting variations),
+  but warns when non-canonical values are used and suggests the canonical ID.
+
 Checks:
   - Windows-unsafe characters in filenames/folders (currently: < and >)
   - _data/tags.yml and _data/challenges.yml load and have sane shapes
-  - _games/*.md: required fields + tag/challenge references exist
+  - _games/*.md: required fields + tag/challenge references exist (with alias resolution)
   - _runners/*.md: required fields + referenced games exist
-  - _runs/(all markdown) excluding _TEMPLATES: required fields + references exist
-
-This script is intentionally conservative: it fails CI on clear breakages,
-and prints WARN lines for "should fix" issues.
+  - _runs/*.md (excluding _TEMPLATES): required fields + references exist (with alias resolution)
 */
 
 const fs = require("fs");
@@ -18,8 +20,6 @@ const path = require("path");
 const yaml = require("js-yaml");
 
 const ROOT = process.cwd();
-
-// ---------- helpers ----------
 
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -120,21 +120,21 @@ function mustArrayOfStrings(fileRel, field, value) {
 }
 
 function mustTimeOrNull(fileRel, field, value) {
-  if (value === null) return;
+  if (value === null || value === undefined) return;
   if (typeof value !== "string" || !TIME_RE.test(value)) {
     die(`${fileRel}: ${field} must be HH:MM:SS(.mmm optional) or null`);
   }
 }
 
 function mustTimingOrNull(fileRel, field, value) {
-  if (value === null) return;
+  if (value === null || value === undefined) return;
   if (typeof value !== "string" || !TIMING_SET.has(value)) {
     die(`${fileRel}: ${field} must be one of ${Array.from(TIMING_SET).join(", ")} or null`);
   }
 }
 
 function mustDate(fileRel, field, value) {
-  // js-yaml may parse unquoted YYYY-MM-DD as a Date object.
+  // js-yaml may parse unquoted YYYY-MM-DD as Date.
   if (value instanceof Date && !Number.isNaN(value.valueOf())) {
     const iso = value.toISOString().slice(0, 10);
     if (!DATE_RE.test(iso)) die(`${fileRel}: ${field} must be YYYY-MM-DD`);
@@ -143,7 +143,104 @@ function mustDate(fileRel, field, value) {
   if (typeof value !== "string" || !DATE_RE.test(value)) die(`${fileRel}: ${field} must be YYYY-MM-DD`);
 }
 
-// ---------- validations ----------
+/* ------------------------------------------------------------------
+   Alias resolution helpers
+------------------------------------------------------------------- */
+
+// Normalize a human string into a stable lookup key.
+function normKey(s) {
+  return String(s)
+    .trim()
+    .toLowerCase()
+    .replace(/[_]+/g, " ")
+    .replace(/[-]+/g, " ")
+    .replace(/[^\p{L}\p{N}\s]+/gu, " ") // drop punctuation (unicode-safe)
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function keyVariants(s) {
+  const k = normKey(s);
+  if (!k) return [];
+  const noSpaces = k.replace(/\s+/g, "");
+  return noSpaces && noSpaces !== k ? [k, noSpaces] : [k];
+}
+
+// Build a resolver for a YAML mapping: id -> { label, aliases }
+function buildResolver(kindName, yamlObj, filePathRelForErrors) {
+  if (!yamlObj || typeof yamlObj !== "object" || Array.isArray(yamlObj)) {
+    die(`${filePathRelForErrors}: must be a YAML mapping (id -> object)`);
+  }
+
+  const ids = new Set(Object.keys(yamlObj));
+  const keyToId = new Map();
+
+  function registerKey(key, id) {
+    if (!key) return;
+    // If a key collides between two different ids, keep the first and warn.
+    if (keyToId.has(key) && keyToId.get(key) !== id) {
+      warn(
+        `${filePathRelForErrors}: ${kindName} alias/label key "${key}" is ambiguous between "${keyToId.get(
+          key
+        )}" and "${id}". Keep aliases unique if possible.`
+      );
+      return;
+    }
+    keyToId.set(key, id);
+  }
+
+  for (const [id, obj] of Object.entries(yamlObj)) {
+    if (!SLUG_RE.test(id)) die(`${filePathRelForErrors}: invalid id ${JSON.stringify(id)}`);
+    if (!obj || typeof obj !== "object" || Array.isArray(obj)) {
+      die(`${filePathRelForErrors}: ${id} must map to an object`);
+    }
+    if (typeof obj.label !== "string" || !obj.label.trim()) {
+      die(`${filePathRelForErrors}: ${id}.label is required`);
+    }
+
+    // Register canonical id and common variants
+    for (const v of keyVariants(id)) registerKey(v, id);
+
+    // Register label and its variants
+    for (const v of keyVariants(obj.label)) registerKey(v, id);
+
+    // Register aliases and their variants
+    if (obj.aliases != null) {
+      if (!Array.isArray(obj.aliases)) die(`${filePathRelForErrors}: ${id}.aliases must be a list`);
+      for (const a of obj.aliases) {
+        if (typeof a !== "string" || !a.trim()) die(`${filePathRelForErrors}: ${id}.aliases must be strings`);
+        for (const v of keyVariants(a)) registerKey(v, id);
+      }
+    }
+  }
+
+  // Resolve a user-provided value (id, label, alias, formatting variant) to canonical id.
+  function resolve(rawValue) {
+    const raw = String(rawValue).trim();
+    if (!raw) return null;
+
+    // Exact id match first (fast path)
+    if (ids.has(raw)) return { id: raw, source: "id", canonical: raw };
+
+    // Try normalized matches
+    for (const v of keyVariants(raw)) {
+      const hit = keyToId.get(v);
+      if (hit) {
+        // Determine if this was already canonical id
+        const source = hit === raw ? "id" : "alias";
+        return { id: hit, source, canonical: hit };
+      }
+    }
+
+    return null;
+  }
+
+  return { ids, resolve };
+}
+
+/* ------------------------------------------------------------------
+   Validations
+------------------------------------------------------------------- */
 
 function validateWindowsUnsafeNames() {
   const all = listFilesRecursive(ROOT);
@@ -180,57 +277,18 @@ function validateDataFiles() {
   const tags = loadYamlFile(tagsPath);
   const challenges = loadYamlFile(challengesPath);
 
-  if (!tags || typeof tags !== "object" || Array.isArray(tags)) {
-    die("_data/tags.yml must be a YAML mapping (id -> object)");
-  }
-  if (!challenges || typeof challenges !== "object" || Array.isArray(challenges)) {
-    die("_data/challenges.yml must be a YAML mapping (id -> object)");
-  }
+  const tagsRel = rel(tagsPath);
+  const challengesRel = rel(challengesPath);
 
-  const tagIds = new Set(Object.keys(tags));
-  const challengeIds = new Set(Object.keys(challenges));
+  const tagResolver = buildResolver("tag", tags, tagsRel);
+  const challengeResolver = buildResolver("challenge", challenges, challengesRel);
 
-  for (const [id, obj] of Object.entries(tags)) {
-    if (!SLUG_RE.test(id)) die(`_data/tags.yml: invalid id ${JSON.stringify(id)}`);
-    if (!obj || typeof obj !== "object" || Array.isArray(obj)) {
-      die(`_data/tags.yml: ${id} must map to an object`);
-    }
-    if (typeof obj.label !== "string" || !obj.label.trim()) {
-      die(`_data/tags.yml: ${id}.label is required`);
-    }
-    if (obj.aliases != null) {
-      if (!Array.isArray(obj.aliases)) die(`_data/tags.yml: ${id}.aliases must be a list`);
-      for (const a of obj.aliases) {
-        if (typeof a !== "string" || !a.trim()) die(`_data/tags.yml: ${id}.aliases must be strings`);
-      }
-    }
-  }
-
-  for (const [id, obj] of Object.entries(challenges)) {
-    if (!SLUG_RE.test(id)) die(`_data/challenges.yml: invalid id ${JSON.stringify(id)}`);
-    if (!obj || typeof obj !== "object" || Array.isArray(obj)) {
-      die(`_data/challenges.yml: ${id} must map to an object`);
-    }
-    if (typeof obj.label !== "string" || !obj.label.trim()) {
-      die(`_data/challenges.yml: ${id}.label is required`);
-    }
-    if (obj.aliases != null) {
-      if (!Array.isArray(obj.aliases)) die(`_data/challenges.yml: ${id}.aliases must be a list`);
-      for (const a of obj.aliases) {
-        if (typeof a !== "string" || !a.trim()) die(`_data/challenges.yml: ${id}.aliases must be strings`);
-        if (a.includes(",")) {
-          warn(`${rel(challengesPath)}: ${id}.aliases contains a comma. If you meant multiple aliases, split into separate list items.`);
-        }
-      }
-    }
-  }
-
-  return { tagIds, challengeIds };
+  return { tagResolver, challengeResolver };
 }
 
-function validateGames({ tagIds, challengeIds }) {
+function validateGames({ tagResolver, challengeResolver }) {
   const dir = path.join(ROOT, "_games");
-  if (!isDir(dir)) return;
+  if (!isDir(dir)) return new Set();
 
   const files = fs
     .readdirSync(dir)
@@ -249,17 +307,32 @@ function validateGames({ tagIds, challengeIds }) {
     if (gameIds.has(fm.game_id)) die(`${fileRel}: duplicate game_id ${fm.game_id}`);
     gameIds.add(fm.game_id);
 
+    // tags (allow aliases/labels)
     if (fm.tags != null) {
       mustArrayOfStrings(fileRel, "tags", fm.tags);
+      const resolved = [];
       for (const t of fm.tags) {
-        if (!tagIds.has(t)) die(`${fileRel}: unknown tag id in tags: ${t}`);
+        const r = tagResolver.resolve(t);
+        if (!r) die(`${fileRel}: unknown tag in tags: ${t}`);
+        if (r.source !== "id" && r.canonical !== t) {
+          warn(`${fileRel}: tag "${t}" should be "${r.canonical}" (canonical id)`);
+        }
+        resolved.push(r.canonical);
       }
+      // Not rewriting files, just validating.
     }
 
+    // challenges (allow aliases/labels)
     if (fm.challenges != null) {
       mustArrayOfStrings(fileRel, "challenges", fm.challenges);
+      const resolved = [];
       for (const c of fm.challenges) {
-        if (!challengeIds.has(c)) die(`${fileRel}: unknown challenge id in challenges: ${c}`);
+        const r = challengeResolver.resolve(c);
+        if (!r) die(`${fileRel}: unknown challenge in challenges: ${c}`);
+        if (r.source !== "id" && r.canonical !== c) {
+          warn(`${fileRel}: challenge "${c}" should be "${r.canonical}" (canonical id)`);
+        }
+        resolved.push(r.canonical);
       }
     }
   }
@@ -269,7 +342,7 @@ function validateGames({ tagIds, challengeIds }) {
 
 function validateRunners(gameIds) {
   const dir = path.join(ROOT, "_runners");
-  if (!isDir(dir)) return;
+  if (!isDir(dir)) return new Set();
 
   const files = fs
     .readdirSync(dir)
@@ -299,24 +372,22 @@ function validateRunners(gameIds) {
   return runnerIds;
 }
 
-function validateRuns({ gameIds, runnerIds, challengeIds }) {
+function validateRuns({ gameIds, runnerIds, challengeResolver }) {
   const dir = path.join(ROOT, "_runs");
   if (!isDir(dir)) return;
 
   const files = listFilesRecursive(dir)
     .filter((p) => p.endsWith(".md"))
-    .filter((p) => !rel(p).includes("/_TEMPLATES/"));
+    .filter((p) => !rel(p).includes("/_TEMPLATES/"))
+    .filter((p) => path.basename(p).toLowerCase() !== "readme.md");
 
-  const filtered = files.filter((p) => path.basename(p).toLowerCase() !== "readme.md");
-
-  for (const p of filtered) {
+  for (const p of files) {
     const fileRel = rel(p);
     const fm = parseFrontMatter(p);
 
     mustSlug(fileRel, "game_id", fm.game_id);
     mustSlug(fileRel, "runner_id", fm.runner_id);
     mustSlug(fileRel, "category_slug", fm.category_slug);
-    mustSlug(fileRel, "challenge_id", fm.challenge_id);
 
     mustString(fileRel, "runner", fm.runner);
     mustString(fileRel, "category", fm.category);
@@ -324,7 +395,20 @@ function validateRuns({ gameIds, runnerIds, challengeIds }) {
 
     if (!gameIds.has(fm.game_id)) die(`${fileRel}: unknown game_id: ${fm.game_id}`);
     if (!runnerIds.has(fm.runner_id)) die(`${fileRel}: unknown runner_id: ${fm.runner_id}`);
-    if (!challengeIds.has(fm.challenge_id)) die(`${fileRel}: unknown challenge_id: ${fm.challenge_id}`);
+
+    // challenge_id: allow aliases/labels
+    if (fm.challenge_id === undefined || fm.challenge_id === null) {
+      die(`${fileRel}: challenge_id is required`);
+    }
+    if (typeof fm.challenge_id !== "string" || !fm.challenge_id.trim()) {
+      die(`${fileRel}: challenge_id must be a non-empty string`);
+    }
+
+    const cr = challengeResolver.resolve(fm.challenge_id);
+    if (!cr) die(`${fileRel}: unknown challenge_id: ${fm.challenge_id}`);
+    if (cr.source !== "id" && cr.canonical !== fm.challenge_id) {
+      warn(`${fileRel}: challenge_id "${fm.challenge_id}" should be "${cr.canonical}" (canonical id)`);
+    }
 
     if (fm.restrictions != null) {
       mustArrayOfStrings(fileRel, "restrictions", fm.restrictions);
@@ -363,6 +447,7 @@ function validateRuns({ gameIds, runnerIds, challengeIds }) {
       warn(`${fileRel}: video_link missing`);
     }
 
+    // Optional filename pattern warning (do not fail)
     const base = path.basename(p);
     const m = /^(\d{4}-\d{2}-\d{2})__([a-z0-9-]+)__([a-z0-9-]+)__([a-z0-9-]+)__([0-9]{2,3})\.md$/.exec(
       base
@@ -373,14 +458,14 @@ function validateRuns({ gameIds, runnerIds, challengeIds }) {
   }
 }
 
-// ---------- main ----------
-
 function main() {
   validateWindowsUnsafeNames();
-  const { tagIds, challengeIds } = validateDataFiles();
-  const gameIds = validateGames({ tagIds, challengeIds }) || new Set();
-  const runnerIds = validateRunners(gameIds) || new Set();
-  validateRuns({ gameIds, runnerIds, challengeIds });
+
+  const { tagResolver, challengeResolver } = validateDataFiles();
+  const gameIds = validateGames({ tagResolver, challengeResolver });
+  const runnerIds = validateRunners(gameIds);
+
+  validateRuns({ gameIds, runnerIds, challengeResolver });
 
   console.log("OK schema validation passed");
 }
