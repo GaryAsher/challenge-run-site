@@ -23,8 +23,8 @@ tabs:
   history: true
 
 challenges:
-  - no-hit
-  - no-damage
+  - hitless
+  - damageless
   - no-hit-no-damage
 
 categories_data:
