@@ -15,5 +15,5 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Verify CODEOWNERS matches reviewers.yml
+      - name: Verify CODEOWNERS matches codeowners.yml
         run: node scripts/generate-codeowners.js --check
