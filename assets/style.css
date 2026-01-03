@@ -633,6 +633,13 @@ button.tag { cursor: pointer; }
   .az::-webkit-scrollbar { display: none; }
 }
 
+/* Wider A–Z pills for multi-character labels like "Other" / "All" / "0-9" */
+.az a.az-wide {
+  width: auto;
+  min-width: var(--az-size);
+  padding: 0 0.65rem;
+}
+
 .list { padding-left: 1.2rem; }
 
 /* ============================================================
@@ -765,6 +772,11 @@ button.tag { cursor: pointer; }
 
 .game-card:hover .game-card__bg { opacity: 0.6; }
 .game-card:hover { text-decoration: none; }
+
+/* Games index: keep filtering by tags, but don't render tag chips inside cards */
+.game-card :is(.tag, .tags, .game-tags) {
+  display: none !important;
+}
 
 /* ============================================================
    Runners: Cards (for /runners/)
