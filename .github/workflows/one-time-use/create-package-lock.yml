@@ -1,3 +1,6 @@
+# Ensure the repo has a correct lockfile.
+# Safe to run multiple times. Only commits if package-lock.json changes.
+
 name: Create package-lock.json
 
 on:
