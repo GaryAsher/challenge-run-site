@@ -46,11 +46,21 @@ layout: default
     {% assign runs = cleaned | where: "game_id", page.game_id | sort: "date_completed" | reverse %}
 
     {%- comment -%}
-      If we're on a category subpage, filter runs to that category.
-      ENFORCE category_slug (no slugify fallback).
+      If we're on a category subpage, filter runs to that category slug.
+      Supports nested slugs:
+      - active: chaos-trials
+        matches chaos-trials AND chaos-trials/heat-16
+      - active: chaos-trials/heat-16
+        matches exactly that branch
     {%- endcomment -%}
     {% if active_cat_slug != "" %}
-      {% assign runs = runs | where_exp: "r", "(r.category_slug == active_cat_slug)" %}
+      {% assign prefix = active_cat_slug | append: "/" %}
+      {% assign prefix_len = prefix | size %}
+
+      {% assign runs = runs | where_exp: "r",
+        "(r.category_slug == active_cat_slug) or
+         (r.category_slug and r.category_slug != '' and (r.category_slug | slice: 0, prefix_len) == prefix)"
+      %}
     {% endif %}
 
     {% if runs and runs.size > 0 %}
@@ -163,7 +173,7 @@ layout: default
       <!-- =========================================================
            Runs table
            ========================================================= -->
-      <div class="table-wrap" id="runs-list">
+      <div class="table-wrap" id="runs-list" data-runs-base="{{ runs_base | relative_url }}">
         <table class="runs-table" id="runs-table">
           <thead>
             <tr>
