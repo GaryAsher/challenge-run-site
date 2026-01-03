@@ -479,6 +479,9 @@
       renderActiveFilterChips();
     }
 
+    // =========================================================
+    // UPDATED: Hide already-selected options (Challenge + Restrictions)
+    // =========================================================
     function renderThMenuList() {
       if (!thMenuList || !thMenuQ || !thActiveCol) return;
 
@@ -488,7 +491,10 @@
 
       thMenuList.innerHTML = "";
 
-      const filtered = list.filter((x) => {
+      // Hide already-selected options to match the "template" behavior.
+      const available = set ? list.filter((x) => !set.has(x.id)) : list;
+
+      const filtered = available.filter((x) => {
         if (!qv) return true;
         return norm(x.label).includes(qv) || norm(x.id).includes(qv);
       });
@@ -496,7 +502,9 @@
       if (!filtered.length) {
         const empty = document.createElement("div");
         empty.className = "th-menu__empty muted";
-        empty.textContent = "No matches.";
+        empty.textContent = available.length
+          ? "No matches."
+          : "All options selected. Remove a filter chip to re-add.";
         thMenuList.appendChild(empty);
         return;
       }
@@ -507,12 +515,17 @@
 
         const cb = document.createElement("input");
         cb.type = "checkbox";
-        cb.checked = set.has(x.id);
+        cb.checked = false;
 
         cb.addEventListener("change", () => {
+          if (!set) return;
+
           if (cb.checked) set.add(x.id);
           else set.delete(x.id);
+
+          // Re-render results and refresh the menu so picked items disappear immediately.
           render();
+          renderThMenuList();
         });
 
         const txt = document.createElement("span");
