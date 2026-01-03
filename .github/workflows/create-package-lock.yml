@@ -1,4 +1,4 @@
-name: One-time: Create package-lock.json (PR)
+name: "One-time: Create package-lock.json (PR)"
 
 on:
   workflow_dispatch:
