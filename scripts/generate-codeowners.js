@@ -227,8 +227,7 @@ function generateCodeowners({ globalOwners, perGameOwners }) {
   lines.push(`/${path.relative(ROOT, GLOBAL_INPUT)} ${ownersToString(globalOwners)}`);
   lines.push(`/_games/ ${ownersToString(globalOwners)}`);
   lines.push(`/scripts/ ${ownersToString(globalOwners)}`);
-  lines.push(`/.github/workflows/ ${ownersToString(globalOwners)}`);
-  lines.push(`/.github/CODEOWNERS ${ownersToString(globalOwners)}`);
+  lines.push(`/.github/ ${ownersToString(globalOwners)}`);
   lines.push("");
 
   lines.push("# Default ownership for any game_id folder not explicitly listed");
