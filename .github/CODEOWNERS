@@ -10,8 +10,7 @@
 /_data/codeowners.yml @GaryAsher
 /_games/ @GaryAsher
 /scripts/ @GaryAsher
-/.github/workflows/ @GaryAsher
-/.github/CODEOWNERS @GaryAsher
+/.github/ @GaryAsher
 
 # Default ownership for any game_id folder not explicitly listed
 /_queue_runs/*/ @GaryAsher
