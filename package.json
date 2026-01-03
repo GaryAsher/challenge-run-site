@@ -4,7 +4,8 @@
   "scripts": {
     "validate:schema": "node scripts/validate-schema.js",
     "validate:runs": "node scripts/validate-runs.js",
-    "promote:runs": "node scripts/promote-runs.js"
+    "promote:runs": "node scripts/promote-runs.js",
+    "generate:run-categories": "node scripts/generate-game-runs-category-pages.js"
   },
   "dependencies": {
     "js-yaml": "^4.1.0"
