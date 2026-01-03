@@ -1,9 +1,2 @@
-global:         # Global owners apply everywhere (also appended to each game)
+global:         # Global owners apply everywhere
   - "@GaryAsher"
-
-
-games:          # One entry per game_id
-  dark-souls-1:
-    - []
-  hades-2:
-    - "@GaryAsher"
