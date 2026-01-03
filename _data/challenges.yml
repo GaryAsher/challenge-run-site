@@ -25,8 +25,7 @@ deathless:
 # F
 flawless:
   label: Flawless
-  aliases: ["No-Flaw"]
-  aliases: ["Perfect"]
+  aliases: ["No-Flaw", "Perfect"]
   
 # G
 
