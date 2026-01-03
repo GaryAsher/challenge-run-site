@@ -19,7 +19,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  generate_pr:
+  generate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -37,7 +37,7 @@ jobs:
       - name: Generate
         run: npm run generate:run-categories
 
-      - name: Create PR if generated files changed
+      - name: Create PR if changed
         uses: peter-evans/create-pull-request@v6
         with:
           commit-message: "Auto-generate run category pages"
