@@ -9,84 +9,68 @@
 // =========================================================
 (function () {
   // =========================================================
-  // Preserve scroll position when navigating between game tabs
-  // (Overview / Runs / History / etc.)
+  // Scroll preservation helpers for game tab navigation
   // =========================================================
-  function initGameTabScrollPreserve() {
-    function getGameRoot(pathname) {
-      // Matches: /games/<game_id>/...  -> returns "/games/<game_id>/"
-      const m = String(pathname || "").match(/^\/games\/([^/]+)\//);
-      return m ? `/games/${m[1]}/` : null;
-    }
+  function getGameRoot(pathname) {
+    // Matches: /games/<game_id>/...  -> returns "/games/<game_id>/"
+    const m = String(pathname || "").match(/^\/games\/([^/]+)\//);
+    return m ? `/games/${m[1]}/` : null;
+  }
 
+  function saveGameScroll() {
+    const root = getGameRoot(window.location.pathname);
+    if (!root) return;
+
+    const key = `crc_scroll:${root}`;
+    const payload = {
+      y: window.scrollY || window.pageYOffset || 0,
+      ts: Date.now()
+    };
+
+    try {
+      sessionStorage.setItem(key, JSON.stringify(payload));
+    } catch (_) {
+      // ignore storage failures
+    }
+  }
+
+  function restoreGameScroll() {
     const ORIGIN = window.location.origin;
     const gameRoot = getGameRoot(window.location.pathname);
+    if (!gameRoot) return;
 
-    // Save scroll on tab click
-    document.addEventListener("click", (e) => {
-      const a =
-        e.target && e.target.closest
-          ? e.target.closest("#game-tabs a.tab")
-          : null;
-      if (!a) return;
+    const ref = document.referrer || "";
+    if (!ref.startsWith(ORIGIN)) return;
 
-      // Only normal left-click navigation
-      if (e.button !== 0) return;
-      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-      if (a.target && a.target !== "_self") return;
+    const refPath = ref.slice(ORIGIN.length);
+    const refRoot = getGameRoot(refPath);
 
-      const root = getGameRoot(window.location.pathname);
-      if (!root) return;
+    // Only restore when navigating within the same game
+    if (!refRoot || refRoot !== gameRoot) return;
 
-      const key = `crc_scroll:${root}`;
-      const payload = {
-        y: window.scrollY || window.pageYOffset || 0,
-        ts: Date.now()
-      };
+    const key = `crc_scroll:${gameRoot}`;
 
-      try {
-        sessionStorage.setItem(key, JSON.stringify(payload));
-      } catch (_) {
-        // ignore storage failures
+    try {
+      const raw = sessionStorage.getItem(key);
+      if (!raw) return;
+
+      const data = JSON.parse(raw);
+      if (!data || typeof data.y !== "number") return;
+
+      // Optional TTL: 10 minutes
+      if (typeof data.ts === "number" && Date.now() - data.ts > 10 * 60 * 1000) {
+        return;
       }
-    });
 
-    // Restore scroll on page load if coming from the same game's root
-    document.addEventListener("DOMContentLoaded", () => {
-      if (!gameRoot) return;
-
-      const ref = document.referrer || "";
-      if (!ref.startsWith(ORIGIN)) return;
-
-      const refPath = ref.slice(ORIGIN.length);
-      const refRoot = getGameRoot(refPath);
-
-      // Only restore when navigating within the same game (Overview <-> Runs <-> History, etc.)
-      if (!refRoot || refRoot !== gameRoot) return;
-
-      const key = `crc_scroll:${gameRoot}`;
-
-      try {
-        const raw = sessionStorage.getItem(key);
-        if (!raw) return;
-
-        const data = JSON.parse(raw);
-        if (!data || typeof data.y !== "number") return;
-
-        // TTL so stale values do not stick around
-        if (typeof data.ts === "number" && Date.now() - data.ts > 10 * 60 * 1000)
-          return;
-
-        // Wait a tick for layout to settle
+      // Wait for layout to settle
+      requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            window.scrollTo(0, data.y);
-          });
+          window.scrollTo(0, data.y);
         });
-      } catch (_) {
-        // ignore parse errors
-      }
-    });
+      });
+    } catch (_) {
+      // ignore parse errors
+    }
   }
 
   // =========================================================
@@ -256,7 +240,6 @@
         .filter(Boolean);
     }
 
-    // Build options for challenge + restrictions
     function buildOptions() {
       const chIds = [];
       const chLabelById = new Map();
@@ -485,7 +468,6 @@
       renderActiveFilterChips();
     }
 
-    // Excel-style menu list (Challenge + Restrictions only)
     function renderThMenuList() {
       if (!thMenuList || !thMenuQ || !thActiveCol) return;
 
@@ -589,8 +571,6 @@
 
     runsRoot.querySelectorAll("[data-filter-btn]").forEach((btn) => {
       const col = btn.getAttribute("data-filter-btn");
-
-      // Only allow challenge + restrictions menus
       if (col !== "challenge" && col !== "restrictions") return;
 
       btn.addEventListener("click", (e) => {
@@ -667,31 +647,29 @@
 
   // =========================================================
   // Game tabs navigation helper
+  // Saves scroll before navigating via data-href
   // =========================================================
   function initGameTabsNav() {
     const root = document.getElementById("game-tabs");
     if (!root) return;
 
-    const overview = root.querySelector('.tab[data-tab="overview"]');
-    const categories = root.querySelector('.tab[data-tab="categories"]');
+    root.querySelectorAll(".tab[data-href]").forEach((tab) => {
+      tab.addEventListener("click", (e) => {
+        // Only normal left-click navigation
+        if (e.button !== 0) return;
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 
-    if (overview) {
-      overview.addEventListener("click", () => {
-        const href = overview.getAttribute("data-href");
-        if (href) window.location.href = href;
-      });
-    }
+        const href = tab.getAttribute("data-href");
+        if (!href) return;
 
-    if (categories) {
-      categories.addEventListener("click", () => {
-        const href = categories.getAttribute("data-href");
-        if (href) window.location.href = href;
+        saveGameScroll();
+        window.location.href = href;
       });
-    }
+    });
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    initGameTabScrollPreserve();
+    restoreGameScroll();
     document.querySelectorAll(".list-paged").forEach(initPagedList);
     initRunsTable();
     initGameTabsNav();
