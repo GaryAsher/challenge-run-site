@@ -11,6 +11,9 @@ If you are contributing content or making changes, start with the links below.
 - Required steps for adding or updating content  
   → `CONTRIBUTING.md`
 
+- ID and slug rules used by the site and validators  
+  → `id-and-slug-spec.md`
+
 - Common errors, CI failures, and fixes  
   → `TROUBLESHOOTING.md`
 
