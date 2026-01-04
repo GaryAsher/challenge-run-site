@@ -129,10 +129,22 @@ layout: default
       %}
     {% endif %}
 
+    <!-- =========================================================
+         If label is still unknown, grab it from the filtered runs
+         ========================================================= -->
+    {% if active_cat_slug != "" and active_cat_label == "" and runs and runs.size > 0 %}
+      {% for r in runs %}
+        {% if r.category and r.category != "" %}
+          {% assign active_cat_label = r.category | strip %}
+          {% break %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+
     {% if runs and runs.size > 0 %}
 
       <!-- =========================================================
-           Category page header (optional)
+           Optional: Category page header
            ========================================================= -->
       {% if active_cat_slug != "" and active_cat_label != "" %}
         <h2 style="margin-top: 0; margin-bottom: 0.75rem;">
