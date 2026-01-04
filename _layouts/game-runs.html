@@ -28,8 +28,26 @@ layout: default
       <div class="card card--compact" style="margin-bottom: 1rem;">
         <p class="muted" style="margin: 0;">
           <a href="{{ runs_base | relative_url }}">← All Runs</a>
-          <span class="muted"> / Category</span>
+          {% if active_cat_label != "" %}
+            <span class="muted"> / {{ active_cat_label }}</span>
+          {% else %}
+            <span class="muted"> / Category</span>
+          {% endif %}
         </p>
+    
+        {%- comment -%}
+          Optional: quick links to other categories (derived from runs for this game).
+        {%- endcomment -%}
+        {% assign all_slugs = cleaned | where: "game_id", page.game_id | map: "category_slug" | uniq | sort %}
+        {% if all_slugs and all_slugs.size > 1 %}
+          <div class="tag-picked" style="margin-top: 0.5rem;">
+            {% for s in all_slugs %}
+              {% if s != active_cat_slug %}
+                <a class="tag-chip" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ s }}</a>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
       </div>
     {% endif %}
 
