@@ -2,11 +2,11 @@
 layout: default
 title: Hades II Categories
 game_id: hades-2
-permalink: /games/hades-2/game-runs/categories/
+permalink: /games/hades-2/categories/
 ---
 
 {% assign game = site.games | where: "game_id", page.game_id | first %}
-{% include game-header-tabs.html game=game active="runs" %}
+{% include game-header-tabs.html game=game active="categories" %}
 
 <div class="page-width">
   <div class="game-shell">
@@ -37,7 +37,7 @@ permalink: /games/hades-2/game-runs/categories/
 
               <a
                 class="tag-chip"
-                href="{{ '/games/' | relative_url }}{{ page.game_id }}/game-runs/?category={{ s | url_encode }}"
+                href="{{ '/games/' | relative_url }}{{ page.game_id }}/runs/{{ s | url_encode }}/"
               >
                 {{ label }}
               </a>
