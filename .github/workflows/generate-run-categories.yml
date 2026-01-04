@@ -37,7 +37,7 @@ jobs:
         run: npm ci
 
       - name: Generate
-        run: npm run generate:run-categories
+        run: npm run generate:categories
 
       - name: Create PR if changed
         uses: peter-evans/create-pull-request@v6
