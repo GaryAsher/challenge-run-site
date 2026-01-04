@@ -73,7 +73,7 @@ When converting a display label to an ID/slug, use these steps in order:
 - **Notes:**
   - `runner` is a display label (can be their current handle).
   - `runner_id` is the stable key (should not change unless necessary).
-- **Examples:** `gary-asher`, 
+- **Examples:** `gary-asher`
 
 ### challenge_id
 - **Type:** ID
@@ -85,7 +85,7 @@ When converting a display label to an ID/slug, use these steps in order:
 - **Type:** list of IDs
 - **Used for:** structured restrictions applied to a run
 - **Rules:** Each entry must follow General ID rules
-- **Examples:** `no-dlc`, `no-super-arts`, `blindfolded`
+- **Examples:** `no-dlc`, `no-super-arts`, `no-magic`
 
 ### category_slug
 - **Type:** slug, with optional nesting
@@ -100,9 +100,8 @@ When converting a display label to an ID/slug, use these steps in order:
   - `^[a-z0-9]+(?:-[a-z0-9]+)*(?:/[a-z0-9]+(?:-[a-z0-9]+)*)*$`
 - **Examples:**
   - `any`
-  - `any-glitchless`
-  - `heat/16`
-  - `chapter/7a`
+  - `all-skills`
+  - `true-ending`
 
 ### Display labels vs IDs
 
