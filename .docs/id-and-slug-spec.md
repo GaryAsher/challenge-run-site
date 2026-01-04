@@ -73,7 +73,7 @@ When converting a display label to an ID/slug, use these steps in order:
 - **Notes:**
   - `runner` is a display label (can be their current handle).
   - `runner_id` is the stable key (should not change unless necessary).
-- **Examples:** `gary-asher`, `aze-card`, `wolfang`
+- **Examples:** `gary-asher`, 
 
 ### challenge_id
 - **Type:** ID
