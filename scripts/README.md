@@ -37,6 +37,7 @@ This script is **read-only**. It never modifies files.
 - CI check: Validate repo schema
 
 **Run manually**
+
 `npm run validate:schema`
 
 ---
@@ -65,6 +66,7 @@ This script is **read-only**.
 - CI check: Validate queued runs
 
 **Run manually**
+
 `npm run validate:runs`
 
 ---
@@ -85,6 +87,7 @@ This script **modifies files**.
 - Maintainers and moderators
 
 **Run manually**
+
 `npm run promote:runs`
 
 ---
@@ -102,9 +105,11 @@ Generates `.github/CODEOWNERS` based on ownership metadata in `_games/*.md`.
 - CI check: check-codeowners.yml
 
 **Run (update CODEOWNERS)**
+
 `node scripts/generate-codeowners.js`
 
 **Run (check only, no changes)**
+
 `node scripts/generate-codeowners.js --check`
 
 ---
@@ -125,8 +130,11 @@ This script **modifies files**.
 - CI check: validate-generated-run-pages.yml
 
 **Run manually**
+
 `npm run generate:run-categories`
+
 or
+
 `node scripts/generate-game-runs-category-pages.js`
 
 ---
