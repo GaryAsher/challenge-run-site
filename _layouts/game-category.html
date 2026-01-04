@@ -26,21 +26,21 @@ layout: default
 </div>
 
 <!-- =========================================================
-     Runs filtered by category
+     Runs filtered by category_slug
      ========================================================= -->
 <div class="page-width">
 
   <!-- Normalize + clean runs so Liquid filters do not crash -->
   {% assign cleaned = "" | split: "" %}
   {% for r in site.runs %}
-    {% if r and r.game_id and r.category %}
+    {% if r and r.game_id and r.category_slug %}
       {% assign cleaned = cleaned | push: r %}
     {% endif %}
   {% endfor %}
 
   {% assign runs = cleaned
     | where: "game_id", page.game_id
-    | where: "category", page.category
+    | where: "category_slug", page.category_slug
     | sort: "date_completed"
     | reverse
   %}
