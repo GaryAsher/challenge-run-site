@@ -17,10 +17,24 @@ layout: default
 {% endif %}
 {% assign runs_base = game_base | append: "runs/" %}
 
+<!-- =========================================================
+     Category label map (slug -> label)
+     ========================================================= -->
 {% assign category_pairs = "" | split: "" %}
 
+{% if game and game.categories_data and game.categories_data.size > 0 %}
+  {% for c in game.categories_data %}
+    {% assign s = c.slug | default: "" | strip %}
+    {% if s != "" %}
+      {% assign lbl = c.label | default: s | strip %}
+      {% assign pair = s | append: "||" | append: lbl %}
+      {% assign category_pairs = category_pairs | push: pair %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
 <!-- =========================================================
-     Pull runs from the _runs collection, then clean + filter
+     Pull runs from the _runs collection, then clean + sort
      ========================================================= -->
 {% assign cleaned = "" | split: "" %}
 {% for r in site.runs %}
@@ -28,56 +42,51 @@ layout: default
     {% assign cleaned = cleaned | push: r %}
   {% endif %}
 {% endfor %}
-{% assign runs = cleaned | where: "game_id", page.game_id %}
+
+{% assign cleaned_for_game = cleaned | where: "game_id", page.game_id %}
+{% assign runs = cleaned_for_game | sort: "date_completed" | reverse %}
 
 <!-- =========================================================
-     Build category slug -> label pairs
+     If no authored categories_data exists, derive categories
      ========================================================= -->
-{% if runs and runs.size > 0 %}
-  {% for r in runs %}
-    {% assign s = r.category_slug | default: "" | strip %}
-    {% assign lbl = r.category | default: s | strip %}
-    {% if s != "" %}
-      {% assign pair = s | append: "||" | append: lbl %}
+{% if category_pairs.size == 0 %}
+  {% assign slugs = cleaned_for_game | map: "category_slug" | compact | uniq | sort %}
+  {% for s in slugs %}
+    {% assign s_clean = s | strip %}
+    {% if s_clean != "" %}
+      {% assign lbl = s_clean %}
+      {% for rr in cleaned_for_game %}
+        {% if rr.category_slug == s_clean and rr.category and rr.category != "" %}
+          {% assign lbl = rr.category | strip %}
+          {% break %}
+        {% endif %}
+      {% endfor %}
+      {% assign pair = s_clean | append: "||" | append: lbl %}
       {% assign category_pairs = category_pairs | push: pair %}
     {% endif %}
   {% endfor %}
 {% endif %}
 
-{% assign category_pairs = category_pairs | uniq | sort %}
-
-{% if category_pairs.size == 0 %}
-  {% if site.runs and site.runs.size > 0 %}
-    {% for rr in site.runs %}
-      {% if rr.game_id == page.game_id %}
-        {% assign s_clean = rr.category_slug | default: "" | strip %}
-        {% assign lbl = rr.category | default: s_clean | strip %}
-        {% if s_clean != "" %}
-          {% assign pair = s_clean | append: "||" | append: lbl %}
-          {% assign category_pairs = category_pairs | push: pair %}
-        {% endif %}
-      {% endif %}
-    {% endfor %}
-    {% assign category_pairs = category_pairs | uniq | sort %}
-  {% endif %}
-{% endif %}
-
 <!-- =========================================================
-     Determine active category label (if on subpage)
+     Runs + Filters
      ========================================================= -->
-{% if active_cat_slug != "" and category_pairs and category_pairs.size > 0 %}
-  {% for p in category_pairs %}
-    {% assign parts = p | split: "||" %}
-    {% if parts[0] == active_cat_slug %}
-      {% assign active_cat_label = parts[1] | default: active_cat_slug | strip %}
-      {% break %}
-    {% endif %}
-  {% endfor %}
-{% endif %}
+<div class="page-width">
+  <div class="game-shell">
 
-{% if active_cat_slug != "" %}
-  <div class="page-width">
-    <div class="game-shell">
+    <!-- =========================================================
+         If we're on a category page, resolve its label early
+         ========================================================= -->
+    {% if active_cat_slug != "" %}
+      {% for p in category_pairs %}
+        {% assign parts = p | split: "||" %}
+        {% if parts[0] == active_cat_slug %}
+          {% assign active_cat_label = parts[1] | default: active_cat_slug | strip %}
+          {% break %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+
+    {% if active_cat_slug != "" %}
       <div class="card card--compact" style="margin-bottom: 1rem;">
         <p class="muted" style="margin: 0;">
           <a href="{{ runs_base | relative_url }}">← All Runs</a>
@@ -88,7 +97,9 @@ layout: default
           {% endif %}
         </p>
 
-        <!-- Optional: quick links to other categories (same game) -->
+        <!-- =========================================================
+             Optional: quick links to other categories (same game)
+             ========================================================= -->
         {% if category_pairs and category_pairs.size > 1 %}
           <div class="tag-picked" style="margin-top: 0.5rem;">
             {% for p in category_pairs %}
@@ -103,140 +114,152 @@ layout: default
           </div>
         {% endif %}
       </div>
-    </div>
-  </div>
-{% endif %}
-
-<!-- =========================================================
-     If we're on a category subpage, filter runs to that slug
-     Matches:
-       - exact slug
-       - nested children: "<slug>/..."
-     ========================================================= -->
-{% if active_cat_slug != "" %}
-  {% assign filtered = "" | split: "" %}
-  {% assign prefix = active_cat_slug | append: "/" %}
-  {% assign prefix_len = prefix | size %}
-
-  {% for r in runs %}
-    {% assign rslug = r.category_slug | default: "" | strip %}
-    {% if rslug == active_cat_slug %}
-      {% assign filtered = filtered | push: r %}
-    {% else %}
-      {% if rslug != "" %}
-        {% assign head = rslug | slice: 0, prefix_len %}
-        {% if head == prefix %}
-          {% assign filtered = filtered | push: r %}
-        {% endif %}
-      {% endif %}
     {% endif %}
-  {% endfor %}
 
-  {% assign runs = filtered %}
-{% endif %}
+    <!-- =========================================================
+         If we're on a category subpage, filter runs to that slug
+         Liquid does NOT support parentheses in conditions, so we
+         do this via an explicit loop instead of where_exp.
+         Matches:
+           - exact slug
+           - nested children: "<slug>/..."
+         ========================================================= -->
+    {% if active_cat_slug != "" %}
+      {% assign prefix = active_cat_slug | append: "/" %}
+      {% assign prefix_len = prefix | size %}
 
-<!-- =========================================================
-     Runs + Filters
-     ========================================================= -->
-<div class="page-width">
-  <div class="game-shell">
+      {% assign filtered = "" | split: "" %}
+      {% for r in runs %}
+        {% assign rslug = r.category_slug | default: "" | strip %}
+
+        {% if rslug == active_cat_slug %}
+          {% assign filtered = filtered | push: r %}
+        {% else %}
+          {% if rslug != "" %}
+            {% assign head = rslug | slice: 0, prefix_len %}
+            {% if head == prefix %}
+              {% assign filtered = filtered | push: r %}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+
+      {% assign runs = filtered %}
+    {% endif %}
+
+    <!-- =========================================================
+         If label is still unknown, grab it from the filtered runs
+         ========================================================= -->
+    {% if active_cat_slug != "" and active_cat_label == "" and runs and runs.size > 0 %}
+      {% for r in runs %}
+        {% if r.category and r.category != "" %}
+          {% assign active_cat_label = r.category | strip %}
+          {% break %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
 
     {% if runs and runs.size > 0 %}
 
-      {% if active_cat_slug == "" and category_pairs and category_pairs.size > 0 %}
-        <div class="card card--compact" style="margin-bottom: 1rem;">
-          <h2 style="margin: 0 0 0.5rem 0;">Browse by category</h2>
-          <div class="tag-picked">
-            {% for p in category_pairs %}
-              {% assign parts = p | split: "||" %}
-              {% assign s = parts[0] | strip %}
-              {% assign lbl = parts[1] | default: s | strip %}
-              {% if s != "" %}
-                {% assign depth = s | split: "/" | size | minus: 1 %}
-                <a
-                  class="tag-chip"
-                  href="{{ runs_base | relative_url }}{{ s | url_encode }}/"
-                  style="margin-left: {{ depth | times: 10 }}px;"
-                >
-                  {{ lbl }}
-                </a>
-              {% endif %}
-            {% endfor %}
-          </div>
-        </div>
+      <!-- =========================================================
+           Optional: Category page header
+           ========================================================= -->
+      {% if active_cat_slug != "" and active_cat_label != "" %}
+        <h2 style="margin-top: 0; margin-bottom: 0.75rem;">
+          {{ active_cat_label }}
+        </h2>
+        <p class="muted" style="margin-top: -0.25rem; margin-bottom: 1rem;">
+          Showing only runs in this category.
+        </p>
       {% endif %}
 
-      <div class="runs-filters">
-        <div class="runs-filter runs-filter--search">
-          <label class="muted" for="q">Search</label>
-          <input
-            id="q"
-            class="input"
-            type="search"
-            placeholder="Search runner, category, challenge, restrictions..."
-            autocomplete="off"
-          />
-        </div>
+      <!-- =========================================================
+           Filter controls row
+           ========================================================= -->
+      <div class="card card--compact">
 
-        <!-- Category (hide on category subpage) -->
-        {% if active_cat_slug == "" %}
+        <div class="runs-filters">
+          <!-- Search -->
+          <div class="runs-filter runs-filter--search">
+            <label class="muted" for="q">Search</label>
+            <input
+              id="q"
+              class="filter"
+              type="text"
+              placeholder="Search runner, category, challenge, restrictions..."
+              autocomplete="off"
+              inputmode="search"
+              enterkeyhint="search"
+            >
+          </div>
+
+          <!-- Category (hide on category subpage) -->
+          {% if active_cat_slug == "" %}
+            <div class="runs-filter">
+              <label class="muted" for="filter-category">Category</label>
+              <button
+                id="filter-category"
+                class="select th-caret"
+                type="button"
+                aria-label="Filter Category"
+                data-filter-btn="category"
+              >
+                All ▾
+              </button>
+            </div>
+          {% endif %}
+
+          <!-- Challenge -->
           <div class="runs-filter">
-            <label class="muted" for="filter-category">Category</label>
+            <label class="muted" for="filter-challenge">Challenge</label>
             <button
-              id="filter-category"
+              id="filter-challenge"
               class="select th-caret"
               type="button"
-              aria-label="Filter Category"
-              data-filter-btn="category"
+              aria-label="Filter Challenge"
+              data-filter-btn="challenge"
             >
               All ▾
             </button>
           </div>
-        {% endif %}
 
-        <div class="runs-filter">
-          <label class="muted" for="filter-challenge">Challenge</label>
-          <button
-            id="filter-challenge"
-            class="select th-caret"
-            type="button"
-            aria-label="Filter Challenge"
-            data-filter-btn="challenge"
-          >
-            All ▾
-          </button>
+          <!-- Restrictions -->
+          <div class="runs-filter">
+            <label class="muted" for="filter-restrictions">Restrictions</label>
+            <button
+              id="filter-restrictions"
+              class="select th-caret"
+              type="button"
+              aria-label="Filter Restrictions"
+              data-filter-btn="restrictions"
+            >
+              Any ▾
+            </button>
+          </div>
+
+          <!-- Show -->
+          <div class="runs-filter runs-filter--show">
+            <label class="muted" for="limit">Show</label>
+            <select id="limit" class="select">
+              <option value="10" selected>10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+              <option value="250">250</option>
+              <option value="0">All</option>
+            </select>
+          </div>
         </div>
 
-        <div class="runs-filter">
-          <label class="muted" for="filter-restrictions">Restrictions</label>
-          <button
-            id="filter-restrictions"
-            class="select th-caret"
-            type="button"
-            aria-label="Filter Restrictions"
-            data-filter-btn="restrictions"
-          >
-            All ▾
-          </button>
-        </div>
+        <!-- Active filters chips -->
+        <div id="active-filters" class="active-filters"></div>
 
-        <div class="runs-filter runs-filter--show">
-          <label class="muted" for="limit">Show</label>
-          <select id="limit" class="select">
-            <option value="10">10</option>
-            <option value="25" selected>25</option>
-            <option value="50">50</option>
-            <option value="9999">All</option>
-          </select>
-        </div>
-
-        <div class="runs-filter runs-filter--status">
-          <span id="status" class="muted"></span>
-        </div>
+        <p class="muted" id="status"></p>
       </div>
 
-      <div id="active-filters" class="tag-picked" style="margin-top: 0.75rem;"></div>
-
+      <!-- =========================================================
+           Runs table
+           ========================================================= -->
       <div class="table-wrap" id="runs-list" data-runs-base="{{ runs_base | relative_url }}">
         <table class="runs-table" id="runs-table">
           <thead>
@@ -246,28 +269,54 @@ layout: default
               <th>Challenge</th>
               <th>Restrictions</th>
               <th>Time</th>
-              <th>
-                <div class="th-sort-wrap">
-                  <span>Date</span>
+
+              <th class="th-filter th-date">
+                <div class="th-title">
+                  <span>Completion Date</span>
+                </div>
+
+                <div class="th-date-sort" aria-label="Sort Completion Date">
                   <button class="th-sort" id="th-sort-asc" type="button" title="Sort oldest to newest">↑</button>
                   <button class="th-sort" id="th-sort-desc" type="button" title="Sort newest to oldest">↓</button>
                 </div>
               </th>
+
               <th>Video</th>
             </tr>
           </thead>
 
           <tbody id="runs-body">
-            {% assign runs_sorted = runs | sort: "date_completed" | reverse %}
-            {% for r in runs_sorted %}
+            {% for r in runs %}
               {% assign meta = site.data.challenges[r.challenge_id] %}
               {% assign challenge_label = r.challenge_id %}
               {% if meta and meta.label %}
                 {% assign challenge_label = meta.label %}
               {% endif %}
 
-              {% assign runner_label = r.runner | default: r.runner_id | default: "—" %}
-              {% assign cat_label = r.category | default: r.category_slug | default: "—" %}
+              {% assign runner_label = r.runner | default: r.runner_id | default: "—" | replace: "_", " " %}
+
+              <!-- =========================================================
+                   Resolve category label for this row (slug -> label)
+                   ========================================================= -->
+              {% assign cat_label = r.category | default: "" | strip %}
+              {% if cat_label == "" %}
+                {% assign s = r.category_slug | default: "" | strip %}
+                {% if s != "" %}
+                  {% for p in category_pairs %}
+                    {% assign parts = p | split: "||" %}
+                    {% if parts[0] == s %}
+                      {% assign cat_label = parts[1] | default: s | strip %}
+                      {% break %}
+                    {% endif %}
+                  {% endfor %}
+                  {% if cat_label == "" %}
+                    {% assign cat_label = s %}
+                  {% endif %}
+                {% endif %}
+              {% endif %}
+              {% if cat_label == "" %}
+                {% assign cat_label = "—" %}
+              {% endif %}
 
               {% assign r_texts = "" | split: "" %}
               {% if r.restrictions %}
@@ -308,14 +357,7 @@ layout: default
                   {% endif %}
                 </td>
 
-                <td>
-                  {% assign cslug = r.category_slug | default: "" | strip %}
-                  {% if cslug != "" %}
-                    <a href="{{ runs_base | relative_url }}{{ cslug | url_encode }}/">{{ cat_label }}</a>
-                  {% else %}
-                    {{ cat_label }}
-                  {% endif %}
-                </td>
+                <td>{{ cat_label }}</td>
 
                 <td>
                   {% assign ch = challenge_label | default: "" | strip %}
@@ -337,6 +379,7 @@ layout: default
                 </td>
 
                 <td>{{ r.time_primary | default: r.time | default: "—" }}</td>
+
                 <td>{{ r.date_completed | default: "—" }}</td>
 
                 <td>
@@ -350,6 +393,26 @@ layout: default
             {% endfor %}
           </tbody>
         </table>
+
+        <!-- Excel-style filter menu -->
+        <div class="th-menu" id="th-menu" hidden>
+          <div class="th-menu__top">
+            <input
+              id="th-menu-q"
+              class="filter th-menu__q"
+              type="text"
+              placeholder="Search..."
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="th-menu__list" id="th-menu-list"></div>
+
+          <div class="th-menu__actions">
+            <button class="btn" id="th-menu-clear" type="button">Clear</button>
+            <button class="btn" id="th-menu-close" type="button">Close</button>
+          </div>
+        </div>
       </div>
 
     {% else %}
