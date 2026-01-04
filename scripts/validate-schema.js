@@ -11,6 +11,7 @@ Checks:
   - Windows-unsafe characters in filenames/folders (currently: < and >)
   - _data/tags.yml and _data/challenges.yml load and have sane shapes
   - _games/*.md: required fields + tag/challenge references exist (with alias resolution)
+  - _games/*.md: categories_data (parents + optional children) validated
   - _runners/*.md: required fields + referenced games exist
   - _runs/*.md (excluding _TEMPLATES): required fields + references exist (with alias resolution)
 */
@@ -109,70 +110,6 @@ function mustString(fileRel, field, value) {
   }
 }
 
-function mustIdSegment(fileRel, where, value) {
-  if (typeof value !== "string" || !ID_RE.test(value)) {
-    die(`${fileRel}: ${where} must be kebab-case (got: ${JSON.stringify(value)})`);
-  }
-}
-
-function validateCategoriesData(fileRel, fm) {
-  if (fm.categories_data == null) return;
-
-  if (!Array.isArray(fm.categories_data)) {
-    die(`${fileRel}: categories_data must be a YAML list`);
-  }
-
-  const parentSeen = new Set();
-
-  for (const c of fm.categories_data) {
-    if (!c || typeof c !== "object" || Array.isArray(c)) {
-      die(`${fileRel}: categories_data entries must be objects`);
-    }
-
-    const pslug = String(c.slug || "").trim();
-    if (!pslug) die(`${fileRel}: categories_data entry missing slug`);
-    if (pslug.includes("/")) die(`${fileRel}: categories_data slug must not contain "/": ${pslug}`);
-    mustIdSegment(fileRel, `categories_data.slug`, pslug);
-
-    const plabel = c.label == null ? "" : String(c.label).trim();
-    if (plabel !== "" && typeof plabel !== "string") {
-      die(`${fileRel}: categories_data.${pslug}.label must be a string`);
-    }
-
-    if (parentSeen.has(pslug)) die(`${fileRel}: duplicate categories_data slug: ${pslug}`);
-    parentSeen.add(pslug);
-
-    if (c.children != null) {
-      if (!Array.isArray(c.children)) {
-        die(`${fileRel}: categories_data.${pslug}.children must be a YAML list`);
-      }
-
-      const childSeen = new Set();
-
-      for (const ch of c.children) {
-        if (!ch || typeof ch !== "object" || Array.isArray(ch)) {
-          die(`${fileRel}: categories_data.${pslug}.children entries must be objects`);
-        }
-
-        const cslug = String(ch.slug || "").trim();
-        if (!cslug) die(`${fileRel}: categories_data.${pslug}.children entry missing slug`);
-        if (cslug.includes("/")) die(`${fileRel}: child slug must be a single segment (no "/"): ${pslug}/${cslug}`);
-        mustIdSegment(fileRel, `categories_data.${pslug}.children.slug`, cslug);
-
-        const clabel = ch.label == null ? "" : String(ch.label).trim();
-        if (clabel !== "" && typeof clabel !== "string") {
-          die(`${fileRel}: categories_data.${pslug}.children.${cslug}.label must be a string`);
-        }
-
-        if (childSeen.has(cslug)) {
-          die(`${fileRel}: duplicate child slug under ${pslug}: ${cslug}`);
-        }
-        childSeen.add(cslug);
-      }
-    }
-  }
-}
-
 function mustArrayOfStrings(fileRel, field, value) {
   if (!Array.isArray(value)) {
     die(`${fileRel}: ${field} must be a YAML list`);
@@ -206,6 +143,122 @@ function mustDate(fileRel, field, value) {
     return;
   }
   if (typeof value !== "string" || !DATE_RE.test(value)) die(`${fileRel}: ${field} must be YYYY-MM-DD`);
+}
+
+function mustCategorySlug(fileRel, field, value) {
+  if (typeof value !== "string" || !CATEGORY_SLUG_RE.test(value)) {
+    die(
+      `${fileRel}: ${field} must be kebab-case with optional nesting using "/": ${JSON.stringify(value)}`
+    );
+  }
+}
+
+/**
+ * categories_data schema:
+ * categories_data:
+ *   - slug: parent-slug         (single segment)
+ *     label: Parent Label       (optional)
+ *     children:                (optional)
+ *       - slug: child-slug      (single segment)
+ *         label: Child Label    (optional)
+ *
+ * Validates:
+ * - correct shapes
+ * - slugs match allowed pattern
+ * - parents have no "/"
+ * - children have no "/"
+ * - no duplicate parent slugs
+ * - no duplicate child slugs under a parent
+ * - no duplicate full slugs across all parents (parent/child)
+ */
+function validateCategoriesData(fileRel, fm) {
+  if (fm.categories_data == null) return;
+
+  if (!Array.isArray(fm.categories_data)) {
+    die(`${fileRel}: categories_data must be a YAML list`);
+  }
+
+  const parentSeen = new Set();
+  const fullSeen = new Set();
+
+  for (const [idx, cat] of fm.categories_data.entries()) {
+    if (!cat || typeof cat !== "object" || Array.isArray(cat)) {
+      die(`${fileRel}: categories_data[${idx}] must be an object`);
+    }
+
+    if (typeof cat.slug !== "string" || !cat.slug.trim()) {
+      die(`${fileRel}: categories_data[${idx}].slug is required`);
+    }
+    const pslug = cat.slug.trim();
+
+    if (pslug.includes("/")) {
+      die(
+        `${fileRel}: categories_data[${idx}].slug must be a top-level slug only (no "/"): ${JSON.stringify(pslug)}`
+      );
+    }
+
+    mustCategorySlug(fileRel, `categories_data[${idx}].slug`, pslug);
+
+    if (cat.label != null) {
+      if (typeof cat.label !== "string" || !cat.label.trim()) {
+        die(`${fileRel}: categories_data[${idx}].label must be a non-empty string if provided`);
+      }
+    }
+
+    if (parentSeen.has(pslug)) {
+      die(`${fileRel}: duplicate categories_data parent slug: ${pslug}`);
+    }
+    parentSeen.add(pslug);
+
+    if (fullSeen.has(pslug)) {
+      die(`${fileRel}: duplicate category slug: ${pslug}`);
+    }
+    fullSeen.add(pslug);
+
+    if (cat.children == null) continue;
+
+    if (!Array.isArray(cat.children)) {
+      die(`${fileRel}: categories_data[${idx}].children must be a YAML list`);
+    }
+
+    const childSeen = new Set();
+
+    for (const [cidx, ch] of cat.children.entries()) {
+      if (!ch || typeof ch !== "object" || Array.isArray(ch)) {
+        die(`${fileRel}: categories_data[${idx}].children[${cidx}] must be an object`);
+      }
+
+      if (typeof ch.slug !== "string" || !ch.slug.trim()) {
+        die(`${fileRel}: categories_data[${idx}].children[${cidx}].slug is required`);
+      }
+      const cslug = ch.slug.trim();
+
+      if (cslug.includes("/")) {
+        die(
+          `${fileRel}: categories_data[${idx}].children[${cidx}].slug must be a single segment (no "/"): ${JSON.stringify(cslug)}`
+        );
+      }
+
+      mustCategorySlug(fileRel, `categories_data[${idx}].children[${cidx}].slug`, cslug);
+
+      if (ch.label != null) {
+        if (typeof ch.label !== "string" || !ch.label.trim()) {
+          die(`${fileRel}: categories_data[${idx}].children[${cidx}].label must be a non-empty string if provided`);
+        }
+      }
+
+      if (childSeen.has(cslug)) {
+        die(`${fileRel}: duplicate child slug under ${pslug}: ${cslug}`);
+      }
+      childSeen.add(cslug);
+
+      const full = `${pslug}/${cslug}`;
+      if (fullSeen.has(full)) {
+        die(`${fileRel}: duplicate full category slug: ${full}`);
+      }
+      fullSeen.add(full);
+    }
+  }
 }
 
 /* ------------------------------------------------------------------
@@ -242,7 +295,6 @@ function buildResolver(kindName, yamlObj, filePathRelForErrors) {
 
   function registerKey(key, id) {
     if (!key) return;
-    // If a key collides between two different ids, keep the first and warn.
     if (keyToId.has(key) && keyToId.get(key) !== id) {
       warn(
         `${filePathRelForErrors}: ${kindName} alias/label key "${key}" is ambiguous between "${keyToId.get(
@@ -263,13 +315,9 @@ function buildResolver(kindName, yamlObj, filePathRelForErrors) {
       die(`${filePathRelForErrors}: ${id}.label is required`);
     }
 
-    // Register canonical id and common variants
     for (const v of keyVariants(id)) registerKey(v, id);
-
-    // Register label and its variants
     for (const v of keyVariants(obj.label)) registerKey(v, id);
 
-    // Register aliases and their variants
     if (obj.aliases != null) {
       if (!Array.isArray(obj.aliases)) die(`${filePathRelForErrors}: ${id}.aliases must be a list`);
       for (const a of obj.aliases) {
@@ -279,19 +327,15 @@ function buildResolver(kindName, yamlObj, filePathRelForErrors) {
     }
   }
 
-  // Resolve a user-provided value (id, label, alias, formatting variant) to canonical id.
   function resolve(rawValue) {
     const raw = String(rawValue).trim();
     if (!raw) return null;
 
-    // Exact id match first (fast path)
     if (ids.has(raw)) return { id: raw, source: "id", canonical: raw };
 
-    // Try normalized matches
     for (const v of keyVariants(raw)) {
       const hit = keyToId.get(v);
       if (hit) {
-        // Determine if this was already canonical id
         const source = hit === raw ? "id" : "alias";
         return { id: hit, source, canonical: hit };
       }
@@ -368,6 +412,8 @@ function validateGames({ tagResolver, challengeResolver }) {
 
     mustSlug(fileRel, "game_id", fm.game_id);
     mustString(fileRel, "name", fm.name);
+
+    // categories_data schema (parents + optional children)
     validateCategoriesData(fileRel, fm);
 
     if (gameIds.has(fm.game_id)) die(`${fileRel}: duplicate game_id ${fm.game_id}`);
@@ -376,29 +422,24 @@ function validateGames({ tagResolver, challengeResolver }) {
     // tags (allow aliases/labels)
     if (fm.tags != null) {
       mustArrayOfStrings(fileRel, "tags", fm.tags);
-      const resolved = [];
       for (const t of fm.tags) {
         const r = tagResolver.resolve(t);
         if (!r) die(`${fileRel}: unknown tag in tags: ${t}`);
         if (r.source !== "id" && r.canonical !== t) {
           warn(`${fileRel}: tag "${t}" should be "${r.canonical}" (canonical id)`);
         }
-        resolved.push(r.canonical);
       }
-      // Not rewriting files, just validating.
     }
 
     // challenges (allow aliases/labels)
     if (fm.challenges != null) {
       mustArrayOfStrings(fileRel, "challenges", fm.challenges);
-      const resolved = [];
       for (const c of fm.challenges) {
         const r = challengeResolver.resolve(c);
         if (!r) die(`${fileRel}: unknown challenge in challenges: ${c}`);
         if (r.source !== "id" && r.canonical !== c) {
           warn(`${fileRel}: challenge "${c}" should be "${r.canonical}" (canonical id)`);
         }
-        resolved.push(r.canonical);
       }
     }
   }
@@ -453,10 +494,13 @@ function validateRuns({ gameIds, runnerIds, challengeResolver }) {
 
     mustSlug(fileRel, "game_id", fm.game_id);
     mustSlug(fileRel, "runner_id", fm.runner_id);
+
     if (typeof fm.category_slug !== "string" || !CATEGORY_SLUG_RE.test(fm.category_slug)) {
-  die(`${fileRel}: category_slug must allow optional nesting with "/": ${JSON.stringify(fm.category_slug)}`);
+      die(
+        `${fileRel}: category_slug must allow optional nesting with "/": ${JSON.stringify(fm.category_slug)}`
+      );
     }
-    
+
     mustString(fileRel, "runner", fm.runner);
     mustString(fileRel, "category", fm.category);
     mustDate(fileRel, "date_completed", fm.date_completed);
