@@ -6,7 +6,7 @@ const yaml = require("js-yaml");
 
 function readFrontMatter(filePath) {
   const raw = fs.readFileSync(filePath, "utf8");
-  const m = raw.match(/^---\s*\n([\s\S]*?)\n---\s*\n?/);
+  const m = raw.match(/^---\s*[\r\n]+([\s\S]*?)[\r\n]+---\s*[\r\n]?/);
   if (!m) return null;
   try {
     return yaml.load(m[1]);
