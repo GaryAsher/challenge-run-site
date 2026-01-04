@@ -1,9 +1,11 @@
 // =========================================================
 // Client-side pagination for any .list-paged block
 // + Runs table filtering (Search + Header filters + Date sort + Limit)
-// + Category dropdown can either:
-//   - Navigate to /games/<game_id>/runs/<category_slug>/ pages (preferred), or
-//   - Fall back to ?category=<category_slug> filtering (legacy)
+//
+// NOTE:
+// Category filtering/navigation has been removed.
+// Categories are browsed via category pages + chips in the layout,
+// and category text remains searchable in the search box.
 // =========================================================
 (function () {
   // =========================================================
@@ -134,7 +136,7 @@
     const thSortAsc = document.getElementById("th-sort-asc");
     const thSortDesc = document.getElementById("th-sort-desc");
 
-    const btnCat = document.getElementById("filter-category");
+    // Category filter removed
     const btnCh = document.getElementById("filter-challenge");
     const btnRes = document.getElementById("filter-restrictions");
     const activeFiltersWrap = document.getElementById("active-filters");
@@ -143,19 +145,6 @@
 
     const norm = (s) => (s || "").toString().trim().toLowerCase();
     const uniq = (arr) => Array.from(new Set(arr));
-
-    function escapeHtml(s) {
-      return String(s).replace(/[&<>"']/g, (c) => {
-        switch (c) {
-          case "&": return "&amp;";
-          case "<": return "&lt;";
-          case ">": return "&gt;";
-          case '"': return "&quot;";
-          case "'": return "&#39;";
-          default: return c;
-        }
-      });
-    }
 
     function parseDateToNumber(s) {
       const v = (s || "").trim();
@@ -185,84 +174,6 @@
         .map((s) => (s || "").toString().trim())
         .filter(Boolean);
     }
-
-    // =========================================================
-    // Runs base + category slug from path (new routing: /runs/)
-    // =========================================================
-    function getRunsBaseFromDom() {
-      const el =
-        document.querySelector("[data-runs-base]") ||
-        table.closest("[data-runs-base]");
-      if (!el) return "";
-      const v = (el.getAttribute("data-runs-base") || "").trim();
-      return v;
-    }
-
-    function getRunsBaseFromPath() {
-      // Build base like: /games/<game_id>/runs/
-      const p = window.location.pathname || "/";
-      const marker = "/runs/";
-      const idx = p.indexOf(marker);
-      if (idx === -1) return "";
-      return p.slice(0, idx + marker.length);
-    }
-
-    function getRunsBase() {
-      return getRunsBaseFromDom() || getRunsBaseFromPath();
-    }
-
-    function getCategoryFromQuery() {
-      const u = new URL(window.location.href);
-      return (u.searchParams.get("category") || "").trim();
-    }
-
-    function getCategoryFromPath() {
-      const base = getRunsBaseFromPath();
-      if (!base) return "";
-      const p = window.location.pathname || "/";
-      if (!p.startsWith(base)) return "";
-      let rest = p.slice(base.length);
-      rest = rest.replace(/^\/+/, "").replace(/\/+$/, "");
-      // rest can be "" (base page) or "chaos-trials/heat-16"
-      return rest;
-    }
-
-    function toSlugOrEmpty(v) {
-      return (v || "").toString().trim().replace(/^\/+/, "").replace(/\/+$/, "");
-    }
-
-    function goToCategoryPage(slugOrEmpty) {
-      const base = getRunsBase();
-      const slug = toSlugOrEmpty(slugOrEmpty);
-
-      if (base) {
-        const next = slug ? `${base}${slug}/` : base;
-        window.location.href = next;
-        return true;
-      }
-
-      return false;
-    }
-
-    // =========================================================
-    // Category from URL (supports new pages + legacy query param)
-    // =========================================================
-    function getCategoryFromUrl() {
-      return getCategoryFromQuery() || getCategoryFromPath();
-    }
-
-    function setCategoryInUrl(slugOrEmpty) {
-      // Prefer navigating to real pages; fallback to query param.
-      if (goToCategoryPage(slugOrEmpty)) return;
-
-      const u = new URL(window.location.href);
-      const slug = toSlugOrEmpty(slugOrEmpty);
-      if (slug) u.searchParams.set("category", slug);
-      else u.searchParams.delete("category");
-      history.replaceState(null, "", u);
-    }
-
-    let activeCategorySlug = getCategoryFromUrl();
 
     // =========================================================
     // Build options for challenge + restrictions (filters)
@@ -339,25 +250,7 @@
       return hit ? hit.label : id;
     }
 
-    function getCategoryLabelForSlug(slug) {
-      if (!slug) return "";
-      const target = toSlugOrEmpty(slug);
-      for (const row of rows) {
-        const s = toSlugOrEmpty(row.dataset.categorySlug || "");
-        if (s === target) return (row.dataset.category || "").toString().trim() || slug;
-      }
-      return slug;
-    }
-
     function updateTopButtonLabels() {
-      if (btnCat) {
-        if (activeCategorySlug) {
-          btnCat.textContent = `Category: ${getCategoryLabelForSlug(activeCategorySlug)} ▾`;
-        } else {
-          btnCat.textContent = "Category ▾";
-        }
-      }
-
       if (btnCh) {
         btnCh.textContent = activeChallenges.size
           ? `Challenge (${activeChallenges.size}) ▾`
@@ -376,14 +269,6 @@
 
       activeFiltersWrap.innerHTML = "";
       const chips = [];
-
-      if (activeCategorySlug) {
-        chips.push({
-          kind: "category",
-          slug: toSlugOrEmpty(activeCategorySlug),
-          label: getCategoryLabelForSlug(activeCategorySlug)
-        });
-      }
 
       activeChallenges.forEach((id) => {
         chips.push({ kind: "challenge", id, label: getLabelFor("challenge", id) });
@@ -405,17 +290,6 @@
       }
 
       chips.forEach((c) => {
-        if (c.kind === "category") {
-          activeFiltersWrap.appendChild(
-            makeChip(`Category: ${c.label}`, () => {
-              activeCategorySlug = "";
-              setCategoryInUrl("");
-              render();
-            })
-          );
-          return;
-        }
-
         const colLabel = c.kind === "challenge" ? "Challenge" : "Restrictions";
         activeFiltersWrap.appendChild(
           makeChip(`${colLabel}: ${c.label}`, () => {
@@ -431,8 +305,6 @@
       clearAll.className = "btn";
       clearAll.textContent = "Clear All";
       clearAll.addEventListener("click", () => {
-        activeCategorySlug = "";
-        setCategoryInUrl("");
         activeChallenges.clear();
         activeRestrictions.clear();
         render();
@@ -449,18 +321,6 @@
 
     function passesFilters(row) {
       const needle = norm(q && q.value);
-
-      // Category filter:
-      // Support nested categories: selecting "chaos-trials" should also match "chaos-trials/heat-16"
-      if (activeCategorySlug) {
-        const want = toSlugOrEmpty(activeCategorySlug);
-        const rowSlug = toSlugOrEmpty(row.dataset.categorySlug || "");
-
-        if (rowSlug !== want) {
-          const prefix = want + "/";
-          if (!rowSlug.startsWith(prefix)) return false;
-        }
-      }
 
       const ch = norm(row.dataset.challengeId);
 
@@ -548,7 +408,7 @@
     }
 
     // =========================================================
-    // Hide already-selected options (Challenge + Restrictions)
+    // Excel-style menu list (Challenge + Restrictions only)
     // =========================================================
     function renderThMenuList() {
       if (!thMenuList || !thMenuQ || !thActiveCol) return;
@@ -646,116 +506,6 @@
       });
     }
 
-    // =========================================================
-    // Category NAV menu
-    // Now: navigates to /games/<game_id>/runs/<slug>/ when possible
-    // =========================================================
-    function buildCategoryNavItems() {
-      const map = new Map(); // slug -> label
-
-      rows.forEach((row) => {
-        const slug = toSlugOrEmpty(row.dataset.categorySlug || "");
-        if (!slug) return;
-
-        const label = (row.dataset.category || "").toString().trim();
-        if (!map.has(slug)) map.set(slug, label || slug);
-      });
-
-      return Array.from(map.entries())
-        .map(([slug, label]) => ({ slug, label }))
-        .sort((a, b) => a.label.localeCompare(b.label));
-    }
-
-    function renderCategoryNavList(items) {
-      if (!thMenuList || !thMenuQ) return;
-
-      const qv = norm(thMenuQ.value);
-      thMenuList.innerHTML = "";
-
-      const filtered = items.filter((it) => {
-        if (!qv) return true;
-        return norm(it.label).includes(qv) || norm(it.slug).includes(qv);
-      });
-
-      if (!filtered.length) {
-        const empty = document.createElement("div");
-        empty.className = "th-menu__empty muted";
-        empty.textContent = "No matches.";
-        thMenuList.appendChild(empty);
-        return;
-      }
-
-      filtered.slice(0, 250).forEach((it) => {
-        const b = document.createElement("button");
-        b.type = "button";
-        b.className = "th-menu__item";
-        b.style.width = "100%";
-        b.style.border = "0";
-        b.style.background = "transparent";
-        b.style.textAlign = "left";
-
-        b.innerHTML = `<span>${escapeHtml(it.label)}</span>`;
-
-        b.addEventListener("click", () => {
-          setCategoryInUrl(it.slug);
-          closeThMenu();
-
-          // If navigation did not happen (no base), fall back to client filtering.
-          activeCategorySlug = it.slug;
-          render();
-        });
-
-        thMenuList.appendChild(b);
-      });
-    }
-
-    function openCategoryNavMenu(anchorEl) {
-      if (!thMenu) return;
-
-      thActiveCol = "category-nav";
-      thMenu.hidden = false;
-
-      if (thMenuClear) thMenuClear.textContent = "All Runs";
-
-      const r = anchorEl.getBoundingClientRect();
-      const approxMenuW = 320;
-
-      const left = Math.min(
-        window.innerWidth - approxMenuW - 12,
-        Math.max(12, r.left)
-      );
-
-      thMenu.style.left = left + "px";
-      thMenu.style.top = r.bottom + 8 + "px";
-
-      if (thMenuQ) thMenuQ.value = "";
-
-      const items = buildCategoryNavItems();
-      renderCategoryNavList(items);
-
-      requestAnimationFrame(() => {
-        if (!thMenuQ || thMenu.hidden) return;
-
-        const menuW = thMenu.offsetWidth || approxMenuW;
-        const menuH = thMenu.offsetHeight || 300;
-
-        const clampedLeft = Math.min(
-          window.innerWidth - menuW - 12,
-          Math.max(12, r.left)
-        );
-
-        const clampedTop = Math.min(
-          window.innerHeight - menuH - 12,
-          r.bottom + 8
-        );
-
-        thMenu.style.left = clampedLeft + "px";
-        thMenu.style.top = clampedTop + "px";
-
-        thMenuQ.focus();
-      });
-    }
-
     const runsRoot =
       table.closest(".game-shell") ||
       table.closest(".page-width") ||
@@ -763,6 +513,9 @@
 
     runsRoot.querySelectorAll("[data-filter-btn]").forEach((btn) => {
       const col = btn.getAttribute("data-filter-btn");
+
+      // Only allow challenge + restrictions menus
+      if (col !== "challenge" && col !== "restrictions") return;
 
       btn.addEventListener("click", (e) => {
         e.preventDefault();
@@ -779,24 +532,12 @@
 
     if (thMenuQ) {
       thMenuQ.addEventListener("input", () => {
-        if (thActiveCol === "category-nav") {
-          renderCategoryNavList(buildCategoryNavItems());
-          return;
-        }
         renderThMenuList();
       });
     }
 
     if (thMenuClear) {
       thMenuClear.addEventListener("click", () => {
-        if (thActiveCol === "category-nav") {
-          activeCategorySlug = "";
-          setCategoryInUrl("");
-          closeThMenu();
-          render();
-          return;
-        }
-
         if (!thActiveCol) return;
         const set = getSetForCol(thActiveCol);
         if (!set) return;
@@ -846,12 +587,6 @@
 
     if (q) q.addEventListener("input", render);
     if (limitEl) limitEl.addEventListener("change", render);
-
-    // Back/forward: update category from URL
-    window.addEventListener("popstate", () => {
-      activeCategorySlug = getCategoryFromUrl();
-      render();
-    });
 
     updateDateSortButtons();
     updateTopButtonLabels();
