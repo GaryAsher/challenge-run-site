@@ -86,6 +86,9 @@ layout: default
       {% endfor %}
     {% endif %}
 
+    <!-- =========================================================
+         Category breadcrumb card (only on category pages)
+         ========================================================= -->
     {% if active_cat_slug != "" %}
       <div class="card card--compact" style="margin-bottom: 1rem;">
         <p class="muted" style="margin: 0;">
@@ -97,31 +100,34 @@ layout: default
           {% endif %}
         </p>
 
-     <!-- =========================================================
-          Optional: quick links to categories (same game)
-          Shows the active category as selected
-          ========================================================= -->
-     {% if category_pairs and category_pairs.size > 0 %}
-       <div class="tag-picked" style="margin-top: 0.5rem;">
-         {% for p in category_pairs %}
-           {% assign parts = p | split: "||" %}
-           {% assign s = parts[0] | strip %}
-           {% assign lbl = parts[1] | default: s | strip %}
-     
-           {% if s != "" %}
-             {% if s == active_cat_slug %}
-               <a class="tag-chip is-active" aria-current="page" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
-             {% else %}
-               <a class="tag-chip" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
-             {% endif %}
-           {% endif %}
-         {% endfor %}
-       </div>
-     {% endif %}
+        <!-- =========================================================
+             Optional: quick links to categories (same game)
+             Shows the active category as selected
+             ========================================================= -->
+        {% if category_pairs and category_pairs.size > 0 %}
+          <div class="tag-picked" style="margin-top: 0.5rem;">
+            {% for p in category_pairs %}
+              {% assign parts = p | split: "||" %}
+              {% assign s = parts[0] | strip %}
+              {% assign lbl = parts[1] | default: s | strip %}
+
+              {% if s != "" %}
+                {% if s == active_cat_slug %}
+                  <a class="tag-chip is-active" aria-current="page" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
+                {% else %}
+                  <a class="tag-chip" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
 
     <!-- =========================================================
          Browse by category (shows even if there are 0 runs)
          Prefer game.categories_data when present; fall back to pairs
+         Only on the main /runs/ page (not category subpages)
          ========================================================= -->
     {% if active_cat_slug == "" %}
       {% if game and game.categories_data and game.categories_data.size > 0 %}
