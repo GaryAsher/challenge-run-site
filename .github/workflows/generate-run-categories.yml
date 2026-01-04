@@ -5,7 +5,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - "_runs/**"
+      - "_games/**"
       - "scripts/generate-run-category-pages.js"
       - "package.json"
       - "package-lock.json"
@@ -24,6 +24,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -42,7 +44,7 @@ jobs:
         with:
           commit-message: "Auto-generate run category pages"
           title: "Auto-generate run category pages"
-          body: "Generated category pages from _runs data."
+          body: "Generated run category pages from _games categories_data (including nested children)."
           branch: "automation/generate-run-categories"
           delete-branch: true
           add-paths: |
