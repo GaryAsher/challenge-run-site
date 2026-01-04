@@ -171,6 +171,36 @@ layout: default
           </div>
         {% endif %}
       </div>
+
+      {% comment %}
+      Parent summary card:
+      Only show when the active page is a parent category that has children.
+      Counts runs that are in the parent or any child (prefix match).
+      {% endcomment %}
+      {% if is_child_page == false and child_pairs and child_pairs.size > 0 %}
+        {% assign prefix2 = active_cat_slug | append: "/" %}
+        {% assign prefix2_len = prefix2 | size %}
+        {% assign total_in_parent = 0 %}
+
+        {% for r in runs %}
+          {% assign rslug = r.category_slug | default: "" | strip %}
+          {% if rslug == active_cat_slug %}
+            {% assign total_in_parent = total_in_parent | plus: 1 %}
+          {% elsif rslug != "" %}
+            {% assign head = rslug | slice: 0, prefix2_len %}
+            {% if head == prefix2 %}
+              {% assign total_in_parent = total_in_parent | plus: 1 %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+
+        <div class="card card--compact" style="margin-bottom: 1rem;">
+          <h3 style="margin: 0 0 0.25rem 0;">{{ parent_label | default: active_cat_label }}</h3>
+          <p class="muted" style="margin: 0;">
+            {{ child_pairs.size }} subcategories • {{ total_in_parent }} total runs
+          </p>
+        </div>
+      {% endif %}
     {% endif %}
 
     <!-- =========================================================
@@ -186,6 +216,20 @@ layout: default
               {% assign s = c.slug | default: "" | strip %}
               {% assign lbl = c.label | default: s | strip %}
               {% if s != "" %}
+                <a class="tag-chip" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      {% elsif category_pairs and category_pairs.size > 0 %}
+        <div class="card card--compact" style="margin-bottom: 1rem;">
+          <h2 style="margin: 0 0 0.5rem 0;">Browse by category</h2>
+          <div class="tag-picked">
+            {% for p in category_pairs %}
+              {% assign parts = p | split: "||" %}
+              {% assign s = parts[0] | strip %}
+              {% assign lbl = parts[1] | default: s | strip %}
+              {% if s != "" and s contains "/" == false %}
                 <a class="tag-chip" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
               {% endif %}
             {% endfor %}
