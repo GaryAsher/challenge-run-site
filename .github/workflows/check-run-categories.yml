@@ -1,9 +1,11 @@
 name: Check run category pages are up to date
 
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - "_games/**"
+      - "_runs/**"
       - "scripts/generate-run-category-pages.js"
       - "games/**/runs/**/index.html"
 
