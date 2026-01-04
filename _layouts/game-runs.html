@@ -117,9 +117,42 @@ layout: default
     {% endif %}
 
     <!-- =========================================================
+         Browse by category (shows even if there are 0 runs)
+         Prefer game.categories_data when present; fall back to pairs
+         ========================================================= -->
+    {% if active_cat_slug == "" %}
+      {% if game and game.categories_data and game.categories_data.size > 0 %}
+        <div class="card card--compact" style="margin-bottom: 1rem;">
+          <h2 style="margin: 0 0 0.5rem 0;">Browse by category</h2>
+          <div class="tag-picked">
+            {% for c in game.categories_data %}
+              {% assign s = c.slug | default: "" | strip %}
+              {% assign lbl = c.label | default: s | strip %}
+              {% if s != "" %}
+                <a class="tag-chip" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      {% elsif category_pairs and category_pairs.size > 0 %}
+        <div class="card card--compact" style="margin-bottom: 1rem;">
+          <h2 style="margin: 0 0 0.5rem 0;">Browse by category</h2>
+          <div class="tag-picked">
+            {% for p in category_pairs %}
+              {% assign parts = p | split: "||" %}
+              {% assign s = parts[0] | strip %}
+              {% assign lbl = parts[1] | default: s | strip %}
+              {% if s != "" %}
+                <a class="tag-chip" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    {% endif %}
+
+    <!-- =========================================================
          If we're on a category subpage, filter runs to that slug
-         Liquid does NOT support parentheses in conditions, so we
-         do this via an explicit loop instead of where_exp.
          Matches:
            - exact slug
            - nested children: "<slug>/..."
@@ -176,24 +209,7 @@ layout: default
       <!-- =========================================================
            Filter controls row
            ========================================================= -->
-      {% if active_cat_slug == "" and category_pairs and category_pairs.size > 0 %}
-        <div class="card card--compact" style="margin-bottom: 1rem;">
-          <h2 style="margin: 0 0 0.5rem 0;">Browse by category</h2>
-          <div class="tag-picked">
-            {% for p in category_pairs %}
-              {% assign parts = p | split: "||" %}
-              {% assign s = parts[0] | strip %}
-              {% assign lbl = parts[1] | default: s | strip %}
-              {% if s != "" %}
-                <a class="tag-chip" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
-              {% endif %}
-            {% endfor %}
-          </div>
-        </div>
-      {% endif %}
-
-       <div class="card card--compact">
-
+      <div class="card card--compact">
         <div class="runs-filters">
           <!-- Search -->
           <div class="runs-filter runs-filter--search">
