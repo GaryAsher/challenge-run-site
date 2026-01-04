@@ -261,7 +261,7 @@ a:hover {
 
 .filter-wrap::after { content: none !important; }
 
-.tag-picker .filter-wrap { max-width: none; }
+-picker .filter-wrap { max-width: none; }
 
 .select {
   min-height: var(--tap);
@@ -332,6 +332,26 @@ button.tag { cursor: pointer; }
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem 0.35rem;
+}
+
+/* ============================================================
+   Runs table: center pill tags + consistent padding
+   ============================================================ */
+.runs-table .cell-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.runs-table .tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.22rem 0.55rem;
+  line-height: 1.2;
+  text-align: center;
 }
 
 /* ============================================================
