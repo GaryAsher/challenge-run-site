@@ -1,0 +1,30 @@
+name: Check run category pages are up to date
+
+on:
+  pull_request:
+    paths:
+      - "_games/**"
+      - "scripts/generate-run-category-pages.js"
+      - "games/**/runs/**/index.html"
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install
+        run: npm ci
+
+      - name: Check generated pages
+        run: node scripts/generate-run-category-pages.js --check
