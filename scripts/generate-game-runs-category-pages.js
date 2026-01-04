@@ -34,7 +34,7 @@ function normalizeSlug(slug) {
 
 function makeCategoryPage({ gameId, categorySlug }) {
   const slug = normalizeSlug(categorySlug);
-  const permalink = `/games/${gameId}/game-runs/${slug}/`;
+  const permalink = `/games/${gameId}/runs/${slug}/`;
 
   return [
     "---",
@@ -52,6 +52,11 @@ function main() {
   const root = path.resolve(__dirname, "..");
   const runsDir = path.join(root, "_runs");
   const gamesDir = path.join(root, "games");
+
+  if (!fs.existsSync(runsDir)) {
+    console.error(`Missing directory: ${runsDir}`);
+    process.exit(1);
+  }
 
   const runFiles = fs
     .readdirSync(runsDir)
@@ -90,14 +95,14 @@ function main() {
     const slugs = Array.from(slugsSet).sort((a, b) => a.localeCompare(b));
 
     for (const slug of slugs) {
-      const outDir = path.join(gamesDir, gameId, "game-runs", ...slug.split("/"));
+      const outDir = path.join(gamesDir, gameId, "runs", ...slug.split("/"));
       const outFile = path.join(outDir, "index.html");
       const content = makeCategoryPage({ gameId, categorySlug: slug });
       if (writeFileIfDifferent(outFile, content)) wrote++;
     }
   }
 
-  console.log(`Generated/updated ${wrote} game-runs category page(s).`);
+  console.log(`Generated/updated ${wrote} runs category page(s).`);
 }
 
 main();
