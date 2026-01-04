@@ -1,4 +1,7 @@
 {% assign game = include.game | default: page %}
+
+{% if game %}
+
 {% assign tabs = game.tabs %}
 
 <!-- =========================================================
@@ -14,6 +17,7 @@
      - Extra 1 (optional placeholder)
      - Extra 2 (optional placeholder)
      ========================================================= -->
+
 <!-- =========================================================
      Back link
      ========================================================= -->
@@ -105,7 +109,7 @@
         Runs
       </a>
 
-      <!-- History (main) -->
+      <!-- History -->
       {% if tabs and tabs.history %}
         <a
           class="tab {% if include.active == 'history' %}active{% endif %}"
@@ -117,7 +121,7 @@
         </a>
       {% endif %}
 
-      <!-- Optional tabs (only if enabled) -->
+      <!-- Optional tabs -->
       {% if tabs and tabs.challenges %}
         <a
           class="tab {% if include.active == 'challenges' %}active{% endif %}"
@@ -199,3 +203,13 @@
     </nav>
   </div>
 </div>
+
+{% else %}
+
+<div class="page-width">
+  <div class="card">
+    <p class="muted">Error: game context missing for this page.</p>
+  </div>
+</div>
+
+{% endif %}
