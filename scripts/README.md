@@ -13,7 +13,7 @@ Run scripts from the repository root.
 
 `npm install`
 
-Some scripts are also exposed through npm script aliases.
+Run this once after a fresh clone, or anytime package.json changes.
 
 ---
 
@@ -126,6 +126,8 @@ This script **modifies files**.
 
 **Run manually**
 `npm run generate:run-categories`
+or
+`node scripts/generate-game-runs-category-pages.js`
 
 ---
 
