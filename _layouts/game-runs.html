@@ -290,7 +290,6 @@ layout: default
           <thead>
             <tr>
               <th>Runner</th>
-              <th>Category</th>
               <th>Challenge</th>
               <th>Restrictions</th>
               <th>Time</th>
@@ -321,7 +320,8 @@ layout: default
               {% assign runner_label = r.runner | default: r.runner_id | default: "—" | replace: "_", " " %}
 
               <!-- =========================================================
-                   Resolve category label for this row (slug -> label)
+                   Resolve category label for search + data attributes
+                   (column removed from display, but still searchable)
                    ========================================================= -->
               {% assign cat_label = r.category | default: "" | strip %}
               {% if cat_label == "" %}
@@ -383,18 +383,11 @@ layout: default
                 </td>
 
                 <td>
-                  {% assign cslug = r.category_slug | default: "" | strip %}
-                  {% if cslug != "" %}
-                    <a href="{{ runs_base | relative_url }}{{ cslug | url_encode }}/">{{ cat_label }}</a>
-                  {% else %}
-                    {{ cat_label }}
-                  {% endif %}
-                </td>
-
-                <td>
                   {% assign ch = challenge_label | default: "" | strip %}
                   {% if ch != "" and ch != "—" %}
-                    <span class="tag">{{ ch }}</span>
+                    <div class="cell-tags">
+                      <span class="tag">{{ ch }}</span>
+                    </div>
                   {% else %}
                     —
                   {% endif %}
@@ -402,9 +395,11 @@ layout: default
 
                 <td>
                   {% if r_texts and r_texts.size > 0 %}
-                    {% for rr in r_texts %}
-                      <span class="tag">{{ rr }}</span>
-                    {% endfor %}
+                    <div class="cell-tags">
+                      {% for rr in r_texts %}
+                        <span class="tag">{{ rr }}</span>
+                      {% endfor %}
+                    </div>
                   {% else %}
                     —
                   {% endif %}
