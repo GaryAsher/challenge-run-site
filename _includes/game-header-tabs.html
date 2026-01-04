@@ -2,20 +2,20 @@
 {% assign tabs = game.tabs %}
 
 {% comment %}
-Tab order (final):
+Tab order (current contract):
 Overview (always)
 Runs (always)
-Categories (optional, recommended if Runs exist)
+History (main)
 Challenges (optional)
 Guides (optional)
 Resources (optional)
 Rules (optional)
-Forum (optional)
+Forum (optional placeholder)
 Extra 1 (optional placeholder)
 Extra 2 (optional placeholder)
 
 include.active should be one of:
-"overview", "runs", "categories", "challenges", "guides", "resources", "rules", "forum", "extra-1", "extra-2"
+"overview", "runs", "history", "challenges", "guides", "resources", "rules", "forum", "extra-1", "extra-2"
 {% endcomment %}
 
 <!-- =========================================================
@@ -109,20 +109,15 @@ include.active should be one of:
         Runs
       </a>
 
-      <!-- Categories (default on unless explicitly disabled) -->
-      {% assign show_categories = true %}
-      {% if tabs and tabs.categories == false %}
-        {% assign show_categories = false %}
-      {% endif %}
-
-      {% if show_categories %}
+      <!-- History (main) -->
+      {% if tabs and tabs.history %}
         <a
-          class="tab {% if include.active == 'categories' %}active{% endif %}"
-          data-tab="categories"
-          href="{{ game.url | relative_url }}categories/"
-          data-href="{{ game.url | relative_url }}categories/"
+          class="tab {% if include.active == 'history' %}active{% endif %}"
+          data-tab="history"
+          href="{{ game.url | relative_url }}history/"
+          data-href="{{ game.url | relative_url }}history/"
         >
-          Categories
+          History
         </a>
       {% endif %}
 
