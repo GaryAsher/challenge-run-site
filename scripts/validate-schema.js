@@ -21,7 +21,8 @@ const yaml = require("js-yaml");
 
 const ROOT = process.cwd();
 
-const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const CATEGORY_SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:-[a-z0-9]+)*)*$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_RE = /^\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?$/;
 const TIMING_SET = new Set(["RTA", "IGT", "LRT"]);
@@ -97,7 +98,7 @@ function parseFrontMatter(p) {
 }
 
 function mustSlug(fileRel, field, value) {
-  if (typeof value !== "string" || !SLUG_RE.test(value)) {
+  if (typeof value !== "string" || !ID_RE.test(value)) {
     die(`${fileRel}: ${field} must be kebab-case (got: ${JSON.stringify(value)})`);
   }
 }
@@ -387,8 +388,10 @@ function validateRuns({ gameIds, runnerIds, challengeResolver }) {
 
     mustSlug(fileRel, "game_id", fm.game_id);
     mustSlug(fileRel, "runner_id", fm.runner_id);
-    mustSlug(fileRel, "category_slug", fm.category_slug);
-
+    if (typeof fm.category_slug !== "string" || !CATEGORY_SLUG_RE.test(fm.category_slug)) {
+  die(`${fileRel}: category_slug must allow optional nesting with "/": ${JSON.stringify(fm.category_slug)}`);
+    }
+    
     mustString(fileRel, "runner", fm.runner);
     mustString(fileRel, "category", fm.category);
     mustDate(fileRel, "date_completed", fm.date_completed);
