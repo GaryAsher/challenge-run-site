@@ -419,7 +419,7 @@ function validateRuns({ gameIds, runnerIds, challengeResolver }) {
     if (fm.restriction_ids != null) {
       mustArrayOfStrings(fileRel, "restriction_ids", fm.restriction_ids);
       for (const rid of fm.restriction_ids) {
-        if (!SLUG_RE.test(rid)) die(`${fileRel}: restriction_ids must be kebab-case (bad: ${rid})`);
+        if (!ID_RE.test(rid)) die(`${fileRel}: restriction_ids must be kebab-case (bad: ${rid})`);
       }
     }
     if (Array.isArray(fm.restrictions) && Array.isArray(fm.restriction_ids)) {
