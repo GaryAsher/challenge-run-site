@@ -9,10 +9,6 @@
  * Usage:
  *   node scripts/generate-run-category-pages.js --game hades-2
  *   node scripts/generate-run-category-pages.js --game hades-2 --check
- *
- * Notes:
- * - Reads YAML front matter from _games/<game_id>.md
- * - Does not remove files. (Can be added later.)
  */
 
 const fs = require("fs");
@@ -57,18 +53,13 @@ function writeFileIfChanged(p, content, check) {
 }
 
 /**
- * Minimal YAML front matter parser tailored for your file shape.
- * Extracts the YAML block between first two --- lines.
- * Then parses categories_data with optional children.
- *
- * This avoids adding dependencies.
+ * Minimal YAML front matter parser tailored for file shape
  */
 function extractFrontMatterYaml(md) {
   const m = md.match(/^---\s*\n([\s\S]*?)\n---\s*\n/);
   return m ? m[1] : null;
 }
 
-// Super small YAML value helpers
 function stripQuotes(s) {
   const v = String(s ?? "").trim();
   if (
@@ -81,27 +72,20 @@ function stripQuotes(s) {
 }
 
 function parseCategoriesData(yaml) {
-  // We will parse only the categories_data subtree using indentation.
   const lines = yaml.split(/\r?\n/);
 
   // Find "categories_data:"
   const startIdx = lines.findIndex((l) => /^\s*categories_data:\s*$/.test(l));
   if (startIdx === -1) return [];
 
-  // Collect until next top-level key (no indent) or end
   const block = [];
   for (let i = startIdx + 1; i < lines.length; i++) {
     const line = lines[i];
-    if (/^[A-Za-z0-9_-]+:\s*$/.test(line)) break; // next top-level key
+    if (/^[A-Za-z0-9_-]+:\s*$/.test(line)) break;
     block.push(line);
   }
 
   // Parse list items:
-  // - slug: chaos-trials
-  //   label: Chaos Trials
-  //   children:
-  //     - slug: trial-of-origin
-  //       label: Trial of Origin
   const cats = [];
   let i = 0;
 
@@ -117,7 +101,6 @@ function parseCategoriesData(yaml) {
       continue;
     }
 
-    // Parent item begins with "- "
     if (/^\s*-\s+slug:\s*/.test(line)) {
       const parentIndent = indentOf(line);
       const slug = stripQuotes(line.replace(/^\s*-\s+slug:\s*/, ""));
@@ -126,7 +109,6 @@ function parseCategoriesData(yaml) {
 
       i++;
 
-      // Read properties until next parent item at same indent
       while (i < block.length) {
         const l = block[i];
         if (!l.trim()) {
@@ -134,17 +116,14 @@ function parseCategoriesData(yaml) {
           continue;
         }
 
-        // Next parent item
         if (indentOf(l) === parentIndent && /^\s*-\s+slug:\s*/.test(l)) break;
 
-        // label
         if (/^\s*label:\s*/.test(l)) {
           label = stripQuotes(l.replace(/^\s*label:\s*/, ""));
           i++;
           continue;
         }
 
-        // children:
         if (/^\s*children:\s*$/.test(l)) {
           const childrenIndent = indentOf(l);
           i++;
@@ -156,7 +135,6 @@ function parseCategoriesData(yaml) {
               continue;
             }
 
-            // children list item starts
             if (indentOf(cl) > childrenIndent && /^\s*-\s+slug:\s*/.test(cl)) {
               const childIndent = indentOf(cl);
               const cslug = stripQuotes(cl.replace(/^\s*-\s+slug:\s*/, ""));
@@ -170,7 +148,6 @@ function parseCategoriesData(yaml) {
                   continue;
                 }
 
-                // next child item or back out
                 if (indentOf(pl) <= childIndent && /^\s*-\s+slug:\s*/.test(pl)) break;
                 if (indentOf(pl) <= childrenIndent) break;
 
@@ -187,7 +164,6 @@ function parseCategoriesData(yaml) {
               continue;
             }
 
-            // back out of children section
             if (indentOf(cl) <= childrenIndent) break;
 
             i++;
