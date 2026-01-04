@@ -2,7 +2,7 @@
 // Client-side pagination for any .list-paged block
 // + Runs table filtering (Search + Header filters + Date sort + Limit)
 // + Category dropdown can either:
-//   - Navigate to /game-runs/<category_slug>/ pages (preferred), or
+//   - Navigate to /runs/<category_slug>/ pages (preferred), or
 //   - Fall back to ?category=<category_slug> filtering (legacy)
 // =========================================================
 (function () {
@@ -187,7 +187,7 @@
     }
 
     // =========================================================
-    // Runs base + category slug from path (new routing)
+    // Runs base + category slug from path
     // =========================================================
     function getRunsBaseFromDom() {
       const el =
@@ -199,9 +199,9 @@
     }
 
     function getRunsBaseFromPath() {
-      // Build base like: /games/<game_id>/game-runs/
+      // Build base like: /games/<game_id>/runs/
       const p = window.location.pathname || "/";
-      const marker = "/game-runs/";
+      const marker = "/runs/";
       const idx = p.indexOf(marker);
       if (idx === -1) return "";
       return p.slice(0, idx + marker.length);
@@ -223,7 +223,6 @@
       if (!p.startsWith(base)) return "";
       let rest = p.slice(base.length);
       rest = rest.replace(/^\/+/, "").replace(/\/+$/, "");
-      // rest can be "" (base page) or "chaos-trials/heat-16"
       return rest;
     }
 
@@ -236,7 +235,7 @@
       const slug = toSlugOrEmpty(slugOrEmpty);
 
       if (base) {
-        const next = slug ? `${base}${slug}/` : base;
+        const next = slug ? `${base}${encodeURIComponent(slug)}/` : base;
         window.location.href = next;
         return true;
       }
@@ -252,14 +251,14 @@
     }
 
     function setCategoryInUrl(slugOrEmpty) {
-      // Prefer navigating to real pages; fallback to query param.
-      if (goToCategoryPage(slugOrEmpty)) return;
+      if (goToCategoryPage(slugOrEmpty)) return true;
 
       const u = new URL(window.location.href);
       const slug = toSlugOrEmpty(slugOrEmpty);
       if (slug) u.searchParams.set("category", slug);
       else u.searchParams.delete("category");
       history.replaceState(null, "", u);
+      return false;
     }
 
     let activeCategorySlug = getCategoryFromUrl();
@@ -410,8 +409,6 @@
             makeChip(`Category: ${c.label}`, () => {
               activeCategorySlug = "";
               setCategoryInUrl("");
-              // If navigation happened, the page will reload.
-              // If not, we fall back to filtering.
               render();
             })
           );
@@ -453,7 +450,6 @@
       const needle = norm(q && q.value);
 
       // Category filter:
-      // Support nested categories: selecting "chaos-trials" should also match "chaos-trials/heat-16"
       if (activeCategorySlug) {
         const want = toSlugOrEmpty(activeCategorySlug);
         const rowSlug = toSlugOrEmpty(row.dataset.categorySlug || "");
@@ -650,7 +646,6 @@
 
     // =========================================================
     // Category NAV menu
-    // Now: navigates to /game-runs/<slug>/ when possible
     // =========================================================
     function buildCategoryNavItems() {
       const map = new Map(); // slug -> label
@@ -699,14 +694,13 @@
         b.innerHTML = `<span>${escapeHtml(it.label)}</span>`;
 
         b.addEventListener("click", () => {
-          // Prefer real page navigation:
-          // /games/<game_id>/game-runs/<category_slug>/
-          setCategoryInUrl(it.slug);
+          const navigated = setCategoryInUrl(it.slug);
           closeThMenu();
 
-          // If navigation did not happen (no base), fall back to client filtering.
-          activeCategorySlug = it.slug;
-          render();
+          if (!navigated) {
+            activeCategorySlug = it.slug;
+            render();
+          }
         });
 
         thMenuList.appendChild(b);
