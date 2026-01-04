@@ -191,7 +191,7 @@ function buildResolver(kindName, yamlObj, filePathRelForErrors) {
   }
 
   for (const [id, obj] of Object.entries(yamlObj)) {
-    if (!SLUG_RE.test(id)) die(`${filePathRelForErrors}: invalid id ${JSON.stringify(id)}`);
+    if (!ID_RE.test(id)) die(`${filePathRelForErrors}: invalid id ${JSON.stringify(id)}`);
     if (!obj || typeof obj !== "object" || Array.isArray(obj)) {
       die(`${filePathRelForErrors}: ${id} must map to an object`);
     }
