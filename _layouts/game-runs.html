@@ -8,10 +8,9 @@ layout: default
 {% assign active_cat_slug = page.category_slug | default: "" %}
 {% assign active_cat_label = "" %}
 
-{%- comment -%}
-  Build a stable base path for this game.
-  Prefer the game's actual page URL if it exists, otherwise fall back to /games/<game_id>/.
-{%- endcomment -%}
+<!-- =========================================================
+     Base paths
+     ========================================================= -->
 {% assign game_base = game.url | default: "" %}
 {% if game_base == "" %}
   {% assign game_base = "/games/" | append: page.game_id | append: "/" %}
@@ -19,10 +18,75 @@ layout: default
 {% assign runs_base = game_base | append: "runs/" %}
 
 <!-- =========================================================
+     Category label map (slug -> label)
+     Source of truth: _games/<id>.md -> categories_data
+     Fallback: derive from runs (first matching run.category)
+     ========================================================= -->
+{% assign category_pairs = "" | split: "" %}
+
+{% if game and game.categories_data and game.categories_data.size > 0 %}
+  {% for c in game.categories_data %}
+    {% assign s = c.slug | default: "" | strip %}
+    {% if s != "" %}
+      {% assign lbl = c.label | default: s | strip %}
+      {% assign pair = s | append: "||" | append: lbl %}
+      {% assign category_pairs = category_pairs | push: pair %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
+<!-- =========================================================
+     Pull runs from the _runs collection, then clean + sort
+     ========================================================= -->
+{% assign cleaned = "" | split: "" %}
+{% for r in site.runs %}
+  {% if r and r.game_id %}
+    {% assign cleaned = cleaned | push: r %}
+  {% endif %}
+{% endfor %}
+
+{% assign cleaned_for_game = cleaned | where: "game_id", page.game_id %}
+{% assign runs = cleaned_for_game | sort: "date_completed" | reverse %}
+
+<!-- =========================================================
+     If no authored categories_data exists, derive categories
+     ========================================================= -->
+{% if category_pairs.size == 0 %}
+  {% assign slugs = cleaned_for_game | map: "category_slug" | compact | uniq | sort %}
+  {% for s in slugs %}
+    {% assign s_clean = s | strip %}
+    {% if s_clean != "" %}
+      {% assign lbl = s_clean %}
+      {% for rr in cleaned_for_game %}
+        {% if rr.category_slug == s_clean and rr.category and rr.category != "" %}
+          {% assign lbl = rr.category | strip %}
+          {% break %}
+        {% endif %}
+      {% endfor %}
+      {% assign pair = s_clean | append: "||" | append: lbl %}
+      {% assign category_pairs = category_pairs | push: pair %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
+<!-- =========================================================
      Runs + Filters
      ========================================================= -->
 <div class="page-width">
   <div class="game-shell">
+
+    <!-- =========================================================
+         If we're on a category page, resolve its label early
+         ========================================================= -->
+    {% if active_cat_slug != "" %}
+      {% for p in category_pairs %}
+        {% assign parts = p | split: "||" %}
+        {% if parts[0] == active_cat_slug %}
+          {% assign active_cat_label = parts[1] | default: active_cat_slug | strip %}
+          {% break %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
 
     {% if active_cat_slug != "" %}
       <div class="card card--compact" style="margin-bottom: 1rem;">
@@ -34,16 +98,19 @@ layout: default
             <span class="muted"> / Category</span>
           {% endif %}
         </p>
-    
-        {%- comment -%}
-          Optional: quick links to other categories (derived from runs for this game).
-        {%- endcomment -%}
-        {% assign all_slugs = cleaned | where: "game_id", page.game_id | map: "category_slug" | uniq | sort %}
-        {% if all_slugs and all_slugs.size > 1 %}
+
+        <!-- =========================================================
+             Optional: quick links to other categories (same game)
+             ========================================================= -->
+        {% if category_pairs and category_pairs.size > 1 %}
           <div class="tag-picked" style="margin-top: 0.5rem;">
-            {% for s in all_slugs %}
-              {% if s != active_cat_slug %}
-                <a class="tag-chip" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ s }}</a>
+            {% for p in category_pairs %}
+              {% assign parts = p | split: "||" %}
+              {% assign s = parts[0] | strip %}
+              {% assign lbl = parts[1] | default: s | strip %}
+
+              {% if s != "" and s != active_cat_slug %}
+                <a class="tag-chip" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
               {% endif %}
             {% endfor %}
           </div>
@@ -52,25 +119,13 @@ layout: default
     {% endif %}
 
     <!-- =========================================================
-         Pull runs from the _runs collection, then clean + filter
+         If we're on a category subpage, filter runs to that slug
+         Supports nested slugs:
+         - active: chaos-trials
+           matches chaos-trials AND chaos-trials/heat-16
+         - active: chaos-trials/heat-16
+           matches exactly that branch
          ========================================================= -->
-    {% assign cleaned = "" | split: "" %}
-    {% for r in site.runs %}
-      {% if r and r.game_id %}
-        {% assign cleaned = cleaned | push: r %}
-      {% endif %}
-    {% endfor %}
-
-    {% assign runs = cleaned | where: "game_id", page.game_id | sort: "date_completed" | reverse %}
-
-    {%- comment -%}
-      If we're on a category subpage, filter runs to that category slug.
-      Supports nested slugs:
-      - active: chaos-trials
-        matches chaos-trials AND chaos-trials/heat-16
-      - active: chaos-trials/heat-16
-        matches exactly that branch
-    {%- endcomment -%}
     {% if active_cat_slug != "" %}
       {% assign prefix = active_cat_slug | append: "/" %}
       {% assign prefix_len = prefix | size %}
@@ -83,18 +138,9 @@ layout: default
 
     {% if runs and runs.size > 0 %}
 
-      {%- comment -%}
-        Capture a label for the active category if we can find one.
-      {%- endcomment -%}
-      {% if active_cat_slug != "" %}
-        {% for r in runs %}
-          {% if r.category and r.category != "" %}
-            {% assign active_cat_label = r.category %}
-            {% break %}
-          {% endif %}
-        {% endfor %}
-      {% endif %}
-
+      <!-- =========================================================
+           Category page header (optional)
+           ========================================================= -->
       {% if active_cat_slug != "" and active_cat_label != "" %}
         <h2 style="margin-top: 0; margin-bottom: 0.75rem;">
           {{ active_cat_label }}
@@ -225,7 +271,29 @@ layout: default
               {% endif %}
 
               {% assign runner_label = r.runner | default: r.runner_id | default: "—" | replace: "_", " " %}
-              {% assign cat_label = r.category | default: "—" %}
+
+              <!-- =========================================================
+                   Resolve category label for this row (slug -> label)
+                   ========================================================= -->
+              {% assign cat_label = r.category | default: "" | strip %}
+              {% if cat_label == "" %}
+                {% assign s = r.category_slug | default: "" | strip %}
+                {% if s != "" %}
+                  {% for p in category_pairs %}
+                    {% assign parts = p | split: "||" %}
+                    {% if parts[0] == s %}
+                      {% assign cat_label = parts[1] | default: s | strip %}
+                      {% break %}
+                    {% endif %}
+                  {% endfor %}
+                  {% if cat_label == "" %}
+                    {% assign cat_label = s %}
+                  {% endif %}
+                {% endif %}
+              {% endif %}
+              {% if cat_label == "" %}
+                {% assign cat_label = "—" %}
+              {% endif %}
 
               {% assign r_texts = "" | split: "" %}
               {% if r.restrictions %}
@@ -250,7 +318,7 @@ layout: default
               <tr
                 class="run-row"
                 data-runner="{{ r.runner_id | default: r.runner | default: '' | escape }}"
-                data-category="{{ r.category | default: '' | escape }}"
+                data-category="{{ cat_label | default: '' | escape }}"
                 data-category-slug="{{ r.category_slug | default: '' | escape }}"
                 data-challenge-id="{{ r.challenge_id | default: '' | escape }}"
                 data-challenge-label="{{ challenge_label | default: '' | escape }}"
