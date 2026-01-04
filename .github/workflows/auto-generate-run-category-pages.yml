@@ -1,0 +1,54 @@
+name: Auto-generate run category pages
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "_games/**"
+      - "_runs/**"
+      - "scripts/generate-run-category-pages.js"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: auto-generate-run-category-pages
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Configure SSH (deploy key)
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.CRC_DEPLOY_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          git remote set-url origin git@github.com:${{ github.repository }}.git
+
+      - name: Generate category pages
+        run: |
+          node scripts/generate-run-category-pages.js
+
+      - name: Commit and push if changed
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "crc-auto-bot"
+            git config user.email "crc-auto-bot@users.noreply.github.com"
+            git add games/**/runs/**/index.html
+            git commit -m "Auto-generate run category pages"
+            git push
+          else
+            echo "No changes to commit."
+          fi
