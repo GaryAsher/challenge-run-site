@@ -8,6 +8,7 @@
 // and category text remains searchable in the search box.
 // =========================================================
 (function () {
+  
   // =========================================================
   // Client-side pagination for any .list-paged block
   // =========================================================
@@ -115,6 +116,7 @@
 
   // =========================================================
   // Runs table filtering (Search + Header filters + Date sort + Limit)
+  // Category filtering/navigation removed (categories are pages).
   // =========================================================
   function initRunsTable() {
     const table = document.getElementById("runs-table");
@@ -136,7 +138,6 @@
     const thSortAsc = document.getElementById("th-sort-asc");
     const thSortDesc = document.getElementById("th-sort-desc");
 
-    // Category filter removed
     const btnCh = document.getElementById("filter-challenge");
     const btnRes = document.getElementById("filter-restrictions");
     const activeFiltersWrap = document.getElementById("active-filters");
@@ -175,9 +176,7 @@
         .filter(Boolean);
     }
 
-    // =========================================================
-    // Build options for challenge + restrictions (filters)
-    // =========================================================
+    // Build options for challenge + restrictions
     function buildOptions() {
       const chIds = [];
       const chLabelById = new Map();
@@ -323,7 +322,6 @@
       const needle = norm(q && q.value);
 
       const ch = norm(row.dataset.challengeId);
-
       const resRaw = parseRestrictionsRaw(row);
       const resNorm = resRaw.map(norm);
 
@@ -407,9 +405,7 @@
       renderActiveFilterChips();
     }
 
-    // =========================================================
     // Excel-style menu list (Challenge + Restrictions only)
-    // =========================================================
     function renderThMenuList() {
       if (!thMenuList || !thMenuQ || !thActiveCol) return;
 
@@ -530,11 +526,7 @@
       });
     });
 
-    if (thMenuQ) {
-      thMenuQ.addEventListener("input", () => {
-        renderThMenuList();
-      });
-    }
+    if (thMenuQ) thMenuQ.addEventListener("input", renderThMenuList);
 
     if (thMenuClear) {
       thMenuClear.addEventListener("click", () => {
