@@ -1,4 +1,22 @@
 {% assign game = include.game | default: page %}
+{% assign tabs = game.tabs %}
+
+{% comment %}
+Tab order (final):
+Overview (always)
+Runs (always)
+Categories (optional, recommended if Runs exist)
+Challenges (optional)
+Guides (optional)
+Resources (optional)
+Rules (optional)
+Forum (optional)
+Extra 1 (optional placeholder)
+Extra 2 (optional placeholder)
+
+include.active should be one of:
+"overview", "runs", "categories", "challenges", "guides", "resources", "rules", "forum", "extra-1", "extra-2"
+{% endcomment %}
 
 <!-- =========================================================
      Back link
@@ -66,11 +84,12 @@
 
 <!-- =========================================================
      Game tabs
-     include.active = "overview" | "categories" | "runs"
      ========================================================= -->
 <div class="page-width">
   <div class="game-shell">
     <nav class="runner-tabs game-tabs" id="game-tabs">
+
+      <!-- Overview (always) -->
       <a
         class="tab {% if include.active == 'overview' %}active{% endif %}"
         data-tab="overview"
@@ -80,23 +99,112 @@
         Overview
       </a>
 
-      <a
-        class="tab {% if include.active == 'categories' %}active{% endif %}"
-        data-tab="categories"
-        href="{{ game.url | relative_url }}#categories"
-        data-href="{{ game.url | relative_url }}#categories"
-      >
-        Categories
-      </a>
-
+      <!-- Runs (always) -->
       <a
         class="tab {% if include.active == 'runs' %}active{% endif %}"
         data-tab="runs"
-        href="{{ game.url | relative_url }}game-runs/"
-        data-href="{{ game.url | relative_url }}game-runs/"
+        href="{{ game.url | relative_url }}runs/"
+        data-href="{{ game.url | relative_url }}runs/"
       >
         Runs
       </a>
+
+      <!-- Categories (default on unless explicitly disabled) -->
+      {% assign show_categories = true %}
+      {% if tabs and tabs.categories == false %}
+        {% assign show_categories = false %}
+      {% endif %}
+
+      {% if show_categories %}
+        <a
+          class="tab {% if include.active == 'categories' %}active{% endif %}"
+          data-tab="categories"
+          href="{{ game.url | relative_url }}categories/"
+          data-href="{{ game.url | relative_url }}categories/"
+        >
+          Categories
+        </a>
+      {% endif %}
+
+      <!-- Optional tabs (only if enabled) -->
+      {% if tabs and tabs.challenges %}
+        <a
+          class="tab {% if include.active == 'challenges' %}active{% endif %}"
+          data-tab="challenges"
+          href="{{ game.url | relative_url }}challenges/"
+          data-href="{{ game.url | relative_url }}challenges/"
+        >
+          Challenges
+        </a>
+      {% endif %}
+
+      {% if tabs and tabs.guides %}
+        <a
+          class="tab {% if include.active == 'guides' %}active{% endif %}"
+          data-tab="guides"
+          href="{{ game.url | relative_url }}guides/"
+          data-href="{{ game.url | relative_url }}guides/"
+        >
+          Guides
+        </a>
+      {% endif %}
+
+      {% if tabs and tabs.resources %}
+        <a
+          class="tab {% if include.active == 'resources' %}active{% endif %}"
+          data-tab="resources"
+          href="{{ game.url | relative_url }}resources/"
+          data-href="{{ game.url | relative_url }}resources/"
+        >
+          Resources
+        </a>
+      {% endif %}
+
+      {% if tabs and tabs.rules %}
+        <a
+          class="tab {% if include.active == 'rules' %}active{% endif %}"
+          data-tab="rules"
+          href="{{ game.url | relative_url }}rules/"
+          data-href="{{ game.url | relative_url }}rules/"
+        >
+          Rules
+        </a>
+      {% endif %}
+
+      {% if tabs and tabs.forum %}
+        <a
+          class="tab {% if include.active == 'forum' %}active{% endif %}"
+          data-tab="forum"
+          href="{{ game.url | relative_url }}forum/"
+          data-href="{{ game.url | relative_url }}forum/"
+        >
+          Forum
+        </a>
+      {% endif %}
+
+      <!-- Future placeholders -->
+      {% if tabs and tabs.extra_1 %}
+        <a
+          class="tab {% if include.active == 'extra-1' %}active{% endif %}"
+          data-tab="extra-1"
+          href="{{ game.url | relative_url }}extra-1/"
+          data-href="{{ game.url | relative_url }}extra-1/"
+        >
+          {{ game.extra_1_label | default: "Extra" }}
+        </a>
+      {% endif %}
+
+      {% if tabs and tabs.extra_2 %}
+        <a
+          class="tab {% if include.active == 'extra-2' %}active{% endif %}"
+          data-tab="extra-2"
+          href="{{ game.url | relative_url }}extra-2/"
+          data-href="{{ game.url | relative_url }}extra-2/"
+        >
+          {{ game.extra_2_label | default: "Extra 2" }}
+        </a>
+      {% endif %}
+
     </nav>
   </div>
 </div>
