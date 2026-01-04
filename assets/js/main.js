@@ -768,15 +768,6 @@
         e.preventDefault();
         e.stopPropagation();
 
-        if (col === "category") {
-          if (thMenu && !thMenu.hidden && thActiveCol === "category-nav") {
-            closeThMenu();
-            return;
-          }
-          openCategoryNavMenu(btn);
-          return;
-        }
-
         if (thMenu && !thMenu.hidden && thActiveCol === col) {
           closeThMenu();
           return;
