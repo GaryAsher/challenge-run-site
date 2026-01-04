@@ -130,4 +130,38 @@ This section documents what the tooling should expect for a valid run submission
 
 ### Optional but recommended
 - `restrictions` (display list)
-- `restriction_ids` (id list, if restricti_
+- `restriction_ids` (id list, if restrictions exist)
+- `time`
+- `timing_method`
+- `date_submitted`
+
+### Moderator/verification fields
+- `verified` (boolean)
+- `verified_by` (string)
+
+## Normalization rules (canonical storage)
+
+To keep the site consistent:
+
+- Store all IDs and slugs in lowercase.
+- Prefer stable keys (`runner_id`) over mutable labels (`runner`).
+- If `restrictions` is present, `restriction_ids` should be present too, and they should align by index.
+- If a display label changes, do not change its ID unless absolutely necessary.
+
+## Reserved and discouraged values
+
+These are not strictly banned, but should be avoided as IDs/slugs to prevent confusion:
+
+- `new`, `edit`, `admin`, `api`, `assets`, `static`, `games`, `runs`, `runners`
+- Purely numeric IDs (fine for nested category segments like `heat/16`, but discouraged for top-level IDs like `runner_id`)
+
+## Compliance checklist
+
+When reviewing a submission or writing tooling:
+
+- IDs match: `^[a-z0-9]+(?:-[a-z0-9]+)*$`
+- category_slug matches nested regex if using `/`
+- Display labels are free-form, but IDs are strict
+- All IDs are lowercase
+- No double hyphens
+- No leading/trailing hyphens
