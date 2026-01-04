@@ -3,25 +3,29 @@
  * Generate nested run category pages from _games/<game>.md categories_data.
  *
  * Creates:
- *   games/<game_id>/runs/<parent>/index.html               (if missing)
- *   games/<game_id>/runs/<parent>/<child>/index.html       (for each child)
+ *   games/<game_id>/runs/<parent>/index.html
+ *   games/<game_id>/runs/<parent>/<child>/index.html
  *
  * Usage:
+ *   node scripts/generate-run-category-pages.js                 (all games)
  *   node scripts/generate-run-category-pages.js --game hades-2
+ *   node scripts/generate-run-category-pages.js --check
  *   node scripts/generate-run-category-pages.js --game hades-2 --check
  */
 
 const fs = require("fs");
 const path = require("path");
+const yaml = require("js-yaml");
 
 const ROOT = process.cwd();
 
 function parseArgs(argv) {
-  const out = { game: null, check: false };
+  const out = { game: null, check: false, verbose: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--game" || a === "-g") out.game = argv[++i];
     else if (a === "--check") out.check = true;
+    else if (a === "--verbose" || a === "-v") out.verbose = true;
   }
   return out;
 }
@@ -31,7 +35,27 @@ function die(msg) {
   process.exit(1);
 }
 
-function readFile(p) {
+function rel(p) {
+  return path.relative(ROOT, p).replace(/\\/g, "/");
+}
+
+function isDir(p) {
+  try {
+    return fs.statSync(p).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+function isFile(p) {
+  try {
+    return fs.statSync(p).isFile();
+  } catch {
+    return false;
+  }
+}
+
+function readText(p) {
   return fs.readFileSync(p, "utf8");
 }
 
@@ -52,141 +76,46 @@ function writeFileIfChanged(p, content, check) {
   return { changed: true, created: !exists };
 }
 
-/**
- * Minimal YAML front matter parser tailored for file shape
- */
-function extractFrontMatterYaml(md) {
-  const m = md.match(/^---\s*\n([\s\S]*?)\n---\s*\n/);
-  return m ? m[1] : null;
-}
-
-function stripQuotes(s) {
-  const v = String(s ?? "").trim();
-  if (
-    (v.startsWith('"') && v.endsWith('"')) ||
-    (v.startsWith("'") && v.endsWith("'"))
-  ) {
-    return v.slice(1, -1);
-  }
-  return v;
-}
-
-function parseCategoriesData(yaml) {
-  const lines = yaml.split(/\r?\n/);
-
-  // Find "categories_data:"
-  const startIdx = lines.findIndex((l) => /^\s*categories_data:\s*$/.test(l));
-  if (startIdx === -1) return [];
-
-  const block = [];
-  for (let i = startIdx + 1; i < lines.length; i++) {
-    const line = lines[i];
-    if (/^[A-Za-z0-9_-]+:\s*$/.test(line)) break;
-    block.push(line);
-  }
-
-  // Parse list items:
-  const cats = [];
-  let i = 0;
-
-  function indentOf(s) {
-    const m = s.match(/^(\s*)/);
-    return m ? m[1].length : 0;
-  }
-
-  while (i < block.length) {
-    const line = block[i];
-    if (!line.trim()) {
-      i++;
-      continue;
+function parseFrontMatter(p) {
+  const raw = readText(p);
+  const m = /^---\s*\r?\n([\s\S]*?)\r?\n---\s*\r?\n?/m.exec(raw);
+  if (!m) die(`${rel(p)}: Missing YAML front matter (--- ... ---).`);
+  try {
+    const data = yaml.load(m[1]) || {};
+    if (typeof data !== "object" || Array.isArray(data)) {
+      die(`${rel(p)}: Front matter must be a YAML mapping.`);
     }
-
-    if (/^\s*-\s+slug:\s*/.test(line)) {
-      const parentIndent = indentOf(line);
-      const slug = stripQuotes(line.replace(/^\s*-\s+slug:\s*/, ""));
-      let label = slug;
-      const children = [];
-
-      i++;
-
-      while (i < block.length) {
-        const l = block[i];
-        if (!l.trim()) {
-          i++;
-          continue;
-        }
-
-        if (indentOf(l) === parentIndent && /^\s*-\s+slug:\s*/.test(l)) break;
-
-        if (/^\s*label:\s*/.test(l)) {
-          label = stripQuotes(l.replace(/^\s*label:\s*/, ""));
-          i++;
-          continue;
-        }
-
-        if (/^\s*children:\s*$/.test(l)) {
-          const childrenIndent = indentOf(l);
-          i++;
-
-          while (i < block.length) {
-            const cl = block[i];
-            if (!cl.trim()) {
-              i++;
-              continue;
-            }
-
-            if (indentOf(cl) > childrenIndent && /^\s*-\s+slug:\s*/.test(cl)) {
-              const childIndent = indentOf(cl);
-              const cslug = stripQuotes(cl.replace(/^\s*-\s+slug:\s*/, ""));
-              let clabel = cslug;
-              i++;
-
-              while (i < block.length) {
-                const pl = block[i];
-                if (!pl.trim()) {
-                  i++;
-                  continue;
-                }
-
-                if (indentOf(pl) <= childIndent && /^\s*-\s+slug:\s*/.test(pl)) break;
-                if (indentOf(pl) <= childrenIndent) break;
-
-                if (/^\s*label:\s*/.test(pl)) {
-                  clabel = stripQuotes(pl.replace(/^\s*label:\s*/, ""));
-                  i++;
-                  continue;
-                }
-
-                i++;
-              }
-
-              children.push({ slug: cslug, label: clabel });
-              continue;
-            }
-
-            if (indentOf(cl) <= childrenIndent) break;
-
-            i++;
-          }
-
-          continue;
-        }
-
-        i++;
-      }
-
-      cats.push({ slug, label, children });
-      continue;
-    }
-
-    i++;
+    return data;
+  } catch (e) {
+    die(`${rel(p)}: Front matter YAML parse error: ${e.message}`);
   }
-
-  return cats;
 }
 
-function slugToTitle(slug) {
-  const s = String(slug || "").replace(/-/g, " ").replace(/\s+/g, " ").trim();
+function listGameIds() {
+  const dir = path.join(ROOT, "_games");
+  if (!isDir(dir)) die("Missing _games/ directory");
+
+  const files = fs
+    .readdirSync(dir)
+    .filter((f) => f.endsWith(".md") && f !== "README.md")
+    .map((f) => path.join(dir, f));
+
+  const ids = [];
+  for (const p of files) {
+    const fm = parseFrontMatter(p);
+    if (!fm.game_id || typeof fm.game_id !== "string") {
+      die(`${rel(p)}: Missing or invalid game_id`);
+    }
+    ids.push(fm.game_id.trim());
+  }
+  return ids;
+}
+
+function slugToTitle(slugOrLabel) {
+  const s = String(slugOrLabel || "")
+    .replace(/-/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
   if (!s) return "";
   return s
     .split(" ")
@@ -195,7 +124,6 @@ function slugToTitle(slug) {
 }
 
 function pageContent({ title, gameId, categorySlug }) {
-  // Title shown in browser tab; page header comes from layout using active_cat_label.
   return `---
 layout: game-runs
 title: ${title}
@@ -206,78 +134,116 @@ permalink: /games/${gameId}/runs/${categorySlug}/
 `;
 }
 
-function main() {
-  const args = parseArgs(process.argv.slice(2));
-  if (!args.game) die("Missing --game <game_id> (example: --game hades-2)");
+function normalizeCategoriesData(cats, fileRel) {
+  if (cats == null) return [];
+  if (!Array.isArray(cats)) die(`${fileRel}: categories_data must be a list`);
 
-  const gameId = args.game;
+  const out = [];
+  for (const c of cats) {
+    if (!c || typeof c !== "object" || Array.isArray(c)) {
+      die(`${fileRel}: categories_data entries must be objects`);
+    }
+    const slug = String(c.slug || "").trim();
+    if (!slug) die(`${fileRel}: categories_data entry missing slug`);
+    const label = String(c.label || slug).trim();
+
+    const children = [];
+    if (c.children != null) {
+      if (!Array.isArray(c.children)) die(`${fileRel}: categories_data.${slug}.children must be a list`);
+      for (const ch of c.children) {
+        if (!ch || typeof ch !== "object" || Array.isArray(ch)) {
+          die(`${fileRel}: categories_data.${slug}.children entries must be objects`);
+        }
+        const cslug = String(ch.slug || "").trim();
+        if (!cslug) die(`${fileRel}: categories_data.${slug}.children entry missing slug`);
+        const clabel = String(ch.label || cslug).trim();
+        children.push({ slug: cslug, label: clabel });
+      }
+    }
+
+    out.push({ slug, label, children });
+  }
+
+  return out;
+}
+
+function generateForGame(gameId, check, verbose) {
   const gameMdPath = path.join(ROOT, "_games", `${gameId}.md`);
-  if (!fs.existsSync(gameMdPath)) die(`Game file not found: ${gameMdPath}`);
+  if (!isFile(gameMdPath)) die(`Game file not found: ${rel(gameMdPath)}`);
 
-  const md = readFile(gameMdPath);
-  const yaml = extractFrontMatterYaml(md);
-  if (!yaml) die(`No YAML front matter found in ${gameMdPath}`);
+  const fm = parseFrontMatter(gameMdPath);
+  const fileRel = rel(gameMdPath);
 
-  const cats = parseCategoriesData(yaml);
-  if (!cats.length) die(`No categories_data found (or parsable) in ${gameMdPath}`);
+  const cats = normalizeCategoriesData(fm.categories_data, fileRel);
+  if (!cats.length) {
+    if (verbose) console.log(`Skip ${gameId}: no categories_data`);
+    return { created: [], changed: [] };
+  }
 
   const created = [];
   const changed = [];
 
-  // Generate parent pages + child pages (if children exist)
-  cats.forEach((c) => {
+  for (const c of cats) {
     const parentSlug = c.slug;
-
-    // Parent page
     const parentDir = path.join(ROOT, "games", gameId, "runs", parentSlug);
     const parentIndex = path.join(parentDir, "index.html");
-    const parentTitle = `${slugToTitle(c.label || parentSlug)}`;
+
+    const parentTitle = slugToTitle(c.label || parentSlug);
     const parentRes = writeFileIfChanged(
       parentIndex,
-      pageContent({
-        title: parentTitle,
-        gameId,
-        categorySlug: parentSlug,
-      }),
-      args.check
+      pageContent({ title: parentTitle, gameId, categorySlug: parentSlug }),
+      check
     );
     if (parentRes.changed) (parentRes.created ? created : changed).push(parentIndex);
 
-    // Children pages
-    (c.children || []).forEach((ch) => {
+    for (const ch of c.children || []) {
       const childSlug = `${parentSlug}/${ch.slug}`;
       const childDir = path.join(ROOT, "games", gameId, "runs", parentSlug, ch.slug);
       const childIndex = path.join(childDir, "index.html");
-      const childTitle = `${c.label || slugToTitle(parentSlug)} — ${ch.label || slugToTitle(ch.slug)}`;
+
+      const childTitle = `${slugToTitle(c.label || parentSlug)} / ${slugToTitle(ch.label || ch.slug)}`;
       const childRes = writeFileIfChanged(
         childIndex,
-        pageContent({
-          title: childTitle,
-          gameId,
-          categorySlug: childSlug,
-        }),
-        args.check
+        pageContent({ title: childTitle, gameId, categorySlug: childSlug }),
+        check
       );
       if (childRes.changed) (childRes.created ? created : changed).push(childIndex);
-    });
-  });
+    }
+  }
 
-  const totalTouched = created.length + changed.length;
+  return { created, changed };
+}
+
+function main() {
+  const args = parseArgs(process.argv.slice(2));
+
+  const gameIds = args.game ? [args.game] : listGameIds();
+
+  const allCreated = [];
+  const allChanged = [];
+
+  for (const gid of gameIds) {
+    const { created, changed } = generateForGame(gid, args.check, args.verbose);
+    allCreated.push(...created);
+    allChanged.push(...changed);
+  }
+
+  const totalTouched = allCreated.length + allChanged.length;
 
   if (args.check) {
     if (totalTouched > 0) {
       console.error("Missing or out-of-date generated run category pages:");
-      created.forEach((p) => console.error("  (missing)  " + path.relative(ROOT, p)));
-      changed.forEach((p) => console.error("  (changed)  " + path.relative(ROOT, p)));
+      allCreated.forEach((p) => console.error("  (missing)  " + rel(p)));
+      allChanged.forEach((p) => console.error("  (changed)  " + rel(p)));
       process.exit(1);
     }
     console.log("OK: run category pages are up to date.");
     return;
   }
 
-  console.log(`Done. Created: ${created.length}, Updated: ${changed.length}`);
-  created.forEach((p) => console.log("  created  " + path.relative(ROOT, p)));
-  changed.forEach((p) => console.log("  updated  " + path.relative(ROOT, p)));
+  console.log(`Done. Created: ${allCreated.length}, Updated: ${allChanged.length}`);
+  allCreated.forEach((p) => console.log("  created  " + rel(p)));
+  allChanged.forEach((p) => console.log("  updated  " + rel(p)));
 }
 
 main();
