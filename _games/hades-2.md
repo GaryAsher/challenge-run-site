@@ -16,14 +16,15 @@ cover_position: center
 tabs:
   overview: true
   runs: true
-  categories: true
+  history: true
   challenges: true
   guides: true
   resources: true
-  rules: false
+  rules: true
   forum: true
   extra_1: false
   extra_2: false
+
 
 
 challenges:
