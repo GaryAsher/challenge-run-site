@@ -1,166 +1,259 @@
 # ID and Slug Spec
 
-This document defines the canonical formats and rules for all IDs and slugs used by the site and tooling.  
-Anything that validates runs, generates pages, or reviews submissions should follow this spec.
+This document defines the canonical formats and rules for all IDs and slugs used by the site and tooling.
+
+Anything that validates runs, generates pages, reviews submissions, or builds routes should follow this spec.
+
+This file is intended to be both:
+- a **reference** (what is allowed)
+- and an **explanation** (why the rules exist)
+
+---
 
 ## Goals
 
-- Human readable identifiers that are stable over time.
-- Safe for URLs, file paths, YAML front matter, and GitHub.
-- Deterministic “slugify” behavior so contributors and scripts agree.
+- Human-readable identifiers that are stable over time
+- Safe for URLs, file paths, YAML front matter, and GitHub
+- Deterministic “slugify” behavior so contributors and scripts agree
+- Clear separation between **machine-facing identifiers** and **human-facing labels**
+
+---
 
 ## Vocabulary
 
-**Display label**  
-Human-facing text. May contain spaces, punctuation, capitalization, and non-ASCII characters.
+### Display label
+Human-facing text used in UI and presentation.
 
-**ID / Slug**  
-Machine-facing identifier used for URLs, lookups, and validation. Must follow strict rules.
+- May contain spaces, punctuation, capitalization, emojis, or non-ASCII characters
+- Can change over time without breaking history
 
-## General ID rules (applies to all IDs unless otherwise specified)
+Examples:
+- `Hades II`
+- `Underworld Any%`
+- `No Hit / No Damage`
+
+### ID / Slug
+Machine-facing identifier used for routing, lookups, validation, and automation.
+
+- Must follow strict rules
+- Should be treated as stable once created
+
+Examples:
+- `hades-2`
+- `underworld-any`
+- `no-hit-no-damage`
+
+---
+
+## General ID rules  
+(applies to all IDs unless otherwise specified)
 
 ### Allowed characters
-- Lowercase `a-z`
+- Lowercase letters `a-z`
 - Digits `0-9`
 - Hyphen `-`
 
 ### Structure rules
-- Must be lowercase.
-- Must not contain spaces.
-- Must not start or end with `-`.
-- Must not contain `--` (double hyphen).
-- Recommended max length: 64 characters (hard max if you want one: 80).
+- Must be lowercase
+- Must not contain spaces
+- Must not start or end with `-`
+- Must not contain `--` (double hyphen)
+- Recommended maximum length: **64 characters**
+  - There is currently no enforced hard maximum
+  - Excessively long IDs are discouraged
 
 ### Canonical regex
-Use this as the baseline pattern:
+Use this as the baseline pattern for single-segment IDs:
 
 `^[a-z0-9]+(?:-[a-z0-9]+)*$`
 
+---
+
 ## Slugify rules
 
-When converting a display label to an ID/slug, use these steps in order:
+When converting a display label to an ID or slug, use these steps **in order**:
 
-1. Trim leading/trailing whitespace.
-2. Convert to lowercase.
-3. Convert accented characters to their base form (example: `é` -> `e`).
-4. Replace any sequence of spaces, underscores, or hyphens with a single `-`.
-5. Remove any remaining characters not in `a-z`, `0-9`, or `-`.
-6. Collapse multiple `-` into one `-`.
-7. Trim `-` from the start and end.
+1. Trim leading and trailing whitespace
+2. Convert to lowercase
+3. Convert accented characters to their base form  
+   (example: `é` → `e`)
+4. Replace any sequence of spaces, underscores, or hyphens with a single `-`
+5. Remove any remaining characters not in `a-z`, `0-9`, or `-`
+6. Collapse multiple `-` into one `-`
+7. Trim `-` from the start and end
 
 ### Slugify examples
 
-| Display label | Slug |
-| --- | --- |
+| Display label | Resulting slug |
+|-------------|----------------|
 | `Hades II` | `hades-2` |
 | `No Hit / No Damage` | `no-hit-no-damage` |
 | `Any% (Glitchless)` | `any-glitchless` |
 | `Super Mario 64 120 Star` | `super-mario-64-120-star` |
 | `Café` | `cafe` |
 
+---
+
 ## Field-by-field specification
 
-### game_id
+### `game_id`
 - **Type:** ID
-- **Used for:** `_games/<file>.md`, `_runs/<game_id>/...`, URLs like `/games/<game_id>/...`
-- **Rules:** General ID rules
+- **Used for:**
+  - `_games/<game_id>.md`
+  - `_runs/<game_id>/...`
+  - `_queue_runs/<game_id>/...`
+  - URLs like `/games/<game_id>/...`
+- **Rules:** General ID rules apply
+- **Notes:** Filename must match `game_id` exactly
 - **Examples:** `hades-2`, `dark-souls-1`, `super-mario-64`
 
-### runner_id
+---
+
+### `runner_id`
 - **Type:** ID
-- **Used for:** stable runner identity in front matter and any future runner pages
-- **Rules:** General ID rules
+- **Used for:** Stable runner identity in front matter and future runner pages
+- **Rules:** General ID rules apply
 - **Notes:**
-  - `runner` is a display label (can be their current handle).
-  - `runner_id` is the stable key (should not change unless necessary).
+  - `runner` is a display label and may change
+  - `runner_id` is the stable key and should not change unless necessary
 - **Examples:** `gary-asher`
 
-### challenge_id
-- **Type:** ID
-- **Used for:** linking runs to a known challenge definition for a game
-- **Rules:** General ID rules
-- **Examples:** `no-hit`, `no-damage`, `deathless`, `pacifist`
+---
 
-### restriction_ids
-- **Type:** list of IDs
-- **Used for:** structured restrictions applied to a run
+### `challenge_id`
+- **Type:** ID
+- **Used for:** Linking runs to a known challenge definition
+- **Rules:** General ID rules apply
+
+**Canonical source:** `_data/challenges.yml`
+
+All `challenge_id` values must correspond to a key in `_data/challenges.yml`.
+
+Validators may support aliases for convenience, but stored values should always
+use the **canonical ID**.
+
+- **Examples (canonical):**
+  - `hitless`
+  - `damageless`
+  - `no-hit-no-damage`
+
+---
+
+### `restriction_ids`
+- **Type:** List of IDs
+- **Used for:** Structured, machine-readable restrictions applied to a run
 - **Rules:** Each entry must follow General ID rules
+- **Notes:** If `restrictions` (display labels) are present, `restriction_ids`
+  should also be present and aligned by index
 - **Examples:** `no-dlc`, `no-super-arts`, `no-magic`
 
-### category_slug
-- **Type:** slug, with optional nesting
-- **Used for:** run category pages and routing:
+---
+
+### `category_slug`
+- **Type:** Slug, with optional nesting
+- **Used for:** Run category pages and routing
+
+Route format:
   - `/games/<game_id>/runs/<category_slug>/`
-- **Rules:**
-  - Each segment must follow General ID rules.
-  - Segments are separated by `/`.
-  - No empty segments.
-  - No leading or trailing `/`.
+
+#### Nesting rules
+- Each segment must follow General ID rules
+- Segments are separated by `/`
+- No empty segments
+- No leading or trailing `/`
+
 - **Canonical regex (nested):**
   - `^[a-z0-9]+(?:-[a-z0-9]+)*(?:/[a-z0-9]+(?:-[a-z0-9]+)*)*$`
-- **Examples:**
-  - `any`
-  - `all-skills`
-  - `true-ending`
 
-### Display labels vs IDs
+#### Why nesting exists
+Nested category slugs allow related categories to share a hierarchy
+(for example: difficulty splits, route splits, or weapon splits)
+while still producing stable URLs.
+
+The category generator will automatically create parent category pages
+so navigation remains valid.
+
+**Examples:**
+- `any`
+- `underworld-any`
+- `surface-vor4`
+- `weapon/sword`
+- `underworld/heat/16`
+
+---
+
+## Display labels vs IDs
 
 These pairs must be treated differently:
 
-- `category` (display label) vs `category_slug` (machine slug)
-- `runner` (display label) vs `runner_id` (machine ID)
-- `restrictions` (display labels) vs `restriction_ids` (machine IDs)
+- `category` (display) vs `category_slug` (ID)
+- `runner` (display) vs `runner_id` (ID)
+- `restrictions` (display) vs `restriction_ids` (ID)
 
-Display labels may include spaces and punctuation. IDs and slugs may not.
+Display labels may include spaces and punctuation.  
+IDs and slugs may not.
 
-## Required vs optional fields for run front matter
+---
 
-This section documents what the tooling should expect for a valid run submission.
+## Required vs optional fields for run front matter (conceptual)
+
+This section documents **intent**.
+
+Actual enforcement is handled by validation scripts and may be stricter
+for queued submissions than for approved runs.
 
 ### Required
 - `game_id`
 - `runner` (display)
-- `runner_id` (id)
+- `runner_id`
 - `category` (display)
-- `category_slug` (slug, possibly nested)
-- `challenge_id` (id)
+- `category_slug`
+- `challenge_id`
 - `video_link`
 - `date_completed`
 
 ### Optional but recommended
-- `restrictions` (display list)
-- `restriction_ids` (id list, if restrictions exist)
+- `restrictions`
+- `restriction_ids`
 - `time`
 - `timing_method`
 - `date_submitted`
 
-### Moderator/verification fields
+### Moderator / verification fields
 - `verified` (boolean)
-- `verified_by` (string)
+- `verified_by` (string, required if verified is true)
+
+---
 
 ## Normalization rules (canonical storage)
 
-To keep the site consistent:
+- Store all IDs and slugs in lowercase
+- Prefer stable keys (`runner_id`) over mutable labels (`runner`)
+- If a display label changes, do not change its ID unless absolutely necessary
+- Avoid renaming IDs once they are in use
 
-- Store all IDs and slugs in lowercase.
-- Prefer stable keys (`runner_id`) over mutable labels (`runner`).
-- If `restrictions` is present, `restriction_ids` should be present too, and they should align by index.
-- If a display label changes, do not change its ID unless absolutely necessary.
+---
 
 ## Reserved and discouraged values
 
-These are not strictly banned, but should be avoided as IDs/slugs to prevent confusion:
+These are not strictly banned, but should be avoided as IDs or slugs
+to prevent confusion with routes or tooling:
 
-- `new`, `edit`, `admin`, `api`, `assets`, `static`, `games`, `runs`, `runners`
-- Purely numeric IDs (fine for nested category segments like `heat/16`, but discouraged for top-level IDs like `runner_id`)
+- `new`, `edit`, `admin`, `api`, `assets`, `static`
+- `games`, `runs`, `runners`
+
+Purely numeric IDs are discouraged for top-level identifiers, but may be used
+for nested category segments (for example: `heat/16`).
+
+---
 
 ## Compliance checklist
 
 When reviewing a submission or writing tooling:
 
 - IDs match: `^[a-z0-9]+(?:-[a-z0-9]+)*$`
-- category_slug matches nested regex if using `/`
-- Display labels are free-form, but IDs are strict
+- `category_slug` matches nested regex if using `/`
+- Display labels are free-form, IDs are strict
 - All IDs are lowercase
 - No double hyphens
-- No leading/trailing hyphens
+- No leading or trailing hyphens
