@@ -109,6 +109,70 @@ function mustString(fileRel, field, value) {
   }
 }
 
+function mustIdSegment(fileRel, where, value) {
+  if (typeof value !== "string" || !ID_RE.test(value)) {
+    die(`${fileRel}: ${where} must be kebab-case (got: ${JSON.stringify(value)})`);
+  }
+}
+
+function validateCategoriesData(fileRel, fm) {
+  if (fm.categories_data == null) return;
+
+  if (!Array.isArray(fm.categories_data)) {
+    die(`${fileRel}: categories_data must be a YAML list`);
+  }
+
+  const parentSeen = new Set();
+
+  for (const c of fm.categories_data) {
+    if (!c || typeof c !== "object" || Array.isArray(c)) {
+      die(`${fileRel}: categories_data entries must be objects`);
+    }
+
+    const pslug = String(c.slug || "").trim();
+    if (!pslug) die(`${fileRel}: categories_data entry missing slug`);
+    if (pslug.includes("/")) die(`${fileRel}: categories_data slug must not contain "/": ${pslug}`);
+    mustIdSegment(fileRel, `categories_data.slug`, pslug);
+
+    const plabel = c.label == null ? "" : String(c.label).trim();
+    if (plabel !== "" && typeof plabel !== "string") {
+      die(`${fileRel}: categories_data.${pslug}.label must be a string`);
+    }
+
+    if (parentSeen.has(pslug)) die(`${fileRel}: duplicate categories_data slug: ${pslug}`);
+    parentSeen.add(pslug);
+
+    if (c.children != null) {
+      if (!Array.isArray(c.children)) {
+        die(`${fileRel}: categories_data.${pslug}.children must be a YAML list`);
+      }
+
+      const childSeen = new Set();
+
+      for (const ch of c.children) {
+        if (!ch || typeof ch !== "object" || Array.isArray(ch)) {
+          die(`${fileRel}: categories_data.${pslug}.children entries must be objects`);
+        }
+
+        const cslug = String(ch.slug || "").trim();
+        if (!cslug) die(`${fileRel}: categories_data.${pslug}.children entry missing slug`);
+        if (cslug.includes("/")) die(`${fileRel}: child slug must be a single segment (no "/"): ${pslug}/${cslug}`);
+        mustIdSegment(fileRel, `categories_data.${pslug}.children.slug`, cslug);
+
+        const clabel = ch.label == null ? "" : String(ch.label).trim();
+        if (clabel !== "" && typeof clabel !== "string") {
+          die(`${fileRel}: categories_data.${pslug}.children.${cslug}.label must be a string`);
+        }
+
+        if (childSeen.has(cslug)) {
+          die(`${fileRel}: duplicate child slug under ${pslug}: ${cslug}`);
+        }
+        childSeen.add(cslug);
+      }
+    }
+  }
+}
+
 function mustArrayOfStrings(fileRel, field, value) {
   if (!Array.isArray(value)) {
     die(`${fileRel}: ${field} must be a YAML list`);
@@ -304,6 +368,7 @@ function validateGames({ tagResolver, challengeResolver }) {
 
     mustSlug(fileRel, "game_id", fm.game_id);
     mustString(fileRel, "name", fm.name);
+    validateCategoriesData(fileRel, fm);
 
     if (gameIds.has(fm.game_id)) die(`${fileRel}: duplicate game_id ${fm.game_id}`);
     gameIds.add(fm.game_id);
