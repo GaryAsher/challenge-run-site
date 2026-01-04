@@ -1,23 +1,19 @@
 {% assign game = include.game | default: page %}
 {% assign tabs = game.tabs %}
 
-{% comment %}
-Tab order (current contract):
-Overview (always)
-Runs (always)
-History (main)
-Challenges (optional)
-Guides (optional)
-Resources (optional)
-Rules (optional)
-Forum (optional placeholder)
-Extra 1 (optional placeholder)
-Extra 2 (optional placeholder)
-
-include.active should be one of:
-"overview", "runs", "history", "challenges", "guides", "resources", "rules", "forum", "extra-1", "extra-2"
-{% endcomment %}
-
+<!-- =========================================================
+     Tab order:
+     - Overview (always)
+     - Runs (always)
+     - History (main)
+     - Challenges (optional)
+     - Guides (optional)
+     - Resources (optional)
+     - Rules (optional)
+     - Forum (optional placeholder)
+     - Extra 1 (optional placeholder)
+     - Extra 2 (optional placeholder)
+     ========================================================= -->
 <!-- =========================================================
      Back link
      ========================================================= -->
