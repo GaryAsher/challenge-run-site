@@ -46,4 +46,4 @@ jobs:
           branch: "automation/generate-run-categories"
           delete-branch: true
           add-paths: |
-            games/**/game-runs/**/index.html
+            games/**/runs/**/index.html
