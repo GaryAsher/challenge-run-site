@@ -6,7 +6,7 @@ on:
     branches: [ main ]
     paths:
       - "_runs/**"
-      - "scripts/generate-game-runs-category-pages.js"
+      - "scripts/generate-run-category-pages.js"
       - "package.json"
       - "package-lock.json"
 
