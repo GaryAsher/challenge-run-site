@@ -113,6 +113,7 @@ function parseFrontMatter(fileText) {
 
 // ---------- validation helpers ----------
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const CATEGORY_SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:-[a-z0-9]+)*)*$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_RE = /^\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?$/;
 const STATUS_SET = new Set(["pending", "approved", "rejected"]);
@@ -274,22 +275,22 @@ function validateOne(filePath) {
     );
 
   // Enforce slugs
-  if (!SLUG_RE.test(String(data.game_id)))
+  if (!ID_RE.test(String(data.game_id)))
     fail(
       fileRel,
       `game_id must be a slug (lowercase, hyphen). Got: ${data.game_id}`
     );
-  if (!SLUG_RE.test(String(data.runner_id)))
+  if (!ID_RE.test(String(data.runner_id)))
     fail(
       fileRel,
       `runner_id must be a slug (lowercase, hyphen). Got: ${data.runner_id}`
     );
-  if (!SLUG_RE.test(String(data.category_slug)))
+  if (!CATEGORY_SLUG_RE.test(String(data.category_slug)))
     fail(
       fileRel,
       `category_slug must be a slug (lowercase, hyphen). Got: ${data.category_slug}`
     );
-  if (!SLUG_RE.test(String(data.challenge_id)))
+  if (!ID_RE.test(String(data.challenge_id)))
     fail(
       fileRel,
       `challenge_id must be a slug (lowercase, hyphen). Got: ${data.challenge_id}`
@@ -358,7 +359,7 @@ function validateOne(filePath) {
   const restrictions = asArray(data.restrictions);
   const restriction_ids = asArray(data.restriction_ids);
 
-  if (restriction_ids.some((x) => !SLUG_RE.test(String(x)))) {
+  if (restriction_ids.some((x) => !ID_RE.test(String(x)))) {
     fail(
       fileRel,
       `restriction_ids must be slugs. Got: ${JSON.stringify(restriction_ids)}`
