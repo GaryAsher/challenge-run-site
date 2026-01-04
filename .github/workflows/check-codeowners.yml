@@ -1,4 +1,4 @@
-name: Check CODEOWNERS is generated
+name: check-codeowners.yml
 
 on:
   pull_request:
