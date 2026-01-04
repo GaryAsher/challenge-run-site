@@ -7,6 +7,7 @@
 // Categories are browsed via category pages + chips in the layout,
 // and category text remains searchable in the search box.
 // =========================================================
+
 (function () {
   // =========================================================
   // Scroll preservation helpers for game tab navigation
@@ -645,28 +646,40 @@
     render();
   }
 
-  // =========================================================
-  // Game tabs navigation helper
-  // Saves scroll before navigating via data-href
-  // =========================================================
-  function initGameTabsNav() {
-    const root = document.getElementById("game-tabs");
-    if (!root) return;
+// =========================================================
+// Game tabs navigation helper
+// Saves scroll before navigating (works for data-href tabs AND <a href> tabs)
+// =========================================================
+function initGameTabsNav() {
+  const root = document.getElementById("game-tabs");
+  if (!root) return;
 
-    root.querySelectorAll(".tab[data-href]").forEach((tab) => {
-      tab.addEventListener("click", (e) => {
-        // Only normal left-click navigation
-        if (e.button !== 0) return;
-        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  root.addEventListener("click", (e) => {
+    // Only normal left-click navigation
+    if (e.button !== 0) return;
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 
-        const href = tab.getAttribute("data-href");
-        if (!href) return;
-
+    const tab = e.target && e.target.closest ? e.target.closest(".tab") : null;
+    if (tab) {
+      const dataHref = tab.getAttribute("data-href");
+      if (dataHref) {
+        e.preventDefault();
         saveGameScroll();
-        window.location.href = href;
-      });
-    });
-  }
+        window.location.href = dataHref;
+        return;
+      }
+    }
+
+    const a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
+    if (!a) return;
+
+    if (!root.contains(a)) return;
+
+    if (a.target && a.target !== "_self") return;
+
+    saveGameScroll();
+  });
+}
 
   document.addEventListener("DOMContentLoaded", () => {
     restoreGameScroll();
