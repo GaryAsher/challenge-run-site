@@ -25,8 +25,6 @@ tabs:
   extra_1: false
   extra_2: false
 
-
-
 challenges:
   - hitless
   - damageless
