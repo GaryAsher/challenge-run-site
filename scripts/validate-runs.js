@@ -146,6 +146,8 @@ function listMdFilesRecursive(rootDir) {
       }
       if (ent.isFile() && ent.name.endsWith(".md")) {
         out.push(full);
+
+        if (lower === "readme.md") continue;
       }
     }
   }
