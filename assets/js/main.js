@@ -36,6 +36,7 @@
   }
 
   function restoreGameScroll() {
+    if (window.__CRC_SCROLL_RESTORED__) return;
     const ORIGIN = window.location.origin;
     const gameRoot = getGameRoot(window.location.pathname);
     if (!gameRoot) return;
