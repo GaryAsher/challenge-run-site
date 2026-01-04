@@ -647,35 +647,46 @@
   }
 
 // =========================================================
-// Game tabs navigation helper
-// Saves scroll before navigating (works for data-href tabs AND <a href> tabs)
+// Game navigation helper
+// Saves scroll before navigating to any page within the same game
 // =========================================================
 function initGameTabsNav() {
-  const root = document.getElementById("game-tabs");
-  if (!root) return;
+  const gameRoot = getGameRoot(window.location.pathname);
+  if (!gameRoot) return;
 
-  root.addEventListener("click", (e) => {
-    // Only normal left-click navigation
+  document.addEventListener("click", (e) => {
     if (e.button !== 0) return;
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 
-    const tab = e.target && e.target.closest ? e.target.closest(".tab") : null;
+    const tab = e.target && e.target.closest ? e.target.closest(".tab[data-href]") : null;
     if (tab) {
       const dataHref = tab.getAttribute("data-href");
-      if (dataHref) {
-        e.preventDefault();
-        saveGameScroll();
-        window.location.href = dataHref;
-        return;
-      }
+      if (!dataHref) return;
+
+      e.preventDefault();
+      saveGameScroll();
+      window.location.href = dataHref;
+      return;
     }
 
     const a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
     if (!a) return;
 
-    if (!root.contains(a)) return;
-
     if (a.target && a.target !== "_self") return;
+
+    let url;
+    try {
+      url = new URL(a.getAttribute("href"), window.location.href);
+    } catch (_) {
+      return;
+    }
+
+    if (url.origin !== window.location.origin) return;
+
+    const destRoot = getGameRoot(url.pathname);
+    if (!destRoot || destRoot !== gameRoot) return;
+
+    if (url.pathname === window.location.pathname && url.hash) return;
 
     saveGameScroll();
   });
