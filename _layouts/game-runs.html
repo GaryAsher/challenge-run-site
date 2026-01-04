@@ -118,15 +118,33 @@ layout: default
 
     <!-- =========================================================
          If we're on a category subpage, filter runs to that slug
+         Liquid does NOT support parentheses in conditions, so we
+         do this via an explicit loop instead of where_exp.
+         Matches:
+           - exact slug
+           - nested children: "<slug>/..."
          ========================================================= -->
     {% if active_cat_slug != "" %}
       {% assign prefix = active_cat_slug | append: "/" %}
       {% assign prefix_len = prefix | size %}
 
-      {% assign runs = runs | where_exp: "r",
-        "(r.category_slug == active_cat_slug) or
-         (r.category_slug and r.category_slug != '' and (r.category_slug | slice: 0, prefix_len) == prefix)"
-      %}
+      {% assign filtered = "" | split: "" %}
+      {% for r in runs %}
+        {% assign rslug = r.category_slug | default: "" | strip %}
+
+        {% if rslug == active_cat_slug %}
+          {% assign filtered = filtered | push: r %}
+        {% else %}
+          {% if rslug != "" %}
+            {% assign head = rslug | slice: 0, prefix_len %}
+            {% if head == prefix %}
+              {% assign filtered = filtered | push: r %}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+
+      {% assign runs = filtered %}
     {% endif %}
 
     <!-- =========================================================
