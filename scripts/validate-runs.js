@@ -112,7 +112,7 @@ function parseFrontMatter(fileText) {
 }
 
 // ---------- validation helpers ----------
-const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const CATEGORY_SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:-[a-z0-9]+)*)*$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_RE = /^\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?$/;
