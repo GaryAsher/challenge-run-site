@@ -4,10 +4,11 @@ on:
   pull_request:
     paths:
       - "_runs/**"
+      - "scripts/generate-run-category-pages.js"
       - "scripts/generate-game-runs-category-pages.js"
       - "package.json"
       - "package-lock.json"
-      - "games/**/game-runs/**/index.html"
+      - "games/**/runs/**/index.html"
 
 permissions:
   contents: read
@@ -37,7 +38,7 @@ jobs:
           if git status --porcelain | grep -q .; then
             echo "Generated pages are out of date."
             echo "Run: npm run generate:run-categories"
-            echo "Then commit updated games/**/game-runs/**/index.html files."
+            echo "Then commit updated games/**/runs/**/index.html files."
             git status --porcelain
             exit 1
           fi
