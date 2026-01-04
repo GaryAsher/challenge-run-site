@@ -512,14 +512,9 @@ button.tag { cursor: pointer; }
   -webkit-tap-highlight-color: transparent;
 }
 
-.tag-chip.is-active {
+.tag-chip:hover {
   background: var(--panel);
-  color: var(--fg);
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--focus-2);
 }
-
-.tag-chip:hover { background: var(--panel); }
 
 .tag-chip.is-active {
   background: var(--panel);
@@ -538,7 +533,9 @@ button.tag { cursor: pointer; }
   outline: none;
 }
 
-.tag-search::placeholder { color: var(--placeholder-dim); }
+.tag-search::placeholder {
+  color: var(--placeholder-dim);
+}
 
 .tag-suggestions {
   position: absolute;
