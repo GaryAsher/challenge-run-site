@@ -5,6 +5,38 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% if page.title %}{{ page.title }} | {% endif %}{{ site.title }}</title>
 
+  <!-- =========================================================
+       Early scroll restore for game pages (prevents "jump to top")
+       ========================================================= -->
+  <script>
+    (function () {
+      function getGameRoot(pathname) {
+        var m = String(pathname || "").match(/^\/games\/([^/]+)\//);
+        return m ? "/games/" + m[1] + "/" : null;
+      }
+
+      try {
+        if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+
+        var root = getGameRoot(location.pathname);
+        if (!root) return;
+
+        var key = "crc_scroll:" + root;
+        var raw = sessionStorage.getItem(key);
+        if (!raw) return;
+
+        var data = JSON.parse(raw);
+        if (!data || typeof data.y !== "number") return;
+
+        if (typeof data.ts === "number" && Date.now() - data.ts > 10 * 60 * 1000) return;
+
+        window.scrollTo(0, data.y);
+
+        window.__CRC_SCROLL_RESTORED__ = true;
+      } catch (e) {}
+    })();
+  </script>
+
   <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}" />
 </head>
 <body>
