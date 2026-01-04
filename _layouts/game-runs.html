@@ -24,12 +24,13 @@ layout: default
      ========================================================= -->
 {% assign category_pairs = "" | split: "" %}
 {% assign child_pairs = "" | split: "" %}
+
 {% assign parent_slug = "" %}
 {% assign parent_label = "" %}
 {% assign child_label = "" %}
 {% assign is_child_page = false %}
 
-{% if active_cat_slug contains "/" %}
+{% if active_cat_slug != "" and active_cat_slug contains "/" %}
   {% assign is_child_page = true %}
   {% assign parent_slug = active_cat_slug | split: "/" | first | strip %}
 {% else %}
@@ -107,13 +108,57 @@ layout: default
 {% endif %}
 
 <!-- =========================================================
-     Resolve active label(s)
+     Label resolution helpers
+     - Exact match first
+     - Then prefix fallback to closest known label (parent or child)
      ========================================================= -->
+{% assign closest_label = "" %}
+{% assign closest_slug = "" %}
+{% assign closest_len = 0 %}
+
+{% if active_cat_slug != "" and category_pairs and category_pairs.size > 0 %}
+  {% for p in category_pairs %}
+    {% assign parts = p | split: "||" %}
+    {% assign s = parts[0] | strip %}
+    {% assign lbl = parts[1] | default: s | strip %}
+    {% if s != "" %}
+      {% if s == active_cat_slug %}
+        {% assign closest_slug = s %}
+        {% assign closest_label = lbl %}
+        {% assign closest_len = s | size %}
+        {% break %}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+
+  {% if closest_label == "" %}
+    {% for p in category_pairs %}
+      {% assign parts = p | split: "||" %}
+      {% assign s = parts[0] | strip %}
+      {% assign lbl = parts[1] | default: s | strip %}
+      {% if s != "" %}
+        {% assign prefix = s | append: "/" %}
+        {% assign prefix_len = prefix | size %}
+        {% assign head = active_cat_slug | slice: 0, prefix_len %}
+        {% if head == prefix %}
+          {% assign s_len = s | size %}
+          {% if s_len > closest_len %}
+            {% assign closest_len = s_len %}
+            {% assign closest_slug = s %}
+            {% assign closest_label = lbl %}
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endif %}
+
+<!-- Resolve active label(s) -->
 {% if active_cat_slug != "" %}
   {% if is_child_page %}
-    {% assign active_cat_label = child_label | default: active_cat_slug | strip %}
+    {% assign active_cat_label = child_label | default: closest_label | default: active_cat_slug | strip %}
   {% else %}
-    {% assign active_cat_label = parent_label | default: active_cat_slug | strip %}
+    {% assign active_cat_label = parent_label | default: closest_label | default: active_cat_slug | strip %}
   {% endif %}
 {% endif %}
 
@@ -132,29 +177,22 @@ layout: default
         <p class="muted" style="margin: 0;">
           <a href="{{ runs_base | relative_url }}">← All Runs</a>
 
-          {% if parent_label != "" %}
+          {% if parent_slug != "" %}
             <span class="muted"> / </span>
-            <a class="muted" href="{{ runs_base | relative_url }}{{ parent_slug | url_encode }}/">{{ parent_label }}</a>
-          {% else %}
-            {% if parent_slug != "" %}
-              <span class="muted"> / {{ parent_slug }}</span>
-            {% endif %}
+            <a class="muted" href="{{ runs_base | relative_url }}{{ parent_slug | url_encode }}/">
+              {{ parent_label | default: parent_slug }}
+            </a>
           {% endif %}
 
           {% if is_child_page %}
-            {% if child_label != "" %}
-              <span class="muted"> / {{ child_label }}</span>
-            {% else %}
-              <span class="muted"> / {{ active_cat_slug }}</span>
-            {% endif %}
+            <span class="muted"> / {{ child_label | default: active_cat_label }}</span>
           {% endif %}
         </p>
 
-        <!-- =========================================================
-             Subcategory chips (only if this parent has children)
-             Shows on parent page and child pages
-             ========================================================= -->
         {% if child_pairs and child_pairs.size > 0 %}
+          <p class="muted" style="margin: 0.5rem 0 0 0;">
+            Pick a subcategory to filter runs:
+          </p>
           <div class="tag-picked" style="margin-top: 0.5rem;">
             {% for p in child_pairs %}
               {% assign parts = p | split: "||" %}
@@ -171,36 +209,6 @@ layout: default
           </div>
         {% endif %}
       </div>
-
-      {% comment %}
-      Parent summary card:
-      Only show when the active page is a parent category that has children.
-      Counts runs that are in the parent or any child (prefix match).
-      {% endcomment %}
-      {% if is_child_page == false and child_pairs and child_pairs.size > 0 %}
-        {% assign prefix2 = active_cat_slug | append: "/" %}
-        {% assign prefix2_len = prefix2 | size %}
-        {% assign total_in_parent = 0 %}
-
-        {% for r in runs %}
-          {% assign rslug = r.category_slug | default: "" | strip %}
-          {% if rslug == active_cat_slug %}
-            {% assign total_in_parent = total_in_parent | plus: 1 %}
-          {% elsif rslug != "" %}
-            {% assign head = rslug | slice: 0, prefix2_len %}
-            {% if head == prefix2 %}
-              {% assign total_in_parent = total_in_parent | plus: 1 %}
-            {% endif %}
-          {% endif %}
-        {% endfor %}
-
-        <div class="card card--compact" style="margin-bottom: 1rem;">
-          <h3 style="margin: 0 0 0.25rem 0;">{{ parent_label | default: active_cat_label }}</h3>
-          <p class="muted" style="margin: 0;">
-            {{ child_pairs.size }} subcategories • {{ total_in_parent }} total runs
-          </p>
-        </div>
-      {% endif %}
     {% endif %}
 
     <!-- =========================================================
@@ -221,27 +229,13 @@ layout: default
             {% endfor %}
           </div>
         </div>
-      {% elsif category_pairs and category_pairs.size > 0 %}
-        <div class="card card--compact" style="margin-bottom: 1rem;">
-          <h2 style="margin: 0 0 0.5rem 0;">Browse by category</h2>
-          <div class="tag-picked">
-            {% for p in category_pairs %}
-              {% assign parts = p | split: "||" %}
-              {% assign s = parts[0] | strip %}
-              {% assign lbl = parts[1] | default: s | strip %}
-              {% if s != "" and s contains "/" == false %}
-                <a class="tag-chip" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
-              {% endif %}
-            {% endfor %}
-          </div>
-        </div>
       {% endif %}
     {% endif %}
 
     <!-- =========================================================
-         Filter runs for category pages:
+         Filter runs for category pages (Mode A):
          - parent pages include children via prefix match
-         - child pages show only that child + deeper children
+         - child pages include deeper nesting via prefix match
          ========================================================= -->
     {% if active_cat_slug != "" %}
       {% assign prefix = active_cat_slug | append: "/" %}
@@ -268,9 +262,6 @@ layout: default
 
     {% if runs and runs.size > 0 %}
 
-      <!-- =========================================================
-           Category page header
-           ========================================================= -->
       {% if active_cat_slug != "" and active_cat_label != "" %}
         <h2 style="margin-top: 0; margin-bottom: 0.75rem;">
           {{ active_cat_label }}
@@ -280,12 +271,8 @@ layout: default
         </p>
       {% endif %}
 
-      <!-- =========================================================
-           Filter controls row
-           ========================================================= -->
       <div class="card card--compact">
         <div class="runs-filters">
-          <!-- Search -->
           <div class="runs-filter runs-filter--search">
             <label class="muted" for="q">Search</label>
             <input
@@ -299,7 +286,6 @@ layout: default
             >
           </div>
 
-          <!-- Challenge -->
           <div class="runs-filter">
             <label class="muted" for="filter-challenge">Challenge</label>
             <button
@@ -313,7 +299,6 @@ layout: default
             </button>
           </div>
 
-          <!-- Restrictions -->
           <div class="runs-filter">
             <label class="muted" for="filter-restrictions">Restrictions</label>
             <button
@@ -327,7 +312,6 @@ layout: default
             </button>
           </div>
 
-          <!-- Show -->
           <div class="runs-filter runs-filter--show">
             <label class="muted" for="limit">Show</label>
             <select id="limit" class="select">
@@ -341,15 +325,10 @@ layout: default
           </div>
         </div>
 
-        <!-- Active filters chips -->
         <div id="active-filters" class="active-filters"></div>
-
         <p class="muted" id="status"></p>
       </div>
 
-      <!-- =========================================================
-           Runs table (Category column removed)
-           ========================================================= -->
       <div class="table-wrap" id="runs-list" data-runs-base="{{ runs_base | relative_url }}">
         <table class="runs-table" id="runs-table">
           <thead>
@@ -384,7 +363,6 @@ layout: default
 
               {% assign runner_label = r.runner | default: r.runner_id | default: "—" | replace: "_", " " %}
 
-              <!-- Resolve category label for search/data attributes -->
               {% assign cat_label = r.category | default: "" | strip %}
               {% if cat_label == "" %}
                 {% assign s = r.category_slug | default: "" | strip %}
@@ -468,7 +446,6 @@ layout: default
                 </td>
 
                 <td>{{ r.time_primary | default: r.time | default: "—" }}</td>
-
                 <td>{{ r.date_completed | default: "—" }}</td>
 
                 <td>
@@ -483,7 +460,6 @@ layout: default
           </tbody>
         </table>
 
-        <!-- Excel-style filter menu -->
         <div class="th-menu" id="th-menu" hidden>
           <div class="th-menu__top">
             <input
