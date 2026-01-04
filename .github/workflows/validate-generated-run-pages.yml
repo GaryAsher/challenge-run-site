@@ -1,4 +1,4 @@
-name: Validate generated run pages
+name: validate-generated-run-pages.yml
 
 on:
   pull_request:

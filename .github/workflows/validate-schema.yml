@@ -2,25 +2,15 @@ name: Validate repo schema
 
 on:
   pull_request:
-    paths:
-      - "_data/**"
-      - "_games/**"
-      - "_runners/**"
-      - "_runs/**"
-      - "scripts/validate-schema.js"
-      - "package*.json"
   push:
     branches: [ main ]
-    paths:
-      - "_data/**"
-      - "_games/**"
-      - "_runners/**"
-      - "_runs/**"
-      - "scripts/validate-schema.js"
-      - "package*.json"
+
+permissions:
+  contents: read
 
 jobs:
   validate:
+    name: Validate repo schema
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

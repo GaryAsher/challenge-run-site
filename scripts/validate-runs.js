@@ -140,11 +140,18 @@ function listMdFilesRecursive(rootDir) {
       if (ent.name === ".gitkeep") continue;
 
       const full = path.join(dir, ent.name);
+
       if (ent.isDirectory()) {
         walk(full);
         continue;
       }
-      if (ent.isFile() && ent.name.endsWith(".md")) {
+
+      if (ent.isFile() && ent.name.toLowerCase().endsWith(".md")) {
+        const lower = ent.name.toLowerCase();
+
+        // Ignore non-run docs in the queue tree
+        if (lower === "readme.md") continue;
+
         out.push(full);
       }
     }
