@@ -34,6 +34,20 @@ function normalizeSlug(slug) {
     .replace(/\/+$/, "");
 }
 
+function addSlugAndParents(set, slug) {
+  const s = normalizeSlug(slug);
+  if (!s) return;
+
+  set.add(s);
+
+  if (s.includes("/")) {
+    const parts = s.split("/").filter(Boolean);
+    for (let i = 1; i < parts.length; i++) {
+      set.add(parts.slice(0, i).join("/"));
+    }
+  }
+}
+
 function makeCategoryPage({ gameId, categorySlug }) {
   const slug = normalizeSlug(categorySlug);
   const permalink = `/games/${gameId}/runs/${slug}/`;
@@ -54,17 +68,23 @@ function main() {
   const root = path.resolve(__dirname, "..");
   const runsDir = path.join(root, "_runs");
   const gamesDir = path.join(root, "games");
+  const gamesMetaDir = path.join(root, "_games");
 
   if (!fs.existsSync(runsDir)) {
     console.error(`Missing directory: ${runsDir}`);
     process.exit(1);
   }
 
+  const byGame = new Map();
+
+  function getSet(gameId) {
+    if (!byGame.has(gameId)) byGame.set(gameId, new Set());
+    return byGame.get(gameId);
+  }
+
   const runFiles = fs
     .readdirSync(runsDir)
     .filter((f) => (f.endsWith(".md") || f.endsWith(".markdown")) && !f.startsWith("_"));
-
-  const byGame = new Map(); // gameId -> Set(category_slug)
 
   for (const f of runFiles) {
     const fp = path.join(runsDir, f);
@@ -76,16 +96,31 @@ function main() {
 
     if (!gameId || !catSlug) continue;
 
-    if (!byGame.has(gameId)) byGame.set(gameId, new Set());
-    const set = byGame.get(gameId);
+    const set = getSet(gameId);
+    addSlugAndParents(set, catSlug);
+  }
 
-    set.add(catSlug);
+  if (fs.existsSync(gamesMetaDir)) {
+    const gameFiles = fs
+      .readdirSync(gamesMetaDir)
+      .filter((f) => (f.endsWith(".md") || f.endsWith(".markdown")) && !f.startsWith("_"));
 
-    // Parent slugs for nested categories
-    if (catSlug.includes("/")) {
-      const parts = catSlug.split("/").filter(Boolean);
-      for (let i = 1; i < parts.length; i++) {
-        set.add(parts.slice(0, i).join("/"));
+    for (const f of gameFiles) {
+      const fp = path.join(gamesMetaDir, f);
+      const fm = readFrontMatter(fp);
+      if (!fm) continue;
+
+      const gameId = String(fm.game_id || "").trim();
+      if (!gameId) continue;
+
+      const set = getSet(gameId);
+
+      const categoriesData = Array.isArray(fm.categories_data) ? fm.categories_data : [];
+      for (const item of categoriesData) {
+        if (!item) continue;
+        const slug = normalizeSlug(item.slug);
+        if (!slug) continue;
+        addSlugAndParents(set, slug);
       }
     }
   }
