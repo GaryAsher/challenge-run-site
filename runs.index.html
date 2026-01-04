@@ -1,0 +1,49 @@
+---
+layout: default
+title: Runs
+permalink: /runs/
+---
+
+<div class="page-width">
+  <h1>Runs</h1>
+  <p class="muted">Browse runs by game, then pick a category.</p>
+
+  <div class="card">
+    <h2>Games</h2>
+    <ul class="list">
+      {% for g in site.games %}
+        <li style="margin-bottom: 1rem;">
+          <div>
+            <a href="{{ g.url | relative_url }}runs/"><strong>{{ g.name }}</strong></a>
+          </div>
+
+          {% assign pairs = "" | split: "" %}
+          {% for r in site.runs %}
+            {% if r.game_id == g.game_id %}
+              {% assign s = r.category_slug | default: "" | strip %}
+              {% assign lbl = r.category | default: s | strip %}
+              {% if s != "" %}
+                {% assign pairs = pairs | push: s | append: "||" | append: lbl %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+
+          {% assign pairs = pairs | uniq | sort %}
+
+          {% if pairs and pairs.size > 0 %}
+            <div class="tag-picked" style="margin-top: 0.5rem;">
+              {% for p in pairs %}
+                {% assign parts = p | split: "||" %}
+                {% assign s = parts[0] | strip %}
+                {% assign lbl = parts[1] | default: s | strip %}
+                <a class="tag-chip" href="{{ g.url | relative_url }}runs/{{ s | url_encode }}/">{{ lbl }}</a>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="muted" style="margin-top: 0.5rem;">No categories yet.</p>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
