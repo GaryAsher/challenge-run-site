@@ -176,7 +176,23 @@ layout: default
       <!-- =========================================================
            Filter controls row
            ========================================================= -->
-      <div class="card card--compact">
+      {% if active_cat_slug == "" and category_pairs and category_pairs.size > 0 %}
+        <div class="card card--compact" style="margin-bottom: 1rem;">
+          <h2 style="margin: 0 0 0.5rem 0;">Browse by category</h2>
+          <div class="tag-picked">
+            {% for p in category_pairs %}
+              {% assign parts = p | split: "||" %}
+              {% assign s = parts[0] | strip %}
+              {% assign lbl = parts[1] | default: s | strip %}
+              {% if s != "" %}
+                <a class="tag-chip" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+       <div class="card card--compact">
 
         <div class="runs-filters">
           <!-- Search -->
@@ -357,7 +373,14 @@ layout: default
                   {% endif %}
                 </td>
 
-                <td>{{ cat_label }}</td>
+                <td>
+                  {% assign cslug = r.category_slug | default: "" | strip %}
+                  {% if cslug != "" %}
+                    <a href="{{ runs_base | relative_url }}{{ cslug | url_encode }}/">{{ cat_label }}</a>
+                  {% else %}
+                    {{ cat_label }}
+                  {% endif %}
+                </td>
 
                 <td>
                   {% assign ch = challenge_label | default: "" | strip %}
