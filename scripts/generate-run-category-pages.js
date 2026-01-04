@@ -7,10 +7,16 @@
  *   games/<game_id>/runs/<parent>/<child>/index.html
  *
  * Usage:
- *   node scripts/generate-run-category-pages.js                 (all games)
  *   node scripts/generate-run-category-pages.js --game hades-2
- *   node scripts/generate-run-category-pages.js --check
  *   node scripts/generate-run-category-pages.js --game hades-2 --check
+ *
+ * Multi-game:
+ *   node scripts/generate-run-category-pages.js
+ *   node scripts/generate-run-category-pages.js --check
+ *
+ * Notes:
+ * - If a game has no categories_data, it is skipped (no error).
+ * - --check exits 1 if any file is missing or would change.
  */
 
 const fs = require("fs");
@@ -20,12 +26,11 @@ const yaml = require("js-yaml");
 const ROOT = process.cwd();
 
 function parseArgs(argv) {
-  const out = { game: null, check: false, verbose: false };
+  const out = { game: null, check: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--game" || a === "-g") out.game = argv[++i];
     else if (a === "--check") out.check = true;
-    else if (a === "--verbose" || a === "-v") out.verbose = true;
   }
   return out;
 }
@@ -33,30 +38,6 @@ function parseArgs(argv) {
 function die(msg) {
   console.error("Error:", msg);
   process.exit(1);
-}
-
-function rel(p) {
-  return path.relative(ROOT, p).replace(/\\/g, "/");
-}
-
-function isDir(p) {
-  try {
-    return fs.statSync(p).isDirectory();
-  } catch {
-    return false;
-  }
-}
-
-function isFile(p) {
-  try {
-    return fs.statSync(p).isFile();
-  } catch {
-    return false;
-  }
-}
-
-function readText(p) {
-  return fs.readFileSync(p, "utf8");
 }
 
 function ensureDir(dir) {
@@ -76,46 +57,8 @@ function writeFileIfChanged(p, content, check) {
   return { changed: true, created: !exists };
 }
 
-function parseFrontMatter(p) {
-  const raw = readText(p);
-  const m = /^---\s*\r?\n([\s\S]*?)\r?\n---\s*\r?\n?/m.exec(raw);
-  if (!m) die(`${rel(p)}: Missing YAML front matter (--- ... ---).`);
-  try {
-    const data = yaml.load(m[1]) || {};
-    if (typeof data !== "object" || Array.isArray(data)) {
-      die(`${rel(p)}: Front matter must be a YAML mapping.`);
-    }
-    return data;
-  } catch (e) {
-    die(`${rel(p)}: Front matter YAML parse error: ${e.message}`);
-  }
-}
-
-function listGameIds() {
-  const dir = path.join(ROOT, "_games");
-  if (!isDir(dir)) die("Missing _games/ directory");
-
-  const files = fs
-    .readdirSync(dir)
-    .filter((f) => f.endsWith(".md") && f !== "README.md")
-    .map((f) => path.join(dir, f));
-
-  const ids = [];
-  for (const p of files) {
-    const fm = parseFrontMatter(p);
-    if (!fm.game_id || typeof fm.game_id !== "string") {
-      die(`${rel(p)}: Missing or invalid game_id`);
-    }
-    ids.push(fm.game_id.trim());
-  }
-  return ids;
-}
-
-function slugToTitle(slugOrLabel) {
-  const s = String(slugOrLabel || "")
-    .replace(/-/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+function slugToTitle(slug) {
+  const s = String(slug || "").replace(/-/g, " ").replace(/\s+/g, " ").trim();
   if (!s) return "";
   return s
     .split(" ")
@@ -134,50 +77,73 @@ permalink: /games/${gameId}/runs/${categorySlug}/
 `;
 }
 
-function normalizeCategoriesData(cats, fileRel) {
-  if (cats == null) return [];
-  if (!Array.isArray(cats)) die(`${fileRel}: categories_data must be a list`);
+function listGameIdsFromGamesFolder() {
+  const gamesDir = path.join(ROOT, "_games");
+  if (!fs.existsSync(gamesDir)) return [];
+  const files = fs
+    .readdirSync(gamesDir)
+    .filter((f) => f.endsWith(".md") && f !== "README.md");
 
+  return files.map((f) => path.basename(f, ".md"));
+}
+
+function loadFrontMatterYaml(mdPath) {
+  const raw = fs.readFileSync(mdPath, "utf8");
+  const m = raw.match(/^---\s*\r?\n([\s\S]*?)\r?\n---\s*\r?\n/);
+  if (!m) return null;
+  try {
+    const obj = yaml.load(m[1]) || {};
+    if (!obj || typeof obj !== "object" || Array.isArray(obj)) return null;
+    return obj;
+  } catch {
+    return null;
+  }
+}
+
+function normalizeCategoriesData(categoriesData) {
+  if (!Array.isArray(categoriesData)) return [];
   const out = [];
-  for (const c of cats) {
-    if (!c || typeof c !== "object" || Array.isArray(c)) {
-      die(`${fileRel}: categories_data entries must be objects`);
-    }
-    const slug = String(c.slug || "").trim();
-    if (!slug) die(`${fileRel}: categories_data entry missing slug`);
-    const label = String(c.label || slug).trim();
+
+  for (const c of categoriesData) {
+    if (!c || typeof c !== "object" || Array.isArray(c)) continue;
+
+    const pslug = String(c.slug || "").trim();
+    if (!pslug) continue;
+
+    const plabel = String(c.label || pslug).trim() || pslug;
 
     const children = [];
-    if (c.children != null) {
-      if (!Array.isArray(c.children)) die(`${fileRel}: categories_data.${slug}.children must be a list`);
+    if (Array.isArray(c.children)) {
       for (const ch of c.children) {
-        if (!ch || typeof ch !== "object" || Array.isArray(ch)) {
-          die(`${fileRel}: categories_data.${slug}.children entries must be objects`);
-        }
+        if (!ch || typeof ch !== "object" || Array.isArray(ch)) continue;
         const cslug = String(ch.slug || "").trim();
-        if (!cslug) die(`${fileRel}: categories_data.${slug}.children entry missing slug`);
-        const clabel = String(ch.label || cslug).trim();
+        if (!cslug) continue;
+        const clabel = String(ch.label || cslug).trim() || cslug;
         children.push({ slug: cslug, label: clabel });
       }
     }
 
-    out.push({ slug, label, children });
+    out.push({ slug: pslug, label: plabel, children });
   }
 
   return out;
 }
 
-function generateForGame(gameId, check, verbose) {
+function generateForGame(gameId, check) {
   const gameMdPath = path.join(ROOT, "_games", `${gameId}.md`);
-  if (!isFile(gameMdPath)) die(`Game file not found: ${rel(gameMdPath)}`);
+  if (!fs.existsSync(gameMdPath)) {
+    return { skipped: false, error: `Game file not found: ${gameMdPath}`, created: [], changed: [] };
+  }
 
-  const fm = parseFrontMatter(gameMdPath);
-  const fileRel = rel(gameMdPath);
+  const fm = loadFrontMatterYaml(gameMdPath);
+  if (!fm) {
+    return { skipped: false, error: `No valid YAML front matter found in ${gameMdPath}`, created: [], changed: [] };
+  }
 
-  const cats = normalizeCategoriesData(fm.categories_data, fileRel);
+  const cats = normalizeCategoriesData(fm.categories_data);
   if (!cats.length) {
-    if (verbose) console.log(`Skip ${gameId}: no categories_data`);
-    return { created: [], changed: [] };
+    // No categories_data defined, skip without failing.
+    return { skipped: true, created: [], changed: [] };
   }
 
   const created = [];
@@ -185,10 +151,11 @@ function generateForGame(gameId, check, verbose) {
 
   for (const c of cats) {
     const parentSlug = c.slug;
+
+    // Parent page
     const parentDir = path.join(ROOT, "games", gameId, "runs", parentSlug);
     const parentIndex = path.join(parentDir, "index.html");
-
-    const parentTitle = slugToTitle(c.label || parentSlug);
+    const parentTitle = `${c.label || slugToTitle(parentSlug) || parentSlug}`;
     const parentRes = writeFileIfChanged(
       parentIndex,
       pageContent({ title: parentTitle, gameId, categorySlug: parentSlug }),
@@ -196,12 +163,13 @@ function generateForGame(gameId, check, verbose) {
     );
     if (parentRes.changed) (parentRes.created ? created : changed).push(parentIndex);
 
+    // Child pages
     for (const ch of c.children || []) {
       const childSlug = `${parentSlug}/${ch.slug}`;
       const childDir = path.join(ROOT, "games", gameId, "runs", parentSlug, ch.slug);
       const childIndex = path.join(childDir, "index.html");
+      const childTitle = `${c.label || slugToTitle(parentSlug) || parentSlug} — ${ch.label || slugToTitle(ch.slug) || ch.slug}`;
 
-      const childTitle = `${slugToTitle(c.label || parentSlug)} / ${slugToTitle(ch.label || ch.slug)}`;
       const childRes = writeFileIfChanged(
         childIndex,
         pageContent({ title: childTitle, gameId, categorySlug: childSlug }),
@@ -211,21 +179,28 @@ function generateForGame(gameId, check, verbose) {
     }
   }
 
-  return { created, changed };
+  return { skipped: false, created, changed, error: null };
 }
 
 function main() {
   const args = parseArgs(process.argv.slice(2));
 
-  const gameIds = args.game ? [args.game] : listGameIds();
+  const gameIds = args.game ? [args.game] : listGameIdsFromGamesFolder();
+  if (!gameIds.length) die("No games found in _games/.");
 
   const allCreated = [];
   const allChanged = [];
+  const skippedGames = [];
 
   for (const gid of gameIds) {
-    const { created, changed } = generateForGame(gid, args.check, args.verbose);
-    allCreated.push(...created);
-    allChanged.push(...changed);
+    const res = generateForGame(gid, args.check);
+    if (res.error) die(res.error);
+    if (res.skipped) {
+      skippedGames.push(gid);
+      continue;
+    }
+    allCreated.push(...res.created);
+    allChanged.push(...res.changed);
   }
 
   const totalTouched = allCreated.length + allChanged.length;
@@ -233,8 +208,8 @@ function main() {
   if (args.check) {
     if (totalTouched > 0) {
       console.error("Missing or out-of-date generated run category pages:");
-      allCreated.forEach((p) => console.error("  (missing)  " + rel(p)));
-      allChanged.forEach((p) => console.error("  (changed)  " + rel(p)));
+      allCreated.forEach((p) => console.error("  (missing)  " + path.relative(ROOT, p).replace(/\\/g, "/")));
+      allChanged.forEach((p) => console.error("  (changed)  " + path.relative(ROOT, p).replace(/\\/g, "/")));
       process.exit(1);
     }
     console.log("OK: run category pages are up to date.");
@@ -242,8 +217,9 @@ function main() {
   }
 
   console.log(`Done. Created: ${allCreated.length}, Updated: ${allChanged.length}`);
-  allCreated.forEach((p) => console.log("  created  " + rel(p)));
-  allChanged.forEach((p) => console.log("  updated  " + rel(p)));
+  if (skippedGames.length) console.log(`Skipped (no categories_data): ${skippedGames.join(", ")}`);
+  allCreated.forEach((p) => console.log("  created  " + path.relative(ROOT, p).replace(/\\/g, "/")));
+  allChanged.forEach((p) => console.log("  updated  " + path.relative(ROOT, p).replace(/\\/g, "/")));
 }
 
 main();
