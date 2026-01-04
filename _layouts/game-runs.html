@@ -19,8 +19,6 @@ layout: default
 
 <!-- =========================================================
      Category label map (slug -> label)
-     Source of truth: _games/<id>.md -> categories_data
-     Fallback: derive from runs (first matching run.category)
      ========================================================= -->
 {% assign category_pairs = "" | split: "" %}
 
@@ -120,11 +118,6 @@ layout: default
 
     <!-- =========================================================
          If we're on a category subpage, filter runs to that slug
-         Supports nested slugs:
-         - active: chaos-trials
-           matches chaos-trials AND chaos-trials/heat-16
-         - active: chaos-trials/heat-16
-           matches exactly that branch
          ========================================================= -->
     {% if active_cat_slug != "" %}
       {% assign prefix = active_cat_slug | append: "/" %}
