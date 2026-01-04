@@ -14,13 +14,17 @@ cover: /assets/img/games/h/hades-2.jpg
 cover_position: center
 
 tabs:
-  challenges: true
-  categories: true
+  overview: true
   runs: true
-  resources: true
+  categories: true
+  challenges: true
   guides: true
-  forums: true
-  history: true
+  resources: true
+  rules: false
+  forum: true
+  extra_1: false
+  extra_2: false
+
 
 challenges:
   - hitless
