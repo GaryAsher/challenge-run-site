@@ -2,7 +2,7 @@
 // Client-side pagination for any .list-paged block
 // + Runs table filtering (Search + Header filters + Date sort + Limit)
 // + Category dropdown can either:
-//   - Navigate to /runs/<category_slug>/ pages (preferred), or
+//   - Navigate to /games/<game_id>/runs/<category_slug>/ pages (preferred), or
 //   - Fall back to ?category=<category_slug> filtering (legacy)
 // =========================================================
 (function () {
@@ -187,7 +187,7 @@
     }
 
     // =========================================================
-    // Runs base + category slug from path
+    // Runs base + category slug from path (new routing: /runs/)
     // =========================================================
     function getRunsBaseFromDom() {
       const el =
@@ -223,6 +223,7 @@
       if (!p.startsWith(base)) return "";
       let rest = p.slice(base.length);
       rest = rest.replace(/^\/+/, "").replace(/\/+$/, "");
+      // rest can be "" (base page) or "chaos-trials/heat-16"
       return rest;
     }
 
@@ -235,7 +236,7 @@
       const slug = toSlugOrEmpty(slugOrEmpty);
 
       if (base) {
-        const next = slug ? `${base}${encodeURIComponent(slug)}/` : base;
+        const next = slug ? `${base}${slug}/` : base;
         window.location.href = next;
         return true;
       }
@@ -251,14 +252,14 @@
     }
 
     function setCategoryInUrl(slugOrEmpty) {
-      if (goToCategoryPage(slugOrEmpty)) return true;
+      // Prefer navigating to real pages; fallback to query param.
+      if (goToCategoryPage(slugOrEmpty)) return;
 
       const u = new URL(window.location.href);
       const slug = toSlugOrEmpty(slugOrEmpty);
       if (slug) u.searchParams.set("category", slug);
       else u.searchParams.delete("category");
       history.replaceState(null, "", u);
-      return false;
     }
 
     let activeCategorySlug = getCategoryFromUrl();
@@ -450,6 +451,7 @@
       const needle = norm(q && q.value);
 
       // Category filter:
+      // Support nested categories: selecting "chaos-trials" should also match "chaos-trials/heat-16"
       if (activeCategorySlug) {
         const want = toSlugOrEmpty(activeCategorySlug);
         const rowSlug = toSlugOrEmpty(row.dataset.categorySlug || "");
@@ -646,6 +648,7 @@
 
     // =========================================================
     // Category NAV menu
+    // Now: navigates to /games/<game_id>/runs/<slug>/ when possible
     // =========================================================
     function buildCategoryNavItems() {
       const map = new Map(); // slug -> label
@@ -694,13 +697,12 @@
         b.innerHTML = `<span>${escapeHtml(it.label)}</span>`;
 
         b.addEventListener("click", () => {
-          const navigated = setCategoryInUrl(it.slug);
+          setCategoryInUrl(it.slug);
           closeThMenu();
 
-          if (!navigated) {
-            activeCategorySlug = it.slug;
-            render();
-          }
+          // If navigation did not happen (no base), fall back to client filtering.
+          activeCategorySlug = it.slug;
+          render();
         });
 
         thMenuList.appendChild(b);
