@@ -1,4 +1,4 @@
-name: Validate queued run submissions
+name: Validate queued runs
 
 on:
   pull_request:
@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   validate:
-    name: validate-queue-runs.yml
+    name: Validate queued runs
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -41,7 +41,6 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Find top-level folders under _queue_runs (excluding README.md)
           mapfile -t qdirs < <(find _queue_runs -mindepth 1 -maxdepth 1 -type d -printf "%f\n" | sort)
 
           if [[ ${#qdirs[@]} -eq 0 ]]; then
@@ -49,8 +48,6 @@ jobs:
             exit 0
           fi
 
-          # Build set of valid game_ids from _games/*.md
-          # This assumes _games files contain a line like: game_id: hades-2
           valid_ids="$(grep -RhoE '^\s*game_id:\s*[A-Za-z0-9_-]+' _games | sed -E 's/^\s*game_id:\s*//' | sort -u)"
 
           if [[ -z "${valid_ids}" ]]; then
