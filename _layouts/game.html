@@ -19,14 +19,14 @@ layout: default
       {% endif %}
     </section>
 
-    <!-- Categories -->
+    <!-- Categories (legacy panel, kept for now) -->
     <section class="tab-panel" data-panel="categories" id="categories">
       <div class="card">
         <h2>Categories</h2>
-        <p class="muted">Categories have moved under Runs.</p>
+        <p class="muted">Categories have moved under the Categories tab.</p>
 
         <p style="margin: 0.75rem 0 0 0;">
-          <a class="btn" href="{{ '/games/' | relative_url }}{{ page.game_id }}/game-runs/categories/">
+          <a class="btn" href="{{ game.url | relative_url }}categories/">
             View Categories
           </a>
         </p>
