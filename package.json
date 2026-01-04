@@ -5,7 +5,9 @@
     "validate:schema": "node scripts/validate-schema.js",
     "validate:runs": "node scripts/validate-runs.js",
     "promote:runs": "node scripts/promote-runs.js",
-    "generate:categories": "node scripts/generate-run-category-pages.js"
+
+    "generate:run-categories": "node scripts/generate-run-category-pages.js",
+    "generate:categories": "npm run generate:run-categories"
   },
   "dependencies": {
     "js-yaml": "^4.1.0"
