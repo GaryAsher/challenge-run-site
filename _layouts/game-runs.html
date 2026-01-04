@@ -97,24 +97,27 @@ layout: default
           {% endif %}
         </p>
 
-        <!-- =========================================================
-             Optional: quick links to other categories (same game)
-             ========================================================= -->
-        {% if category_pairs and category_pairs.size > 1 %}
-          <div class="tag-picked" style="margin-top: 0.5rem;">
-            {% for p in category_pairs %}
-              {% assign parts = p | split: "||" %}
-              {% assign s = parts[0] | strip %}
-              {% assign lbl = parts[1] | default: s | strip %}
-
-              {% if s != "" and s != active_cat_slug %}
-                <a class="tag-chip" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
-              {% endif %}
-            {% endfor %}
-          </div>
-        {% endif %}
-      </div>
-    {% endif %}
+     <!-- =========================================================
+          Optional: quick links to categories (same game)
+          Shows the active category as selected
+          ========================================================= -->
+     {% if category_pairs and category_pairs.size > 0 %}
+       <div class="tag-picked" style="margin-top: 0.5rem;">
+         {% for p in category_pairs %}
+           {% assign parts = p | split: "||" %}
+           {% assign s = parts[0] | strip %}
+           {% assign lbl = parts[1] | default: s | strip %}
+     
+           {% if s != "" %}
+             {% if s == active_cat_slug %}
+               <a class="tag-chip is-active" aria-current="page" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
+             {% else %}
+               <a class="tag-chip" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
+             {% endif %}
+           {% endif %}
+         {% endfor %}
+       </div>
+     {% endif %}
 
     <!-- =========================================================
          Browse by category (shows even if there are 0 runs)
