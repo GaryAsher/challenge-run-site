@@ -17,17 +17,15 @@ layout: default
           {{ content }}
         </div>
       {% endif %}
-    </section>
 
-    <!-- Categories (legacy panel, kept for now) -->
-    <section class="tab-panel" data-panel="categories" id="categories">
-      <div class="card">
-        <h2>Categories</h2>
-        <p class="muted">Categories have moved under the Categories tab.</p>
+      <!-- Helpful next step now that Categories is gone -->
+      <div class="card" style="margin-top: 1rem;">
+        <h2>Browse Runs</h2>
+        <p class="muted">Use Runs to browse categories and filter submissions.</p>
 
         <p style="margin: 0.75rem 0 0 0;">
-          <a class="btn" href="{{ game.url | relative_url }}categories/">
-            View Categories
+          <a class="btn" href="{{ page.url | relative_url }}runs/">
+            View Runs
           </a>
         </p>
       </div>
