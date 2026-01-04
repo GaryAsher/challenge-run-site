@@ -18,17 +18,35 @@ layout: default
 {% assign runs_base = game_base | append: "runs/" %}
 
 <!-- =========================================================
-     Category label map (slug -> label)
+     Category label map (slug -> label) + children map
+     category_pairs: ["slug||Label", ...] for ALL (parents + children)
+     child_pairs:    ["childSlug||Child Label", ...] for active parent only
      ========================================================= -->
 {% assign category_pairs = "" | split: "" %}
+{% assign child_pairs = "" | split: "" %}
 
 {% if game and game.categories_data and game.categories_data.size > 0 %}
   {% for c in game.categories_data %}
-    {% assign s = c.slug | default: "" | strip %}
-    {% if s != "" %}
-      {% assign lbl = c.label | default: s | strip %}
-      {% assign pair = s | append: "||" | append: lbl %}
-      {% assign category_pairs = category_pairs | push: pair %}
+    {% assign parent_slug = c.slug | default: "" | strip %}
+    {% if parent_slug != "" %}
+      {% assign parent_label = c.label | default: parent_slug | strip %}
+      {% assign category_pairs = category_pairs | push: parent_slug | append: "||" | append: parent_label | split: "~~" | first %}
+
+      {% if c.children and c.children.size > 0 %}
+        {% for ch in c.children %}
+          {% assign child_slug = ch.slug | default: "" | strip %}
+          {% if child_slug != "" %}
+            {% assign full_slug = parent_slug | append: "/" | append: child_slug %}
+            {% assign child_label = ch.label | default: child_slug | strip %}
+            {% assign pair = full_slug | append: "||" | append: child_label %}
+            {% assign category_pairs = category_pairs | push: pair %}
+
+            {% if active_cat_slug == parent_slug %}
+              {% assign child_pairs = child_pairs | push: pair %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
     {% endif %}
   {% endfor %}
 {% endif %}
