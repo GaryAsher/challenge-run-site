@@ -4,6 +4,16 @@ This guide covers the required steps for adding or updating content in this repo
 
 ---
 
+## ID and slug rules
+
+Before adding new IDs (game IDs, runner IDs, challenge IDs, restriction IDs, category slugs), read:
+
+    .docs/id-and-slug-spec.md
+
+All scripts and validation are expected to follow that spec.
+If the spec and a script disagree, update the script to match the spec.
+
+
 ## Adding a game
 
 Create a new game file in the `_games/` folder.
@@ -15,7 +25,7 @@ Avoid placeholder characters or angle brackets.
 
 Things to check:
 - filename matches `game_id` (example: `hades-2.md`)
-- `game_id` is lowercase kebab-case
+- `game_id` follows the ID rules in `.docs/id-and-slug-spec.md`
 - `reviewers: []` is present in front matter
 
 ---
