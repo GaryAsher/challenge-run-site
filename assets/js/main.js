@@ -8,7 +8,87 @@
 // and category text remains searchable in the search box.
 // =========================================================
 (function () {
-  
+  // =========================================================
+  // Preserve scroll position when navigating between game tabs
+  // (Overview / Runs / History / etc.)
+  // =========================================================
+  function initGameTabScrollPreserve() {
+    function getGameRoot(pathname) {
+      // Matches: /games/<game_id>/...  -> returns "/games/<game_id>/"
+      const m = String(pathname || "").match(/^\/games\/([^/]+)\//);
+      return m ? `/games/${m[1]}/` : null;
+    }
+
+    const ORIGIN = window.location.origin;
+    const gameRoot = getGameRoot(window.location.pathname);
+
+    // Save scroll on tab click
+    document.addEventListener("click", (e) => {
+      const a =
+        e.target && e.target.closest
+          ? e.target.closest("#game-tabs a.tab")
+          : null;
+      if (!a) return;
+
+      // Only normal left-click navigation
+      if (e.button !== 0) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      if (a.target && a.target !== "_self") return;
+
+      const root = getGameRoot(window.location.pathname);
+      if (!root) return;
+
+      const key = `crc_scroll:${root}`;
+      const payload = {
+        y: window.scrollY || window.pageYOffset || 0,
+        ts: Date.now()
+      };
+
+      try {
+        sessionStorage.setItem(key, JSON.stringify(payload));
+      } catch (_) {
+        // ignore storage failures
+      }
+    });
+
+    // Restore scroll on page load if coming from the same game's root
+    document.addEventListener("DOMContentLoaded", () => {
+      if (!gameRoot) return;
+
+      const ref = document.referrer || "";
+      if (!ref.startsWith(ORIGIN)) return;
+
+      const refPath = ref.slice(ORIGIN.length);
+      const refRoot = getGameRoot(refPath);
+
+      // Only restore when navigating within the same game (Overview <-> Runs <-> History, etc.)
+      if (!refRoot || refRoot !== gameRoot) return;
+
+      const key = `crc_scroll:${gameRoot}`;
+
+      try {
+        const raw = sessionStorage.getItem(key);
+        if (!raw) return;
+
+        const data = JSON.parse(raw);
+        if (!data || typeof data.y !== "number") return;
+
+        // TTL so stale values do not stick around
+        if (typeof data.ts === "number" && Date.now() - data.ts > 10 * 60 * 1000)
+          return;
+
+        // Wait a tick for layout to settle
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            window.scrollTo(0, data.y);
+          });
+        });
+      } catch (_) {
+        // ignore parse errors
+      }
+    });
+  }
+
   // =========================================================
   // Client-side pagination for any .list-paged block
   // =========================================================
@@ -611,6 +691,7 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
+    initGameTabScrollPreserve();
     document.querySelectorAll(".list-paged").forEach(initPagedList);
     initRunsTable();
     initGameTabsNav();
