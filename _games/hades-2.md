@@ -2,7 +2,7 @@
 layout: game
 game_id: hades-2
 reviewers: []
-name: Hades II
+name: "Hades II"
 status: Tracking challenge categories, rules, and notable runs.
 tags:
   - action
@@ -25,6 +25,12 @@ tabs:
   extra_1: false
   extra_2: false
 
+# Character/Weapon/Class column configuration (optional)
+# Set to false or omit to hide the column
+character_column:
+  enabled: true
+  label: "Weapon / Aspect"  # Column header text
+
 challenges:
   - hitless
   - damageless
@@ -33,6 +39,37 @@ challenges:
 categories_data:
   - slug: chaos-trials
     label: Chaos Trials
+    children:
+      - slug: trial-of-origin
+        label: Trial of Origin
+      - slug: trial-of-salt
+        label: Trial of Salt
+      - slug: trial-of-humility
+        label: Trial of Humility
+      - slug: trial-of-vengeance
+        label: Trial of Vengeance
+      - slug: trial-of-moon
+        label: Trial of Moon
+      - slug: trial-of-vigor
+        label: Trial of Vigor
+      - slug: trial-of-flame
+        label: Trial of Flame
+      - slug: trial-of-gold
+        label: Trial of Gold
+      - slug: trial-of-fury
+        label: Trial of Fury
+      - slug: trial-of-precarity
+        label: Trial of Precarity
+      - slug: trial-of-heartache
+        label: Trial of Heartache
+      - slug: trial-of-haste
+        label: Trial of Haste
+      - slug: trial-of-blood
+        label: Trial of Blood
+      - slug: trial-of-doom
+        label: Trial of Doom
+      - slug: trial-of-destiny
+        label: Trial of Destiny
   - slug: underworld-any
     label: Underworld Any%
   - slug: surface-any
