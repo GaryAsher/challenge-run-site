@@ -954,9 +954,10 @@
 
       const out = { games: [], runners: [], challenges: [] };
 
-      // Search games
+      // Search games (including aliases)
       (searchData.games || []).forEach((g) => {
-        if (norm(g.name).includes(q) || norm(g.id).includes(q)) {
+        const haystack = [norm(g.name), norm(g.id), ...(g.aliases || []).map(norm)].join(" ");
+        if (haystack.includes(q)) {
           out.games.push(g);
         }
       });
@@ -1034,10 +1035,12 @@
         html += '<div class="search-result-group">';
         html += '<div class="search-result-group__title">Challenges</div>';
         searchResults.challenges.forEach((c) => {
-          html += `<div class="search-result-item">
+          // Link to games page with challenge filter pre-selected
+          const filterUrl = `/games/?challenge=${encodeURIComponent(c.id)}`;
+          html += `<a href="${filterUrl}" class="search-result-item">
             <span class="search-result-item__icon">🏆</span>
             <span class="search-result-item__name">${escapeHtml(c.name)}</span>
-          </div>`;
+          </a>`;
         });
         html += "</div>";
       }
