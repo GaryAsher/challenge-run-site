@@ -8,55 +8,57 @@
     </div>
 
     <div class="nav-group">
-      <a href="{{ '/rules/' | relative_url }}">Rules</a>
-      <a href="{{ '/glossary/' | relative_url }}">Glossary</a>
-      <a href="{{ '/support/' | relative_url }}">Support</a>
+      <div class="nav-dropdown">
+        <button type="button" class="nav-dropdown__toggle" aria-expanded="false" aria-haspopup="true">
+          More <span class="nav-dropdown__caret">▾</span>
+        </button>
+        <div class="nav-dropdown__menu" hidden>
+          <a href="{{ '/rules/' | relative_url }}" class="nav-dropdown__item">Rules</a>
+          <a href="{{ '/glossary/' | relative_url }}" class="nav-dropdown__item">Glossary</a>
+          <a href="{{ '/support/' | relative_url }}" class="nav-dropdown__item">Support</a>
+        </div>
+      </div>
     </div>
 
-    <div class="nav-search-wrap" id="header-search-wrap">
-      <input
-        type="text"
-        id="header-search"
-        class="nav-search-input"
-        placeholder="Search..."
-        autocomplete="off"
-        aria-label="Search"
-      />
-      <div class="header-search-results" id="header-search-results" hidden></div>
+    <div class="nav-search-wrap">
+      <a href="{{ '/search/' | relative_url }}" class="nav-search-bar" aria-label="Search">
+        <span class="nav-search-icon">🔍</span>
+        <span class="nav-search-text">Search...</span>
+      </a>
     </div>
   </nav>
 </header>
 
-<!-- Header Search Index (built at compile time) -->
-<script id="header-search-data" type="application/json">
-{
-  "games": [
-    {% for g in site.games %}
-    {
-      "id": {{ g.game_id | jsonify }},
-      "name": {{ g.name | jsonify }},
-      "aliases": {{ g.name_aliases | default: empty | jsonify }},
-      "url": {{ g.url | relative_url | jsonify }}
-    }{% unless forloop.last %},{% endunless %}
-    {% endfor %}
-  ],
-  "runners": [
-    {% for r in site.runners %}
-    {
-      "id": {{ r.runner_id | default: r.title | jsonify }},
-      "name": {{ r.name | default: r.title | jsonify }},
-      "url": {{ r.url | relative_url | jsonify }}
-    }{% unless forloop.last %},{% endunless %}
-    {% endfor %}
-  ],
-  "challenges": [
-    {% for pair in site.data.challenges %}
-    {
-      "id": {{ pair[0] | jsonify }},
-      "name": {{ pair[1].label | default: pair[0] | jsonify }},
-      "aliases": {{ pair[1].aliases | default: empty | jsonify }}
-    }{% unless forloop.last %},{% endunless %}
-    {% endfor %}
-  ]
-}
+<script>
+// More dropdown toggle
+(function() {
+  document.querySelectorAll('.nav-dropdown__toggle').forEach(function(btn) {
+    var menu = btn.nextElementSibling;
+    
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var isOpen = !menu.hidden;
+      menu.hidden = isOpen;
+      btn.setAttribute('aria-expanded', !isOpen);
+    });
+  });
+  
+  // Close on outside click
+  document.addEventListener('click', function() {
+    document.querySelectorAll('.nav-dropdown__menu').forEach(function(m) {
+      m.hidden = true;
+      m.previousElementSibling.setAttribute('aria-expanded', 'false');
+    });
+  });
+  
+  // Close on Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.nav-dropdown__menu').forEach(function(m) {
+        m.hidden = true;
+        m.previousElementSibling.setAttribute('aria-expanded', 'false');
+      });
+    }
+  });
+})();
 </script>
