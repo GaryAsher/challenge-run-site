@@ -13,6 +13,7 @@ game_id: GAME-ID
 runner_id: runner-id
 category_slug: category-slug
 challenge_id: challenge-id
+glitch_id: null                    # any-glitch | glitchless | nmg | etc.
 
 # =========================================================
 # User-submitted (core info)
