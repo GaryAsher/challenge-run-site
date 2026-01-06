@@ -1,9 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% if page.title %}{{ page.title }} | {% endif %}{{ site.title }}</title>
+
+  <!-- Apply saved theme immediately to prevent flash -->
+  <script>
+    (function() {
+      try {
+        var theme = localStorage.getItem('crc_theme') || '';
+        if (theme) document.documentElement.setAttribute('data-theme', theme);
+      } catch(e) {}
+    })();
+  </script>
 
   <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}" />
 </head>
