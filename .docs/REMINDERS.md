@@ -9,6 +9,7 @@ This file tracks features and improvements to revisit later.
 ### Google Form Automation
 - [ ] Create Google Form based on `docs/NEW-GAME-FORM-SPEC.md`
 - [ ] Set up Google Apps Script webhook
+- [ ] Create GitHub Action to process submissions
 - [ ] Test end-to-end flow
 
 ---
@@ -30,10 +31,6 @@ This file tracks features and improvements to revisit later.
 
 ## Low Priority
 
-### Runner Page Improvements
-- **Status**: Runs now grouped by game ✅
-- **Possible enhancement**: Add filter/search within runner's runs
-
 ### Performance Optimization
 - [ ] Consider lazy-loading game covers
 - [ ] Minify CSS/JS for production
@@ -42,12 +39,9 @@ This file tracks features and improvements to revisit later.
 
 ## Completed ✅
 
-- [x] Theme picker with colored active borders
 - [x] Header "More" dropdown menu
-- [x] Live header search (games + runners)
-- [x] Runner runs grouped by game
-- [x] Category page generation from game files
-- [x] Game name aliases (Hades II / Hades 2)
+- [x] Simple search bar (links to /search/)
+- [x] Scroll position preservation between category pages
 
 ---
 
