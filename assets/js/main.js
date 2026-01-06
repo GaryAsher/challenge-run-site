@@ -928,9 +928,182 @@
     }
   }
 
+  // =========================================================
+  // Header Live Search
+  // =========================================================
+  function initHeaderSearch() {
+    const input = document.getElementById("header-search");
+    const results = document.getElementById("header-search-results");
+    const dataEl = document.getElementById("header-search-data");
+
+    if (!input || !results || !dataEl) return;
+
+    let searchData;
+    try {
+      searchData = JSON.parse(dataEl.textContent);
+    } catch (e) {
+      console.error("Failed to parse search data", e);
+      return;
+    }
+
+    const norm = (s) => (s || "").toString().trim().toLowerCase();
+
+    function search(query) {
+      const q = norm(query);
+      if (!q || q.length < 2) return { games: [], runners: [], challenges: [] };
+
+      const out = { games: [], runners: [], challenges: [] };
+
+      // Search games
+      (searchData.games || []).forEach((g) => {
+        if (norm(g.name).includes(q) || norm(g.id).includes(q)) {
+          out.games.push(g);
+        }
+      });
+
+      // Search runners
+      (searchData.runners || []).forEach((r) => {
+        if (norm(r.name).includes(q) || norm(r.id).includes(q)) {
+          out.runners.push(r);
+        }
+      });
+
+      // Search challenges (including aliases)
+      (searchData.challenges || []).forEach((c) => {
+        const haystack = [norm(c.name), norm(c.id), ...(c.aliases || []).map(norm)].join(" ");
+        if (haystack.includes(q)) {
+          out.challenges.push(c);
+        }
+      });
+
+      // Limit results
+      out.games = out.games.slice(0, 5);
+      out.runners = out.runners.slice(0, 5);
+      out.challenges = out.challenges.slice(0, 5);
+
+      return out;
+    }
+
+    function escapeHtml(s) {
+      const div = document.createElement("div");
+      div.textContent = s;
+      return div.innerHTML;
+    }
+
+    function render(searchResults, query) {
+      const total = searchResults.games.length + searchResults.runners.length + searchResults.challenges.length;
+
+      if (!query || query.length < 2) {
+        results.hidden = true;
+        return;
+      }
+
+      if (total === 0) {
+        results.innerHTML = '<div class="search-no-results">No results found</div>';
+        results.hidden = false;
+        return;
+      }
+
+      let html = "";
+
+      if (searchResults.games.length) {
+        html += '<div class="search-result-group">';
+        html += '<div class="search-result-group__title">Games</div>';
+        searchResults.games.forEach((g) => {
+          html += `<a href="${g.url}" class="search-result-item">
+            <span class="search-result-item__icon">🎮</span>
+            <span class="search-result-item__name">${escapeHtml(g.name)}</span>
+          </a>`;
+        });
+        html += "</div>";
+      }
+
+      if (searchResults.runners.length) {
+        html += '<div class="search-result-group">';
+        html += '<div class="search-result-group__title">Runners</div>';
+        searchResults.runners.forEach((r) => {
+          html += `<a href="${r.url}" class="search-result-item">
+            <span class="search-result-item__icon">👤</span>
+            <span class="search-result-item__name">${escapeHtml(r.name)}</span>
+          </a>`;
+        });
+        html += "</div>";
+      }
+
+      if (searchResults.challenges.length) {
+        html += '<div class="search-result-group">';
+        html += '<div class="search-result-group__title">Challenges</div>';
+        searchResults.challenges.forEach((c) => {
+          html += `<div class="search-result-item">
+            <span class="search-result-item__icon">🏆</span>
+            <span class="search-result-item__name">${escapeHtml(c.name)}</span>
+          </div>`;
+        });
+        html += "</div>";
+      }
+
+      results.innerHTML = html;
+      results.hidden = false;
+    }
+
+    let debounceTimer;
+    input.addEventListener("input", () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        const query = input.value;
+        const searchResults = search(query);
+        render(searchResults, query);
+      }, 150);
+    });
+
+    // Hide on blur (with delay for click)
+    input.addEventListener("blur", () => {
+      setTimeout(() => {
+        results.hidden = true;
+      }, 200);
+    });
+
+    // Show on focus if has value
+    input.addEventListener("focus", () => {
+      if (input.value.length >= 2) {
+        const searchResults = search(input.value);
+        render(searchResults, input.value);
+      }
+    });
+
+    // Hide on Escape
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        results.hidden = true;
+        input.blur();
+      }
+    });
+  }
+
+  // =========================================================
+  // Runner Game Card Toggles
+  // =========================================================
+  function initRunnerGameCards() {
+    document.querySelectorAll("[data-toggle-runs]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const card = btn.closest(".runner-game-card");
+        if (!card) return;
+
+        const runsEl = card.querySelector(".runner-game-card__runs");
+        if (!runsEl) return;
+
+        const isHidden = runsEl.hidden;
+        runsEl.hidden = !isHidden;
+        btn.textContent = isHidden ? "Hide Runs ▴" : "Show Runs ▾";
+      });
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".list-paged").forEach(initPagedList);
     initRunsTable();
     initGameTabsNav();
+    initHeaderSearch();
+    initRunnerGameCards();
   });
 })();
