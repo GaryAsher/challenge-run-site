@@ -125,7 +125,6 @@ title: Games
         <div class="game-card__bg" style="background-image: url('{{ game_cover | relative_url }}');"></div>
         <div class="game-card__overlay">
           <div class="game-card__title">{{ g.name }}</div>
-          <div class="game-card__meta muted" data-challenge-labels></div>
         </div>
       </a>
     {% endfor %}
@@ -182,25 +181,6 @@ const CHALLENGES = [
 // Normalize user input + IDs so matching is consistent
 // =========================================================
 const norm = s => (s || "").trim().toLowerCase();
-const CH_LABEL = new Map(CHALLENGES.map(c => [norm(c.id), c.label]));
-
-// =========================================================
-// Populate challenge labels inside game cards
-// =========================================================
-items.forEach(card => {
-  const raw = card.dataset.challenges || "";
-  if (!raw) return;
-
-  const ids = raw.split(",").map(s => s.trim()).filter(Boolean);
-  if (!ids.length) return;
-
-  const labels = ids
-    .map(id => CH_LABEL.get(norm(id)) || id)
-    .join(", ");
-
-  const target = card.querySelector("[data-challenge-labels]");
-  if (target) target.textContent = labels;
-});
 
 // =========================================================
 // UI helpers: picked chips + suggestions list
