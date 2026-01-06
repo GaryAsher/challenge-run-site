@@ -16,8 +16,7 @@ This document specifies the Google Form fields for submitting new games to CRC.
 - **Type**: Short answer
 - **Maps to**: `name_aliases`
 - **Help text**: "Common abbreviations or nicknames, separated by commas"
-- **Example**: "Sekiro"
-- **Another example**: "DS1, DSR" (for Dark Souls: Remastered)
+- **Example**: "Sekiro, SDT"
 
 ---
 
@@ -26,7 +25,7 @@ This document specifies the Google Form fields for submitting new games to CRC.
 ### 3. Tags (Required, Max 5)
 - **Type**: Checkboxes (max 5 selections)
 - **Maps to**: `tags`
-- **Help text**: "Select up to 5 tags that best describe this game. Use Steam's top tags as reference."
+- **Help text**: "Select up to 5 tags that best describe this game. Reference Steam's top tags."
 - **Options**:
   - [ ] Action
   - [ ] Adventure
@@ -52,326 +51,250 @@ This document specifies the Google Form fields for submitting new games to CRC.
 
 ## Section 3: Run Categories
 
-### 4. Main Category 1 (Required)
-- **Type**: Short answer
-- **Maps to**: `categories_data[0]`
-- **Help text**: "Primary speedrun category (e.g., Any%, 100%, All Bosses)"
-- **Example**: "Any%"
-
-### 5. Main Category 2
-- **Type**: Short answer
-- **Maps to**: `categories_data[1]`
-- **Example**: "All Bosses"
-
-### 6. Main Category 3
-- **Type**: Short answer
-- **Maps to**: `categories_data[2]`
-- **Example**: "All Skills"
-
-### 7. Main Category 4
-- **Type**: Short answer
-- **Maps to**: `categories_data[3]`
-- **Example**: "All Mini-Bosses"
-
-### 8. Main Category 5
-- **Type**: Short answer
-- **Maps to**: `categories_data[4]`
+### 4-8. Main Categories (5 fields)
+- **Type**: Short answer (5 separate fields)
+- **Maps to**: `categories_data[0-4]`
+- **Help text**: "Primary speedrun categories (e.g., Any%, 100%, All Bosses)"
+- **Field 1 Required**, Fields 2-5 Optional
 
 ### 9. Do any categories have sub-categories?
-- **Type**: Multiple choice
-- **Options**: Yes / No
-- **Help text**: "Example: 'Any%' might have sub-categories like 'Glitchless' and 'No Major Glitches'"
+- **Type**: Multiple choice (Yes / No)
 
 ### 10. Sub-categories (if applicable)
 - **Type**: Paragraph
-- **Help text**: "List parent → child relationships, one per line. Example:\nAny% → Glitchless\nAny% → No Major Glitches\n100% → All Achievements"
+- **Help text**: "List parent → child relationships. Example:\nAny% → Glitchless\nAny% → No Major Glitches"
 
 ---
 
-## Section 4: Character/Weapon/Class Column
+## Section 4: Glitches & Exploits
 
-### 11. Does this game categorize runs by character, weapon, or class?
-- **Type**: Multiple choice
+### 11. What glitch categories exist for this game?
+- **Type**: Checkboxes
+- **Maps to**: `glitch_categories`
+- **Help text**: "Select all glitch-related category modifiers that apply"
+- **Options**:
+  - [ ] Any% (glitches allowed)
+  - [ ] Glitchless (no glitches)
+  - [ ] No Major Glitches (NMG)
+  - [ ] No Out of Bounds (No OoB)
+  - [ ] No Wrong Warp
+  - [ ] No Sequence Break
+  - [ ] Other (please specify)
+
+### 12. Notable Glitches/Exploits
+- **Type**: Paragraph
+- **Maps to**: `notable_glitches`
+- **Help text**: "List major glitches or exploits specific to this game, one per line. Example:\nBLJ (Backwards Long Jump)\nWrong Warp\nDuplication Glitch"
+
+### 13. Which glitches are typically banned in 'Glitchless' runs?
+- **Type**: Paragraph
+- **Help text**: "List glitches commonly banned in glitchless categories. This helps define category rules."
+
+---
+
+## Section 5: Character/Weapon/Class Column
+
+### 14. Does this game categorize runs by character, weapon, or class?
+- **Type**: Multiple choice (Yes / No)
 - **Maps to**: `character_column.enabled`
-- **Options**: Yes / No
-- **Help text**: "Enable this if runners typically specify a character, weapon, or build for their runs"
 
-### 12. Column Label (if Yes above)
+### 15. Column Label (if Yes)
 - **Type**: Short answer
 - **Maps to**: `character_column.label`
-- **Help text**: "What should this column be called? (e.g., 'Character', 'Weapon', 'Class', 'Build')"
-- **Default**: "Character"
+- **Help text**: "What should this column be called? (e.g., 'Character', 'Weapon', 'Class')"
 
-### 13. Character/Weapon Options
+### 16. Character/Weapon Options
 - **Type**: Paragraph
-- **Help text**: "List the available options, one per line. Example:\nKnight\nWarrior\nMage\nThief"
+- **Help text**: "List the available options, one per line"
 
 ---
 
-## Section 5: Game-Specific Restrictions
+## Section 6: Game-Specific Restrictions
 
-### 14. What game-specific restrictions exist?
+### 17. What game-specific restrictions exist?
 - **Type**: Paragraph
-- **Maps to**: Custom restrictions list
-- **Help text**: "List restrictions unique to this game, one per line. These are modifiers that make runs harder.\n\nExamples:\n- No Leveling\n- Base Vitality Only\n- No Healing Items\n- Permadeath\n- No Fast Travel"
+- **Maps to**: `game_restrictions`
+- **Help text**: "List restrictions unique to this game, one per line.\n\nExamples:\n- No Leveling\n- Base Vitality Only\n- No Healing Items\n- Permadeath"
 
 ---
 
-## Section 6: Timing Methods
+## Section 7: Timing Methods
 
-### 15. Primary Timing Method
+### 18. Primary Timing Method
 - **Type**: Dropdown
-- **Maps to**: `timing_method_primary` default
-- **Help text**: "How are runs primarily timed for this game?"
+- **Maps to**: `timing_method_primary`
 - **Options**:
-  - RTA (Real Time Attack) - Wall clock time
-  - IGT (In-Game Time) - Game's internal timer
-  - LRT (Load-Removed Time) - RTA minus loading screens
-
-### 16. Secondary Timing Method (Optional)
-- **Type**: Dropdown
-- **Maps to**: `timing_method_secondary` default
-- **Help text**: "Is there a secondary timing method commonly used?"
-- **Options**:
-  - None
   - RTA (Real Time Attack)
   - IGT (In-Game Time)
   - LRT (Load-Removed Time)
 
+### 19. Secondary Timing Method (Optional)
+- **Type**: Dropdown
+- **Maps to**: `timing_method_secondary`
+- **Options**:
+  - None
+  - RTA
+  - IGT
+  - LRT
+
 ---
 
-## Section 7: Challenge Types
+## Section 8: Challenge Types
 
-### 17. What challenge types apply to this game? (Required)
+### 20. What challenge types apply to this game? (Required)
 - **Type**: Checkboxes
 - **Maps to**: `challenges`
-- **Help text**: "Select all challenge types that are relevant for this game"
 - **Options**:
-  - [ ] Hitless - Complete without taking any hits
-  - [ ] Damageless - Complete without taking or dealing damage
-  - [ ] No-Hit No-Damage - Combined hitless and damageless
-  - [ ] Deathless - Complete without dying
-  - [ ] Pacifist - Complete without killing
-  - [ ] No Upgrade - Complete without upgrading character/equipment
-  - [ ] Blindfolded - Complete while blindfolded
-  - [ ] One-Handed - Complete using only one hand
-  - [ ] Other (please specify below)
+  - [ ] Hitless
+  - [ ] Damageless
+  - [ ] No-Hit No-Damage
+  - [ ] Deathless
+  - [ ] Pacifist
+  - [ ] No Upgrade
+  - [ ] Blindfolded
+  - [ ] One-Handed
+  - [ ] Other (please specify)
 
-### 18. Other Challenge Types
+### 21. Other Challenge Types
 - **Type**: Short answer
-- **Help text**: "If you selected 'Other', describe any game-specific challenge types"
-- **Example**: "No Kuro's Charm, Bell Demon"
+- **Help text**: "If you selected 'Other', describe game-specific challenges"
 
 ---
 
-## Section 8: Contact Information
+## Section 9: Contact Information
 
-### 19. Your Email (Required)
+### 22. Your Email (Required)
 - **Type**: Email
-- **Help text**: "We'll contact you if we have questions about this submission"
-- **Validation**: Email format
 
-### 20. Discord Username (Optional)
+### 23. Discord Username (Optional)
 - **Type**: Short answer
-- **Help text**: "Your Discord username for faster communication (e.g., username#1234 or just username)"
+- **Help text**: "For faster communication"
 
-### 21. Are you willing to help moderate this game?
-- **Type**: Multiple choice
-- **Options**: Yes / No / Maybe
-- **Help text**: "Moderators help verify runs and maintain game information"
+### 24. Are you willing to help moderate this game?
+- **Type**: Multiple choice (Yes / No / Maybe)
 
 ---
 
-## Section 9: Feedback
+## Section 10: Feedback
 
-### 22. Additional Notes
+### 25. Additional Notes
 - **Type**: Paragraph
-- **Help text**: "Anything else we should know about this game? Any feedback on this form?"
+- **Help text**: "Anything else we should know about this game?"
 
-### 23. How did you hear about CRC?
-- **Type**: Short answer (optional)
-
----
-
-## Form Response → YAML Mapping
-
-When a form is submitted, it generates a file like this:
-
-```yaml
----
-layout: game
-game_id: sekiro-shadows-die-twice
-reviewers: []
-name: "Sekiro: Shadows Die Twice"
-name_aliases:
-  - "Sekiro"
-  - "SDT"
-status: "Pending review"
-tags:
-  - action
-  - souls-like
-  - hack-and-slash
-cover: /assets/img/games/s/sekiro-shadows-die-twice.jpg
-cover_position: center
-
-tabs:
-  overview: true
-  runs: true
-  history: true
-  challenges: true
-  guides: true
-  resources: true
-  rules: true
-  forum: false
-
-character_column:
-  enabled: false
-  label: "Character"
-
-challenges:
-  - hitless
-  - damageless
-  - no-hit-no-damage
-  - deathless
-
-categories_data:
-  - slug: any-percent
-    label: "Any%"
-  - slug: all-bosses
-    label: "All Bosses"
-  - slug: all-skills
-    label: "All Skills"
-  - slug: all-mini-bosses
-    label: "All Mini-Bosses"
-
-# Custom fields from form
-default_timing_primary: "IGT"
-default_timing_secondary: "RTA"
-
-game_restrictions:
-  - "No Kuro's Charm"
-  - "Bell Demon"
-  - "No Leveling"
-  - "Base Vitality"
----
-
-Submitted by: example@email.com
-Discord: username#1234
-Willing to moderate: Yes
-```
+### 26. Feedback on this form
+- **Type**: Paragraph
+- **Help text**: "How can we improve this submission process?"
 
 ---
 
-## Column Mapping Reference
+## Column Mapping Reference (Google Sheet)
 
-| Form Column | YAML Field |
-|-------------|------------|
-| A | Timestamp |
-| B | name |
-| C | name_aliases (comma-separated → array) |
-| D | tags (checkboxes → array) |
-| E | categories_data[0].label |
-| F | categories_data[1].label |
-| G | categories_data[2].label |
-| H | categories_data[3].label |
-| I | categories_data[4].label |
-| J | has_subcategories (Yes/No) |
-| K | subcategories_raw |
-| L | character_column.enabled |
-| M | character_column.label |
-| N | character_options |
-| O | game_restrictions |
-| P | timing_method_primary |
-| Q | timing_method_secondary |
-| R | challenges (checkboxes → array) |
-| S | other_challenges |
-| T | submitter_email |
-| U | discord_username |
-| V | willing_to_moderate |
-| W | additional_notes |
-| X | referral_source |
+| Column | Form Field | YAML Field |
+|--------|------------|------------|
+| A | Timestamp | - |
+| B | Full Game Name | `name` |
+| C | Short Names | `name_aliases` |
+| D | Tags | `tags` |
+| E | Category 1 | `categories_data[0]` |
+| F | Category 2 | `categories_data[1]` |
+| G | Category 3 | `categories_data[2]` |
+| H | Category 4 | `categories_data[3]` |
+| I | Category 5 | `categories_data[4]` |
+| J | Has Subcategories | - |
+| K | Subcategories | - |
+| L | Glitch Categories | `glitch_categories` |
+| M | Notable Glitches | `notable_glitches` |
+| N | Glitchless Bans | - |
+| O | Character Enabled | `character_column.enabled` |
+| P | Character Label | `character_column.label` |
+| Q | Character Options | - |
+| R | Restrictions | `game_restrictions` |
+| S | Primary Timing | `timing_method_primary` |
+| T | Secondary Timing | `timing_method_secondary` |
+| U | Challenges | `challenges` |
+| V | Other Challenges | - |
+| W | Email | - |
+| X | Discord | - |
+| Y | Moderate | - |
+| Z | Notes | - |
+| AA | Feedback | - |
 
 ---
 
-## Google Apps Script (Updated)
+## Google Apps Script
 
 ```javascript
 function onFormSubmit(e) {
-  const row = e.values;
+  var row = e.values;
   
-  // Column indices (adjust based on your actual form)
-  const COL = {
+  // Column indices (adjust to match YOUR form)
+  var COL = {
     TIMESTAMP: 0,
     GAME_NAME: 1,
     NAME_ALIASES: 2,
     TAGS: 3,
-    CATEGORY_1: 4,
-    CATEGORY_2: 5,
-    CATEGORY_3: 6,
-    CATEGORY_4: 7,
-    CATEGORY_5: 8,
+    CAT_1: 4, CAT_2: 5, CAT_3: 6, CAT_4: 7, CAT_5: 8,
     HAS_SUBCATS: 9,
-    SUBCATS_RAW: 10,
-    CHAR_ENABLED: 11,
-    CHAR_LABEL: 12,
-    CHAR_OPTIONS: 13,
-    RESTRICTIONS: 14,
-    TIMING_PRIMARY: 15,
-    TIMING_SECONDARY: 16,
-    CHALLENGES: 17,
-    OTHER_CHALLENGES: 18,
-    EMAIL: 19,
-    DISCORD: 20,
-    MODERATE: 21,
-    NOTES: 22,
-    REFERRAL: 23
+    SUBCATS: 10,
+    GLITCH_CATS: 11,
+    NOTABLE_GLITCHES: 12,
+    GLITCHLESS_BANS: 13,
+    CHAR_ENABLED: 14,
+    CHAR_LABEL: 15,
+    CHAR_OPTIONS: 16,
+    RESTRICTIONS: 17,
+    TIMING_PRIMARY: 18,
+    TIMING_SECONDARY: 19,
+    CHALLENGES: 20,
+    OTHER_CHALLENGES: 21,
+    EMAIL: 22,
+    DISCORD: 23,
+    MODERATE: 24,
+    NOTES: 25,
+    FEEDBACK: 26
   };
   
-  const gameName = row[COL.GAME_NAME];
-  const gameId = gameName.toLowerCase()
+  var gameName = row[COL.GAME_NAME];
+  var gameId = gameName.toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
+    .replace(/^-+|-+$/g, '');
   
-  // Build categories array
-  const categories = [];
-  for (let i = COL.CATEGORY_1; i <= COL.CATEGORY_5; i++) {
-    if (row[i] && row[i].trim()) {
-      categories.push(row[i].trim());
-    }
-  }
+  var categories = [
+    row[COL.CAT_1], row[COL.CAT_2], row[COL.CAT_3], 
+    row[COL.CAT_4], row[COL.CAT_5]
+  ].filter(function(c) { return c && c.trim(); }).join(',');
   
-  const payload = {
+  var payload = {
     event_type: 'new-game-submission',
     client_payload: {
       game_name: gameName,
       game_id: gameId,
       name_aliases: row[COL.NAME_ALIASES] || '',
       tags: row[COL.TAGS] || '',
-      categories: categories.join(','),
-      has_subcategories: row[COL.HAS_SUBCATS] === 'Yes',
-      subcategories_raw: row[COL.SUBCATS_RAW] || '',
+      categories: categories,
+      glitch_categories: row[COL.GLITCH_CATS] || '',
+      notable_glitches: row[COL.NOTABLE_GLITCHES] || '',
       character_enabled: row[COL.CHAR_ENABLED] === 'Yes' ? 'true' : 'false',
       character_label: row[COL.CHAR_LABEL] || 'Character',
-      character_options: row[COL.CHAR_OPTIONS] || '',
       restrictions: row[COL.RESTRICTIONS] || '',
       timing_primary: row[COL.TIMING_PRIMARY] || 'RTA',
       timing_secondary: row[COL.TIMING_SECONDARY] || '',
       challenges: row[COL.CHALLENGES] || '',
-      other_challenges: row[COL.OTHER_CHALLENGES] || '',
       submitter_email: row[COL.EMAIL],
-      discord: row[COL.DISCORD] || '',
-      willing_to_moderate: row[COL.MODERATE] || '',
-      notes: row[COL.NOTES] || ''
+      discord: row[COL.DISCORD] || ''
     }
   };
   
-  const githubToken = PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN');
-  const repo = 'GaryAsher/challenge-run-site';
+  var token = PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN');
+  if (!token) {
+    Logger.log('ERROR: GITHUB_TOKEN not set');
+    return;
+  }
   
-  const options = {
+  var options = {
     method: 'POST',
     headers: {
-      'Authorization': 'Bearer ' + githubToken,
+      'Authorization': 'Bearer ' + token,
       'Accept': 'application/vnd.github.v3+json',
       'Content-Type': 'application/json'
     },
@@ -380,11 +303,11 @@ function onFormSubmit(e) {
   };
   
   try {
-    const response = UrlFetchApp.fetch(
-      'https://api.github.com/repos/' + repo + '/dispatches',
+    var response = UrlFetchApp.fetch(
+      'https://api.github.com/repos/GaryAsher/challenge-run-site/dispatches',
       options
     );
-    Logger.log('GitHub dispatch: ' + response.getResponseCode());
+    Logger.log('Response: ' + response.getResponseCode());
   } catch (error) {
     Logger.log('Error: ' + error.message);
   }
