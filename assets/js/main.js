@@ -231,6 +231,7 @@ const CONFIG = {
 
     const btnCh = document.getElementById('filter-challenge');
     const btnRes = document.getElementById('filter-restrictions');
+    const btnGlitch = document.getElementById('filter-glitch');
     const activeFiltersWrap = document.getElementById('active-filters');
 
     rows.forEach((r, i) => (r.dataset._i = String(i)));
@@ -267,11 +268,13 @@ const CONFIG = {
       const chIds = [];
       const chLabelById = new Map();
       const restrictionsRaw = [];
+      const glitchIds = [];
 
       rows.forEach(row => {
         const chId = norm(row.dataset.challengeId);
         const chLabel = (row.dataset.challengeLabel || '').toString().trim();
         const resRaw = parseRestrictionsRaw(row);
+        const glitchId = norm(row.dataset.glitch);
 
         if (chId) {
           chIds.push(chId);
@@ -279,6 +282,7 @@ const CONFIG = {
         }
 
         if (resRaw.length) restrictionsRaw.push(...resRaw);
+        if (glitchId) glitchIds.push(glitchId);
       });
 
       function toList(values, map) {
@@ -294,6 +298,7 @@ const CONFIG = {
       return {
         challenges: toList(chIds, chLabelById),
         restrictions: toList(restrictionsRaw),
+        glitches: toList(glitchIds),
       };
     }
 
@@ -301,6 +306,7 @@ const CONFIG = {
 
     const activeChallenges = new Set();
     const activeRestrictions = new Set();
+    const activeGlitches = new Set();
 
     let dateSortDir = 'desc';
     let thActiveCol = null;
@@ -321,12 +327,14 @@ const CONFIG = {
     function getSetForCol(col) {
       if (col === 'challenge') return activeChallenges;
       if (col === 'restrictions') return activeRestrictions;
+      if (col === 'glitch') return activeGlitches;
       return null;
     }
 
     function getOptionsForCol(col) {
       if (col === 'challenge') return OPTIONS.challenges;
       if (col === 'restrictions') return OPTIONS.restrictions;
+      if (col === 'glitch') return OPTIONS.glitches;
       return [];
     }
 
@@ -339,14 +347,20 @@ const CONFIG = {
     function updateTopButtonLabels() {
       if (btnCh) {
         const count = activeChallenges.size;
-        btnCh.textContent = count ? `Challenge (${count}) ▾` : 'Challenge ▾';
+        btnCh.textContent = count ? `Challenge (${count}) ▾` : 'All ▾';
         btnCh.setAttribute('aria-expanded', count > 0 ? 'true' : 'false');
       }
 
       if (btnRes) {
         const count = activeRestrictions.size;
-        btnRes.textContent = count ? `Restrictions (${count}) ▾` : 'Restrictions ▾';
+        btnRes.textContent = count ? `Restrictions (${count}) ▾` : 'Any ▾';
         btnRes.setAttribute('aria-expanded', count > 0 ? 'true' : 'false');
+      }
+
+      if (btnGlitch) {
+        const count = activeGlitches.size;
+        btnGlitch.textContent = count ? `Glitch (${count}) ▾` : 'All ▾';
+        btnGlitch.setAttribute('aria-expanded', count > 0 ? 'true' : 'false');
       }
     }
 
@@ -364,6 +378,10 @@ const CONFIG = {
         chips.push({ kind: 'restrictions', id, label: getLabelFor('restrictions', id) });
       });
 
+      activeGlitches.forEach(id => {
+        chips.push({ kind: 'glitch', id, label: getLabelFor('glitch', id) });
+      });
+
       if (!chips.length) return;
 
       function makeChip(text, onRemove) {
@@ -377,11 +395,18 @@ const CONFIG = {
       }
 
       chips.forEach(c => {
-        const colLabel = c.kind === 'challenge' ? 'Challenge' : 'Restrictions';
+        let colLabel = 'Filter';
+        if (c.kind === 'challenge') colLabel = 'Challenge';
+        else if (c.kind === 'restrictions') colLabel = 'Restrictions';
+        else if (c.kind === 'glitch') colLabel = 'Glitch';
+        
         activeFiltersWrap.appendChild(
           makeChip(`${colLabel}: ${c.label}`, () => {
-            const set = c.kind === 'challenge' ? activeChallenges : activeRestrictions;
-            set.delete(c.id);
+            let set;
+            if (c.kind === 'challenge') set = activeChallenges;
+            else if (c.kind === 'restrictions') set = activeRestrictions;
+            else if (c.kind === 'glitch') set = activeGlitches;
+            if (set) set.delete(c.id);
             render();
           })
         );
@@ -395,6 +420,7 @@ const CONFIG = {
       clearAll.addEventListener('click', () => {
         activeChallenges.clear();
         activeRestrictions.clear();
+        activeGlitches.clear();
         render();
       });
 
@@ -407,15 +433,22 @@ const CONFIG = {
       return need.every(x => rowResListNorm.includes(x));
     }
 
+    function matchesGlitch(rowGlitch) {
+      if (!activeGlitches.size) return true;
+      return activeGlitches.has(norm(rowGlitch));
+    }
+
     function passesFilters(row) {
       const needle = norm(q && q.value);
 
       const ch = norm(row.dataset.challengeId);
       const resRaw = parseRestrictionsRaw(row);
       const resNorm = resRaw.map(norm);
+      const glitch = row.dataset.glitch || '';
 
       if (activeChallenges.size && !activeChallenges.has(ch)) return false;
       if (!matchesAllRestrictions(resNorm)) return false;
+      if (!matchesGlitch(glitch)) return false;
 
       if (needle) {
         const hay =
@@ -425,7 +458,9 @@ const CONFIG = {
           ' ' +
           norm(row.dataset.challengeLabel) +
           ' ' +
-          norm(resRaw.join(' '));
+          norm(resRaw.join(' ')) +
+          ' ' +
+          norm(glitch);
 
         if (!hay.includes(needle)) return false;
       }
@@ -598,7 +633,7 @@ const CONFIG = {
 
     runsRoot.querySelectorAll('[data-filter-btn]').forEach(btn => {
       const col = btn.getAttribute('data-filter-btn');
-      if (col !== 'challenge' && col !== 'restrictions') return;
+      if (col !== 'challenge' && col !== 'restrictions' && col !== 'glitch') return;
 
       // Add ARIA attributes
       btn.setAttribute('aria-haspopup', 'true');
@@ -659,6 +694,7 @@ const CONFIG = {
         // Return focus to the button that opened it
         if (thActiveCol === 'challenge' && btnCh) btnCh.focus();
         if (thActiveCol === 'restrictions' && btnRes) btnRes.focus();
+        if (thActiveCol === 'glitch' && btnGlitch) btnGlitch.focus();
       }
     });
 
