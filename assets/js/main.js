@@ -134,10 +134,15 @@
     const thSortAsc = document.getElementById("th-sort-asc");
     const thSortDesc = document.getElementById("th-sort-desc");
 
+    const btnChar = document.getElementById("filter-character");
     const btnCat = document.getElementById("filter-category");
     const btnCh = document.getElementById("filter-challenge");
     const btnRes = document.getElementById("filter-restrictions");
     const activeFiltersWrap = document.getElementById("active-filters");
+
+    // Check if character column exists
+    const hasCharacter = table.dataset.hasCharacter === "true";
+    const characterLabel = table.dataset.characterLabel || "Character";
 
     rows.forEach((r, i) => (r.dataset._i = String(i)));
 
@@ -265,17 +270,19 @@
     let activeCategorySlug = getCategoryFromUrl();
 
     // =========================================================
-    // Build options for challenge + restrictions (filters)
+    // Build options for challenge + restrictions + characters (filters)
     // =========================================================
     function buildOptions() {
       const chIds = [];
       const chLabelById = new Map();
       const restrictionsRaw = [];
+      const charactersRaw = [];
 
       rows.forEach((row) => {
         const chId = norm(row.dataset.challengeId);
         const chLabel = (row.dataset.challengeLabel || "").toString().trim();
         const resRaw = parseRestrictionsRaw(row);
+        const char = (row.dataset.character || "").toString().trim();
 
         if (chId) {
           chIds.push(chId);
@@ -283,6 +290,7 @@
         }
 
         if (resRaw.length) restrictionsRaw.push(...resRaw);
+        if (char && char !== "—") charactersRaw.push(char);
       });
 
       function toList(values, map) {
@@ -296,6 +304,7 @@
       }
 
       return {
+        characters: toList(charactersRaw),
         challenges: toList(chIds, chLabelById),
         restrictions: toList(restrictionsRaw)
       };
@@ -303,6 +312,7 @@
 
     const OPTIONS = buildOptions();
 
+    const activeCharacters = new Set();
     const activeChallenges = new Set();
     const activeRestrictions = new Set();
 
@@ -322,12 +332,14 @@
     }
 
     function getSetForCol(col) {
+      if (col === "character") return activeCharacters;
       if (col === "challenge") return activeChallenges;
       if (col === "restrictions") return activeRestrictions;
       return null;
     }
 
     function getOptionsForCol(col) {
+      if (col === "character") return OPTIONS.characters;
       if (col === "challenge") return OPTIONS.challenges;
       if (col === "restrictions") return OPTIONS.restrictions;
       return [];
@@ -337,6 +349,13 @@
       const list = getOptionsForCol(col);
       const hit = list.find((x) => x.id === id);
       return hit ? hit.label : id;
+    }
+
+    function getColDisplayName(col) {
+      if (col === "character") return characterLabel;
+      if (col === "challenge") return "Challenge";
+      if (col === "restrictions") return "Restrictions";
+      return col;
     }
 
     function getCategoryLabelForSlug(slug) {
@@ -358,16 +377,22 @@
         }
       }
 
+      if (btnChar && hasCharacter) {
+        btnChar.textContent = activeCharacters.size
+          ? `${characterLabel} (${activeCharacters.size}) ▾`
+          : "All ▾";
+      }
+
       if (btnCh) {
         btnCh.textContent = activeChallenges.size
           ? `Challenge (${activeChallenges.size}) ▾`
-          : "Challenge ▾";
+          : "All ▾";
       }
 
       if (btnRes) {
         btnRes.textContent = activeRestrictions.size
           ? `Restrictions (${activeRestrictions.size}) ▾`
-          : "Restrictions ▾";
+          : "Any ▾";
       }
     }
 
@@ -384,6 +409,10 @@
           label: getCategoryLabelForSlug(activeCategorySlug)
         });
       }
+
+      activeCharacters.forEach((id) => {
+        chips.push({ kind: "character", id, label: getLabelFor("character", id) });
+      });
 
       activeChallenges.forEach((id) => {
         chips.push({ kind: "challenge", id, label: getLabelFor("challenge", id) });
@@ -416,11 +445,11 @@
           return;
         }
 
-        const colLabel = c.kind === "challenge" ? "Challenge" : "Restrictions";
+        const colLabel = getColDisplayName(c.kind);
         activeFiltersWrap.appendChild(
           makeChip(`${colLabel}: ${c.label}`, () => {
-            const set = c.kind === "challenge" ? activeChallenges : activeRestrictions;
-            set.delete(c.id);
+            const set = getSetForCol(c.kind);
+            if (set) set.delete(c.id);
             render();
           })
         );
@@ -433,6 +462,7 @@
       clearAll.addEventListener("click", () => {
         activeCategorySlug = "";
         setCategoryInUrl("");
+        activeCharacters.clear();
         activeChallenges.clear();
         activeRestrictions.clear();
         render();
@@ -449,6 +479,12 @@
 
     function passesFilters(row) {
       const needle = norm(q && q.value);
+
+      // Character filter
+      if (activeCharacters.size) {
+        const charValue = norm(row.dataset.character || "");
+        if (!activeCharacters.has(charValue)) return false;
+      }
 
       // Category filter:
       // Support nested categories: selecting "chaos-trials" should also match "chaos-trials/heat-16"
