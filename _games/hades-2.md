@@ -86,4 +86,21 @@ subcategories:
   - God Only
   - Boonless
   - Arcanaless
+
+# Glitch categories (optional)
+# Similar structure to categories - can have parent/child for patches
+glitches_data:
+  - slug: any-glitch
+    label: Any Glitch
+  - slug: glitchless
+    label: Glitchless
+  - slug: no-major-glitches
+    label: No Major Glitches (NMG)
+  - slug: patch-specific
+    label: Patch Specific
+    children:
+      - slug: current-patch
+        label: Current Patch
+      - slug: patch-1-0
+        label: Patch 1.0
 ---
