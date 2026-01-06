@@ -170,7 +170,6 @@ layout: default
 
     <!-- =========================================================
          Category breadcrumb card (only on category pages)
-         Also shows subcategory chips when in a parent with children
          ========================================================= -->
     {% if active_cat_slug != "" %}
       <div class="card card--compact" style="margin-bottom: 1rem;">
@@ -215,26 +214,6 @@ layout: default
             {% endif %}
           {% endfor %}
         </p>
-
-        {% if child_pairs and child_pairs.size > 0 %}
-          <p class="muted" style="margin: 0.5rem 0 0 0;">
-            Pick a subcategory to filter runs:
-          </p>
-          <div class="tag-picked" style="margin-top: 0.5rem;">
-            {% for p in child_pairs %}
-              {% assign parts = p | split: "||" %}
-              {% assign s = parts[0] | strip %}
-              {% assign lbl = parts[1] | default: s | strip %}
-              {% if s != "" %}
-                {% if s == active_cat_slug %}
-                  <a class="tag-chip is-active" aria-current="page" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
-                {% else %}
-                  <a class="tag-chip" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
-                {% endif %}
-              {% endif %}
-            {% endfor %}
-          </div>
-        {% endif %}
       </div>
     {% endif %}
 
@@ -270,6 +249,27 @@ layout: default
             {% endif %}
           {% endfor %}
         </div>
+
+        {% comment %} Subcategory chips - shown below parent categories {% endcomment %}
+        {% if child_pairs and child_pairs.size > 0 %}
+          <p class="muted" style="margin: 1rem 0 0.5rem 0;">
+            Pick a subcategory:
+          </p>
+          <div class="tag-picked">
+            {% for p in child_pairs %}
+              {% assign parts = p | split: "||" %}
+              {% assign s = parts[0] | strip %}
+              {% assign lbl = parts[1] | default: s | strip %}
+              {% if s != "" %}
+                {% if s == active_cat_slug %}
+                  <a class="tag-chip is-active" aria-current="page" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
+                {% else %}
+                  <a class="tag-chip" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
       </div>
     {% endif %}
 
