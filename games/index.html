@@ -182,6 +182,22 @@ const CHALLENGES = [
 // =========================================================
 const norm = s => (s || "").trim().toLowerCase();
 
+// Convert roman numerals to arabic for matching
+function expandRomanNumerals(s) {
+  let str = norm(s);
+  const romans = [
+    ['viii', '8'], ['vii', '7'], ['vi', '6'], ['iv', '4'], ['v', '5'],
+    ['iii', '3'], ['ii', '2'], ['i', '1'],
+    ['xiii', '13'], ['xii', '12'], ['xi', '11'], ['x', '10'],
+    ['xiv', '14'], ['xv', '15'], ['xvi', '16']
+  ];
+  romans.forEach(function(pair) {
+    const regex = new RegExp('\\b' + pair[0] + '\\b', 'g');
+    str = str.replace(regex, pair[1]);
+  });
+  return str;
+}
+
 // =========================================================
 // UI helpers: picked chips + suggestions list
 // =========================================================
@@ -251,6 +267,7 @@ function renderSuggestions(qRaw, set, list, sugEl, { onPick } = {}) {
 // =========================================================
 function applyFilter() {
   const q = norm(input.value);
+  const qExpanded = expandRomanNumerals(input.value);
   const limit = Number(limitSelect.value);
   const matches = [];
 
@@ -259,6 +276,7 @@ function applyFilter() {
 
   for (const el of items) {
     const name = el.dataset.name || "";
+    const nameExpanded = expandRomanNumerals(name);
     const tags = (el.dataset.tags || "").split(",").map(norm).filter(Boolean);
     const challenges = (el.dataset.challenges || "").split(",").map(norm).filter(Boolean);
 
@@ -272,9 +290,12 @@ function applyFilter() {
       (hashMode === "OTHER" && !startsWithDigit && !startsWithAtoZ) ||
       (hashMode.length === 1 && letter === hashMode);
 
+    // Match against both original and expanded (roman numeral) versions
+    const nameMatch = !q || name.includes(q) || nameExpanded.includes(qExpanded);
+
     const ok =
       okHash &&
-      (!q || name.includes(q)) &&
+      nameMatch &&
       Array.from(activeTags).every(t => tags.includes(t)) &&
       Array.from(activeChallenges).every(c => challenges.includes(c));
 
