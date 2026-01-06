@@ -124,98 +124,98 @@ layout: default
     {% if runs and runs.size > 0 %}
       <div class="card">
         <h2>Completed Runs</h2>
-        <p class="muted">{{ runs.size }} run{% if runs.size != 1 %}s{% endif %} across multiple games</p>
+        <p class="muted">{{ runs.size }} run{% if runs.size != 1 %}s{% endif %}</p>
       </div>
 
-      {% comment %} Group runs by game {% endcomment %}
-      {% assign game_ids = runs | map: "game_id" | uniq %}
+      <div id="runner-runs" class="list-paged" data-page-size="25">
+        <div class="list-items">
+          {% for r in runs %}
+            {% assign g = site.games | where: "game_id", r.game_id | first %}
+            {% assign r_video = r.video_link | default: r.video | default: "" %}
+            {% assign r_date  = r.date_completed | default: "" %}
+            {% assign r_time  = r.time | default: "" %}
 
-      <div class="runner-games-grid">
-        {% for gid in game_ids %}
-          {% assign g = site.games | where: "game_id", gid | first %}
-          {% assign game_runs = runs | where: "game_id", gid %}
-          {% assign game_cover = "/assets/img/site/default-game.jpg" %}
-          {% if g and g.cover %}
-            {% assign game_cover = g.cover %}
-          {% endif %}
+            {% assign ch_id = r.challenge_id | default: "" | strip %}
+            {% assign ch_label = "" %}
+            {% if ch_id != "" %}
+              {% assign chmeta = site.data.challenges[ch_id] %}
+              {% assign ch_label = chmeta.label | default: ch_id %}
+              {% assign ch_label = ch_label | strip %}
+            {% endif %}
 
-          <div class="runner-game-card" data-game-id="{{ gid }}">
-            <div class="runner-game-card__header" style="background-image: url('{{ game_cover | relative_url }}');">
-              <div class="runner-game-card__overlay">
-                <div class="runner-game-card__title">
-                  {% if g %}
-                    <a href="{{ g.url | relative_url }}">{{ g.name }}</a>
-                  {% else %}
-                    {{ gid }}
-                  {% endif %}
-                </div>
-                <div class="runner-game-card__count muted">{{ game_runs.size }} run{% if game_runs.size != 1 %}s{% endif %}</div>
+            {% assign r_texts = "" | split: "" %}
+            {% if r.restrictions and r.restrictions != empty %}
+              {% if r.restrictions.first %}
+                {% assign r_texts = r.restrictions %}
+              {% elsif r.restrictions != "[]" and r.restrictions != "" %}
+                {% assign r_texts = r.restrictions | split: "," %}
+              {% endif %}
+            {% endif %}
+
+            {% assign r_clean = "" | split: "" %}
+            {% for rr in r_texts %}
+              {% assign t = rr | strip %}
+              {% if t != "" and t != "[]" %}
+                {% assign r_clean = r_clean | push: t %}
+              {% endif %}
+            {% endfor %}
+            {% assign r_texts = r_clean | uniq %}
+
+            <article class="card list-item">
+              <strong>
+                {% if g %}
+                  <a href="{{ g.url | relative_url }}">{{ g.name }}</a>
+                {% else %}
+                  {{ r.game_id }}
+                {% endif %}
+              </strong>
+
+              {% if r.category and r.category != "" %}
+                <span class="muted"> · {{ r.category }}</span>
+              {% endif %}
+
+              <div class="muted runner-run-meta">
+                {% if ch_label != "" and ch_label != "—" %}
+                  <span class="tag">{{ ch_label }}</span>
+                {% endif %}
+
+                {% if r_time != "" %}
+                  <span class="muted"> · {{ r_time }}</span>
+                {% endif %}
+
+                {% if r_date != "" %}
+                  <span class="muted"> · <time datetime="{{ r_date }}">{{ r_date }}</time></span>
+                {% endif %}
+
+                {% if r_video != "" %}
+                  <span class="muted"> · <a href="{{ r_video }}" target="_blank" rel="noopener">Video</a></span>
+                {% endif %}
+
+                {% if r.verified_by and r.verified_by != "" %}
+                  <span class="muted"> · Verified by {{ r.verified_by }}</span>
+                {% endif %}
               </div>
-            </div>
 
-            <div class="runner-game-card__runs" hidden>
-              {% for r in game_runs %}
-                {% assign ch_id = r.challenge_id | default: "" | strip %}
-                {% assign ch_label = "" %}
-                {% if ch_id != "" %}
-                  {% assign chmeta = site.data.challenges[ch_id] %}
-                  {% assign ch_label = chmeta.label | default: ch_id %}
-                {% endif %}
-
-                {% assign r_texts = "" | split: "" %}
-                {% if r.restrictions and r.restrictions != empty %}
-                  {% if r.restrictions.first %}
-                    {% assign r_texts = r.restrictions %}
-                  {% elsif r.restrictions != "[]" and r.restrictions != "" %}
-                    {% assign r_texts = r.restrictions | split: "," %}
-                  {% endif %}
-                {% endif %}
-                {% assign r_clean = "" | split: "" %}
-                {% for rr in r_texts %}
-                  {% assign t = rr | strip %}
-                  {% if t != "" and t != "[]" %}
-                    {% assign r_clean = r_clean | push: t %}
-                  {% endif %}
-                {% endfor %}
-                {% assign r_texts = r_clean | uniq %}
-
-                <div class="runner-run-item">
-                  <div class="runner-run-item__main">
-                    {% if ch_label != "" and ch_label != "—" %}
-                      <span class="tag">{{ ch_label }}</span>
-                    {% endif %}
-                    {% if r.category and r.category != "" %}
-                      <span class="muted">{{ r.category }}</span>
-                    {% endif %}
-                  </div>
-                  <div class="runner-run-item__meta muted">
-                    {% if r.time_primary or r.time %}
-                      <span>{{ r.time_primary | default: r.time }}</span>
-                    {% endif %}
-                    {% if r.date_completed %}
-                      <span>{{ r.date_completed }}</span>
-                    {% endif %}
-                    {% assign r_video = r.video_link | default: r.video %}
-                    {% if r_video and r_video != "" %}
-                      <a href="{{ r_video }}" target="_blank" rel="noopener">Video</a>
-                    {% endif %}
-                  </div>
-                  {% if r_texts and r_texts.size > 0 %}
-                    <div class="runner-run-item__tags">
-                      {% for x in r_texts %}
-                        <span class="tag tag--small">{{ x }}</span>
-                      {% endfor %}
-                    </div>
-                  {% endif %}
+              {% if r_texts and r_texts.size > 0 %}
+                <div class="runner-run-tags">
+                  {% for x in r_texts %}
+                    <span class="tag">{{ x }}</span>
+                  {% endfor %}
                 </div>
-              {% endfor %}
-            </div>
+              {% endif %}
+            </article>
+          {% endfor %}
+        </div>
 
-            <button type="button" class="runner-game-card__toggle btn" data-toggle-runs>
-              Show Runs ▾
-            </button>
+        <div class="list-controls list-controls--bottom">
+          <div class="pager">
+            <button type="button" class="btn" data-prev>Prev</button>
+            <div class="page-numbers" data-pages></div>
+            <button type="button" class="btn" data-next>Next</button>
+            <span class="muted pager-label" data-page-label></span>
           </div>
-        {% endfor %}
+          <div class="muted" data-status></div>
+        </div>
       </div>
     {% else %}
       <div class="card">
