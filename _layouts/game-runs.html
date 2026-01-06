@@ -215,13 +215,32 @@ layout: default
             {% endif %}
           {% endfor %}
         </p>
+
+        {% if child_pairs and child_pairs.size > 0 %}
+          <p class="muted" style="margin: 0.5rem 0 0 0;">
+            Pick a subcategory to filter runs:
+          </p>
+          <div class="tag-picked" style="margin-top: 0.5rem;">
+            {% for p in child_pairs %}
+              {% assign parts = p | split: "||" %}
+              {% assign s = parts[0] | strip %}
+              {% assign lbl = parts[1] | default: s | strip %}
+              {% if s != "" %}
+                {% if s == active_cat_slug %}
+                  <a class="tag-chip is-active" aria-current="page" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
+                {% else %}
+                  <a class="tag-chip" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
       </div>
     {% endif %}
 
     <!-- =========================================================
          Browse by category - Always show parent categories
          Shows TOP-LEVEL categories (parents) with selected state
-         Parents with children show a ▾ indicator
          ========================================================= -->
     {% if game and game.categories_data and game.categories_data.size > 0 %}
       <div class="card card--compact" style="margin-bottom: 1rem;">
@@ -230,10 +249,6 @@ layout: default
           {% for c in game.categories_data %}
             {% assign s = c.slug | default: "" | strip %}
             {% assign lbl = c.label | default: s | strip %}
-            {% assign has_children = false %}
-            {% if c.children and c.children.size > 0 %}
-              {% assign has_children = true %}
-            {% endif %}
             {% if s != "" %}
               {% assign is_selected = false %}
               {% if active_cat_slug == s %}
@@ -248,36 +263,13 @@ layout: default
                 {% endif %}
               {% endif %}
               {% if is_selected %}
-                <a class="tag-chip is-active" aria-current="page" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}{% if has_children %} ▾{% endif %}</a>
+                <a class="tag-chip is-active" aria-current="page" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
               {% else %}
-                <a class="tag-chip" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}{% if has_children %} ▾{% endif %}</a>
+                <a class="tag-chip" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
               {% endif %}
             {% endif %}
           {% endfor %}
         </div>
-
-        {% comment %} Show subcategories if we're on a parent with children {% endcomment %}
-        {% if child_pairs and child_pairs.size > 0 %}
-          <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border);">
-            <p class="muted" style="margin: 0 0 0.5rem 0; font-size: 0.9em;">
-              Subcategories in {{ parent_label }}:
-            </p>
-            <div class="tag-picked">
-              {% for p in child_pairs %}
-                {% assign parts = p | split: "||" %}
-                {% assign s = parts[0] | strip %}
-                {% assign lbl = parts[1] | default: s | strip %}
-                {% if s != "" %}
-                  {% if s == active_cat_slug %}
-                    <a class="tag-chip is-active" aria-current="page" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
-                  {% else %}
-                    <a class="tag-chip" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
-                  {% endif %}
-                {% endif %}
-              {% endfor %}
-            </div>
-          </div>
-        {% endif %}
       </div>
     {% endif %}
 
@@ -325,28 +317,12 @@ layout: default
               id="q"
               class="filter"
               type="text"
-              placeholder="Runner, challenge, restriction..."
+              placeholder="Search runner, challenge, restrictions..."
               autocomplete="off"
               inputmode="search"
               enterkeyhint="search"
             >
           </div>
-
-          {% if game.character_column and game.character_column.enabled %}
-          {% assign char_label_for_filter = game.character_column.label | default: "Character" %}
-          <div class="runs-filter">
-            <label class="muted" for="filter-character">{{ char_label_for_filter }}</label>
-            <button
-              id="filter-character"
-              class="select th-caret"
-              type="button"
-              aria-label="Filter {{ char_label_for_filter }}"
-              data-filter-btn="character"
-            >
-              All ▾
-            </button>
-          </div>
-          {% endif %}
 
           <div class="runs-filter">
             <label class="muted" for="filter-challenge">Challenge</label>
@@ -401,16 +377,7 @@ layout: default
           {% endif %}
         {% endif %}
 
-        {% comment %} Determine default timing method from first run with timing {% endcomment %}
-        {% assign default_timing = "Time" %}
-        {% for r in runs %}
-          {% if r.timing_method_primary and r.timing_method_primary != "" and r.timing_method_primary != nil %}
-            {% assign default_timing = r.timing_method_primary %}
-            {% break %}
-          {% endif %}
-        {% endfor %}
-
-        <table class="runs-table" id="runs-table" {% if show_character %}data-has-character="true" data-character-label="{{ character_label }}"{% endif %}>
+        <table class="runs-table" id="runs-table" {% if show_character %}data-has-character="true"{% endif %}>
           <thead>
             <tr>
               <th>Runner</th>
@@ -419,7 +386,7 @@ layout: default
               {% endif %}
               <th>Challenge</th>
               <th>Restrictions</th>
-              <th>{{ default_timing }}</th>
+              <th>Time</th>
 
               <th class="th-filter th-date">
                 <div class="th-title">
@@ -448,7 +415,7 @@ layout: default
                 {% assign challenge_aliases = meta.aliases | join: '||' %}
               {% endif %}
 
-              {% assign runner_label = r.runner | default: r.runner_id | default: "—" %}
+              {% assign runner_label = r.runner | default: r.runner_id | default: "—" | replace: "_", " " %}
 
               {% assign cat_label = r.category | default: "" | strip %}
               {% if cat_label == "" %}
