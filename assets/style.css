@@ -215,105 +215,113 @@ a:hover {
   text-decoration: none;
 }
 
-/* Nav dropdown (More menu) */
-.nav-dropdown {
+/* Search bar in header */
+.nav-search-wrap {
+  margin-left: 0.5rem;
   position: relative;
 }
 
-.nav-dropdown__toggle {
+.nav-search-input {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
   min-height: var(--tap);
-  padding: 0.35rem 0.65rem;
+  width: 180px;
+  padding: 0.35rem 0.75rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  background: transparent;
+  background: var(--surface);
   color: var(--fg);
-  font-size: inherit;
-  cursor: pointer;
-  transition: background 0.15s ease;
+  font-size: 0.9rem;
+  transition: border-color 0.15s ease, background 0.15s ease, width 0.2s ease;
 }
 
-.nav-dropdown__toggle:hover {
+.nav-search-input::placeholder {
+  color: var(--placeholder);
+}
+
+.nav-search-input:focus {
+  outline: none;
+  border-color: var(--accent);
   background: var(--panel);
+  width: 240px;
 }
 
-.nav-dropdown__caret {
-  font-size: 0.75em;
-  opacity: 0.7;
-}
-
-.nav-dropdown__menu {
+.header-search-results {
   position: absolute;
   top: 100%;
   right: 0;
-  min-width: 140px;
-  margin-top: 0.35rem;
-  padding: 0.35rem 0;
+  width: 300px;
+  max-height: 400px;
+  overflow-y: auto;
+  margin-top: 0.5rem;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  z-index: 100;
+  z-index: 200;
 }
 
-.nav-dropdown__menu[hidden] {
+.header-search-results[hidden] {
   display: none;
 }
 
-.nav-dropdown__item {
-  display: block;
-  padding: 0.5rem 1rem;
-  color: var(--fg);
-  text-decoration: none;
-  border: none !important;
-  border-radius: 0 !important;
-  min-height: auto !important;
+.search-result-group {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
 }
 
-.nav-dropdown__item:hover {
-  background: var(--panel);
-  text-decoration: none;
+.search-result-group:last-child {
+  border-bottom: none;
 }
 
-/* Search bar in header */
-.nav-search-wrap {
-  margin-left: 0.5rem;
+.search-result-group__title {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
 }
 
-.nav-search-bar {
-  display: inline-flex;
+.search-result-item {
+  display: flex;
   align-items: center;
   gap: 0.5rem;
-  min-height: var(--tap);
-  padding: 0.35rem 0.85rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  color: var(--text-muted);
+  padding: 0.5rem 0.75rem;
+  color: var(--fg);
   text-decoration: none;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition: background 0.1s ease;
 }
 
-.nav-search-bar:hover {
-  border-color: var(--accent);
+.search-result-item:hover {
   background: var(--panel);
   text-decoration: none;
 }
 
-.nav-search-icon {
+.search-result-item__icon {
+  font-size: 1rem;
+}
+
+.search-result-item__name {
   font-size: 0.9rem;
 }
 
-.nav-search-text {
+.search-no-results {
+  padding: 1rem;
+  text-align: center;
+  color: var(--text-muted);
   font-size: 0.9rem;
-  color: var(--placeholder);
 }
 
 @media (max-width: 640px) {
-  .nav-search-text {
-    display: none;
+  .nav-search-input {
+    width: 120px;
+  }
+  .nav-search-input:focus {
+    width: 160px;
+  }
+  .header-search-results {
+    width: 250px;
   }
 }
 
@@ -358,19 +366,35 @@ a:hover {
 
 .theme-btn:hover {
   transform: scale(1.1);
-  background: var(--panel);
 }
 
-/* Theme button hover colors - each button shows its own color on hover */
-.theme-btn[data-theme=""]:hover { background: rgba(59, 195, 110, 0.15); }
-.theme-btn[data-theme="pink"]:hover { background: rgba(233, 30, 140, 0.15); }
-.theme-btn[data-theme="blue"]:hover { background: rgba(59, 130, 246, 0.15); }
-.theme-btn[data-theme="purple"]:hover { background: rgba(139, 92, 246, 0.15); }
-.theme-btn[data-theme="red"]:hover { background: rgba(239, 68, 68, 0.15); }
+/* Theme button hover + active colors - each button shows its own color */
+.theme-btn[data-theme=""]:hover { background: rgba(59, 195, 110, 0.2); }
+.theme-btn[data-theme="pink"]:hover { background: rgba(233, 30, 140, 0.2); }
+.theme-btn[data-theme="blue"]:hover { background: rgba(59, 130, 246, 0.2); }
+.theme-btn[data-theme="purple"]:hover { background: rgba(139, 92, 246, 0.2); }
+.theme-btn[data-theme="red"]:hover { background: rgba(239, 68, 68, 0.2); }
 
-.theme-btn.is-active {
-  border-color: var(--fg);
-  background: var(--panel);
+/* Active state - border matches the theme color */
+.theme-btn[data-theme=""].is-active {
+  border-color: #3BC36E;
+  background: rgba(59, 195, 110, 0.15);
+}
+.theme-btn[data-theme="pink"].is-active {
+  border-color: #E91E8C;
+  background: rgba(233, 30, 140, 0.15);
+}
+.theme-btn[data-theme="blue"].is-active {
+  border-color: #3B82F6;
+  background: rgba(59, 130, 246, 0.15);
+}
+.theme-btn[data-theme="purple"].is-active {
+  border-color: #8B5CF6;
+  background: rgba(139, 92, 246, 0.15);
+}
+.theme-btn[data-theme="red"].is-active {
+  border-color: #EF4444;
+  background: rgba(239, 68, 68, 0.15);
 }
 
 /* ============================================================
@@ -1260,7 +1284,106 @@ button.tag { cursor: pointer; }
 .tab-panel.active { display: block; }
 
 /* ============================================================
-   Runner run meta spacing
+   Runner: Runs grouped by game
+   ============================================================ */
+.runner-games-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.runner-game-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.runner-game-card__header {
+  position: relative;
+  height: 120px;
+  background-size: cover;
+  background-position: center;
+}
+
+.runner-game-card__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.3) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 1rem;
+}
+
+.runner-game-card__title {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.runner-game-card__title a {
+  color: var(--fg);
+}
+
+.runner-game-card__count {
+  font-size: 0.85rem;
+}
+
+.runner-game-card__runs {
+  padding: 0.75rem;
+  border-top: 1px solid var(--border);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.runner-game-card__runs[hidden] {
+  display: none;
+}
+
+.runner-run-item {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.runner-run-item:last-child {
+  border-bottom: none;
+}
+
+.runner-run-item__main {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.runner-run-item__meta {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.runner-run-item__tags {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin-top: 0.35rem;
+}
+
+.tag--small {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.4rem;
+}
+
+.runner-game-card__toggle {
+  width: 100%;
+  border-radius: 0;
+  border: none;
+  border-top: 1px solid var(--border);
+}
+
+/* ============================================================
+   Runner run meta spacing (legacy)
    ============================================================ */
 .runner-run-meta {
   margin-top: 0.35rem;
