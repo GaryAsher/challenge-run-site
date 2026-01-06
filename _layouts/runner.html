@@ -144,10 +144,10 @@ layout: default
             {% endif %}
 
             {% assign r_texts = "" | split: "" %}
-            {% if r.restrictions %}
+            {% if r.restrictions and r.restrictions != empty %}
               {% if r.restrictions.first %}
                 {% assign r_texts = r.restrictions %}
-              {% else %}
+              {% elsif r.restrictions != "[]" and r.restrictions != "" %}
                 {% assign r_texts = r.restrictions | split: "," %}
               {% endif %}
             {% endif %}
@@ -155,7 +155,7 @@ layout: default
             {% assign r_clean = "" | split: "" %}
             {% for rr in r_texts %}
               {% assign t = rr | strip %}
-              {% if t != "" %}
+              {% if t != "" and t != "[]" %}
                 {% assign r_clean = r_clean | push: t %}
               {% endif %}
             {% endfor %}
@@ -208,14 +208,13 @@ layout: default
         </div>
 
         <div class="list-controls list-controls--bottom">
-          <div class="muted" data-status></div>
-
           <div class="pager">
             <button type="button" class="btn" data-prev>Prev</button>
-            <span class="muted" data-page-label></span>
             <div class="page-numbers" data-pages></div>
             <button type="button" class="btn" data-next>Next</button>
+            <span class="muted pager-label" data-page-label></span>
           </div>
+          <div class="muted" data-status></div>
         </div>
       </div>
     {% else %}
