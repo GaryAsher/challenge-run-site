@@ -4,9 +4,24 @@
   "scripts": {
     "validate:schema": "node scripts/validate-schema.js",
     "validate:runs": "node scripts/validate-runs.js",
+    "validate:all": "npm run validate:schema && npm run validate:runs",
+
     "promote:runs": "node scripts/promote-runs.js",
+    "promote:runs:dry": "node scripts/promote-runs.js --dry-run",
 
     "generate:run-categories": "node scripts/generate-run-category-pages.js",
+    "generate:codeowners": "node scripts/generate-codeowners.js",
+    "generate:games-index": "node scripts/generate-games-index.js",
+    "generate:all": "npm run generate:games-index && npm run generate:run-categories && npm run generate:codeowners",
+
+    "check:run-categories": "node scripts/generate-run-category-pages.js --check",
+    "check:codeowners": "node scripts/generate-codeowners.js --check",
+    "check:games-index": "node scripts/generate-games-index.js --check",
+    "check:all": "npm run check:games-index && npm run check:run-categories && npm run check:codeowners",
+
+    "sync:templates": "node scripts/sync-issue-templates.js",
+    "sync:templates:check": "node scripts/sync-issue-templates.js --check",
+
     "generate:categories": "npm run generate:run-categories"
   },
   "dependencies": {
