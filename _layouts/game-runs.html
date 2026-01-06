@@ -325,12 +325,28 @@ layout: default
               id="q"
               class="filter"
               type="text"
-              placeholder="Search runner, challenge, restrictions..."
+              placeholder="Runner, challenge, restriction..."
               autocomplete="off"
               inputmode="search"
               enterkeyhint="search"
             >
           </div>
+
+          {% if game.character_column and game.character_column.enabled %}
+          {% assign char_label_for_filter = game.character_column.label | default: "Character" %}
+          <div class="runs-filter">
+            <label class="muted" for="filter-character">{{ char_label_for_filter }}</label>
+            <button
+              id="filter-character"
+              class="select th-caret"
+              type="button"
+              aria-label="Filter {{ char_label_for_filter }}"
+              data-filter-btn="character"
+            >
+              All ▾
+            </button>
+          </div>
+          {% endif %}
 
           <div class="runs-filter">
             <label class="muted" for="filter-challenge">Challenge</label>
@@ -385,7 +401,16 @@ layout: default
           {% endif %}
         {% endif %}
 
-        <table class="runs-table" id="runs-table" {% if show_character %}data-has-character="true"{% endif %}>
+        {% comment %} Determine default timing method from first run with timing {% endcomment %}
+        {% assign default_timing = "Time" %}
+        {% for r in runs %}
+          {% if r.timing_method_primary and r.timing_method_primary != "" and r.timing_method_primary != nil %}
+            {% assign default_timing = r.timing_method_primary %}
+            {% break %}
+          {% endif %}
+        {% endfor %}
+
+        <table class="runs-table" id="runs-table" {% if show_character %}data-has-character="true" data-character-label="{{ character_label }}"{% endif %}>
           <thead>
             <tr>
               <th>Runner</th>
@@ -394,7 +419,7 @@ layout: default
               {% endif %}
               <th>Challenge</th>
               <th>Restrictions</th>
-              <th>Time</th>
+              <th>{{ default_timing }}</th>
 
               <th class="th-filter th-date">
                 <div class="th-title">
