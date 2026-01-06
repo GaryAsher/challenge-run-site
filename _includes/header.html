@@ -20,14 +20,44 @@
       </div>
     </div>
 
-    <div class="nav-search-wrap">
-      <a href="{{ '/search/' | relative_url }}" class="nav-search-bar" aria-label="Search">
-        <span class="nav-search-icon">🔍</span>
-        <span class="nav-search-text">Search...</span>
-      </a>
+    <div class="nav-search-wrap" id="header-search-wrap">
+      <input
+        type="text"
+        id="header-search"
+        class="nav-search-input"
+        placeholder="Search..."
+        autocomplete="off"
+        aria-label="Search"
+      />
+      <div class="header-search-results" id="header-search-results" hidden></div>
     </div>
   </nav>
 </header>
+
+<!-- Header Search Index -->
+<script id="header-search-data" type="application/json">
+{
+  "games": [
+    {% for g in site.games %}
+    {
+      "id": {{ g.game_id | jsonify }},
+      "name": {{ g.name | jsonify }},
+      "aliases": {{ g.name_aliases | default: empty | jsonify }},
+      "url": {{ g.url | relative_url | jsonify }}
+    }{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ],
+  "runners": [
+    {% for r in site.runners %}
+    {
+      "id": {{ r.runner_id | default: r.title | jsonify }},
+      "name": {{ r.name | default: r.title | jsonify }},
+      "url": {{ r.url | relative_url | jsonify }}
+    }{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ]
+}
+</script>
 
 <script>
 // More dropdown toggle
@@ -43,7 +73,6 @@
     });
   });
   
-  // Close on outside click
   document.addEventListener('click', function() {
     document.querySelectorAll('.nav-dropdown__menu').forEach(function(m) {
       m.hidden = true;
@@ -51,13 +80,133 @@
     });
   });
   
-  // Close on Escape
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
       document.querySelectorAll('.nav-dropdown__menu').forEach(function(m) {
         m.hidden = true;
         m.previousElementSibling.setAttribute('aria-expanded', 'false');
       });
+    }
+  });
+})();
+
+// Header live search
+(function() {
+  var input = document.getElementById('header-search');
+  var results = document.getElementById('header-search-results');
+  var dataEl = document.getElementById('header-search-data');
+  
+  if (!input || !results || !dataEl) return;
+  
+  var searchData;
+  try {
+    searchData = JSON.parse(dataEl.textContent);
+  } catch(e) {
+    return;
+  }
+  
+  function norm(s) {
+    return (s || '').toString().trim().toLowerCase();
+  }
+  
+  function search(query) {
+    var q = norm(query);
+    if (!q || q.length < 2) return { games: [], runners: [] };
+    
+    var out = { games: [], runners: [] };
+    
+    (searchData.games || []).forEach(function(g) {
+      var haystack = [norm(g.name), norm(g.id)].concat((g.aliases || []).map(norm)).join(' ');
+      if (haystack.indexOf(q) !== -1) out.games.push(g);
+    });
+    
+    (searchData.runners || []).forEach(function(r) {
+      if (norm(r.name).indexOf(q) !== -1 || norm(r.id).indexOf(q) !== -1) {
+        out.runners.push(r);
+      }
+    });
+    
+    out.games = out.games.slice(0, 5);
+    out.runners = out.runners.slice(0, 5);
+    
+    return out;
+  }
+  
+  function escapeHtml(s) {
+    var div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+  }
+  
+  function render(searchResults, query) {
+    var total = searchResults.games.length + searchResults.runners.length;
+    
+    if (!query || query.length < 2) {
+      results.hidden = true;
+      return;
+    }
+    
+    if (total === 0) {
+      results.innerHTML = '<div class="search-no-results">No results found</div>';
+      results.hidden = false;
+      return;
+    }
+    
+    var html = '';
+    
+    if (searchResults.games.length) {
+      html += '<div class="search-result-group">';
+      html += '<div class="search-result-group__title">Games</div>';
+      searchResults.games.forEach(function(g) {
+        html += '<a href="' + g.url + '" class="search-result-item">';
+        html += '<span class="search-result-item__name">' + escapeHtml(g.name) + '</span>';
+        html += '</a>';
+      });
+      html += '</div>';
+    }
+    
+    if (searchResults.runners.length) {
+      html += '<div class="search-result-group">';
+      html += '<div class="search-result-group__title">Runners</div>';
+      searchResults.runners.forEach(function(r) {
+        html += '<a href="' + r.url + '" class="search-result-item">';
+        html += '<span class="search-result-item__name">' + escapeHtml(r.name) + '</span>';
+        html += '</a>';
+      });
+      html += '</div>';
+    }
+    
+    results.innerHTML = html;
+    results.hidden = false;
+  }
+  
+  var debounceTimer;
+  input.addEventListener('input', function() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(function() {
+      var query = input.value;
+      var searchResults = search(query);
+      render(searchResults, query);
+    }, 150);
+  });
+  
+  input.addEventListener('blur', function() {
+    setTimeout(function() {
+      results.hidden = true;
+    }, 200);
+  });
+  
+  input.addEventListener('focus', function() {
+    if (input.value.length >= 2) {
+      var searchResults = search(input.value);
+      render(searchResults, input.value);
+    }
+  });
+  
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      results.hidden = true;
+      input.blur();
     }
   });
 })();
