@@ -5,7 +5,7 @@ layout: default
 {% assign game = site.games | where: "game_id", page.game_id | first %}
 {% include game-header-tabs.html game=game active="runs" %}
 
-{% assign active_cat_slug = page.category_slug | default: "" %}
+{% assign active_cat_slug = page.category_slug | default: "" | strip %}
 {% assign active_cat_label = "" %}
 
 <!-- =========================================================
@@ -18,17 +18,56 @@ layout: default
 {% assign runs_base = game_base | append: "runs/" %}
 
 <!-- =========================================================
-     Category label map (slug -> label)
+     Category maps (supports children)
+     - category_pairs: ["slug||Label"] for parents + full child slugs
+     - child_pairs: ["parent/child||Child Label"] for active parent context
      ========================================================= -->
 {% assign category_pairs = "" | split: "" %}
+{% assign child_pairs = "" | split: "" %}
+
+{% assign parent_slug = "" %}
+{% assign parent_label = "" %}
+{% assign child_label = "" %}
+{% assign is_child_page = false %}
+
+{% if active_cat_slug != "" and active_cat_slug contains "/" %}
+  {% assign is_child_page = true %}
+  {% assign parent_slug = active_cat_slug | split: "/" | first | strip %}
+{% else %}
+  {% assign parent_slug = active_cat_slug %}
+{% endif %}
 
 {% if game and game.categories_data and game.categories_data.size > 0 %}
   {% for c in game.categories_data %}
-    {% assign s = c.slug | default: "" | strip %}
-    {% if s != "" %}
-      {% assign lbl = c.label | default: s | strip %}
-      {% assign pair = s | append: "||" | append: lbl %}
+    {% assign pslug = c.slug | default: "" | strip %}
+    {% if pslug != "" %}
+      {% assign plabel = c.label | default: pslug | strip %}
+      {% assign pair = pslug | append: "||" | append: plabel %}
       {% assign category_pairs = category_pairs | push: pair %}
+
+      {% if pslug == parent_slug %}
+        {% assign parent_label = plabel %}
+      {% endif %}
+
+      {% if c.children and c.children.size > 0 %}
+        {% for ch in c.children %}
+          {% assign cslug = ch.slug | default: "" | strip %}
+          {% if cslug != "" %}
+            {% assign full_slug = pslug | append: "/" | append: cslug %}
+            {% assign clabel = ch.label | default: cslug | strip %}
+            {% assign cpair = full_slug | append: "||" | append: clabel %}
+            {% assign category_pairs = category_pairs | push: cpair %}
+
+            {% if pslug == parent_slug %}
+              {% assign child_pairs = child_pairs | push: cpair %}
+            {% endif %}
+
+            {% if active_cat_slug == full_slug %}
+              {% assign child_label = clabel %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
     {% endif %}
   {% endfor %}
 {% endif %}
@@ -47,7 +86,8 @@ layout: default
 {% assign runs = cleaned_for_game | sort: "date_completed" | reverse %}
 
 <!-- =========================================================
-     If no authored categories_data exists, derive categories
+     If no authored categories_data exists, derive TOP-LEVEL categories
+     (children are only supported via categories_data)
      ========================================================= -->
 {% if category_pairs.size == 0 %}
   {% assign slugs = cleaned_for_game | map: "category_slug" | compact | uniq | sort %}
@@ -68,61 +108,183 @@ layout: default
 {% endif %}
 
 <!-- =========================================================
+     Label resolution helpers
+     - Exact match first
+     - Then prefix fallback to closest known label (parent or child)
+     ========================================================= -->
+{% assign closest_label = "" %}
+{% assign closest_slug = "" %}
+{% assign closest_len = 0 %}
+
+{% if active_cat_slug != "" and category_pairs and category_pairs.size > 0 %}
+  {% for p in category_pairs %}
+    {% assign parts = p | split: "||" %}
+    {% assign s = parts[0] | strip %}
+    {% assign lbl = parts[1] | default: s | strip %}
+    {% if s != "" %}
+      {% if s == active_cat_slug %}
+        {% assign closest_slug = s %}
+        {% assign closest_label = lbl %}
+        {% assign closest_len = s | size %}
+        {% break %}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+
+  {% if closest_label == "" %}
+    {% for p in category_pairs %}
+      {% assign parts = p | split: "||" %}
+      {% assign s = parts[0] | strip %}
+      {% assign lbl = parts[1] | default: s | strip %}
+      {% if s != "" %}
+        {% assign prefix = s | append: "/" %}
+        {% assign prefix_len = prefix | size %}
+        {% assign head = active_cat_slug | slice: 0, prefix_len %}
+        {% if head == prefix %}
+          {% assign s_len = s | size %}
+          {% if s_len > closest_len %}
+            {% assign closest_len = s_len %}
+            {% assign closest_slug = s %}
+            {% assign closest_label = lbl %}
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endif %}
+
+<!-- Resolve active label(s) -->
+{% if active_cat_slug != "" %}
+  {% if is_child_page %}
+    {% assign active_cat_label = child_label | default: closest_label | default: active_cat_slug | strip %}
+  {% else %}
+    {% assign active_cat_label = parent_label | default: closest_label | default: active_cat_slug | strip %}
+  {% endif %}
+{% endif %}
+
+<!-- =========================================================
      Runs + Filters
      ========================================================= -->
 <div class="page-width">
   <div class="game-shell">
 
     <!-- =========================================================
-         If we're on a category page, resolve its label early
+         Category breadcrumb card (only on category pages)
+         Also shows subcategory chips when in a parent with children
          ========================================================= -->
-    {% if active_cat_slug != "" %}
-      {% for p in category_pairs %}
-        {% assign parts = p | split: "||" %}
-        {% if parts[0] == active_cat_slug %}
-          {% assign active_cat_label = parts[1] | default: active_cat_slug | strip %}
-          {% break %}
-        {% endif %}
-      {% endfor %}
-    {% endif %}
-
     {% if active_cat_slug != "" %}
       <div class="card card--compact" style="margin-bottom: 1rem;">
         <p class="muted" style="margin: 0;">
           <a href="{{ runs_base | relative_url }}">← All Runs</a>
-          {% if active_cat_label != "" %}
-            <span class="muted"> / {{ active_cat_label }}</span>
-          {% else %}
-            <span class="muted"> / Category</span>
-          {% endif %}
+
+          {% assign parts = active_cat_slug | split: "/" %}
+          {% assign cur = "" %}
+          {% for seg in parts %}
+            {% assign seg_clean = seg | strip %}
+            {% if seg_clean == "" %}
+              {% continue %}
+            {% endif %}
+
+            {% if cur == "" %}
+              {% assign cur = seg_clean %}
+            {% else %}
+              {% assign cur = cur | append: "/" | append: seg_clean %}
+            {% endif %}
+
+            {% assign crumb_label = "" %}
+            {% if category_pairs and category_pairs.size > 0 %}
+              {% for p in category_pairs %}
+                {% assign kv = p | split: "||" %}
+                {% assign s = kv[0] | strip %}
+                {% if s == cur %}
+                  {% assign crumb_label = kv[1] | default: cur | strip %}
+                  {% break %}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+            {% if crumb_label == "" %}
+              {% assign crumb_label = seg_clean %}
+            {% endif %}
+
+            <span class="muted"> / </span>
+
+            {% if forloop.last %}
+              <span class="muted">{{ crumb_label }}</span>
+            {% else %}
+              <a class="muted" href="{{ runs_base | relative_url }}{{ cur | url_encode }}/">{{ crumb_label }}</a>
+            {% endif %}
+          {% endfor %}
         </p>
+      </div>
+    {% endif %}
 
-        <!-- =========================================================
-             Optional: quick links to other categories (same game)
-             ========================================================= -->
-        {% if category_pairs and category_pairs.size > 1 %}
-          <div class="tag-picked" style="margin-top: 0.5rem;">
-            {% for p in category_pairs %}
-              {% assign parts = p | split: "||" %}
-              {% assign s = parts[0] | strip %}
-              {% assign lbl = parts[1] | default: s | strip %}
-
-              {% if s != "" and s != active_cat_slug %}
-                <a class="tag-chip" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
+    <!-- =========================================================
+         Browse by category - Always show parent categories
+         Shows TOP-LEVEL categories (parents) with selected state
+         Parents with children show a ▾ indicator
+         ========================================================= -->
+    {% if game and game.categories_data and game.categories_data.size > 0 %}
+      <div class="card card--compact" style="margin-bottom: 1rem;">
+        <h2 style="margin: 0 0 0.5rem 0;">Browse by category</h2>
+        <div class="tag-picked">
+          {% for c in game.categories_data %}
+            {% assign s = c.slug | default: "" | strip %}
+            {% assign lbl = c.label | default: s | strip %}
+            {% assign has_children = false %}
+            {% if c.children and c.children.size > 0 %}
+              {% assign has_children = true %}
+            {% endif %}
+            {% if s != "" %}
+              {% assign is_selected = false %}
+              {% if active_cat_slug == s %}
+                {% assign is_selected = true %}
+              {% elsif active_cat_slug contains s %}
+                {% comment %} Check if active slug starts with this parent {% endcomment %}
+                {% assign check_prefix = s | append: "/" %}
+                {% assign check_len = check_prefix | size %}
+                {% assign active_head = active_cat_slug | slice: 0, check_len %}
+                {% if active_head == check_prefix %}
+                  {% assign is_selected = true %}
+                {% endif %}
               {% endif %}
-            {% endfor %}
+              {% if is_selected %}
+                <a class="tag-chip is-active" aria-current="page" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}{% if has_children %} ▾{% endif %}</a>
+              {% else %}
+                <a class="tag-chip" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}{% if has_children %} ▾{% endif %}</a>
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        {% comment %} Show subcategories if we're on a parent with children {% endcomment %}
+        {% if child_pairs and child_pairs.size > 0 %}
+          <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border);">
+            <p class="muted" style="margin: 0 0 0.5rem 0; font-size: 0.9em;">
+              Subcategories in {{ parent_label }}:
+            </p>
+            <div class="tag-picked">
+              {% for p in child_pairs %}
+                {% assign parts = p | split: "||" %}
+                {% assign s = parts[0] | strip %}
+                {% assign lbl = parts[1] | default: s | strip %}
+                {% if s != "" %}
+                  {% if s == active_cat_slug %}
+                    <a class="tag-chip is-active" aria-current="page" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
+                  {% else %}
+                    <a class="tag-chip" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+            </div>
           </div>
         {% endif %}
       </div>
     {% endif %}
 
     <!-- =========================================================
-         If we're on a category subpage, filter runs to that slug
-         Liquid does NOT support parentheses in conditions, so we
-         do this via an explicit loop instead of where_exp.
-         Matches:
-           - exact slug
-           - nested children: "<slug>/..."
+         Filter runs for category pages (Mode A):
+         - parent pages include children via prefix match
+         - child pages include deeper nesting via prefix match
          ========================================================= -->
     {% if active_cat_slug != "" %}
       {% assign prefix = active_cat_slug | append: "/" %}
@@ -147,69 +309,29 @@ layout: default
       {% assign runs = filtered %}
     {% endif %}
 
-    <!-- =========================================================
-         If label is still unknown, grab it from the filtered runs
-         ========================================================= -->
-    {% if active_cat_slug != "" and active_cat_label == "" and runs and runs.size > 0 %}
-      {% for r in runs %}
-        {% if r.category and r.category != "" %}
-          {% assign active_cat_label = r.category | strip %}
-          {% break %}
-        {% endif %}
-      {% endfor %}
-    {% endif %}
-
     {% if runs and runs.size > 0 %}
 
-      <!-- =========================================================
-           Optional: Category page header
-           ========================================================= -->
       {% if active_cat_slug != "" and active_cat_label != "" %}
-        <h2 style="margin-top: 0; margin-bottom: 0.75rem;">
-          {{ active_cat_label }}
-        </h2>
-        <p class="muted" style="margin-top: -0.25rem; margin-bottom: 1rem;">
-          Showing only runs in this category.
+        <p class="muted" style="margin-top: 0; margin-bottom: 1rem;">
+          Showing runs in: <strong>{{ active_cat_label }}</strong>
         </p>
       {% endif %}
 
-      <!-- =========================================================
-           Filter controls row
-           ========================================================= -->
       <div class="card card--compact">
-
         <div class="runs-filters">
-          <!-- Search -->
           <div class="runs-filter runs-filter--search">
             <label class="muted" for="q">Search</label>
             <input
               id="q"
               class="filter"
               type="text"
-              placeholder="Search runner, category, challenge, restrictions..."
+              placeholder="Search runner, challenge, restrictions..."
               autocomplete="off"
               inputmode="search"
               enterkeyhint="search"
             >
           </div>
 
-          <!-- Category (hide on category subpage) -->
-          {% if active_cat_slug == "" %}
-            <div class="runs-filter">
-              <label class="muted" for="filter-category">Category</label>
-              <button
-                id="filter-category"
-                class="select th-caret"
-                type="button"
-                aria-label="Filter Category"
-                data-filter-btn="category"
-              >
-                All ▾
-              </button>
-            </div>
-          {% endif %}
-
-          <!-- Challenge -->
           <div class="runs-filter">
             <label class="muted" for="filter-challenge">Challenge</label>
             <button
@@ -223,7 +345,6 @@ layout: default
             </button>
           </div>
 
-          <!-- Restrictions -->
           <div class="runs-filter">
             <label class="muted" for="filter-restrictions">Restrictions</label>
             <button
@@ -237,7 +358,6 @@ layout: default
             </button>
           </div>
 
-          <!-- Show -->
           <div class="runs-filter runs-filter--show">
             <label class="muted" for="limit">Show</label>
             <select id="limit" class="select">
@@ -251,21 +371,27 @@ layout: default
           </div>
         </div>
 
-        <!-- Active filters chips -->
         <div id="active-filters" class="active-filters"></div>
-
         <p class="muted" id="status"></p>
       </div>
 
-      <!-- =========================================================
-           Runs table
-           ========================================================= -->
       <div class="table-wrap" id="runs-list" data-runs-base="{{ runs_base | relative_url }}">
-        <table class="runs-table" id="runs-table">
+        {% assign show_character = false %}
+        {% assign character_label = "Character" %}
+        {% if game.character_column and game.character_column.enabled %}
+          {% assign show_character = true %}
+          {% if game.character_column.label %}
+            {% assign character_label = game.character_column.label %}
+          {% endif %}
+        {% endif %}
+
+        <table class="runs-table" id="runs-table" {% if show_character %}data-has-character="true"{% endif %}>
           <thead>
             <tr>
               <th>Runner</th>
-              <th>Category</th>
+              {% if show_character %}
+              <th>{{ character_label }}</th>
+              {% endif %}
               <th>Challenge</th>
               <th>Restrictions</th>
               <th>Time</th>
@@ -289,15 +415,16 @@ layout: default
             {% for r in runs %}
               {% assign meta = site.data.challenges[r.challenge_id] %}
               {% assign challenge_label = r.challenge_id %}
+              {% assign challenge_aliases = "" %}
               {% if meta and meta.label %}
                 {% assign challenge_label = meta.label %}
               {% endif %}
+              {% if meta and meta.aliases %}
+                {% assign challenge_aliases = meta.aliases | join: '||' %}
+              {% endif %}
 
-              {% assign runner_label = r.runner | default: r.runner_id | default: "—" | replace: "_", " " %}
+              {% assign runner_label = r.runner | default: r.runner_id | default: "—" %}
 
-              <!-- =========================================================
-                   Resolve category label for this row (slug -> label)
-                   ========================================================= -->
               {% assign cat_label = r.category | default: "" | strip %}
               {% if cat_label == "" %}
                 {% assign s = r.category_slug | default: "" | strip %}
@@ -319,10 +446,10 @@ layout: default
               {% endif %}
 
               {% assign r_texts = "" | split: "" %}
-              {% if r.restrictions %}
+              {% if r.restrictions and r.restrictions != empty %}
                 {% if r.restrictions.first %}
                   {% assign r_texts = r.restrictions %}
-                {% else %}
+                {% elsif r.restrictions != "[]" and r.restrictions != "" %}
                   {% assign r_texts = r.restrictions | split: "," %}
                 {% endif %}
               {% endif %}
@@ -330,7 +457,7 @@ layout: default
               {% assign r_clean = "" | split: "" %}
               {% for rr in r_texts %}
                 {% assign t = rr | strip %}
-                {% if t != "" %}
+                {% if t != "" and t != "[]" %}
                   {% assign r_clean = r_clean | push: t %}
                 {% endif %}
               {% endfor %}
@@ -341,10 +468,13 @@ layout: default
               <tr
                 class="run-row"
                 data-runner="{{ r.runner_id | default: r.runner | default: '' | escape }}"
+                data-runner-name="{{ runner_label | default: '' | escape }}"
                 data-category="{{ cat_label | default: '' | escape }}"
                 data-category-slug="{{ r.category_slug | default: '' | escape }}"
                 data-challenge-id="{{ r.challenge_id | default: '' | escape }}"
                 data-challenge-label="{{ challenge_label | default: '' | escape }}"
+                data-challenge-aliases="{{ challenge_aliases | escape }}"
+                data-character="{{ r.character | default: '' | escape }}"
                 data-restrictions="{{ r_texts | join: '||' | escape }}"
                 data-date="{{ r.date_completed | default: '' | escape }}"
                 data-time="{{ r.time_primary | default: r.time | default: '' | escape }}"
@@ -357,12 +487,16 @@ layout: default
                   {% endif %}
                 </td>
 
-                <td>{{ cat_label }}</td>
+                {% if show_character %}
+                <td>{{ r.character | default: "—" }}</td>
+                {% endif %}
 
                 <td>
                   {% assign ch = challenge_label | default: "" | strip %}
                   {% if ch != "" and ch != "—" %}
-                    <span class="tag">{{ ch }}</span>
+                    <div class="cell-tags">
+                      <span class="tag">{{ ch }}</span>
+                    </div>
                   {% else %}
                     —
                   {% endif %}
@@ -370,21 +504,32 @@ layout: default
 
                 <td>
                   {% if r_texts and r_texts.size > 0 %}
-                    {% for rr in r_texts %}
-                      <span class="tag">{{ rr }}</span>
-                    {% endfor %}
+                    <div class="cell-tags">
+                      {% for rr in r_texts %}
+                        <span class="tag">{{ rr }}</span>
+                      {% endfor %}
+                    </div>
                   {% else %}
                     —
                   {% endif %}
                 </td>
 
                 <td>{{ r.time_primary | default: r.time | default: "—" }}</td>
-
                 <td>{{ r.date_completed | default: "—" }}</td>
 
                 <td>
                   {% if video_url %}
-                    <a href="{{ video_url }}" target="_blank" rel="noopener">Link</a>
+                    {% assign video_source = "Link" %}
+                    {% if video_url contains "youtube.com" or video_url contains "youtu.be" %}
+                      {% assign video_source = "YouTube" %}
+                    {% elsif video_url contains "twitch.tv" %}
+                      {% assign video_source = "Twitch" %}
+                    {% elsif video_url contains "bilibili.com" %}
+                      {% assign video_source = "Bilibili" %}
+                    {% elsif video_url contains "vimeo.com" %}
+                      {% assign video_source = "Vimeo" %}
+                    {% endif %}
+                    <a class="video-link" href="{{ video_url }}" target="_blank" rel="noopener">{{ video_source }}</a>
                   {% else %}
                     —
                   {% endif %}
@@ -394,7 +539,6 @@ layout: default
           </tbody>
         </table>
 
-        <!-- Excel-style filter menu -->
         <div class="th-menu" id="th-menu" hidden>
           <div class="th-menu__top">
             <input
