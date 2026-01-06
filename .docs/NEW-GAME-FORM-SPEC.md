@@ -16,7 +16,7 @@ This document specifies the Google Form fields for submitting new games to CRC.
 - **Type**: Short answer
 - **Maps to**: `name_aliases`
 - **Help text**: "Common abbreviations or nicknames, separated by commas"
-- **Example**: "Sekiro, SDT"
+- **Example**: "Sekiro"
 - **Another example**: "DS1, DSR" (for Dark Souls: Remastered)
 
 ---
