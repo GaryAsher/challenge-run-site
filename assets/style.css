@@ -3,6 +3,8 @@
    ============================================================ */
 :root {
   --accent: #3BC36E;
+  --accent-rgb: 59, 195, 110;
+  --link: var(--accent);
   --bg: #0f0f0f;
   --fg: #ffffff;
 
@@ -18,8 +20,8 @@
   --text-muted: rgba(255, 255, 255, 0.78);
   --text-dim: rgba(255, 255, 255, 0.75);
 
-  --focus: rgba(59, 195, 110, 0.6);
-  --focus-2: rgba(59, 195, 110, 0.35);
+  --focus: rgba(var(--accent-rgb), 0.6);
+  --focus-2: rgba(var(--accent-rgb), 0.35);
 
   --overlay-strong: rgba(15, 15, 15, 0.95);
   --overlay-mid: rgba(15, 15, 15, 0.6);
@@ -52,6 +54,37 @@
   --tap: 36px;
   --az-size: 36px;
   --az-gap: 0.35rem;
+
+  /* Footer */
+  --footer-height: 60px;
+}
+
+/* ============================================================
+   Color Themes
+   Add data-theme="pink" to <html> to enable pink theme
+   ============================================================ */
+[data-theme="pink"] {
+  --accent: #E91E8C;
+  --accent-rgb: 233, 30, 140;
+  --link: var(--accent);
+}
+
+[data-theme="blue"] {
+  --accent: #3B82F6;
+  --accent-rgb: 59, 130, 246;
+  --link: var(--accent);
+}
+
+[data-theme="red"] {
+  --accent: #EF4444;
+  --accent-rgb: 239, 68, 68;
+  --link: var(--accent);
+}
+
+[data-theme="purple"] {
+  --accent: #8B5CF6;
+  --accent-rgb: 139, 92, 246;
+  --link: var(--accent);
 }
 
 /* ============================================================
@@ -79,6 +112,13 @@ body {
   color: var(--fg);
   margin: 0;
   line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+body > main {
+  flex: 1;
 }
 
 a {
@@ -150,6 +190,7 @@ a:hover {
 
 .nav {
   display: flex;
+  align-items: center;
   gap: 0.9rem;
 }
 
@@ -174,12 +215,100 @@ a:hover {
   text-decoration: none;
 }
 
+/* Search bar in header */
+.nav-search-wrap {
+  margin-left: 0.5rem;
+}
+
+.nav-search-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: var(--tap);
+  padding: 0.35rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.nav-search-bar:hover {
+  border-color: var(--accent);
+  background: var(--panel);
+  text-decoration: none;
+}
+
+.nav-search-icon {
+  font-size: 0.9rem;
+}
+
+.nav-search-text {
+  font-size: 0.9rem;
+  color: var(--placeholder);
+}
+
+@media (max-width: 640px) {
+  .nav-search-text {
+    display: none;
+  }
+}
+
 /* ============================================================
    Footer
    ============================================================ */
 .site-footer {
+  min-height: var(--footer-height);
   padding: 1rem;
   border-top: 1px solid var(--border);
+  margin-top: auto;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.theme-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.theme-btn {
+  appearance: none;
+  border: 2px solid transparent;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  transition: transform 0.1s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.theme-btn:hover {
+  transform: scale(1.1);
+  background: var(--panel);
+}
+
+/* Theme button hover colors - each button shows its own color on hover */
+.theme-btn[data-theme=""]:hover { background: rgba(59, 195, 110, 0.15); }
+.theme-btn[data-theme="pink"]:hover { background: rgba(233, 30, 140, 0.15); }
+.theme-btn[data-theme="blue"]:hover { background: rgba(59, 130, 246, 0.15); }
+.theme-btn[data-theme="purple"]:hover { background: rgba(139, 92, 246, 0.15); }
+.theme-btn[data-theme="red"]:hover { background: rgba(239, 68, 68, 0.15); }
+
+.theme-btn.is-active {
+  border-color: var(--fg);
+  background: var(--panel);
 }
 
 /* ============================================================
@@ -261,7 +390,7 @@ a:hover {
 
 .filter-wrap::after { content: none !important; }
 
-.tag-picker .filter-wrap { max-width: none; }
+-picker .filter-wrap { max-width: none; }
 
 .select {
   min-height: var(--tap);
@@ -332,6 +461,26 @@ button.tag { cursor: pointer; }
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem 0.35rem;
+}
+
+/* ============================================================
+   Runs table: center pill tags + consistent padding
+   ============================================================ */
+.runs-table .cell-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.runs-table .tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.22rem 0.55rem;
+  line-height: 1.2;
+  text-align: center;
 }
 
 /* ============================================================
@@ -512,7 +661,16 @@ button.tag { cursor: pointer; }
   -webkit-tap-highlight-color: transparent;
 }
 
-.tag-chip:hover { background: var(--panel); }
+.tag-chip:hover {
+  background: var(--panel);
+}
+
+.tag-chip.is-active {
+  background: var(--panel);
+  color: var(--fg);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--focus-2);
+}
 
 .tag-search {
   width: 100%;
@@ -524,7 +682,9 @@ button.tag { cursor: pointer; }
   outline: none;
 }
 
-.tag-search::placeholder { color: var(--placeholder-dim); }
+.tag-search::placeholder {
+  color: var(--placeholder-dim);
+}
 
 .tag-suggestions {
   position: absolute;
@@ -732,6 +892,10 @@ button.tag { cursor: pointer; }
   overflow: hidden;
   background: var(--surface-2);
   text-decoration: none;
+}
+
+.game-card [data-challenge-labels] {
+  display: none; !important;
 }
 
 .game-card__bg {
@@ -1053,6 +1217,8 @@ button.tag { cursor: pointer; }
   overflow: hidden;
   overflow-x: auto;
   background: var(--surface);
+  max-height: 70vh;
+  overflow-y: auto;
 }
 
 .runs-table {
@@ -1063,21 +1229,48 @@ button.tag { cursor: pointer; }
   font-size: 0.95rem;
 }
 
+.runs-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
 .runs-table thead th {
-  text-align: left;
-  vertical-align: top;
+  text-align: center;
+  vertical-align: middle;
   font-weight: 700;
   color: var(--fg);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface);
 
   padding: 0.75rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Ensure sticky header has solid background */
+.runs-table thead th::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
   border-bottom: 1px solid var(--border);
 }
 
 .runs-table tbody td {
   padding: 0.75rem 0.85rem;
   border-bottom: 1px solid var(--border);
-  vertical-align: top;
+  vertical-align: middle;
+  text-align: center;
+}
+
+/* Runner column - left aligned */
+.runs-table tbody td:first-child {
+  text-align: left;
+}
+
+/* Runner header - also left aligned for consistency */
+.runs-table thead th:first-child {
+  text-align: left;
 }
 
 .runs-table thead th + th,
@@ -1095,6 +1288,24 @@ button.tag { cursor: pointer; }
 
 .runs-table tbody tr:last-child td { border-bottom: none; }
 
+/* Video link with source indicator */
+.video-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  text-decoration: none;
+  color: var(--link);
+}
+
+.video-link:hover {
+  text-decoration: underline;
+}
+
+.video-source {
+  font-size: 0.8em;
+  opacity: 0.8;
+}
+
 .pager {
   display: inline-flex;
   gap: 0.5rem;
@@ -1102,6 +1313,10 @@ button.tag { cursor: pointer; }
 }
 
 .pager .muted { white-space: nowrap; }
+
+.pager-label {
+  margin-left: auto;
+}
 
 .runs-table td :is(.tag, .tags) .tag {
   margin: 0;
@@ -1235,6 +1450,11 @@ button.tag { cursor: pointer; }
 
 .list-controls--bottom { justify-content: center; }
 .list-controls--bottom [data-status] { display: none; }
+
+.list-controls--bottom .pager {
+  width: 100%;
+  justify-content: center;
+}
 
 .page-numbers {
   display: inline-flex;
