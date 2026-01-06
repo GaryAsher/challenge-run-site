@@ -1,2 +1,0 @@
-{% assign cats = include.runs | map: "category" | compact | uniq | sort %}
-{% assign include = include | merge: { "categories": cats } %}
