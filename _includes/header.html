@@ -109,15 +109,38 @@
     return (s || '').toString().trim().toLowerCase();
   }
   
+  // Convert roman numerals to arabic for matching
+  function expandRomanNumerals(s) {
+    var str = norm(s);
+    // Common roman numerals in game titles
+    var romans = [
+      ['viii', '8'], ['vii', '7'], ['vi', '6'], ['iv', '4'], ['v', '5'],
+      ['iii', '3'], ['ii', '2'], ['i', '1'],
+      ['xiii', '13'], ['xii', '12'], ['xi', '11'], ['x', '10'],
+      ['xiv', '14'], ['xv', '15'], ['xvi', '16']
+    ];
+    romans.forEach(function(pair) {
+      // Match roman numeral as whole word or at end of string
+      var regex = new RegExp('\\b' + pair[0] + '\\b', 'g');
+      str = str.replace(regex, pair[1]);
+    });
+    return str;
+  }
+  
   function search(query) {
     var q = norm(query);
+    var qExpanded = expandRomanNumerals(query);
     if (!q || q.length < 2) return { games: [], runners: [] };
     
     var out = { games: [], runners: [] };
     
     (searchData.games || []).forEach(function(g) {
       var haystack = [norm(g.name), norm(g.id)].concat((g.aliases || []).map(norm)).join(' ');
-      if (haystack.indexOf(q) !== -1) out.games.push(g);
+      var haystackExpanded = expandRomanNumerals(haystack);
+      // Match against both original and expanded versions
+      if (haystack.indexOf(q) !== -1 || haystackExpanded.indexOf(qExpanded) !== -1) {
+        out.games.push(g);
+      }
     });
     
     (searchData.runners || []).forEach(function(r) {
