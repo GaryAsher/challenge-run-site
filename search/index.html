@@ -1,0 +1,275 @@
+---
+layout: default
+title: Search
+---
+
+<div class="page-width">
+  <h1>Search</h1>
+  <p class="muted">Search across games, runners, and challenges.</p>
+
+  <div class="filter-wrap" style="margin-bottom: 1.5rem;">
+    <input
+      id="global-search"
+      class="filter"
+      type="text"
+      placeholder="Search for games, runners, challenges..."
+      autocomplete="off"
+      inputmode="search"
+      enterkeyhint="search"
+      aria-label="Global search"
+      autofocus
+    />
+  </div>
+
+  <div id="search-results"></div>
+</div>
+
+<script>
+(function() {
+  // Build search index from Jekyll data
+  const SEARCH_INDEX = {
+    games: [
+      {% for g in site.games %}
+      {
+        type: 'game',
+        id: {{ g.game_id | jsonify }},
+        name: {{ g.name | jsonify }},
+        url: {{ g.url | relative_url | jsonify }},
+        tags: {{ g.tags | default: empty | jsonify }},
+        challenges: {{ g.challenges | default: empty | jsonify }}
+      }{% unless forloop.last %},{% endunless %}
+      {% endfor %}
+    ],
+    runners: [
+      {% for r in site.runners %}
+      {
+        type: 'runner',
+        id: {{ r.runner_id | default: r.title | jsonify }},
+        name: {{ r.name | default: r.title | jsonify }},
+        url: {{ r.url | relative_url | jsonify }}
+      }{% unless forloop.last %},{% endunless %}
+      {% endfor %}
+    ],
+    challenges: [
+      {% for pair in site.data.challenges %}
+      {
+        type: 'challenge',
+        id: {{ pair[0] | jsonify }},
+        name: {{ pair[1].label | default: pair[0] | jsonify }},
+        aliases: {{ pair[1].aliases | default: empty | jsonify }}
+      }{% unless forloop.last %},{% endunless %}
+      {% endfor %}
+    ]
+  };
+
+  const searchInput = document.getElementById('global-search');
+  const resultsContainer = document.getElementById('search-results');
+  const norm = s => (s || '').toString().trim().toLowerCase();
+
+  function search(query) {
+    const q = norm(query);
+    if (!q || q.length < 2) return { games: [], runners: [], challenges: [] };
+
+    const results = {
+      games: [],
+      runners: [],
+      challenges: []
+    };
+
+    // Search games
+    SEARCH_INDEX.games.forEach(g => {
+      const haystack = [
+        norm(g.name),
+        norm(g.id),
+        ...(g.tags || []).map(norm),
+        ...(g.challenges || []).map(norm)
+      ].join(' ');
+
+      if (haystack.includes(q)) {
+        results.games.push(g);
+      }
+    });
+
+    // Search runners
+    SEARCH_INDEX.runners.forEach(r => {
+      const haystack = [norm(r.name), norm(r.id)].join(' ');
+      if (haystack.includes(q)) {
+        results.runners.push(r);
+      }
+    });
+
+    // Search challenges
+    SEARCH_INDEX.challenges.forEach(c => {
+      const haystack = [
+        norm(c.name),
+        norm(c.id),
+        ...(c.aliases || []).map(norm)
+      ].join(' ');
+
+      if (haystack.includes(q)) {
+        results.challenges.push(c);
+      }
+    });
+
+    return results;
+  }
+
+  function renderResults(results, query) {
+    const total = results.games.length + results.runners.length + results.challenges.length;
+
+    if (!query || query.length < 2) {
+      resultsContainer.innerHTML = '<p class="muted">Type at least 2 characters to search.</p>';
+      return;
+    }
+
+    if (total === 0) {
+      resultsContainer.innerHTML = `<p class="muted">No results found for "${query}".</p>`;
+      return;
+    }
+
+    let html = '';
+
+    // Games section
+    if (results.games.length > 0) {
+      html += `
+        <div class="search-section">
+          <h2 class="search-section__title">Games (${results.games.length})</h2>
+          <div class="search-results-list">
+            ${results.games.map(g => `
+              <a href="${g.url}" class="search-result">
+                <span class="search-result__icon">🎮</span>
+                <span class="search-result__name">${escapeHtml(g.name)}</span>
+              </a>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // Runners section
+    if (results.runners.length > 0) {
+      html += `
+        <div class="search-section">
+          <h2 class="search-section__title">Runners (${results.runners.length})</h2>
+          <div class="search-results-list">
+            ${results.runners.map(r => `
+              <a href="${r.url}" class="search-result">
+                <span class="search-result__icon">👤</span>
+                <span class="search-result__name">${escapeHtml(r.name)}</span>
+              </a>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // Challenges section
+    if (results.challenges.length > 0) {
+      html += `
+        <div class="search-section">
+          <h2 class="search-section__title">Challenges (${results.challenges.length})</h2>
+          <div class="search-results-list">
+            ${results.challenges.map(c => `
+              <div class="search-result search-result--no-link">
+                <span class="search-result__icon">🏆</span>
+                <span class="search-result__name">${escapeHtml(c.name)}</span>
+                ${c.aliases && c.aliases.length ? `<span class="search-result__aliases muted">(${c.aliases.join(', ')})</span>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    resultsContainer.innerHTML = html;
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Debounce search
+  let debounceTimer;
+  searchInput.addEventListener('input', function() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      const query = searchInput.value;
+      const results = search(query);
+      renderResults(results, query);
+    }, 150);
+  });
+
+  // Handle URL query parameter
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialQuery = urlParams.get('q');
+  if (initialQuery) {
+    searchInput.value = initialQuery;
+    const results = search(initialQuery);
+    renderResults(results, initialQuery);
+  } else {
+    renderResults({}, '');
+  }
+})();
+</script>
+
+<style>
+.search-section {
+  margin-bottom: 2rem;
+}
+
+.search-section__title {
+  font-size: 1.1rem;
+  margin: 0 0 0.75rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.search-results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.search-result {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  text-decoration: none;
+  color: var(--fg);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.search-result:hover {
+  border-color: var(--accent);
+  background: var(--panel);
+  text-decoration: none;
+}
+
+.search-result--no-link {
+  cursor: default;
+}
+
+.search-result--no-link:hover {
+  border-color: var(--border);
+  background: var(--surface);
+}
+
+.search-result__icon {
+  font-size: 1.2rem;
+}
+
+.search-result__name {
+  font-weight: 500;
+}
+
+.search-result__aliases {
+  font-size: 0.85em;
+  margin-left: auto;
+}
+</style>
