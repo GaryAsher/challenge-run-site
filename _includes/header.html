@@ -20,52 +20,14 @@
       </div>
     </div>
 
-    <div class="nav-search-wrap" id="header-search-wrap">
-      <input
-        type="text"
-        id="header-search"
-        class="nav-search-input"
-        placeholder="Search..."
-        autocomplete="off"
-        aria-label="Search"
-      />
-      <div class="header-search-results" id="header-search-results" hidden></div>
+    <div class="nav-search-wrap">
+      <a href="{{ '/search/' | relative_url }}" class="nav-search-bar" aria-label="Search">
+        <span class="nav-search-icon">🔍</span>
+        <span class="nav-search-text">Search...</span>
+      </a>
     </div>
   </nav>
 </header>
-
-<!-- Header Search Index (built at compile time) -->
-<script id="header-search-data" type="application/json">
-{
-  "games": [
-    {% for g in site.games %}
-    {
-      "id": {{ g.game_id | jsonify }},
-      "name": {{ g.name | jsonify }},
-      "url": {{ g.url | relative_url | jsonify }}
-    }{% unless forloop.last %},{% endunless %}
-    {% endfor %}
-  ],
-  "runners": [
-    {% for r in site.runners %}
-    {
-      "id": {{ r.runner_id | default: r.title | jsonify }},
-      "name": {{ r.name | default: r.title | jsonify }},
-      "url": {{ r.url | relative_url | jsonify }}
-    }{% unless forloop.last %},{% endunless %}
-    {% endfor %}
-  ],
-  "challenges": [
-    {% for pair in site.data.challenges %}
-    {
-      "id": {{ pair[0] | jsonify }},
-      "name": {{ pair[1].label | default: pair[0] | jsonify }},
-      "aliases": {{ pair[1].aliases | default: empty | jsonify }}
-    }{% unless forloop.last %},{% endunless %}
-    {% endfor %}
-  ]
-}
-</script>
 
 <script>
 // More dropdown toggle
