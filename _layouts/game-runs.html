@@ -350,6 +350,21 @@ layout: default
             </button>
           </div>
 
+          {% if game.glitches_data and game.glitches_data.size > 0 %}
+          <div class="runs-filter">
+            <label class="muted" for="filter-glitch">Glitch</label>
+            <button
+              id="filter-glitch"
+              class="select th-caret"
+              type="button"
+              aria-label="Filter Glitch Category"
+              data-filter-btn="glitch"
+            >
+              All ▾
+            </button>
+          </div>
+          {% endif %}
+
           <div class="runs-filter runs-filter--show">
             <label class="muted" for="limit">Show</label>
             <select id="limit" class="select">
@@ -377,7 +392,7 @@ layout: default
           {% endif %}
         {% endif %}
 
-        <table class="runs-table" id="runs-table" {% if show_character %}data-has-character="true"{% endif %}>
+        <table class="runs-table" id="runs-table" {% if show_character %}data-has-character="true"{% endif %} {% if game.glitches_data and game.glitches_data.size > 0 %}data-has-glitch="true"{% endif %}>
           <thead>
             <tr>
               <th>Runner</th>
@@ -386,6 +401,9 @@ layout: default
               {% endif %}
               <th>Challenge</th>
               <th>Restrictions</th>
+              {% if game.glitches_data and game.glitches_data.size > 0 %}
+              <th>Glitch</th>
+              {% endif %}
               <th>Time</th>
 
               <th class="th-filter th-date">
@@ -468,6 +486,7 @@ layout: default
                 data-challenge-aliases="{{ challenge_aliases | escape }}"
                 data-character="{{ r.character | default: '' | escape }}"
                 data-restrictions="{{ r_texts | join: '||' | escape }}"
+                data-glitch="{{ r.glitch_id | default: '' | escape }}"
                 data-date="{{ r.date_completed | default: '' | escape }}"
                 data-time="{{ r.time_primary | default: r.time | default: '' | escape }}"
               >
@@ -505,6 +524,29 @@ layout: default
                     —
                   {% endif %}
                 </td>
+
+                {% if game.glitches_data and game.glitches_data.size > 0 %}
+                <td>
+                  {% assign glitch_label = r.glitch_id | default: "" %}
+                  {% if glitch_label != "" %}
+                    {% for gl in game.glitches_data %}
+                      {% if gl.slug == r.glitch_id %}
+                        {% assign glitch_label = gl.label %}
+                      {% endif %}
+                      {% if gl.children %}
+                        {% for child in gl.children %}
+                          {% if child.slug == r.glitch_id %}
+                            {% assign glitch_label = child.label %}
+                          {% endif %}
+                        {% endfor %}
+                      {% endif %}
+                    {% endfor %}
+                    <span class="tag">{{ glitch_label }}</span>
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+                {% endif %}
 
                 <td>{{ r.time_primary | default: r.time | default: "—" }}</td>
                 <td>{{ r.date_completed | default: "—" }}</td>
