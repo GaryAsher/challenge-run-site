@@ -1,0 +1,183 @@
+name: Process New Game Submission
+
+on:
+  repository_dispatch:
+    types: [new-game-submission]
+  workflow_dispatch:
+    inputs:
+      game_name:
+        description: 'Game Name'
+        required: true
+      game_id:
+        description: 'Game ID (slug)'
+        required: false
+      tags:
+        description: 'Tags (comma-separated)'
+        required: true
+      categories:
+        description: 'Categories (comma-separated)'
+        required: true
+      challenges:
+        description: 'Challenge types (comma-separated)'
+        required: true
+      character_column:
+        description: 'Enable character column? (true/false)'
+        required: false
+        default: 'false'
+      character_label:
+        description: 'Character column label'
+        required: false
+        default: 'Character'
+      submitter_email:
+        description: 'Submitter email'
+        required: true
+
+jobs:
+  create-game-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generate game file
+        id: generate
+        run: |
+          # Get inputs (from dispatch or workflow_dispatch)
+          if [ "${{ github.event_name }}" == "repository_dispatch" ]; then
+            GAME_NAME="${{ github.event.client_payload.game_name }}"
+            GAME_ID="${{ github.event.client_payload.game_id }}"
+            TAGS="${{ github.event.client_payload.tags }}"
+            CATEGORIES="${{ github.event.client_payload.categories }}"
+            CHALLENGES="${{ github.event.client_payload.challenges }}"
+            CHAR_ENABLED="${{ github.event.client_payload.character_column }}"
+            CHAR_LABEL="${{ github.event.client_payload.character_label }}"
+            EMAIL="${{ github.event.client_payload.submitter_email }}"
+          else
+            GAME_NAME="${{ inputs.game_name }}"
+            GAME_ID="${{ inputs.game_id }}"
+            TAGS="${{ inputs.tags }}"
+            CATEGORIES="${{ inputs.categories }}"
+            CHALLENGES="${{ inputs.challenges }}"
+            CHAR_ENABLED="${{ inputs.character_column }}"
+            CHAR_LABEL="${{ inputs.character_label }}"
+            EMAIL="${{ inputs.submitter_email }}"
+          fi
+
+          # Auto-generate game_id if not provided
+          if [ -z "$GAME_ID" ]; then
+            GAME_ID=$(echo "$GAME_NAME" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//')
+          fi
+
+          # Get first letter for image path
+          FIRST_LETTER=$(echo "$GAME_ID" | cut -c1)
+
+          # Create queue directory if it doesn't exist
+          mkdir -p _queue_games
+
+          # Generate the game file
+          cat > "_queue_games/${GAME_ID}.md" << EOF
+          ---
+          layout: game
+          game_id: ${GAME_ID}
+          reviewers: []
+          name: "${GAME_NAME}"
+          status: "Pending review - submitted by ${EMAIL}"
+          tags:
+          EOF
+
+          # Add tags
+          IFS=',' read -ra TAG_ARRAY <<< "$TAGS"
+          for tag in "${TAG_ARRAY[@]}"; do
+            tag=$(echo "$tag" | xargs) # trim whitespace
+            echo "  - ${tag}" >> "_queue_games/${GAME_ID}.md"
+          done
+
+          cat >> "_queue_games/${GAME_ID}.md" << EOF
+          cover: /assets/img/games/${FIRST_LETTER}/${GAME_ID}.jpg
+          cover_position: center
+
+          tabs:
+            overview: true
+            runs: true
+            history: true
+            challenges: true
+            guides: true
+            resources: true
+            rules: true
+            forum: false
+            extra_1: false
+            extra_2: false
+
+          character_column:
+            enabled: ${CHAR_ENABLED:-false}
+            label: "${CHAR_LABEL:-Character}"
+
+          challenges:
+          EOF
+
+          # Add challenges
+          IFS=',' read -ra CHALLENGE_ARRAY <<< "$CHALLENGES"
+          for ch in "${CHALLENGE_ARRAY[@]}"; do
+            ch=$(echo "$ch" | xargs)
+            echo "  - ${ch}" >> "_queue_games/${GAME_ID}.md"
+          done
+
+          cat >> "_queue_games/${GAME_ID}.md" << EOF
+
+          categories_data:
+          EOF
+
+          # Add categories
+          IFS=',' read -ra CAT_ARRAY <<< "$CATEGORIES"
+          for cat in "${CAT_ARRAY[@]}"; do
+            cat_name=$(echo "$cat" | xargs)
+            cat_slug=$(echo "$cat_name" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//')
+            echo "  - slug: ${cat_slug}" >> "_queue_games/${GAME_ID}.md"
+            echo "    label: ${cat_name}" >> "_queue_games/${GAME_ID}.md"
+          done
+
+          echo "---" >> "_queue_games/${GAME_ID}.md"
+          echo "" >> "_queue_games/${GAME_ID}.md"
+          echo "Game submitted via form. Awaiting review." >> "_queue_games/${GAME_ID}.md"
+
+          echo "game_id=${GAME_ID}" >> $GITHUB_OUTPUT
+          echo "game_name=${GAME_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "feat: Add new game - ${{ steps.generate.outputs.game_name }}"
+          title: "🎮 New Game Submission: ${{ steps.generate.outputs.game_name }}"
+          body: |
+            ## New Game Submission
+
+            **Game:** ${{ steps.generate.outputs.game_name }}
+            **Game ID:** ${{ steps.generate.outputs.game_id }}
+
+            ### Checklist for Reviewers
+            - [ ] Game name and ID are correct
+            - [ ] Tags are appropriate
+            - [ ] Categories make sense
+            - [ ] Challenge types are valid
+            - [ ] Cover image uploaded to `assets/img/games/`
+            - [ ] Move file from `_queue_games/` to `_games/`
+
+            ### To Complete This Submission
+            1. Upload a cover image (1280x720 recommended)
+            2. Move the game file: `mv _queue_games/${{ steps.generate.outputs.game_id }}.md _games/`
+            3. Update the status field
+            4. Merge this PR
+
+            ---
+            *Submitted via Google Form*
+          branch: "new-game/${{ steps.generate.outputs.game_id }}"
+          delete-branch: true
+          labels: |
+            new-game
+            needs-review
