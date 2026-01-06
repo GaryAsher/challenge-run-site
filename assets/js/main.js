@@ -1,37 +1,130 @@
 // =========================================================
+// Configuration
+// =========================================================
+const CONFIG = {
+  MENU_WIDTH: 320,
+  MAX_SUGGESTIONS: 250,
+  DEBOUNCE_MS: 150,
+  SCROLL_TTL_MS: 10 * 60 * 1000, // 10 minutes
+};
+
+// =========================================================
 // Client-side pagination for any .list-paged block
 // + Runs table filtering (Search + Header filters + Date sort + Limit)
-// + Category dropdown can either:
-//   - Navigate to /games/<game_id>/runs/<category_slug>/ pages (preferred), or
-//   - Fall back to ?category=<category_slug> filtering (legacy)
+//
+// NOTE:
+// Category filtering/navigation has been removed.
+// Categories are browsed via category pages + chips in the layout,
+// and category text remains searchable in the search box.
 // =========================================================
+
 (function () {
+  // =========================================================
+  // Scroll preservation helpers for game tab navigation
+  // =========================================================
+  function getGameRoot(pathname) {
+    // Matches: /games/<game_id>/...  -> returns "/games/<game_id>/"
+    const m = String(pathname || '').match(/^\/games\/([^/]+)\//);
+    return m ? `/games/${m[1]}/` : null;
+  }
+
+  function saveGameScroll() {
+    const root = getGameRoot(window.location.pathname);
+    if (!root) return;
+
+    const key = `crc_scroll:${root}`;
+    const payload = {
+      y: window.scrollY || window.pageYOffset || 0,
+      ts: Date.now(),
+    };
+
+    try {
+      sessionStorage.setItem(key, JSON.stringify(payload));
+    } catch (err) {
+      // Storage quota exceeded or disabled - non-critical
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        console.warn('Failed to save scroll position:', err.message);
+      }
+    }
+  }
+
+  function restoreGameScroll() {
+    if (window.__CRC_SCROLL_RESTORED__) return;
+    window.__CRC_SCROLL_RESTORED__ = true; // Mark as handled
+    
+    const ORIGIN = window.location.origin;
+    const gameRoot = getGameRoot(window.location.pathname);
+    if (!gameRoot) return;
+
+    const ref = document.referrer || '';
+    if (!ref.startsWith(ORIGIN)) return;
+
+    const refPath = ref.slice(ORIGIN.length);
+    const refRoot = getGameRoot(refPath);
+
+    // Only restore when navigating within the same game
+    if (!refRoot || refRoot !== gameRoot) return;
+
+    const key = `crc_scroll:${gameRoot}`;
+
+    try {
+      const raw = sessionStorage.getItem(key);
+      if (!raw) return;
+
+      const data = JSON.parse(raw);
+      if (!data || typeof data.y !== 'number') return;
+
+      // Optional TTL: 10 minutes
+      if (typeof data.ts === 'number' && Date.now() - data.ts > CONFIG.SCROLL_TTL_MS) {
+        return;
+      }
+
+      // Wait longer for layout to settle (tables, images, etc.)
+      const scrollY = data.y;
+      function tryScroll() {
+        window.scrollTo(0, scrollY);
+      }
+      
+      // Multiple attempts to handle async content loading
+      requestAnimationFrame(() => {
+        tryScroll();
+        setTimeout(tryScroll, 50);
+        setTimeout(tryScroll, 150);
+      });
+    } catch (err) {
+      // Parse error or storage disabled - non-critical
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        console.warn('Failed to restore scroll position:', err.message);
+      }
+    }
+  }
+
   // =========================================================
   // Client-side pagination for any .list-paged block
   // =========================================================
   function initPagedList(root) {
-    const pageSize = parseInt(root.getAttribute("data-page-size") || "25", 10);
-    const items = Array.from(root.querySelectorAll(".list-item"));
+    const pageSize = parseInt(root.getAttribute('data-page-size') || '25', 10);
+    const items = Array.from(root.querySelectorAll('.list-item'));
 
-    const btnPrev = root.querySelector("[data-prev]");
-    const btnNext = root.querySelector("[data-next]");
-    const statusEl = root.querySelector("[data-status]");
-    const pageLabelEl = root.querySelector("[data-page-label]");
-    const pagesWrap = root.querySelector("[data-pages]");
+    const btnPrev = root.querySelector('[data-prev]');
+    const btnNext = root.querySelector('[data-next]');
+    const statusEl = root.querySelector('[data-status]');
+    const pageLabelEl = root.querySelector('[data-page-label]');
+    const pagesWrap = root.querySelector('[data-pages]');
 
-    const paramKey = root.id ? `${root.id}-page` : "page";
+    const paramKey = root.id ? `${root.id}-page` : 'page';
     let currentPage = 1;
 
     function getPageFromUrl() {
       const url = new URL(window.location.href);
-      const p = parseInt(url.searchParams.get(paramKey) || "1", 10);
+      const p = parseInt(url.searchParams.get(paramKey) || '1', 10);
       return Number.isFinite(p) && p > 0 ? p : 1;
     }
 
     function setPageInUrl(page) {
       const url = new URL(window.location.href);
       url.searchParams.set(paramKey, String(page));
-      history.replaceState(null, "", url);
+      history.replaceState(null, '', url);
     }
 
     function render(page) {
@@ -44,7 +137,7 @@
       const end = start + pageSize;
 
       items.forEach((el, idx) => {
-        el.style.display = idx >= start && idx < end ? "" : "none";
+        el.style.display = idx >= start && idx < end ? '' : 'none';
       });
 
       if (statusEl) {
@@ -59,22 +152,23 @@
       if (pageLabelEl) pageLabelEl.textContent = `Page ${safePage} / ${totalPages}`;
 
       if (pagesWrap) {
-        pagesWrap.innerHTML = "";
+        pagesWrap.innerHTML = '';
 
         for (let p = 1; p <= totalPages; p++) {
-          const b = document.createElement("button");
-          b.type = "button";
-          b.className = "btn page-btn";
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'btn page-btn';
           b.textContent = String(p);
 
           if (p === safePage) {
             b.disabled = true;
-            b.classList.add("is-current");
+            b.classList.add('is-current');
+            b.setAttribute('aria-current', 'page');
           }
 
-          b.addEventListener("click", () => {
+          b.addEventListener('click', () => {
             render(p);
-            root.scrollIntoView({ behavior: "smooth", block: "start" });
+            root.scrollIntoView({ behavior: 'smooth', block: 'start' });
           });
 
           pagesWrap.appendChild(b);
@@ -82,97 +176,75 @@
       }
 
       setPageInUrl(safePage);
-      root.setAttribute("data-page", String(safePage));
+      root.setAttribute('data-page', String(safePage));
     }
 
     if (items.length === 0) {
-      if (statusEl) statusEl.textContent = "No results.";
+      if (statusEl) statusEl.textContent = 'No results.';
       if (btnPrev) btnPrev.disabled = true;
       if (btnNext) btnNext.disabled = true;
-      if (pagesWrap) pagesWrap.innerHTML = "";
+      if (pagesWrap) pagesWrap.innerHTML = '';
       return;
     }
 
     if (btnPrev) {
-      btnPrev.addEventListener("click", () => {
+      btnPrev.addEventListener('click', () => {
         render(currentPage - 1);
-        root.scrollIntoView({ behavior: "smooth", block: "start" });
+        root.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     }
 
     if (btnNext) {
-      btnNext.addEventListener("click", () => {
+      btnNext.addEventListener('click', () => {
         render(currentPage + 1);
-        root.scrollIntoView({ behavior: "smooth", block: "start" });
+        root.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     }
 
     render(getPageFromUrl());
-    window.addEventListener("popstate", () => render(getPageFromUrl()));
+    window.addEventListener('popstate', () => render(getPageFromUrl()));
   }
 
   // =========================================================
   // Runs table filtering (Search + Header filters + Date sort + Limit)
+  // Category filtering/navigation removed (categories are pages).
   // =========================================================
   function initRunsTable() {
-    const table = document.getElementById("runs-table");
+    const table = document.getElementById('runs-table');
     if (!table) return;
 
-    const q = document.getElementById("q");
-    const limitEl = document.getElementById("limit");
-    const status = document.getElementById("status");
+    const q = document.getElementById('q');
+    const limitEl = document.getElementById('limit');
+    const status = document.getElementById('status');
 
-    const rows = Array.from(table.querySelectorAll(".run-row"));
-    const tbody = table.querySelector("tbody");
+    const rows = Array.from(table.querySelectorAll('.run-row'));
+    const tbody = table.querySelector('tbody');
 
-    const thMenu = document.getElementById("th-menu");
-    const thMenuQ = document.getElementById("th-menu-q");
-    const thMenuList = document.getElementById("th-menu-list");
-    const thMenuClear = document.getElementById("th-menu-clear");
-    const thMenuClose = document.getElementById("th-menu-close");
+    const thMenu = document.getElementById('th-menu');
+    const thMenuQ = document.getElementById('th-menu-q');
+    const thMenuList = document.getElementById('th-menu-list');
+    const thMenuClear = document.getElementById('th-menu-clear');
+    const thMenuClose = document.getElementById('th-menu-close');
 
-    const thSortAsc = document.getElementById("th-sort-asc");
-    const thSortDesc = document.getElementById("th-sort-desc");
+    const thSortAsc = document.getElementById('th-sort-asc');
+    const thSortDesc = document.getElementById('th-sort-desc');
 
-    const btnChar = document.getElementById("filter-character");
-    const btnCat = document.getElementById("filter-category");
-    const btnCh = document.getElementById("filter-challenge");
-    const btnRes = document.getElementById("filter-restrictions");
-    const activeFiltersWrap = document.getElementById("active-filters");
-
-    // Check if character column exists
-    const hasCharacter = table.dataset.hasCharacter === "true";
-    const characterLabel = table.dataset.characterLabel || "Character";
+    const btnCh = document.getElementById('filter-challenge');
+    const btnRes = document.getElementById('filter-restrictions');
+    const activeFiltersWrap = document.getElementById('active-filters');
 
     rows.forEach((r, i) => (r.dataset._i = String(i)));
 
-    const norm = (s) => (s || "").toString().trim().toLowerCase();
-    const uniq = (arr) => Array.from(new Set(arr));
-
-    function escapeHtml(s) {
-      return String(s).replace(/[&<>"']/g, (c) => {
-        switch (c) {
-          case "&": return "&amp;";
-          case "<": return "&lt;";
-          case ">": return "&gt;";
-          case '"': return "&quot;";
-          case "'": return "&#39;";
-          default: return c;
-        }
-      });
-    }
+    const norm = s => (s || '').toString().trim().toLowerCase();
+    const uniq = arr => Array.from(new Set(arr));
 
     function parseDateToNumber(s) {
-      const v = (s || "").trim();
+      const v = (s || '').trim();
       if (!v) return NaN;
 
       const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(v);
       if (m) {
-        return Date.UTC(
-          parseInt(m[1], 10),
-          parseInt(m[2], 10) - 1,
-          parseInt(m[3], 10)
-        );
+        return Date.UTC(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10));
       }
 
       const t = Date.parse(v);
@@ -180,109 +252,26 @@
     }
 
     function getLimit() {
-      const v = parseInt((limitEl && limitEl.value) || "10", 10);
+      const v = parseInt((limitEl && limitEl.value) || '10', 10);
       return Number.isFinite(v) ? v : 10;
     }
 
     function parseRestrictionsRaw(row) {
-      return (row.dataset.restrictions || "")
-        .split("||")
-        .map((s) => (s || "").toString().trim())
+      return (row.dataset.restrictions || '')
+        .split('||')
+        .map(s => (s || '').toString().trim())
         .filter(Boolean);
     }
 
-    // =========================================================
-    // Runs base + category slug from path (new routing: /runs/)
-    // =========================================================
-    function getRunsBaseFromDom() {
-      const el =
-        document.querySelector("[data-runs-base]") ||
-        table.closest("[data-runs-base]");
-      if (!el) return "";
-      const v = (el.getAttribute("data-runs-base") || "").trim();
-      return v;
-    }
-
-    function getRunsBaseFromPath() {
-      // Build base like: /games/<game_id>/runs/
-      const p = window.location.pathname || "/";
-      const marker = "/runs/";
-      const idx = p.indexOf(marker);
-      if (idx === -1) return "";
-      return p.slice(0, idx + marker.length);
-    }
-
-    function getRunsBase() {
-      return getRunsBaseFromDom() || getRunsBaseFromPath();
-    }
-
-    function getCategoryFromQuery() {
-      const u = new URL(window.location.href);
-      return (u.searchParams.get("category") || "").trim();
-    }
-
-    function getCategoryFromPath() {
-      const base = getRunsBaseFromPath();
-      if (!base) return "";
-      const p = window.location.pathname || "/";
-      if (!p.startsWith(base)) return "";
-      let rest = p.slice(base.length);
-      rest = rest.replace(/^\/+/, "").replace(/\/+$/, "");
-      // rest can be "" (base page) or "chaos-trials/heat-16"
-      return rest;
-    }
-
-    function toSlugOrEmpty(v) {
-      return (v || "").toString().trim().replace(/^\/+/, "").replace(/\/+$/, "");
-    }
-
-    function goToCategoryPage(slugOrEmpty) {
-      const base = getRunsBase();
-      const slug = toSlugOrEmpty(slugOrEmpty);
-
-      if (base) {
-        const next = slug ? `${base}${slug}/` : base;
-        window.location.href = next;
-        return true;
-      }
-
-      return false;
-    }
-
-    // =========================================================
-    // Category from URL (supports new pages + legacy query param)
-    // =========================================================
-    function getCategoryFromUrl() {
-      return getCategoryFromQuery() || getCategoryFromPath();
-    }
-
-    function setCategoryInUrl(slugOrEmpty) {
-      // Prefer navigating to real pages; fallback to query param.
-      if (goToCategoryPage(slugOrEmpty)) return;
-
-      const u = new URL(window.location.href);
-      const slug = toSlugOrEmpty(slugOrEmpty);
-      if (slug) u.searchParams.set("category", slug);
-      else u.searchParams.delete("category");
-      history.replaceState(null, "", u);
-    }
-
-    let activeCategorySlug = getCategoryFromUrl();
-
-    // =========================================================
-    // Build options for challenge + restrictions + characters (filters)
-    // =========================================================
     function buildOptions() {
       const chIds = [];
       const chLabelById = new Map();
       const restrictionsRaw = [];
-      const charactersRaw = [];
 
-      rows.forEach((row) => {
+      rows.forEach(row => {
         const chId = norm(row.dataset.challengeId);
-        const chLabel = (row.dataset.challengeLabel || "").toString().trim();
+        const chLabel = (row.dataset.challengeLabel || '').toString().trim();
         const resRaw = parseRestrictionsRaw(row);
-        const char = (row.dataset.character || "").toString().trim();
 
         if (chId) {
           chIds.push(chId);
@@ -290,12 +279,11 @@
         }
 
         if (resRaw.length) restrictionsRaw.push(...resRaw);
-        if (char && char !== "—") charactersRaw.push(char);
       });
 
       function toList(values, map) {
         return uniq(values.filter(Boolean))
-          .map((v) => {
+          .map(v => {
             const id = norm(v);
             const label = (map && map.get(id)) || v;
             return { id, label };
@@ -304,165 +292,107 @@
       }
 
       return {
-        characters: toList(charactersRaw),
         challenges: toList(chIds, chLabelById),
-        restrictions: toList(restrictionsRaw)
+        restrictions: toList(restrictionsRaw),
       };
     }
 
     const OPTIONS = buildOptions();
 
-    const activeCharacters = new Set();
     const activeChallenges = new Set();
     const activeRestrictions = new Set();
 
-    let dateSortDir = "desc";
+    let dateSortDir = 'desc';
     let thActiveCol = null;
 
     function closeThMenu() {
       if (!thMenu) return;
 
       if (thMenuQ && document.activeElement === thMenuQ) thMenuQ.blur();
-      if (thMenuQ) thMenuQ.value = "";
+      if (thMenuQ) thMenuQ.value = '';
 
       thMenu.hidden = true;
+      thMenu.setAttribute('aria-hidden', 'true');
       thActiveCol = null;
 
-      if (thMenuClear) thMenuClear.textContent = "Clear";
+      if (thMenuClear) thMenuClear.textContent = 'Clear';
     }
 
     function getSetForCol(col) {
-      if (col === "character") return activeCharacters;
-      if (col === "challenge") return activeChallenges;
-      if (col === "restrictions") return activeRestrictions;
+      if (col === 'challenge') return activeChallenges;
+      if (col === 'restrictions') return activeRestrictions;
       return null;
     }
 
     function getOptionsForCol(col) {
-      if (col === "character") return OPTIONS.characters;
-      if (col === "challenge") return OPTIONS.challenges;
-      if (col === "restrictions") return OPTIONS.restrictions;
+      if (col === 'challenge') return OPTIONS.challenges;
+      if (col === 'restrictions') return OPTIONS.restrictions;
       return [];
     }
 
     function getLabelFor(col, id) {
       const list = getOptionsForCol(col);
-      const hit = list.find((x) => x.id === id);
+      const hit = list.find(x => x.id === id);
       return hit ? hit.label : id;
     }
 
-    function getColDisplayName(col) {
-      if (col === "character") return characterLabel;
-      if (col === "challenge") return "Challenge";
-      if (col === "restrictions") return "Restrictions";
-      return col;
-    }
-
-    function getCategoryLabelForSlug(slug) {
-      if (!slug) return "";
-      const target = toSlugOrEmpty(slug);
-      for (const row of rows) {
-        const s = toSlugOrEmpty(row.dataset.categorySlug || "");
-        if (s === target) return (row.dataset.category || "").toString().trim() || slug;
-      }
-      return slug;
-    }
-
     function updateTopButtonLabels() {
-      if (btnCat) {
-        if (activeCategorySlug) {
-          btnCat.textContent = `Category: ${getCategoryLabelForSlug(activeCategorySlug)} ▾`;
-        } else {
-          btnCat.textContent = "Category ▾";
-        }
-      }
-
-      if (btnChar && hasCharacter) {
-        btnChar.textContent = activeCharacters.size
-          ? `${characterLabel} (${activeCharacters.size}) ▾`
-          : "All ▾";
-      }
-
       if (btnCh) {
-        btnCh.textContent = activeChallenges.size
-          ? `Challenge (${activeChallenges.size}) ▾`
-          : "All ▾";
+        const count = activeChallenges.size;
+        btnCh.textContent = count ? `Challenge (${count}) ▾` : 'Challenge ▾';
+        btnCh.setAttribute('aria-expanded', count > 0 ? 'true' : 'false');
       }
 
       if (btnRes) {
-        btnRes.textContent = activeRestrictions.size
-          ? `Restrictions (${activeRestrictions.size}) ▾`
-          : "Any ▾";
+        const count = activeRestrictions.size;
+        btnRes.textContent = count ? `Restrictions (${count}) ▾` : 'Restrictions ▾';
+        btnRes.setAttribute('aria-expanded', count > 0 ? 'true' : 'false');
       }
     }
 
     function renderActiveFilterChips() {
       if (!activeFiltersWrap) return;
 
-      activeFiltersWrap.innerHTML = "";
+      activeFiltersWrap.innerHTML = '';
       const chips = [];
 
-      if (activeCategorySlug) {
-        chips.push({
-          kind: "category",
-          slug: toSlugOrEmpty(activeCategorySlug),
-          label: getCategoryLabelForSlug(activeCategorySlug)
-        });
-      }
-
-      activeCharacters.forEach((id) => {
-        chips.push({ kind: "character", id, label: getLabelFor("character", id) });
+      activeChallenges.forEach(id => {
+        chips.push({ kind: 'challenge', id, label: getLabelFor('challenge', id) });
       });
 
-      activeChallenges.forEach((id) => {
-        chips.push({ kind: "challenge", id, label: getLabelFor("challenge", id) });
-      });
-
-      activeRestrictions.forEach((id) => {
-        chips.push({ kind: "restrictions", id, label: getLabelFor("restrictions", id) });
+      activeRestrictions.forEach(id => {
+        chips.push({ kind: 'restrictions', id, label: getLabelFor('restrictions', id) });
       });
 
       if (!chips.length) return;
 
       function makeChip(text, onRemove) {
-        const b = document.createElement("button");
-        b.type = "button";
-        b.className = "tag";
-        b.textContent = text + " ×";
-        b.addEventListener("click", onRemove);
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'tag';
+        b.textContent = text + ' ×';
+        b.setAttribute('aria-label', `Remove filter: ${text}`);
+        b.addEventListener('click', onRemove);
         return b;
       }
 
-      chips.forEach((c) => {
-        if (c.kind === "category") {
-          activeFiltersWrap.appendChild(
-            makeChip(`Category: ${c.label}`, () => {
-              activeCategorySlug = "";
-              setCategoryInUrl("");
-              render();
-            })
-          );
-          return;
-        }
-
-        const colLabel = getColDisplayName(c.kind);
+      chips.forEach(c => {
+        const colLabel = c.kind === 'challenge' ? 'Challenge' : 'Restrictions';
         activeFiltersWrap.appendChild(
           makeChip(`${colLabel}: ${c.label}`, () => {
-            const set = getSetForCol(c.kind);
-            if (set) set.delete(c.id);
+            const set = c.kind === 'challenge' ? activeChallenges : activeRestrictions;
+            set.delete(c.id);
             render();
           })
         );
       });
 
-      const clearAll = document.createElement("button");
-      clearAll.type = "button";
-      clearAll.className = "btn";
-      clearAll.textContent = "Clear All";
-      clearAll.addEventListener("click", () => {
-        activeCategorySlug = "";
-        setCategoryInUrl("");
-        activeCharacters.clear();
+      const clearAll = document.createElement('button');
+      clearAll.type = 'button';
+      clearAll.className = 'btn';
+      clearAll.textContent = 'Clear All';
+      clearAll.setAttribute('aria-label', 'Clear all filters');
+      clearAll.addEventListener('click', () => {
         activeChallenges.clear();
         activeRestrictions.clear();
         render();
@@ -474,32 +404,13 @@
     function matchesAllRestrictions(rowResListNorm) {
       if (!activeRestrictions.size) return true;
       const need = Array.from(activeRestrictions);
-      return need.every((x) => rowResListNorm.includes(x));
+      return need.every(x => rowResListNorm.includes(x));
     }
 
     function passesFilters(row) {
       const needle = norm(q && q.value);
 
-      // Character filter
-      if (activeCharacters.size) {
-        const charValue = norm(row.dataset.character || "");
-        if (!activeCharacters.has(charValue)) return false;
-      }
-
-      // Category filter:
-      // Support nested categories: selecting "chaos-trials" should also match "chaos-trials/heat-16"
-      if (activeCategorySlug) {
-        const want = toSlugOrEmpty(activeCategorySlug);
-        const rowSlug = toSlugOrEmpty(row.dataset.categorySlug || "");
-
-        if (rowSlug !== want) {
-          const prefix = want + "/";
-          if (!rowSlug.startsWith(prefix)) return false;
-        }
-      }
-
       const ch = norm(row.dataset.challengeId);
-
       const resRaw = parseRestrictionsRaw(row);
       const resNorm = resRaw.map(norm);
 
@@ -509,12 +420,12 @@
       if (needle) {
         const hay =
           norm(row.dataset.runner) +
-          " " +
+          ' ' +
           norm(row.dataset.category) +
-          " " +
+          ' ' +
           norm(row.dataset.challengeLabel) +
-          " " +
-          norm(resRaw.join(" "));
+          ' ' +
+          norm(resRaw.join(' '));
 
         if (!hay.includes(needle)) return false;
       }
@@ -542,50 +453,59 @@
           return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
         }
 
-        return dir === "asc" ? aDate - bDate : bDate - aDate;
+        return dir === 'asc' ? aDate - bDate : bDate - aDate;
       });
     }
 
     function updateDateSortButtons() {
-      if (thSortAsc) thSortAsc.disabled = dateSortDir === "asc";
-      if (thSortDesc) thSortDesc.disabled = dateSortDir === "desc";
+      if (thSortAsc) {
+        thSortAsc.disabled = dateSortDir === 'asc';
+        thSortAsc.setAttribute('aria-pressed', dateSortDir === 'asc' ? 'true' : 'false');
+      }
+      if (thSortDesc) {
+        thSortDesc.disabled = dateSortDir === 'desc';
+        thSortDesc.setAttribute('aria-pressed', dateSortDir === 'desc' ? 'true' : 'false');
+      }
     }
 
     function render() {
       let filtered = rows.filter(passesFilters);
       filtered = sortRowsByDate(filtered);
 
-      if (tbody) filtered.forEach((r) => tbody.appendChild(r));
+      if (tbody) filtered.forEach(r => tbody.appendChild(r));
 
       const lim = getLimit();
       const total = filtered.length;
 
-      rows.forEach((r) => (r.style.display = "none"));
+      rows.forEach(r => (r.style.display = 'none'));
 
       if (lim === 0) {
-        filtered.forEach((r) => (r.style.display = ""));
-        if (status) status.textContent = "Showing " + total + " matching runs.";
+        filtered.forEach(r => (r.style.display = ''));
+        if (status) status.textContent = 'Showing ' + total + ' matching runs.';
         updateTopButtonLabels();
         renderActiveFilterChips();
         return;
       }
 
       filtered.forEach((r, idx) => {
-        r.style.display = idx < lim ? "" : "none";
+        r.style.display = idx < lim ? '' : 'none';
       });
 
       if (status) {
-        status.textContent =
-          "Showing " + Math.min(lim, total) + " of " + total + " matching runs.";
+        status.textContent = 'Showing ' + Math.min(lim, total) + ' of ' + total + ' matching runs.';
       }
 
       updateTopButtonLabels();
       renderActiveFilterChips();
     }
 
-    // =========================================================
-    // Hide already-selected options (Challenge + Restrictions)
-    // =========================================================
+    // Debounced render for menu list to avoid performance issues
+    let debounceTimer;
+    function renderThMenuListDebounced() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => renderThMenuList(), CONFIG.DEBOUNCE_MS);
+    }
+
     function renderThMenuList() {
       if (!thMenuList || !thMenuQ || !thActiveCol) return;
 
@@ -593,34 +513,35 @@
       const list = getOptionsForCol(thActiveCol);
       const set = getSetForCol(thActiveCol);
 
-      thMenuList.innerHTML = "";
+      thMenuList.innerHTML = '';
 
-      const available = set ? list.filter((x) => !set.has(x.id)) : list;
+      const available = set ? list.filter(x => !set.has(x.id)) : list;
 
-      const filtered = available.filter((x) => {
+      const filtered = available.filter(x => {
         if (!qv) return true;
         return norm(x.label).includes(qv) || norm(x.id).includes(qv);
       });
 
       if (!filtered.length) {
-        const empty = document.createElement("div");
-        empty.className = "th-menu__empty muted";
+        const empty = document.createElement('div');
+        empty.className = 'th-menu__empty muted';
         empty.textContent = available.length
-          ? "No matches."
-          : "All options selected. Remove a filter chip to re-add.";
+          ? 'No matches.'
+          : 'All options selected. Remove a filter chip to re-add.';
         thMenuList.appendChild(empty);
         return;
       }
 
-      filtered.slice(0, 250).forEach((x) => {
-        const lab = document.createElement("label");
-        lab.className = "th-menu__item";
+      filtered.slice(0, CONFIG.MAX_SUGGESTIONS).forEach(x => {
+        const lab = document.createElement('label');
+        lab.className = 'th-menu__item';
 
-        const cb = document.createElement("input");
-        cb.type = "checkbox";
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
         cb.checked = false;
+        cb.setAttribute('aria-label', `Select ${x.label}`);
 
-        cb.addEventListener("change", () => {
+        cb.addEventListener('change', () => {
           if (!set) return;
 
           if (cb.checked) set.add(x.id);
@@ -630,7 +551,7 @@
           renderThMenuList();
         });
 
-        const txt = document.createElement("span");
+        const txt = document.createElement('span');
         txt.textContent = x.label;
 
         lab.appendChild(cb);
@@ -644,174 +565,48 @@
 
       thActiveCol = col;
       thMenu.hidden = false;
+      thMenu.setAttribute('aria-hidden', 'false');
 
       const r = anchorEl.getBoundingClientRect();
-      const approxMenuW = 320;
 
-      const left = Math.min(
-        window.innerWidth - approxMenuW - 12,
-        Math.max(12, r.left)
-      );
+      const left = Math.min(window.innerWidth - CONFIG.MENU_WIDTH - 12, Math.max(12, r.left));
 
-      thMenu.style.left = left + "px";
-      thMenu.style.top = r.bottom + 8 + "px";
+      thMenu.style.left = left + 'px';
+      thMenu.style.top = r.bottom + 8 + 'px';
 
-      if (thMenuQ) thMenuQ.value = "";
+      if (thMenuQ) thMenuQ.value = '';
       renderThMenuList();
 
       requestAnimationFrame(() => {
         if (!thMenuQ || thMenu.hidden) return;
 
-        const menuW = thMenu.offsetWidth || approxMenuW;
+        const menuW = thMenu.offsetWidth || CONFIG.MENU_WIDTH;
         const menuH = thMenu.offsetHeight || 300;
 
-        const clampedLeft = Math.min(
-          window.innerWidth - menuW - 12,
-          Math.max(12, r.left)
-        );
+        const clampedLeft = Math.min(window.innerWidth - menuW - 12, Math.max(12, r.left));
 
-        const clampedTop = Math.min(
-          window.innerHeight - menuH - 12,
-          r.bottom + 8
-        );
+        const clampedTop = Math.min(window.innerHeight - menuH - 12, r.bottom + 8);
 
-        thMenu.style.left = clampedLeft + "px";
-        thMenu.style.top = clampedTop + "px";
+        thMenu.style.left = clampedLeft + 'px';
+        thMenu.style.top = clampedTop + 'px';
 
         thMenuQ.focus();
       });
     }
 
-    // =========================================================
-    // Category NAV menu
-    // Now: navigates to /games/<game_id>/runs/<slug>/ when possible
-    // =========================================================
-    function buildCategoryNavItems() {
-      const map = new Map(); // slug -> label
+    const runsRoot = table.closest('.game-shell') || table.closest('.page-width') || document;
 
-      rows.forEach((row) => {
-        const slug = toSlugOrEmpty(row.dataset.categorySlug || "");
-        if (!slug) return;
+    runsRoot.querySelectorAll('[data-filter-btn]').forEach(btn => {
+      const col = btn.getAttribute('data-filter-btn');
+      if (col !== 'challenge' && col !== 'restrictions') return;
 
-        const label = (row.dataset.category || "").toString().trim();
-        if (!map.has(slug)) map.set(slug, label || slug);
-      });
+      // Add ARIA attributes
+      btn.setAttribute('aria-haspopup', 'true');
+      btn.setAttribute('aria-expanded', 'false');
 
-      return Array.from(map.entries())
-        .map(([slug, label]) => ({ slug, label }))
-        .sort((a, b) => a.label.localeCompare(b.label));
-    }
-
-    function renderCategoryNavList(items) {
-      if (!thMenuList || !thMenuQ) return;
-
-      const qv = norm(thMenuQ.value);
-      thMenuList.innerHTML = "";
-
-      const filtered = items.filter((it) => {
-        if (!qv) return true;
-        return norm(it.label).includes(qv) || norm(it.slug).includes(qv);
-      });
-
-      if (!filtered.length) {
-        const empty = document.createElement("div");
-        empty.className = "th-menu__empty muted";
-        empty.textContent = "No matches.";
-        thMenuList.appendChild(empty);
-        return;
-      }
-
-      filtered.slice(0, 250).forEach((it) => {
-        const b = document.createElement("button");
-        b.type = "button";
-        b.className = "th-menu__item";
-        b.style.width = "100%";
-        b.style.border = "0";
-        b.style.background = "transparent";
-        b.style.textAlign = "left";
-
-        b.innerHTML = `<span>${escapeHtml(it.label)}</span>`;
-
-        b.addEventListener("click", () => {
-          setCategoryInUrl(it.slug);
-          closeThMenu();
-
-          // If navigation did not happen (no base), fall back to client filtering.
-          activeCategorySlug = it.slug;
-          render();
-        });
-
-        thMenuList.appendChild(b);
-      });
-    }
-
-    function openCategoryNavMenu(anchorEl) {
-      if (!thMenu) return;
-
-      thActiveCol = "category-nav";
-      thMenu.hidden = false;
-
-      if (thMenuClear) thMenuClear.textContent = "All Runs";
-
-      const r = anchorEl.getBoundingClientRect();
-      const approxMenuW = 320;
-
-      const left = Math.min(
-        window.innerWidth - approxMenuW - 12,
-        Math.max(12, r.left)
-      );
-
-      thMenu.style.left = left + "px";
-      thMenu.style.top = r.bottom + 8 + "px";
-
-      if (thMenuQ) thMenuQ.value = "";
-
-      const items = buildCategoryNavItems();
-      renderCategoryNavList(items);
-
-      requestAnimationFrame(() => {
-        if (!thMenuQ || thMenu.hidden) return;
-
-        const menuW = thMenu.offsetWidth || approxMenuW;
-        const menuH = thMenu.offsetHeight || 300;
-
-        const clampedLeft = Math.min(
-          window.innerWidth - menuW - 12,
-          Math.max(12, r.left)
-        );
-
-        const clampedTop = Math.min(
-          window.innerHeight - menuH - 12,
-          r.bottom + 8
-        );
-
-        thMenu.style.left = clampedLeft + "px";
-        thMenu.style.top = clampedTop + "px";
-
-        thMenuQ.focus();
-      });
-    }
-
-    const runsRoot =
-      table.closest(".game-shell") ||
-      table.closest(".page-width") ||
-      document;
-
-    runsRoot.querySelectorAll("[data-filter-btn]").forEach((btn) => {
-      const col = btn.getAttribute("data-filter-btn");
-
-      btn.addEventListener("click", (e) => {
+      btn.addEventListener('click', e => {
         e.preventDefault();
         e.stopPropagation();
-
-        if (col === "category") {
-          if (thMenu && !thMenu.hidden && thActiveCol === "category-nav") {
-            closeThMenu();
-            return;
-          }
-          openCategoryNavMenu(btn);
-          return;
-        }
 
         if (thMenu && !thMenu.hidden && thActiveCol === col) {
           closeThMenu();
@@ -822,26 +617,10 @@
       });
     });
 
-    if (thMenuQ) {
-      thMenuQ.addEventListener("input", () => {
-        if (thActiveCol === "category-nav") {
-          renderCategoryNavList(buildCategoryNavItems());
-          return;
-        }
-        renderThMenuList();
-      });
-    }
+    if (thMenuQ) thMenuQ.addEventListener('input', renderThMenuListDebounced);
 
     if (thMenuClear) {
-      thMenuClear.addEventListener("click", () => {
-        if (thActiveCol === "category-nav") {
-          activeCategorySlug = "";
-          setCategoryInUrl("");
-          closeThMenu();
-          render();
-          return;
-        }
-
+      thMenuClear.addEventListener('click', () => {
         if (!thActiveCol) return;
         const set = getSetForCol(thActiveCol);
         if (!set) return;
@@ -852,16 +631,15 @@
       });
     }
 
-    if (thMenuClose) thMenuClose.addEventListener("click", closeThMenu);
+    if (thMenuClose) thMenuClose.addEventListener('click', closeThMenu);
 
     document.addEventListener(
-      "pointerdown",
-      (e) => {
+      'pointerdown',
+      e => {
         if (!thMenu || thMenu.hidden) return;
         if (thMenu.contains(e.target)) return;
 
-        const isCaret =
-          e.target && e.target.closest && e.target.closest("[data-filter-btn]");
+        const isCaret = e.target && e.target.closest && e.target.closest('[data-filter-btn]');
         if (isCaret) return;
 
         closeThMenu();
@@ -869,34 +647,39 @@
       true
     );
 
-    window.addEventListener("resize", () => {
+    window.addEventListener('resize', () => {
       if (thMenu && !thMenu.hidden) closeThMenu();
     });
 
+    // Escape key to close menu and return focus
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && thMenu && !thMenu.hidden) {
+        e.preventDefault();
+        closeThMenu();
+        // Return focus to the button that opened it
+        if (thActiveCol === 'challenge' && btnCh) btnCh.focus();
+        if (thActiveCol === 'restrictions' && btnRes) btnRes.focus();
+      }
+    });
+
     if (thSortAsc) {
-      thSortAsc.addEventListener("click", () => {
-        dateSortDir = "asc";
+      thSortAsc.addEventListener('click', () => {
+        dateSortDir = 'asc';
         updateDateSortButtons();
         render();
       });
     }
 
     if (thSortDesc) {
-      thSortDesc.addEventListener("click", () => {
-        dateSortDir = "desc";
+      thSortDesc.addEventListener('click', () => {
+        dateSortDir = 'desc';
         updateDateSortButtons();
         render();
       });
     }
 
-    if (q) q.addEventListener("input", render);
-    if (limitEl) limitEl.addEventListener("change", render);
-
-    // Back/forward: update category from URL
-    window.addEventListener("popstate", () => {
-      activeCategorySlug = getCategoryFromUrl();
-      render();
-    });
+    if (q) q.addEventListener('input', render);
+    if (limitEl) limitEl.addEventListener('change', render);
 
     updateDateSortButtons();
     updateTopButtonLabels();
@@ -904,209 +687,80 @@
   }
 
   // =========================================================
-  // Game tabs navigation helper
+  // Game navigation helper
+  // Saves scroll before navigating to any page within the same game
   // =========================================================
   function initGameTabsNav() {
-    const root = document.getElementById("game-tabs");
-    if (!root) return;
+    const gameRoot = getGameRoot(window.location.pathname);
+    if (!gameRoot) return;
 
-    const overview = root.querySelector('.tab[data-tab="overview"]');
-    const categories = root.querySelector('.tab[data-tab="categories"]');
+    // Update aria-current on tabs
+    document.querySelectorAll('.tab[data-href]').forEach(tab => {
+      if (tab.getAttribute('data-href') === window.location.pathname) {
+        tab.setAttribute('aria-current', 'page');
+      }
+    });
 
-    if (overview) {
-      overview.addEventListener("click", () => {
-        const href = overview.getAttribute("data-href");
-        if (href) window.location.href = href;
-      });
-    }
+    document.addEventListener('click', e => {
+      if (e.button !== 0) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 
-    if (categories) {
-      categories.addEventListener("click", () => {
-        const href = categories.getAttribute("data-href");
-        if (href) window.location.href = href;
-      });
-    }
-  }
+      const tab = e.target && e.target.closest ? e.target.closest('.tab[data-href]') : null;
+      if (tab) {
+        const dataHref = tab.getAttribute('data-href');
+        if (!dataHref) return;
 
-  // =========================================================
-  // Header Live Search
-  // =========================================================
-  function initHeaderSearch() {
-    const input = document.getElementById("header-search");
-    const results = document.getElementById("header-search-results");
-    const dataEl = document.getElementById("header-search-data");
-
-    if (!input || !results || !dataEl) return;
-
-    let searchData;
-    try {
-      searchData = JSON.parse(dataEl.textContent);
-    } catch (e) {
-      console.error("Failed to parse search data", e);
-      return;
-    }
-
-    const norm = (s) => (s || "").toString().trim().toLowerCase();
-
-    function search(query) {
-      const q = norm(query);
-      if (!q || q.length < 2) return { games: [], runners: [], challenges: [] };
-
-      const out = { games: [], runners: [], challenges: [] };
-
-      // Search games (including aliases)
-      (searchData.games || []).forEach((g) => {
-        const haystack = [norm(g.name), norm(g.id), ...(g.aliases || []).map(norm)].join(" ");
-        if (haystack.includes(q)) {
-          out.games.push(g);
-        }
-      });
-
-      // Search runners
-      (searchData.runners || []).forEach((r) => {
-        if (norm(r.name).includes(q) || norm(r.id).includes(q)) {
-          out.runners.push(r);
-        }
-      });
-
-      // Search challenges (including aliases)
-      (searchData.challenges || []).forEach((c) => {
-        const haystack = [norm(c.name), norm(c.id), ...(c.aliases || []).map(norm)].join(" ");
-        if (haystack.includes(q)) {
-          out.challenges.push(c);
-        }
-      });
-
-      // Limit results
-      out.games = out.games.slice(0, 5);
-      out.runners = out.runners.slice(0, 5);
-      out.challenges = out.challenges.slice(0, 5);
-
-      return out;
-    }
-
-    function escapeHtml(s) {
-      const div = document.createElement("div");
-      div.textContent = s;
-      return div.innerHTML;
-    }
-
-    function render(searchResults, query) {
-      const total = searchResults.games.length + searchResults.runners.length + searchResults.challenges.length;
-
-      if (!query || query.length < 2) {
-        results.hidden = true;
+        e.preventDefault();
+        saveGameScroll();
+        window.location.href = dataHref;
         return;
       }
 
-      if (total === 0) {
-        results.innerHTML = '<div class="search-no-results">No results found</div>';
-        results.hidden = false;
+      const a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+      if (!a) return;
+
+      if (a.target && a.target !== '_self') return;
+
+      let url;
+      try {
+        url = new URL(a.getAttribute('href'), window.location.href);
+      } catch (_) {
         return;
       }
 
-      let html = "";
+      if (url.origin !== window.location.origin) return;
 
-      if (searchResults.games.length) {
-        html += '<div class="search-result-group">';
-        html += '<div class="search-result-group__title">Games</div>';
-        searchResults.games.forEach((g) => {
-          html += `<a href="${g.url}" class="search-result-item">
-            <span class="search-result-item__icon">🎮</span>
-            <span class="search-result-item__name">${escapeHtml(g.name)}</span>
-          </a>`;
-        });
-        html += "</div>";
-      }
+      const destRoot = getGameRoot(url.pathname);
+      if (!destRoot || destRoot !== gameRoot) return;
 
-      if (searchResults.runners.length) {
-        html += '<div class="search-result-group">';
-        html += '<div class="search-result-group__title">Runners</div>';
-        searchResults.runners.forEach((r) => {
-          html += `<a href="${r.url}" class="search-result-item">
-            <span class="search-result-item__icon">👤</span>
-            <span class="search-result-item__name">${escapeHtml(r.name)}</span>
-          </a>`;
-        });
-        html += "</div>";
-      }
+      if (url.pathname === window.location.pathname && url.hash) return;
 
-      if (searchResults.challenges.length) {
-        html += '<div class="search-result-group">';
-        html += '<div class="search-result-group__title">Challenges</div>';
-        searchResults.challenges.forEach((c) => {
-          // Link to games page with challenge filter pre-selected
-          const filterUrl = `/games/?challenge=${encodeURIComponent(c.id)}`;
-          html += `<a href="${filterUrl}" class="search-result-item">
-            <span class="search-result-item__icon">🏆</span>
-            <span class="search-result-item__name">${escapeHtml(c.name)}</span>
-          </a>`;
-        });
-        html += "</div>";
-      }
-
-      results.innerHTML = html;
-      results.hidden = false;
-    }
-
-    let debounceTimer;
-    input.addEventListener("input", () => {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-        const query = input.value;
-        const searchResults = search(query);
-        render(searchResults, query);
-      }, 150);
-    });
-
-    // Hide on blur (with delay for click)
-    input.addEventListener("blur", () => {
-      setTimeout(() => {
-        results.hidden = true;
-      }, 200);
-    });
-
-    // Show on focus if has value
-    input.addEventListener("focus", () => {
-      if (input.value.length >= 2) {
-        const searchResults = search(input.value);
-        render(searchResults, input.value);
-      }
-    });
-
-    // Hide on Escape
-    input.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        results.hidden = true;
-        input.blur();
-      }
+      saveGameScroll();
     });
   }
 
   // =========================================================
-  // Runner Game Card Toggles
+  // Keyboard shortcuts
   // =========================================================
-  function initRunnerGameCards() {
-    document.querySelectorAll("[data-toggle-runs]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const card = btn.closest(".runner-game-card");
-        if (!card) return;
-
-        const runsEl = card.querySelector(".runner-game-card__runs");
-        if (!runsEl) return;
-
-        const isHidden = runsEl.hidden;
-        runsEl.hidden = !isHidden;
-        btn.textContent = isHidden ? "Hide Runs ▴" : "Show Runs ▾";
-      });
+  function initKeyboardShortcuts() {
+    document.addEventListener('keydown', e => {
+      // "/" to focus search (like GitHub)
+      if (e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) {
+        e.preventDefault();
+        const searchInput = document.getElementById('q');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
     });
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll(".list-paged").forEach(initPagedList);
+  document.addEventListener('DOMContentLoaded', () => {
+    restoreGameScroll();
+    document.querySelectorAll('.list-paged').forEach(initPagedList);
     initRunsTable();
     initGameTabsNav();
-    initHeaderSearch();
-    initRunnerGameCards();
+    initKeyboardShortcuts();
   });
 })();
