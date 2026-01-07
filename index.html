@@ -5,18 +5,109 @@ title: Home
 
 <h1>Challenge Run Community</h1>
 
-<p>
-  Challenge Run Community (CRC) is a space built around creative challenge runs,
-  clear rules, and respect for all challenge styles.
+<p class="muted" style="margin-bottom: 2rem;">
+  A space built around creative challenge runs, clear rules, and respect for all challenge styles.
 </p>
 
-<p>This site is in early development.</p>
+<div class="home-grid">
+  <div class="home-main">
+    <!-- News Section -->
+    <div class="home-card">
+      <h2 class="home-card__title">📰 News</h2>
+      <div class="home-card__content">
+        <div class="news-list">
+          <div class="news-item">
+            <span class="news-item__date muted">Jan 2025</span>
+            <p class="news-item__text">Site launched in early development. Structure, tools, and features will be added gradually.</p>
+          </div>
+          <div class="news-item">
+            <span class="news-item__date muted">Coming Soon</span>
+            <p class="news-item__text">More games, runner profiles, and community features on the way.</p>
+          </div>
+        </div>
+      </div>
+    </div>
 
-<div class="card">
-  <p><a href="{{ '/games/' | relative_url }}">Browse games</a></p>
-  <p><a href="{{ '/runners/' | relative_url }}">Browse runners</a></p>
+    <!-- Placeholder Section -->
+    <div class="home-card home-card--placeholder" style="margin-top: 1rem;">
+      <h2 class="home-card__title">🔮 Future Feature</h2>
+      <div class="home-card__content">
+        <p>This space is reserved for upcoming content. Ideas? Let us know!</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="home-sidebar">
+    <!-- Featured Runners Section -->
+    <div class="home-card">
+      <h2 class="home-card__title">⭐ Featured Runners</h2>
+      <div class="runner-spotlight">
+        {% for runner in site.runners limit: 5 %}
+        <a href="{{ runner.url | relative_url }}" class="spotlight-item">
+          <div class="spotlight-item__avatar">👤</div>
+          <div>
+            <div class="spotlight-item__name">{{ runner.name | default: runner.title }}</div>
+            <div class="spotlight-item__meta">View profile</div>
+          </div>
+        </a>
+        {% endfor %}
+        {% if site.runners.size == 0 %}
+        <p class="muted">Runners coming soon!</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="muted" style="margin-top: 1.5rem;">
-  CRC is an evolving project. Structure, tools, and features will be added gradually.
+<!-- Quick Links -->
+<div class="resource-cards" style="margin-top: 1rem;">
+  <a href="{{ '/games/' | relative_url }}" class="resource-card">
+    <div class="resource-card__icon">🎮</div>
+    <div class="resource-card__content">
+      <h2 class="resource-card__title">Games</h2>
+      <p class="resource-card__desc">Browse all tracked games</p>
+      <span class="resource-card__count">{{ site.games.size }} {% if site.games.size == 1 %}game{% else %}games{% endif %}</span>
+    </div>
+  </a>
+
+  <a href="{{ '/runners/' | relative_url }}" class="resource-card">
+    <div class="resource-card__icon">🏆</div>
+    <div class="resource-card__content">
+      <h2 class="resource-card__title">Runners</h2>
+      <p class="resource-card__desc">View runner profiles and runs</p>
+      <span class="resource-card__count">{{ site.runners.size }} {% if site.runners.size == 1 %}runner{% else %}runners{% endif %}</span>
+    </div>
+  </a>
+
+  <a href="{{ '/rules/' | relative_url }}" class="resource-card">
+    <div class="resource-card__icon">📜</div>
+    <div class="resource-card__content">
+      <h2 class="resource-card__title">Rules</h2>
+      <p class="resource-card__desc">Site-wide guidelines and policies</p>
+      <span class="resource-card__count">Learn more</span>
+    </div>
+  </a>
+
+  <a href="{{ '/glossary/' | relative_url }}" class="resource-card">
+    <div class="resource-card__icon">📖</div>
+    <div class="resource-card__content">
+      <h2 class="resource-card__title">Glossary</h2>
+      <p class="resource-card__desc">Challenge run terminology</p>
+      <span class="resource-card__count">Reference</span>
+    </div>
+  </a>
+</div>
+
+<!-- Featured Teams Section -->
+<div class="featured-teams">
+  <h2 class="featured-teams__title">🤝 Featured Teams</h2>
+  <div class="teams-grid">
+    <div class="team-card team-card--placeholder" style="border-style: dashed; opacity: 0.7;">
+      <div class="team-card__logo">?</div>
+      <div class="team-card__name">Teams coming soon</div>
+    </div>
+  </div>
+  <p class="muted" style="margin-top: 0.75rem; font-size: 0.9rem;">
+    Interested in featuring your team? Contact us!
+  </p>
 </div>
