@@ -7,7 +7,7 @@ permalink: /games/hades-2/resources/
 
 {% assign game = site.games | where: "game_id", page.game_id | first %}
 {% include game-header-tabs.html game=game active="resources" %}
-      
+
 <!-- Count guides for this game -->
 {% assign guides_count = 0 %}
 {% if site.guides %}
@@ -15,7 +15,7 @@ permalink: /games/hades-2/resources/
   {% assign guides_count = game_guides.size %}
 {% endif %}
 
-<!-- Count tools and discords from game data -->
+<!-- Count tools and discords - check if resources_data exists -->
 {% assign tools_count = 0 %}
 {% assign discords_count = 0 %}
 {% if game.resources_data %}
@@ -30,52 +30,29 @@ permalink: /games/hades-2/resources/
 <div class="page-width">
   <div class="game-shell">
     <h1>Resources</h1>
-    <p class="muted" style="margin-bottom: 1.5rem;">Find guides, tools, and community links for {{ game.name }}.</p>
+    <p class="muted" style="margin-bottom: 1rem;">Find guides, tools, and community links for {{ game.name }}.</p>
 
-    <div class="resource-cards">
-      <!-- Guides Card -->
-      <a href="{{ game.url | relative_url }}guides/" class="resource-card">
-        <div class="resource-card__icon">📖</div>
-        <div class="resource-card__content">
-          <h2 class="resource-card__title">Guides</h2>
-          <p class="resource-card__desc">Tutorials, walkthroughs, and strategy guides</p>
-          <span class="resource-card__count">{{ guides_count }} {% if guides_count == 1 %}guide{% else %}guides{% endif %}</span>
-        </div>
-      </a>
-
-      <!-- Tools Card -->
-      <div class="resource-card" {% if tools_count == 0 %}style="opacity: 0.6;"{% endif %}>
-        <div class="resource-card__icon">🛠️</div>
-        <div class="resource-card__content">
-          <h2 class="resource-card__title">Tools</h2>
-          <p class="resource-card__desc">Autosplitters, trackers, and utilities</p>
-          <span class="resource-card__count">{{ tools_count }} {% if tools_count == 1 %}tool{% else %}tools{% endif %}</span>
-        </div>
-      </div>
-
-      <!-- Community Discords Card -->
-      <div class="resource-card" {% if discords_count == 0 %}style="opacity: 0.6;"{% endif %}>
-        <div class="resource-card__icon">💬</div>
-        <div class="resource-card__content">
-          <h2 class="resource-card__title">Community Discords</h2>
-          <p class="resource-card__desc">Join the conversation with other runners</p>
-          <span class="resource-card__count">{{ discords_count }} {% if discords_count == 1 %}server{% else %}servers{% endif %}</span>
-        </div>
-      </div>
-
-      <!-- Placeholder Card -->
-      <div class="resource-card resource-card--placeholder">
-        <div class="resource-card__icon">❓</div>
-        <div class="resource-card__content">
-          <h2 class="resource-card__title">Something Else?</h2>
-          <p class="resource-card__desc">Have ideas for more resources? Let us know!</p>
-          <span class="resource-card__count">Coming soon</span>
-        </div>
+    <!-- Browse by section - navigation chips -->
+    <div class="card card--compact" style="margin-bottom: 1rem;">
+      <h2 style="margin: 0 0 0.5rem 0;">Browse Resources</h2>
+      <div class="tag-picked">
+        <a class="tag-chip" href="{{ game.url | relative_url }}guides/">
+          📖 Guides ({{ guides_count }})
+        </a>
+        <span class="tag-chip" style="opacity: 0.6; cursor: default;">
+          🛠️ Tools ({{ tools_count }})
+        </span>
+        <span class="tag-chip" style="opacity: 0.6; cursor: default;">
+          💬 Community ({{ discords_count }})
+        </span>
+        <span class="tag-chip" style="opacity: 0.5; cursor: default; border-style: dashed;">
+          ❓ More coming soon
+        </span>
       </div>
     </div>
 
     {% if tools_count > 0 %}
-    <div class="card" style="margin-top: 2rem;">
+    <div class="card" style="margin-top: 1rem;">
       <h2>Tools</h2>
       <div class="resource-list">
         {% for tool in game.resources_data.tools %}
@@ -107,6 +84,12 @@ permalink: /games/hades-2/resources/
         </div>
         {% endfor %}
       </div>
+    </div>
+    {% endif %}
+
+    {% if tools_count == 0 and discords_count == 0 %}
+    <div class="card card--compact" style="margin-top: 1rem; border-style: dashed; opacity: 0.7;">
+      <p class="muted" style="margin: 0;">No resources added yet. Check back soon or contribute!</p>
     </div>
     {% endif %}
 
