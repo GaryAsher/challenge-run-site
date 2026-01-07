@@ -52,6 +52,11 @@
   --tap: 36px;
   --az-size: 36px;
   --az-gap: 0.35rem;
+
+  /* Shared pill/tag styling */
+  --pill-padding: 0.25rem 0.65rem;
+  --pill-font-size: 0.85rem;
+  --pill-gap: 0.4rem;
 }
 
 /* ============================================================
@@ -553,57 +558,77 @@ a:hover {
 }
 
 /* ============================================================
-   Tags (global)
+   Tags (global) - base pill styling
    ============================================================ */
-.tag {
+.tag,
+.tag-chip {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.35rem;
 
-  padding: 0.15rem 0.5rem;
+  padding: var(--pill-padding);
   border-radius: 999px;
 
   background: var(--bg-soft);
   border: 1px solid var(--border);
   color: var(--text-muted);
 
-  font-size: 0.85rem;
+  font-size: var(--pill-font-size);
   line-height: 1.25;
 
-  max-width: 100%;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+  white-space: nowrap;
+  text-decoration: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
 
+a.tag:hover,
+a.tag-chip:hover,
+button.tag:hover,
+.tag-chip:hover {
+  background: var(--panel);
   text-decoration: none;
 }
 
-button.tag { cursor: pointer; }
+button.tag,
+.tag-chip {
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--pill-font-size);
+}
 
-.tags {
+.tag-chip.is-active {
+  background: var(--panel);
+  color: var(--fg);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--focus-2);
+}
+
+.tags,
+.tag-picked {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem 0.35rem;
+  gap: var(--pill-gap);
+}
+
+.tag-picked:empty {
+  display: none;
+}
+
+.tag-picked:not(:empty) {
+  margin-bottom: 0.5rem;
 }
 
 /* ============================================================
-   Runs table: center pill tags + consistent padding
+   Runs table: center pill tags
    ============================================================ */
 .runs-table .cell-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem;
+  gap: var(--pill-gap);
   justify-content: center;
-  align-items: center;
-}
-
-.runs-table .tag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.22rem 0.55rem;
-  line-height: 1.2;
-  text-align: center;
+  align-items: flex-start;
 }
 
 /* ============================================================
@@ -635,36 +660,12 @@ button.tag { cursor: pointer; }
   .filters-grid { grid-template-columns: 1fr; }
 }
 
-.filters-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 0.75rem;
-  align-items: end;
-}
-
-.filters-row .select {
-  width: auto;
-  min-width: 5.5rem;
-}
-
-@media (max-width: 560px) {
-  .filters-row {
-    grid-template-columns: 1fr;
-    align-items: start;
-  }
-
-  .filters-row .select {
-    width: 100%;
-    min-width: 0;
-  }
-}
-
 /* ============================================================
    Runs: top filter bar (game-runs.html)
    ============================================================ */
-.runs-filters {
+.runs-filters--main {
   display: grid;
-  grid-template-columns: 1fr auto auto auto auto;
+  grid-template-columns: 1fr auto auto;
   gap: 0.75rem;
   align-items: end;
 }
@@ -678,6 +679,37 @@ button.tag { cursor: pointer; }
 .runs-filter--search .filter {
   max-width: none;
   margin: 0;
+}
+
+/* Filter toggle button */
+.btn--filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 100px;
+  justify-content: center;
+}
+
+.btn--filter-toggle .filter-toggle__icon {
+  transition: transform 150ms ease;
+}
+
+.btn--filter-toggle.is-active .filter-toggle__icon {
+  transform: rotate(180deg);
+}
+
+/* Collapsible filters panel */
+.filters-panel {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.filters-panel__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  align-items: end;
 }
 
 .runs-filters .select.th-caret {
@@ -723,25 +755,32 @@ button.tag { cursor: pointer; }
   color: var(--fg);
 }
 
-@media (max-width: 900px) {
-  .runs-filters {
+@media (max-width: 640px) {
+  .runs-filters--main {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .runs-filters--main .runs-filter--show {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .runs-filters--main .runs-filter--show label {
+    margin-bottom: 0;
+  }
+
+  .filters-panel__grid {
     grid-template-columns: 1fr 1fr;
-    align-items: start;
-  }
-
-  .runs-filter--search {
-    grid-column: 1 / -1;
-  }
-
-  .runs-filters .select.th-caret {
-    width: 100%;
-    min-width: 0;
   }
 }
 
-@media (max-width: 560px) {
-  .runs-filters { grid-template-columns: 1fr; }
-  .runs-filters .select.th-caret { width: 100%; }
+@media (max-width: 400px) {
+  .filters-panel__grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ============================================================
@@ -757,47 +796,6 @@ button.tag { cursor: pointer; }
 .tag-picker {
   position: relative;
   cursor: default;
-}
-
-/* Hide tag-picked when empty (no margin/padding) */
-.tag-picked {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
-
-.tag-picked:empty {
-  display: none;
-}
-
-.tag-picked:not(:empty) {
-  margin-bottom: 0.5rem;
-}
-
-.tag-chip {
-  background: var(--bg-soft);
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 0.25rem 0.55rem;
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.85rem;
-
-  min-height: 32px;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.tag-chip:hover {
-  background: var(--panel);
-}
-
-.tag-chip.is-active {
-  background: var(--panel);
-  color: var(--fg);
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--focus-2);
 }
 
 .tag-search {
@@ -899,8 +897,8 @@ button.tag { cursor: pointer; }
   border-radius: var(--radius-sm);
 
   font-size: 0.9rem;
-  line-height: 1;
   font-weight: 400;
+  line-height: 1;
 
   background: var(--surface);
   color: var(--accent);
@@ -909,7 +907,7 @@ button.tag { cursor: pointer; }
   user-select: none;
 
   flex: 0 0 auto;
-  transition: border-color 120ms ease, font-weight 120ms ease;
+  transition: border-color 120ms ease, background 120ms ease;
 }
 
 .az a:hover {
