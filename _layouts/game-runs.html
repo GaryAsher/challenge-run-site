@@ -324,15 +324,18 @@ layout: default
         <div class="runs-filters runs-filters--main">
           <div class="runs-filter runs-filter--search">
             <label class="muted" for="q">Search</label>
-            <input
-              id="q"
-              class="filter"
-              type="text"
-              placeholder="Search runner, challenge, restrictions..."
-              autocomplete="off"
-              inputmode="search"
-              enterkeyhint="search"
-            >
+            <div class="search-with-reset">
+              <input
+                id="q"
+                class="filter"
+                type="text"
+                placeholder="Search runner, challenge, restrictions..."
+                autocomplete="off"
+                inputmode="search"
+                enterkeyhint="search"
+              >
+              <button type="button" class="btn-reset-all" id="reset-all" title="Reset all filters" hidden>✕</button>
+            </div>
           </div>
 
           <div class="runs-filter">
@@ -343,7 +346,7 @@ layout: default
               aria-expanded="false"
               aria-controls="advanced-filters"
             >
-              <span class="filter-toggle__text">Filters</span>
+              <span class="filter-toggle__text">Advanced Search</span>
               <span class="filter-toggle__icon">▾</span>
             </button>
           </div>
@@ -361,62 +364,90 @@ layout: default
           </div>
         </div>
 
-        <!-- Collapsible filters panel (order matches table columns) -->
+        <!-- Collapsible Advanced Search panel -->
         <div class="filters-panel" id="advanced-filters" hidden>
-          <div class="filters-panel__grid">
+          <div class="filters-grid filters-grid--runs">
             {% if show_character %}
-            <div class="runs-filter">
-              <label class="muted" for="filter-character">{{ character_label }}</label>
-              <button
-                id="filter-character"
-                class="select th-caret"
-                type="button"
-                aria-label="Filter {{ character_label }}"
-                data-filter-btn="character"
-              >
-                All ▾
-              </button>
+            <div class="tag-filter" id="character-filter">
+              <div class="muted filter-label">{{ character_label }}:</div>
+              <div class="tag-picker">
+                <div class="tag-picked" id="character-picked"></div>
+                <div class="filter-wrap">
+                  <input
+                    id="character-search"
+                    class="tag-search"
+                    type="text"
+                    placeholder="Any..."
+                    autocomplete="off"
+                    inputmode="search"
+                    enterkeyhint="done"
+                    aria-label="Filter {{ character_label }}"
+                  />
+                </div>
+                <div class="tag-suggestions" id="character-suggestions" hidden></div>
+              </div>
             </div>
             {% endif %}
 
-            <div class="runs-filter">
-              <label class="muted" for="filter-challenge">Challenge</label>
-              <button
-                id="filter-challenge"
-                class="select th-caret"
-                type="button"
-                aria-label="Filter Challenge"
-                data-filter-btn="challenge"
-              >
-                All ▾
-              </button>
+            <div class="tag-filter" id="challenge-filter">
+              <div class="muted filter-label">Challenge:</div>
+              <div class="tag-picker">
+                <div class="tag-picked" id="challenge-picked"></div>
+                <div class="filter-wrap">
+                  <input
+                    id="challenge-search"
+                    class="tag-search"
+                    type="text"
+                    placeholder="Any..."
+                    autocomplete="off"
+                    inputmode="search"
+                    enterkeyhint="done"
+                    aria-label="Filter Challenge"
+                  />
+                </div>
+                <div class="tag-suggestions" id="challenge-suggestions" hidden></div>
+              </div>
             </div>
 
-            <div class="runs-filter">
-              <label class="muted" for="filter-restrictions">Restrictions</label>
-              <button
-                id="filter-restrictions"
-                class="select th-caret"
-                type="button"
-                aria-label="Filter Restrictions"
-                data-filter-btn="restrictions"
-              >
-                Any ▾
-              </button>
+            <div class="tag-filter" id="restrictions-filter">
+              <div class="muted filter-label">Restrictions:</div>
+              <div class="tag-picker">
+                <div class="tag-picked" id="restrictions-picked"></div>
+                <div class="filter-wrap">
+                  <input
+                    id="restrictions-search"
+                    class="tag-search"
+                    type="text"
+                    placeholder="Any..."
+                    autocomplete="off"
+                    inputmode="search"
+                    enterkeyhint="done"
+                    aria-label="Filter Restrictions"
+                  />
+                </div>
+                <div class="tag-suggestions" id="restrictions-suggestions" hidden></div>
+              </div>
             </div>
 
             {% if game.glitches_data and game.glitches_data.size > 0 %}
-            <div class="runs-filter">
-              <label class="muted" for="filter-glitch">Glitches Used</label>
-              <button
-                id="filter-glitch"
-                class="select th-caret"
-                type="button"
-                aria-label="Filter Glitches Used"
-                data-filter-btn="glitch"
-              >
-                All ▾
-              </button>
+            <div class="tag-filter" id="glitch-filter">
+              <div class="muted filter-label">Glitches Used:</div>
+              <div class="tag-picker">
+                <div class="tag-picked" id="glitch-picked"></div>
+                <div class="filter-wrap">
+                  <input
+                    id="glitch-search"
+                    class="tag-search"
+                    type="text"
+                    placeholder="Any..."
+                    autocomplete="off"
+                    inputmode="search"
+                    enterkeyhint="done"
+                    aria-label="Filter Glitches"
+                  />
+                </div>
+                <div class="tag-suggestions" id="glitch-suggestions" hidden></div>
+              </div>
             </div>
             {% endif %}
           </div>
@@ -439,7 +470,17 @@ layout: default
               {% if game.glitches_data and game.glitches_data.size > 0 %}
               <th>Glitches Used</th>
               {% endif %}
-              <th>Time</th>
+
+              <th class="th-filter th-time">
+                <div class="th-title">
+                  <span>Time</span>
+                </div>
+
+                <div class="th-time-sort" aria-label="Sort by Time">
+                  <button class="th-sort" id="th-time-asc" type="button" title="Sort fastest first">↑</button>
+                  <button class="th-sort" id="th-time-desc" type="button" title="Sort slowest first">↓</button>
+                </div>
+              </th>
 
               <th class="th-filter th-date">
                 <div class="th-title">
