@@ -126,12 +126,9 @@ body:
       description: What type of challenge run is this?
       options:
         - hitless
-        - damageless
+        - no-damage
         - deathless
         - no-hit-no-damage
-        - flawless
-        - minimalist
-        - blindfolded
         - OTHER (specify below)
     validations:
       required: true
