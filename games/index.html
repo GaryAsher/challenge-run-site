@@ -122,7 +122,7 @@ title: Games
         data-challenges="{{ g.challenges | default: empty | join: ',' | downcase }}"
       >
         {% assign game_cover = g.cover | default: "/assets/img/site/default-game.jpg" %}
-        <div class="game-card__bg" data-bg="{{ game_cover | relative_url }}"></div>
+        <div class="game-card__bg" style="background-image: url('{{ game_cover | relative_url }}');"></div>
         <div class="game-card__overlay">
           <div class="game-card__title">{{ g.name }}</div>
         </div>
@@ -132,33 +132,6 @@ title: Games
 </div>
 
 <script>
-// =========================================================
-// Lazy Load Background Images
-// =========================================================
-(function() {
-  const lazyBgs = document.querySelectorAll('[data-bg]');
-  
-  if ('IntersectionObserver' in window) {
-    const observer = new IntersectionObserver(function(entries) {
-      entries.forEach(function(entry) {
-        if (entry.isIntersecting) {
-          const el = entry.target;
-          el.style.backgroundImage = "url('" + el.dataset.bg + "')";
-          el.removeAttribute('data-bg');
-          observer.unobserve(el);
-        }
-      });
-    }, { rootMargin: '100px' });
-    
-    lazyBgs.forEach(function(el) { observer.observe(el); });
-  } else {
-    // Fallback for older browsers
-    lazyBgs.forEach(function(el) {
-      el.style.backgroundImage = "url('" + el.dataset.bg + "')";
-    });
-  }
-})();
-
 // =========================================================
 // DOM: cache everything once for speed + clarity
 // =========================================================
@@ -199,7 +172,8 @@ const CHALLENGES = [
 {% for pair in site.data.challenges %}
   {
     id: {{ pair[0] | jsonify }},
-    label: {{ pair[1].label | default: pair[0] | jsonify }}
+    label: {{ pair[1].label | default: pair[0] | jsonify }},
+    aliases: {{ pair[1].aliases | default: empty | jsonify }}
   }{% unless forloop.last %},{% endunless %}
 {% endfor %}
 ].sort((a, b) => a.label.localeCompare(b.label));
@@ -258,7 +232,15 @@ function renderSuggestions(qRaw, set, list, sugEl, { onPick } = {}) {
 
   const available = list.filter(x => !set.has(norm(x.id)));
   const filtered = q
-    ? available.filter(x => norm(x.label).includes(q) || norm(x.id).includes(q))
+    ? available.filter(x => {
+        // Search in id and label
+        if (norm(x.label).includes(q) || norm(x.id).includes(q)) return true;
+        // Also search in aliases if present
+        if (x.aliases && x.aliases.length) {
+          return x.aliases.some(alias => norm(alias).includes(q));
+        }
+        return false;
+      })
     : available;
 
   const show = filtered.slice(0, 30);
