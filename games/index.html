@@ -24,16 +24,19 @@ title: Games
 
   <!-- Text search -->
   <div class="filter-wrap" style="margin-bottom: 1.25rem;">
-    <input
-      id="q"
-      class="filter"
-      type="text"
-      placeholder="Search by game name..."
-      autocomplete="off"
-      inputmode="search"
-      enterkeyhint="search"
-      aria-label="Search games"
-    />
+    <div class="search-with-reset">
+      <input
+        id="q"
+        class="filter"
+        type="text"
+        placeholder="Search by game name..."
+        autocomplete="off"
+        inputmode="search"
+        enterkeyhint="search"
+        aria-label="Search games"
+      />
+      <button type="button" class="btn-reset-all" id="reset-all" title="Reset all filters" hidden>✕</button>
+    </div>
   </div>
 
   <!-- Tags + Challenges row -->
@@ -422,6 +425,55 @@ azLinks.forEach(link => {
 
 input.addEventListener("input", applyFilter);
 limitSelect.addEventListener("change", applyFilter);
+
+// =========================================================
+// Reset All Filters
+// =========================================================
+const resetBtn = document.getElementById('reset-all');
+
+function updateResetButton() {
+  const hasFilters = input.value.trim() ||
+                     activeTags.size > 0 ||
+                     activeChallenges.size > 0 ||
+                     location.hash;
+  if (resetBtn) resetBtn.hidden = !hasFilters;
+}
+
+function resetAllFilters() {
+  input.value = '';
+  activeTags.clear();
+  activeChallenges.clear();
+  
+  // Clear hash
+  history.pushState('', document.title, window.location.pathname + window.location.search);
+  
+  // Re-render picked chips
+  renderPicked(activeTags, TAGS, tagPickedEl, { onRemove: () => {
+    renderPicked(activeTags, TAGS, tagPickedEl);
+    applyFilter();
+    updateResetButton();
+  }});
+  renderPicked(activeChallenges, CHALLENGES, challengePickedEl, { onRemove: () => {
+    renderPicked(activeChallenges, CHALLENGES, challengePickedEl);
+    applyFilter();
+    updateResetButton();
+  }});
+  
+  updateAzActive();
+  applyFilter();
+  updateResetButton();
+}
+
+if (resetBtn) {
+  resetBtn.addEventListener('click', resetAllFilters);
+}
+
+// Update reset button visibility on filter changes
+const origApplyFilter = applyFilter;
+applyFilter = function() {
+  origApplyFilter();
+  updateResetButton();
+};
 
 updateAzActive();
 applyFilter();
