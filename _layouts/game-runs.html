@@ -309,6 +309,16 @@ layout: default
         </p>
       {% endif %}
 
+      {% comment %} Character column config - needed for filter and table {% endcomment %}
+      {% assign show_character = false %}
+      {% assign character_label = "Character" %}
+      {% if game.character_column and game.character_column.enabled %}
+        {% assign show_character = true %}
+        {% if game.character_column.label %}
+          {% assign character_label = game.character_column.label %}
+        {% endif %}
+      {% endif %}
+
       <div class="card card--compact">
         <div class="runs-filters">
           <div class="runs-filter runs-filter--search">
@@ -398,15 +408,6 @@ layout: default
       </div>
 
       <div class="table-wrap" id="runs-list" data-runs-base="{{ runs_base | relative_url }}">
-        {% assign show_character = false %}
-        {% assign character_label = "Character" %}
-        {% if game.character_column and game.character_column.enabled %}
-          {% assign show_character = true %}
-          {% if game.character_column.label %}
-            {% assign character_label = game.character_column.label %}
-          {% endif %}
-        {% endif %}
-
         <table class="runs-table" id="runs-table" {% if show_character %}data-has-character="true"{% endif %} {% if game.glitches_data and game.glitches_data.size > 0 %}data-has-glitch="true"{% endif %}>
           <thead>
             <tr>
@@ -419,7 +420,17 @@ layout: default
               {% if game.glitches_data and game.glitches_data.size > 0 %}
               <th>Glitches Used</th>
               {% endif %}
-              <th>Time</th>
+
+              <th class="th-filter th-time">
+                <div class="th-title">
+                  <span>Time</span>
+                </div>
+
+                <div class="th-time-sort" aria-label="Sort by Time">
+                  <button class="th-sort" id="th-time-asc" type="button" title="Sort fastest to slowest">↑</button>
+                  <button class="th-sort" id="th-time-desc" type="button" title="Sort slowest to fastest">↓</button>
+                </div>
+              </th>
 
               <th class="th-filter th-date">
                 <div class="th-title">
