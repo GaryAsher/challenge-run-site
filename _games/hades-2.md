@@ -20,10 +20,7 @@ tabs:
   overview: true
   runs: true
   history: true
-  challenges: true
-  guides: true
   resources: true
-  rules: true
   forum: true
   extra_1: false
   extra_2: false
@@ -87,28 +84,12 @@ subcategories:
   - Boonless
   - Arcanaless
 
-# Ruleset options (glitch/tech level restrictions)
-# Controls what glitches and exploits are allowed
-ruleset_data:
+# Glitch categories - what glitches are allowed
+glitches_data:
   - slug: unrestricted
     label: Unrestricted
   - slug: nmg
     label: No Major Glitches
   - slug: glitchless
     label: Glitchless
-
-# Resources data for the Resources page
-# Each section shows as a title card with count
-resources_data:
-  tools:
-    - name: "Hades II Livesplit Autosplitter"
-      url: "https://github.com/example/hades2-autosplitter"
-      description: "Automatic splits for speedruns"
-  discords:
-    - name: "Hades Speedrunning"
-      url: "https://discord.gg/example"
-      description: "Main speedrunning community"
-    - name: "Challenge Run Community"
-      url: "https://discord.gg/crc"
-      description: "CRC Discord server"
 ---
