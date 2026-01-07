@@ -133,16 +133,7 @@
         </a>
       {% endif %}
 
-      {% if tabs and tabs.guides %}
-        <a
-          class="tab {% if include.active == 'guides' %}active{% endif %}"
-          data-tab="guides"
-          href="{{ game.url | relative_url }}guides/"
-          data-href="{{ game.url | relative_url }}guides/"
-        >
-          Guides
-        </a>
-      {% endif %}
+      {% comment %} Guides tab removed - now under Resources {% endcomment %}
 
       {% if tabs and tabs.resources %}
         <a
@@ -155,16 +146,7 @@
         </a>
       {% endif %}
 
-      {% if tabs and tabs.rules %}
-        <a
-          class="tab {% if include.active == 'rules' %}active{% endif %}"
-          data-tab="rules"
-          href="{{ game.url | relative_url }}rules/"
-          data-href="{{ game.url | relative_url }}rules/"
-        >
-          Rules
-        </a>
-      {% endif %}
+      {% comment %} Rules tab removed - now under Overview {% endcomment %}
 
       {% if tabs and tabs.forum %}
         <a
