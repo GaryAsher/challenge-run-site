@@ -8,14 +8,14 @@ permalink: /games/hades-2/resources/
 {% assign game = site.games | where: "game_id", page.game_id | first %}
 {% include game-header-tabs.html game=game active="resources" %}
 
-{% comment %} Count guides for this game {% endcomment %}
+<!-- Count guides for this game -->
 {% assign guides_count = 0 %}
 {% if site.guides %}
   {% assign game_guides = site.guides | where: "game_id", page.game_id %}
   {% assign guides_count = game_guides.size %}
 {% endif %}
 
-{% comment %} Count tools and discords from game data {% endcomment %}
+<!-- Count tools and discords from game data -->
 {% assign tools_count = 0 %}
 {% assign discords_count = 0 %}
 {% if game.resources_data %}
