@@ -166,8 +166,6 @@ azLinks.forEach(link => {
 if (input) input.addEventListener("input", applyFilter);
 if (limitSelect) limitSelect.addEventListener("change", applyFilter);
 
-updateAzActive();
-
 // =========================================================
 // UX: blur controls when clicking outside the controls block
 // =========================================================
@@ -179,5 +177,6 @@ document.addEventListener("pointerdown", (e) => {
   if (limitSelect) limitSelect.blur();
 });
 
+updateAzActive();
 applyFilter();
 </script>
