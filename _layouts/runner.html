@@ -3,24 +3,6 @@ layout: default
 ---
 
 <!-- ============================================================
-     Runner Tabs (Profile / Runs / Other)
-     ============================================================ -->
-<nav class="runner-tabs" id="runner-tabs">
-  <button class="tab active" data-tab="profile" type="button">Profile</button>
-  <button class="tab" data-tab="runs" type="button">Completed Runs</button>
-  <button class="tab" data-tab="other" type="button">Something Else</button>
-</nav>
-
-<!-- ============================================================
-     Back Link (kept in page-width for alignment)
-     ============================================================ -->
-<div class="page-width">
-  <p class="muted">
-    <a href="{{ '/runners/' | relative_url }}">← Runners</a>
-  </p>
-</div>
-
-<!-- ============================================================
      Runner Avatar Source (fallback if cover is missing)
      ============================================================ -->
 {% assign avatar = page.cover | default: "/assets/img/site/default-runner.png" %}
@@ -29,6 +11,10 @@ layout: default
      Runner Header Row (Avatar left, Socials right)
      ============================================================ -->
 <div class="page-width">
+  <p class="muted" style="margin-bottom: 0.5rem;">
+    <a href="{{ '/runners/' | relative_url }}">← Runners</a>
+  </p>
+
   <section class="runner-top">
     <div class="runner-left">
       <div
@@ -73,9 +59,16 @@ layout: default
       </div>
     </div>
   </section>
-</div>
 
-<div class="page-width">
+  <!-- ============================================================
+       Runner Tabs (Profile / Runs / Other)
+       ============================================================ -->
+  <nav class="runner-tabs game-tabs" id="runner-tabs">
+    <button class="tab active" data-tab="profile" type="button">Profile</button>
+    <button class="tab" data-tab="runs" type="button">Completed Runs</button>
+    <button class="tab" data-tab="other" type="button">Something Else</button>
+  </nav>
+
   <!-- ==========================================================
        PROFILE PANEL
        ========================================================== -->
