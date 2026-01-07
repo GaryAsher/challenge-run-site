@@ -18,7 +18,7 @@ title: Home
         <div class="news-list">
           <div class="news-item">
             <span class="news-item__date muted">Jan 2025</span>
-            <p class="news-item__text">Sample text here.</p>
+            <p class="news-item__text">Site launched in early development. Structure, tools, and features will be added gradually.</p>
           </div>
           <div class="news-item">
             <span class="news-item__date muted">Coming Soon</span>
@@ -38,29 +38,35 @@ title: Home
   </div>
 
   <div class="home-sidebar">
-    <!-- Featured Runners Section -->
-    <div class="home-card">
-      <h2 class="home-card__title">⭐ Community Board</h2>
-      <div class="runner-spotlight">
-        {% for runner in site.runners limit: 5 %}
-        <a href="{{ runner.url | relative_url }}" class="spotlight-item">
-          <div class="spotlight-item__avatar">👤</div>
-          <div>
-            <div class="spotlight-item__name">{{ runner.name | default: runner.title }}</div>
-            <div class="spotlight-item__meta">View profile</div>
+    <!-- Community Board Section -->
+    <div class="home-card home-card--full-height">
+      <h2 class="home-card__title">📋 Community Board</h2>
+      <div class="community-board">
+        <p class="muted" style="margin-bottom: 1rem; font-size: 0.9rem;">Bounties, requests, and community highlights</p>
+        
+        <div class="board-list" id="board-list">
+          <div class="board-item board-item--placeholder">
+            <span class="board-item__type muted">Bounty</span>
+            <p class="board-item__text">No active bounties yet. Check back soon!</p>
           </div>
-        </a>
-        {% endfor %}
-        {% if site.runners.size == 0 %}
-        <p class="muted">Runners coming soon!</p>
-        {% endif %}
+          <div class="board-item board-item--placeholder">
+            <span class="board-item__type muted">Request</span>
+            <p class="board-item__text">Want to post a bounty or request? Contact us!</p>
+          </div>
+        </div>
+
+        <div class="board-pagination" id="board-pagination" style="display: none;">
+          <button class="btn btn--sm" id="board-prev" disabled>← Prev</button>
+          <span class="muted board-page-info">Page <span id="board-page">1</span></span>
+          <button class="btn btn--sm" id="board-next" disabled>Next →</button>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <!-- Quick Links -->
-<div class="resource-cards" style="margin-top: 1rem;">
+<div class="resource-cards" style="margin-top: 1.5rem;">
   <a href="{{ '/games/' | relative_url }}" class="resource-card">
     <div class="resource-card__icon">🎮</div>
     <div class="resource-card__content">
