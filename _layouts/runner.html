@@ -33,7 +33,7 @@ layout: default
     <div class="runner-left">
       <div
         class="runner-avatar"
-        style="background-image: url('{{ avatar | relative_url }}');"
+        data-bg="{{ avatar | relative_url }}"
         aria-label="{{ page.name }} profile picture"
       ></div>
 
@@ -93,7 +93,7 @@ layout: default
             {% assign g = site.games | where: "game_id", gid | first %}
             {% if g %}
               <a href="{{ g.url | relative_url }}" class="game-card">
-                <div class="game-card__bg" style="background-image: url('{{ g.cover | relative_url }}');"></div>
+                <div class="game-card__bg" data-bg="{{ g.cover | relative_url }}"></div>
                 <div class="game-card__overlay">
                   <div class="game-card__title">{{ g.name }}</div>
                 </div>
@@ -239,6 +239,31 @@ layout: default
      Tabs Script (switch panels without changing pages)
      ============================================================ -->
 <script>
+// Lazy Load Background Images
+(function() {
+  const lazyBgs = document.querySelectorAll('[data-bg]');
+  
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          el.style.backgroundImage = "url('" + el.dataset.bg + "')";
+          el.removeAttribute('data-bg');
+          observer.unobserve(el);
+        }
+      });
+    }, { rootMargin: '100px' });
+    
+    lazyBgs.forEach(function(el) { observer.observe(el); });
+  } else {
+    lazyBgs.forEach(function(el) {
+      el.style.backgroundImage = "url('" + el.dataset.bg + "')";
+    });
+  }
+})();
+
+// Tab switching
 (function () {
   const tabs = Array.from(document.querySelectorAll(".runner-tabs .tab"));
   const panels = Array.from(document.querySelectorAll(".tab-panel[data-panel]"));
