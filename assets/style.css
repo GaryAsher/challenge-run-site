@@ -775,18 +775,27 @@ button.tag { cursor: pointer; }
   color: var(--text-muted);
   border: 1px solid var(--border);
   border-radius: 999px;
-  padding: 0.25rem 0.55rem;
+  padding: 0.25rem 0.75rem;
   cursor: pointer;
   font: inherit;
   font-size: 0.85rem;
 
   min-height: 32px;
+  min-width: fit-content;
+  white-space: nowrap;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  text-decoration: none;
+}
+
+a.tag-chip {
+  display: inline-flex;
+  align-items: center;
 }
 
 .tag-chip:hover {
   background: var(--panel);
+  text-decoration: none;
 }
 
 .tag-chip.is-active {
