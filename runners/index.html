@@ -139,10 +139,34 @@ function applyFilter() {
   }
 }
 
-window.addEventListener("hashchange", applyFilter);
+// =========================================================
+// A-Z Navigation: Update active state
+// =========================================================
+const azLinks = document.querySelectorAll('.az a');
+
+function updateAzActive() {
+  const hash = (location.hash || '').replace('#', '').toUpperCase();
+  azLinks.forEach(link => {
+    const linkHash = (link.getAttribute('href') || '').replace('#', '').toUpperCase();
+    link.classList.toggle('is-active', linkHash === hash);
+  });
+}
+
+window.addEventListener("hashchange", () => {
+  updateAzActive();
+  applyFilter();
+});
+
+azLinks.forEach(link => {
+  link.addEventListener('click', () => {
+    setTimeout(updateAzActive, 0);
+  });
+});
 
 if (input) input.addEventListener("input", applyFilter);
 if (limitSelect) limitSelect.addEventListener("change", applyFilter);
+
+updateAzActive();
 
 // =========================================================
 // UX: blur controls when clicking outside the controls block
