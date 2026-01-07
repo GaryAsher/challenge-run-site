@@ -20,7 +20,7 @@ layout: default
       {% endif %}
 
       <!-- Quick Navigation - resource cards -->
-      <h2 style="margin: 1rem 0 0.75rem 0;">Quick Navigation</h2>
+      <h2 class="mt-4 mb-3">Quick Navigation</h2>
       <div class="resource-cards">
         <a href="{{ page.url | relative_url }}runs/" class="resource-card">
           <div class="resource-card__icon">🏃</div>
@@ -53,9 +53,9 @@ layout: default
 
       <!-- Challenges section -->
       {% if page.challenges and page.challenges.size > 0 %}
-      <div class="card card--compact" style="margin-top: 1.5rem;">
-        <h2 style="margin: 0 0 0.5rem 0;">Tracked Challenges</h2>
-        <p class="muted" style="margin: 0 0 0.75rem 0;">Challenge types being tracked for this game:</p>
+      <div class="card card--compact mt-6">
+        <h2 class="mb-2">Tracked Challenges</h2>
+        <p class="muted mb-3">Challenge types being tracked for this game:</p>
         <div class="tag-picked" style="justify-content: center;">
           {% for ch_id in page.challenges %}
             {% assign ch_meta = site.data.challenges[ch_id] %}
@@ -67,8 +67,8 @@ layout: default
 
       <!-- Categories section -->
       {% if page.categories_data and page.categories_data.size > 0 %}
-      <div class="card card--compact" style="margin-top: 1rem;">
-        <h2 style="margin: 0 0 0.5rem 0;">Run Categories</h2>
+      <div class="card card--compact mt-4">
+        <h2 class="mb-2">Run Categories</h2>
         <div class="tag-picked" style="justify-content: center;">
           {% for cat in page.categories_data %}
             <a class="tag-chip" href="{{ page.url | relative_url }}runs/{{ cat.slug }}/">
