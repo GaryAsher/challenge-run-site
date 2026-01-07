@@ -2,20 +2,35 @@
 
 This folder contains guides for working with this repository.
 
-If you are contributing content or making changes, start with the links below.
-
 ---
 
 ## Guides
 
-- Required steps for adding or updating content  
-  → `CONTRIBUTING.md`
+| Document | Purpose |
+|----------|---------|
+| `CONTRIBUTING.md` | Required steps for adding or updating content |
+| `id-and-slug-spec.md` | ID and slug rules used by the site and validators |
+| `queue-runs.md` | How the run submission queue works |
 
-- ID and slug rules used by the site and validators  
-  → `id-and-slug-spec.md`
+---
 
-- Common errors, CI failures, and fixes  
-  → `TROUBLESHOOTING.md`
+## Forms
+
+| Document | Purpose |
+|----------|---------|
+| `NEW-GAME-FORM-SPEC.md` | Complete Google Form spec for adding new games (moderator use) |
+| `FORMS/crc-game-request-form.md` | Simple form for users to request games |
+| `FORMS/crc-game-request-form-docs.md` | Internal documentation for the request form |
+
+---
+
+## Reminders (Future Ideas)
+
+The `reminders/` folder contains guides that are placeholders for future implementation:
+
+- `MODERATOR-GUIDE.md` - How to review and process submissions
+- `FIXING-MISTAKES.md` - Common errors and how to fix them
+- `GOOGLE-FORM-SETUP.md` - Setting up Google Forms integration
 
 ---
 
@@ -23,5 +38,3 @@ If you are contributing content or making changes, start with the links below.
 
 Most contributors only need to touch a small part of the repository.
 These guides are here to help you follow the required steps and avoid common issues.
-
-Automation and validation are in place to prevent mistakes, but the docs should help you avoid them in the first place.
