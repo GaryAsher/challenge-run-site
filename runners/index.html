@@ -56,7 +56,7 @@ title: Runners
         data-name="{{ runner_name | downcase }}"
         data-letter="{{ runner_name | strip | slice: 0, 1 | upcase }}"
       >
-        <div class="runner-card__bg" style="background-image: url('{{ avatar | relative_url }}');"></div>
+        <div class="runner-card__bg" data-bg="{{ avatar | relative_url }}"></div>
         <div class="runner-card__overlay">
           <div class="runner-card__title">{{ runner_name }}</div>
         </div>
@@ -66,6 +66,32 @@ title: Runners
 </div>
 
 <script>
+// =========================================================
+// Lazy Load Background Images
+// =========================================================
+(function() {
+  const lazyBgs = document.querySelectorAll('[data-bg]');
+  
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          el.style.backgroundImage = "url('" + el.dataset.bg + "')";
+          el.removeAttribute('data-bg');
+          observer.unobserve(el);
+        }
+      });
+    }, { rootMargin: '100px' });
+    
+    lazyBgs.forEach(function(el) { observer.observe(el); });
+  } else {
+    lazyBgs.forEach(function(el) {
+      el.style.backgroundImage = "url('" + el.dataset.bg + "')";
+    });
+  }
+})();
+
 // =========================================================
 // DOM: cache runner items + helpers
 // =========================================================
