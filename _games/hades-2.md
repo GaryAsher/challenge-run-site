@@ -96,4 +96,19 @@ ruleset_data:
     label: No Major Glitches
   - slug: glitchless
     label: Glitchless
+
+# Resources data for the Resources page
+# Each section shows as a title card with count
+resources_data:
+  tools:
+    - name: "Hades II Livesplit Autosplitter"
+      url: "https://github.com/example/hades2-autosplitter"
+      description: "Automatic splits for speedruns"
+  discords:
+    - name: "Hades Speedrunning"
+      url: "https://discord.gg/example"
+      description: "Main speedrunning community"
+    - name: "Challenge Run Community"
+      url: "https://discord.gg/crc"
+      description: "CRC Discord server"
 ---
