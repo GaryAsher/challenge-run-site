@@ -228,6 +228,8 @@ const CONFIG = {
 
     const thSortAsc = document.getElementById('th-sort-asc');
     const thSortDesc = document.getElementById('th-sort-desc');
+    const thTimeAsc = document.getElementById('th-time-asc');
+    const thTimeDesc = document.getElementById('th-time-desc');
 
     const btnCh = document.getElementById('filter-challenge');
     const btnRes = document.getElementById('filter-restrictions');
@@ -251,6 +253,27 @@ const CONFIG = {
 
       const t = Date.parse(v);
       return Number.isFinite(t) ? t : NaN;
+    }
+
+    function parseTimeToSeconds(s) {
+      const v = (s || '').trim();
+      if (!v || v === '—') return NaN;
+
+      // Handle HH:MM:SS.mmm or HH:MM:SS or MM:SS formats
+      const parts = v.split(':');
+      if (parts.length === 3) {
+        // HH:MM:SS or HH:MM:SS.mmm
+        const hours = parseFloat(parts[0]) || 0;
+        const mins = parseFloat(parts[1]) || 0;
+        const secs = parseFloat(parts[2]) || 0;
+        return hours * 3600 + mins * 60 + secs;
+      } else if (parts.length === 2) {
+        // MM:SS
+        const mins = parseFloat(parts[0]) || 0;
+        const secs = parseFloat(parts[1]) || 0;
+        return mins * 60 + secs;
+      }
+      return NaN;
     }
 
     function getLimit() {
@@ -315,6 +338,7 @@ const CONFIG = {
     const activeCharacters = new Set();
 
     let dateSortDir = 'desc';
+    let timeSortDir = null; // null = no sort, 'asc' = fastest first, 'desc' = slowest first
     let thActiveCol = null;
 
     function closeThMenu() {
@@ -520,20 +544,62 @@ const CONFIG = {
       });
     }
 
+    function sortRowsByTime(list) {
+      if (!timeSortDir) return list;
+      const dir = timeSortDir;
+
+      return list.sort((a, b) => {
+        const aTime = parseTimeToSeconds(a.dataset.time);
+        const bTime = parseTimeToSeconds(b.dataset.time);
+
+        const aBad = !Number.isFinite(aTime);
+        const bBad = !Number.isFinite(bTime);
+
+        if (aBad && bBad) {
+          return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
+        }
+        if (aBad) return 1;
+        if (bBad) return -1;
+
+        if (aTime === bTime) {
+          return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
+        }
+
+        return dir === 'asc' ? aTime - bTime : bTime - aTime;
+      });
+    }
+
     function updateDateSortButtons() {
       if (thSortAsc) {
-        thSortAsc.disabled = dateSortDir === 'asc';
-        thSortAsc.setAttribute('aria-pressed', dateSortDir === 'asc' ? 'true' : 'false');
+        thSortAsc.disabled = dateSortDir === 'asc' && !timeSortDir;
+        thSortAsc.setAttribute('aria-pressed', dateSortDir === 'asc' && !timeSortDir ? 'true' : 'false');
       }
       if (thSortDesc) {
-        thSortDesc.disabled = dateSortDir === 'desc';
-        thSortDesc.setAttribute('aria-pressed', dateSortDir === 'desc' ? 'true' : 'false');
+        thSortDesc.disabled = dateSortDir === 'desc' && !timeSortDir;
+        thSortDesc.setAttribute('aria-pressed', dateSortDir === 'desc' && !timeSortDir ? 'true' : 'false');
+      }
+    }
+
+    function updateTimeSortButtons() {
+      if (thTimeAsc) {
+        thTimeAsc.disabled = timeSortDir === 'asc';
+        thTimeAsc.setAttribute('aria-pressed', timeSortDir === 'asc' ? 'true' : 'false');
+      }
+      if (thTimeDesc) {
+        thTimeDesc.disabled = timeSortDir === 'desc';
+        thTimeDesc.setAttribute('aria-pressed', timeSortDir === 'desc' ? 'true' : 'false');
       }
     }
 
     function render() {
       let filtered = rows.filter(passesFilters);
-      filtered = sortRowsByDate(filtered);
+      
+      // Sort by time if active, otherwise by date
+      if (timeSortDir) {
+        filtered = sortRowsByTime(filtered);
+      } else {
+        filtered = sortRowsByDate(filtered);
+      }
 
       if (tbody) filtered.forEach(r => tbody.appendChild(r));
 
@@ -729,15 +795,37 @@ const CONFIG = {
 
     if (thSortAsc) {
       thSortAsc.addEventListener('click', () => {
+        timeSortDir = null; // Clear time sort when sorting by date
         dateSortDir = 'asc';
         updateDateSortButtons();
+        updateTimeSortButtons();
         render();
       });
     }
 
     if (thSortDesc) {
       thSortDesc.addEventListener('click', () => {
+        timeSortDir = null; // Clear time sort when sorting by date
         dateSortDir = 'desc';
+        updateDateSortButtons();
+        updateTimeSortButtons();
+        render();
+      });
+    }
+
+    if (thTimeAsc) {
+      thTimeAsc.addEventListener('click', () => {
+        timeSortDir = 'asc';
+        updateTimeSortButtons();
+        updateDateSortButtons();
+        render();
+      });
+    }
+
+    if (thTimeDesc) {
+      thTimeDesc.addEventListener('click', () => {
+        timeSortDir = 'desc';
+        updateTimeSortButtons();
         updateDateSortButtons();
         render();
       });
@@ -747,6 +835,7 @@ const CONFIG = {
     if (limitEl) limitEl.addEventListener('change', render);
 
     updateDateSortButtons();
+    updateTimeSortButtons();
     updateTopButtonLabels();
     render();
   }
