@@ -310,22 +310,20 @@ layout: default
       {% endif %}
 
       <div class="card card--compact">
-        <!-- Search bar - full width -->
-        <div class="runs-filter runs-filter--search" style="margin-bottom: 1rem;">
-          <input
-            id="q"
-            class="filter"
-            type="text"
-            placeholder="Search runner, challenge, restrictions..."
-            autocomplete="off"
-            inputmode="search"
-            enterkeyhint="search"
-            style="max-width: none;"
-          >
-        </div>
+        <div class="runs-filters">
+          <div class="runs-filter runs-filter--search">
+            <label class="muted" for="q">Search</label>
+            <input
+              id="q"
+              class="filter"
+              type="text"
+              placeholder="Search runner, challenge, restrictions..."
+              autocomplete="off"
+              inputmode="search"
+              enterkeyhint="search"
+            >
+          </div>
 
-        <!-- Filter buttons row -->
-        <div class="runs-filters-row">
           <div class="runs-filter">
             <label class="muted" for="filter-challenge">Challenge</label>
             <button
@@ -352,15 +350,15 @@ layout: default
             </button>
           </div>
 
-          {% if game.ruleset_data and game.ruleset_data.size > 0 %}
+          {% if game.glitches_data and game.glitches_data.size > 0 %}
           <div class="runs-filter">
-            <label class="muted" for="filter-ruleset">Ruleset</label>
+            <label class="muted" for="filter-glitch">Glitches Used</label>
             <button
-              id="filter-ruleset"
+              id="filter-glitch"
               class="select th-caret"
               type="button"
-              aria-label="Filter Ruleset"
-              data-filter-btn="ruleset"
+              aria-label="Filter Glitches Used"
+              data-filter-btn="glitch"
             >
               All ▾
             </button>
@@ -409,7 +407,7 @@ layout: default
           {% endif %}
         {% endif %}
 
-        <table class="runs-table" id="runs-table" {% if show_character %}data-has-character="true"{% endif %} {% if game.ruleset_data and game.ruleset_data.size > 0 %}data-has-ruleset="true"{% endif %}>
+        <table class="runs-table" id="runs-table" {% if show_character %}data-has-character="true"{% endif %} {% if game.glitches_data and game.glitches_data.size > 0 %}data-has-glitch="true"{% endif %}>
           <thead>
             <tr>
               <th>Runner</th>
@@ -418,17 +416,17 @@ layout: default
               {% endif %}
               <th>Challenge</th>
               <th>Restrictions</th>
-              {% if game.ruleset_data and game.ruleset_data.size > 0 %}
-              <th>Ruleset</th>
+              {% if game.glitches_data and game.glitches_data.size > 0 %}
+              <th>Glitches Used</th>
               {% endif %}
               <th>Time</th>
 
               <th class="th-filter th-date">
                 <div class="th-title">
-                  <span>Date</span>
+                  <span>Date Accomplished</span>
                 </div>
 
-                <div class="th-date-sort" aria-label="Sort Completion Date">
+                <div class="th-date-sort" aria-label="Sort by Date">
                   <button class="th-sort" id="th-sort-asc" type="button" title="Sort oldest to newest">↑</button>
                   <button class="th-sort" id="th-sort-desc" type="button" title="Sort newest to oldest">↓</button>
                 </div>
@@ -503,7 +501,7 @@ layout: default
                 data-challenge-aliases="{{ challenge_aliases | escape }}"
                 data-character="{{ r.character | default: '' | escape }}"
                 data-restrictions="{{ r_texts | join: '||' | escape }}"
-                data-ruleset="{{ r.ruleset_id | default: '' | escape }}"
+                data-glitch="{{ r.glitch_id | default: '' | escape }}"
                 data-date="{{ r.date_completed | default: '' | escape }}"
                 data-time="{{ r.time_primary | default: r.time | default: '' | escape }}"
               >
@@ -542,23 +540,23 @@ layout: default
                   {% endif %}
                 </td>
 
-                {% if game.ruleset_data and game.ruleset_data.size > 0 %}
+                {% if game.glitches_data and game.glitches_data.size > 0 %}
                 <td>
-                  {% assign ruleset_label = r.ruleset_id | default: "" %}
-                  {% if ruleset_label != "" %}
-                    {% for rs in game.ruleset_data %}
-                      {% if rs.slug == r.ruleset_id %}
-                        {% assign ruleset_label = rs.label %}
+                  {% assign glitch_label = r.glitch_id | default: "" %}
+                  {% if glitch_label != "" %}
+                    {% for gl in game.glitches_data %}
+                      {% if gl.slug == r.glitch_id %}
+                        {% assign glitch_label = gl.label %}
                       {% endif %}
-                      {% if rs.children %}
-                        {% for child in rs.children %}
-                          {% if child.slug == r.ruleset_id %}
-                            {% assign ruleset_label = child.label %}
+                      {% if gl.children %}
+                        {% for child in gl.children %}
+                          {% if child.slug == r.glitch_id %}
+                            {% assign glitch_label = child.label %}
                           {% endif %}
                         {% endfor %}
                       {% endif %}
                     {% endfor %}
-                    <span class="tag">{{ ruleset_label }}</span>
+                    <span class="tag">{{ glitch_label }}</span>
                   {% else %}
                     —
                   {% endif %}
