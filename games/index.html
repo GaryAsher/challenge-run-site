@@ -396,9 +396,34 @@ wireDropdown({
   pickedEl: challengePickedEl
 });
 
-window.addEventListener("hashchange", applyFilter);
+// =========================================================
+// A-Z Navigation: Update active state
+// =========================================================
+const azLinks = document.querySelectorAll('.az a');
+
+function updateAzActive() {
+  const hash = (location.hash || '').replace('#', '').toUpperCase();
+  azLinks.forEach(link => {
+    const linkHash = (link.getAttribute('href') || '').replace('#', '').toUpperCase();
+    link.classList.toggle('is-active', linkHash === hash);
+  });
+}
+
+window.addEventListener("hashchange", () => {
+  updateAzActive();
+  applyFilter();
+});
+
+azLinks.forEach(link => {
+  link.addEventListener('click', () => {
+    // Small delay to let hash update
+    setTimeout(updateAzActive, 0);
+  });
+});
+
 input.addEventListener("input", applyFilter);
 limitSelect.addEventListener("change", applyFilter);
 
+updateAzActive();
 applyFilter();
 </script>
