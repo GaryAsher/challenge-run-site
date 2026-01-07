@@ -659,17 +659,23 @@ button.tag { cursor: pointer; }
 /* ============================================================
    Runs: top filter bar (game-runs.html)
    ============================================================ */
-.runs-filters {
-  display: grid;
-  grid-template-columns: 1fr auto auto auto auto;
+.runs-filters-row {
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.75rem;
-  align-items: end;
+  align-items: flex-end;
+}
+
+.runs-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .runs-filter label.muted {
   display: block;
-  margin-bottom: 0.25rem;
   text-align: center;
+  font-size: 0.85rem;
 }
 
 .runs-filter--search .filter {
@@ -677,7 +683,7 @@ button.tag { cursor: pointer; }
   margin: 0;
 }
 
-.runs-filters .select.th-caret {
+.runs-filters-row .select.th-caret {
   appearance: none;
   display: inline-flex;
   align-items: center;
@@ -685,7 +691,7 @@ button.tag { cursor: pointer; }
   gap: 0.5rem;
 
   width: auto;
-  min-width: 9.5rem;
+  min-width: 8rem;
 
   cursor: pointer;
   text-align: left;
@@ -693,12 +699,12 @@ button.tag { cursor: pointer; }
   -webkit-tap-highlight-color: transparent;
 }
 
-.runs-filters .select.th-caret:hover {
+.runs-filters-row .select.th-caret:hover {
   background: var(--panel);
   text-decoration: none;
 }
 
-.runs-filters .select.th-caret:active {
+.runs-filters-row .select.th-caret:active {
   transform: translateY(0.5px);
 }
 
@@ -721,24 +727,23 @@ button.tag { cursor: pointer; }
 }
 
 @media (max-width: 900px) {
-  .runs-filters {
-    grid-template-columns: 1fr 1fr;
-    align-items: start;
+  .runs-filters-row {
+    flex-direction: column;
+    align-items: stretch;
   }
 
-  .runs-filter--search {
-    grid-column: 1 / -1;
+  .runs-filters-row .runs-filter {
+    width: 100%;
   }
 
-  .runs-filters .select.th-caret {
+  .runs-filters-row .select.th-caret {
     width: 100%;
     min-width: 0;
   }
 }
 
 @media (max-width: 560px) {
-  .runs-filters { grid-template-columns: 1fr; }
-  .runs-filters .select.th-caret { width: 100%; }
+  .runs-filters-row .select.th-caret { width: 100%; }
 }
 
 /* ============================================================
@@ -1345,20 +1350,36 @@ button.tag { cursor: pointer; }
 }
 
 .runs-table thead th {
-  text-align: left;
-  vertical-align: top;
+  text-align: center;
+  vertical-align: middle;
   font-weight: 700;
   color: var(--fg);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface);
 
   padding: 0.75rem 0.85rem;
   border-bottom: 1px solid var(--border);
+  
+  /* Sticky header */
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* Runner column - left aligned */
+.runs-table thead th:first-child {
+  text-align: left;
 }
 
 .runs-table tbody td {
   padding: 0.75rem 0.85rem;
   border-bottom: 1px solid var(--border);
-  vertical-align: top;
+  vertical-align: middle;
+  text-align: center;
+}
+
+/* Runner column - left aligned */
+.runs-table tbody td:first-child {
+  text-align: left;
 }
 
 .runs-table thead th + th,
