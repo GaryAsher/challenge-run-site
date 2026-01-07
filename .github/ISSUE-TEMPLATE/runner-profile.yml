@@ -1,0 +1,153 @@
+name: "👤 Runner Profile Request"
+description: Request a new runner profile or update an existing one
+title: "[RUNNER] <action> - <runner-name>"
+labels: ["runner-profile", "pending-review"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Runner Profile Request
+        
+        Use this form to:
+        - Create a new runner profile
+        - Update your existing profile
+        
+        ---
+
+  - type: dropdown
+    id: request_type
+    attributes:
+      label: Request Type
+      options:
+        - New Profile
+        - Update Existing Profile
+    validations:
+      required: true
+
+  # ============================================================
+  # RUNNER IDENTIFICATION
+  # ============================================================
+  - type: input
+    id: runner_id
+    attributes:
+      label: Runner ID
+      description: URL-safe ID (lowercase, hyphens only). Cannot be changed once created.
+      placeholder: "e.g., gary-asher"
+    validations:
+      required: true
+
+  - type: input
+    id: name
+    attributes:
+      label: Display Name
+      description: How your name appears on the site
+      placeholder: "e.g., Gary Asher"
+    validations:
+      required: true
+
+  # ============================================================
+  # PROFILE DETAILS
+  # ============================================================
+  - type: input
+    id: pronouns
+    attributes:
+      label: Pronouns (Optional)
+      placeholder: "e.g., he/him, she/her, they/them"
+    validations:
+      required: false
+
+  - type: input
+    id: location
+    attributes:
+      label: Location (Optional)
+      description: Country or region
+      placeholder: "e.g., United States"
+    validations:
+      required: false
+
+  - type: textarea
+    id: bio
+    attributes:
+      label: Bio (Optional)
+      description: A short description about yourself (max 280 characters)
+      placeholder: "Challenge runner specializing in hitless runs..."
+    validations:
+      required: false
+
+  # ============================================================
+  # SOCIAL LINKS
+  # ============================================================
+  - type: input
+    id: twitch
+    attributes:
+      label: Twitch Username (Optional)
+      placeholder: "e.g., twitchusername"
+    validations:
+      required: false
+
+  - type: input
+    id: youtube
+    attributes:
+      label: YouTube Channel URL (Optional)
+      placeholder: "e.g., https://youtube.com/@channel"
+    validations:
+      required: false
+
+  - type: input
+    id: twitter
+    attributes:
+      label: Twitter/X Username (Optional)
+      placeholder: "e.g., username"
+    validations:
+      required: false
+
+  - type: input
+    id: discord
+    attributes:
+      label: Discord Username (Optional)
+      placeholder: "e.g., username#1234"
+    validations:
+      required: false
+
+  # ============================================================
+  # GAMES
+  # ============================================================
+  - type: textarea
+    id: games
+    attributes:
+      label: Games You Run
+      description: List game IDs you run challenges for (one per line, lowercase-with-hyphens)
+      placeholder: |
+        hades-2
+        hollow-knight
+    validations:
+      required: false
+
+  # ============================================================
+  # PROFILE IMAGE
+  # ============================================================
+  - type: textarea
+    id: avatar
+    attributes:
+      label: Profile Image (Optional)
+      description: |
+        Drag and drop an image here, or provide a URL.
+        Recommended: Square image, at least 200x200px.
+        Note: We'll download and host the image ourselves.
+    validations:
+      required: false
+
+  # ============================================================
+  # UPDATE SPECIFIC
+  # ============================================================
+  - type: textarea
+    id: changes
+    attributes:
+      label: Changes Requested (For Updates Only)
+      description: If updating, describe what you want changed
+      placeholder: |
+        - Update bio to: "..."
+        - Add YouTube link
+        - Change display name
+    validations:
+      required: false
