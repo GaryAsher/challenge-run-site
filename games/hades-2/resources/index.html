@@ -8,14 +8,14 @@ permalink: /games/hades-2/resources/
 {% assign game = site.games | where: "game_id", page.game_id | first %}
 {% include game-header-tabs.html game=game active="resources" %}
 
-<!-- Count guides for this game -->
+{% comment %} Count guides for this game {% endcomment %}
 {% assign guides_count = 0 %}
 {% if site.guides %}
   {% assign game_guides = site.guides | where: "game_id", page.game_id %}
   {% assign guides_count = game_guides.size %}
 {% endif %}
 
-<!-- Count tools and discords - check if resources_data exists -->
+{% comment %} Count tools and discords - check if resources_data exists {% endcomment %}
 {% assign tools_count = 0 %}
 {% assign discords_count = 0 %}
 {% if game.resources_data %}
@@ -30,7 +30,7 @@ permalink: /games/hades-2/resources/
 <div class="page-width">
   <div class="game-shell">
     <h1>Resources</h1>
-    <p class="muted" style="margin-bottom: 1.5rem;">Find guides, tools, and community links for {{ game.name }}.</p>
+    <p class="muted mb-6">Find guides, tools, and community links for {{ game.name }}.</p>
 
     <!-- Resource cards -->
     <div class="resource-cards">
@@ -72,7 +72,7 @@ permalink: /games/hades-2/resources/
     </div>
 
     {% if tools_count > 0 %}
-    <div class="card" style="margin-top: 1.5rem;">
+    <div class="card mt-6">
       <h2>Tools</h2>
       <div class="resource-list">
         {% for tool in game.resources_data.tools %}
@@ -90,7 +90,7 @@ permalink: /games/hades-2/resources/
     {% endif %}
 
     {% if discords_count > 0 %}
-    <div class="card" style="margin-top: 1rem;">
+    <div class="card mt-4">
       <h2>Community</h2>
       <div class="resource-list">
         {% for discord in game.resources_data.discords %}
