@@ -11,6 +11,7 @@ This folder contains guides for working with this repository.
 | `CONTRIBUTING.md` | Required steps for adding or updating content |
 | `id-and-slug-spec.md` | ID and slug rules used by the site and validators |
 | `queue-runs.md` | How the run submission queue works |
+| `REMINDERS.md` | **Before launch checklist & future ideas** |
 
 ---
 
@@ -24,13 +25,13 @@ This folder contains guides for working with this repository.
 
 ---
 
-## Reminders (Future Ideas)
+## Reference (in `reminders/` folder)
 
-The `reminders/` folder contains guides that are placeholders for future implementation:
+The `reminders/` folder contains detailed drafts for future implementation:
 
-- `MODERATOR-GUIDE.md` - How to review and process submissions
-- `FIXING-MISTAKES.md` - Common errors and how to fix them
-- `GOOGLE-FORM-SETUP.md` - Setting up Google Forms integration
+- `MODERATOR-GUIDE.md` - Draft moderator guide
+- `FIXING-MISTAKES.md` - Draft troubleshooting guide
+- `GOOGLE-FORM-SETUP.md` - Draft Forms setup guide
 
 ---
 
