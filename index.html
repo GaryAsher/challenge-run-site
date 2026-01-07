@@ -18,7 +18,7 @@ title: Home
         <div class="news-list">
           <div class="news-item">
             <span class="news-item__date muted">Jan 2025</span>
-            <p class="news-item__text">Site launched in early development. Structure, tools, and features will be added gradually.</p>
+            <p class="news-item__text">Sample text here.</p>
           </div>
           <div class="news-item">
             <span class="news-item__date muted">Coming Soon</span>
@@ -40,7 +40,7 @@ title: Home
   <div class="home-sidebar">
     <!-- Featured Runners Section -->
     <div class="home-card">
-      <h2 class="home-card__title">⭐ Featured Runners</h2>
+      <h2 class="home-card__title">⭐ Community Board</h2>
       <div class="runner-spotlight">
         {% for runner in site.runners limit: 5 %}
         <a href="{{ runner.url | relative_url }}" class="spotlight-item">
