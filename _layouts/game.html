@@ -12,22 +12,55 @@ layout: default
 
     <!-- Overview -->
     <section class="tab-panel active" data-panel="overview">
-      {% if content %}
+      {% if content and content != "" %}
         <div class="card">
           {{ content }}
         </div>
       {% endif %}
 
-      <div class="card" style="margin-top: 1rem;">
-        <h2>Browse Runs</h2>
-        <p class="muted">Use Runs to browse categories and filter submissions.</p>
+      <div class="resource-cards" style="margin-top: 1rem;">
+        <!-- Runs Card -->
+        <a href="{{ page.url | relative_url }}runs/" class="resource-card">
+          <div class="resource-card__icon">🏃</div>
+          <div class="resource-card__content">
+            <h2 class="resource-card__title">Runs</h2>
+            <p class="resource-card__desc">Browse categories and filter submissions</p>
+            {% assign runs_count = site.runs | where: "game_id", page.game_id | size %}
+            <span class="resource-card__count">{{ runs_count }} {% if runs_count == 1 %}run{% else %}runs{% endif %}</span>
+          </div>
+        </a>
 
-        <p style="margin: 0.75rem 0 0 0;">
-          <a class="btn" href="{{ page.url | relative_url }}runs/">
-            View Runs
-          </a>
-        </p>
+        <!-- Rules Card -->
+        <a href="{{ page.url | relative_url }}rules/" class="resource-card">
+          <div class="resource-card__icon">📜</div>
+          <div class="resource-card__content">
+            <h2 class="resource-card__title">Rules</h2>
+            <p class="resource-card__desc">Category definitions and verification guidelines</p>
+            <span class="resource-card__count">View rules</span>
+          </div>
+        </a>
+
+        <!-- Resources Card -->
+        <a href="{{ page.url | relative_url }}resources/" class="resource-card">
+          <div class="resource-card__icon">📚</div>
+          <div class="resource-card__content">
+            <h2 class="resource-card__title">Resources</h2>
+            <p class="resource-card__desc">Guides, tools, and community links</p>
+            <span class="resource-card__count">Explore</span>
+          </div>
+        </a>
+
+        <!-- Placeholder Card -->
+        <div class="resource-card resource-card--placeholder">
+          <div class="resource-card__icon">❓</div>
+          <div class="resource-card__content">
+            <h2 class="resource-card__title">Something Else?</h2>
+            <p class="resource-card__desc">Ideas for this game page? Let us know!</p>
+            <span class="resource-card__count">Coming soon</span>
+          </div>
+        </div>
       </div>
+
     </section>
 
   </div>
