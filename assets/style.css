@@ -705,62 +705,36 @@ button.tag,
   border-top: 1px solid var(--border);
 }
 
-/* Runs page filters grid - uses tag-filter style */
-.filters-grid--runs {
+.filters-panel__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 0.9rem;
-  align-items: start;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  align-items: end;
 }
 
-.filters-grid--runs .tag-filter {
-  padding: 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-}
-
-/* Search with reset button */
-.search-with-reset {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
-}
-
-.search-with-reset .filter {
-  padding-right: 2.5rem;
-}
-
-.btn-reset-all {
-  position: absolute;
-  right: 0.5rem;
-  top: 50%;
-  transform: translateY(-50%);
-  
+.runs-filters .select.th-caret {
   appearance: none;
-  border: none;
-  background: var(--bg-soft);
-  color: var(--text-muted);
-  
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  
-  font-size: 0.85rem;
-  line-height: 1;
-  
-  cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  
-  transition: background 120ms ease, color 120ms ease;
+  justify-content: space-between;
+  gap: 0.5rem;
+
+  width: auto;
+  min-width: 9.5rem;
+
+  cursor: pointer;
+  text-align: left;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.btn-reset-all:hover {
+.runs-filters .select.th-caret:hover {
   background: var(--panel);
-  color: var(--fg);
+  text-decoration: none;
+}
+
+.runs-filters .select.th-caret:active {
+  transform: translateY(0.5px);
 }
 
 .active-filters {
@@ -1280,8 +1254,8 @@ button.tag,
   z-index: 50;
 
   background: var(--bg);
-  padding: 0.75rem 0;
-  border-bottom: 1px solid var(--border);
+  padding: 0.75rem 0 0 0;
+  border-bottom: none;
 }
 
 .runner-tabs .tab {
@@ -1295,6 +1269,8 @@ button.tag,
 
   border-top-left-radius: var(--radius-md);
   border-top-right-radius: var(--radius-md);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 
   background: transparent;
   color: var(--text-dim);
@@ -1307,6 +1283,9 @@ button.tag,
     color 120ms ease,
     opacity 120ms ease,
     border-color 120ms ease;
+  
+  /* Push tabs down to align with container border */
+  margin-bottom: -1px;
 }
 
 .runner-tabs .tab:hover {
@@ -1316,16 +1295,18 @@ button.tag,
 }
 
 .runner-tabs .tab.active {
-  background: var(--panel);
+  background: var(--surface);
   color: var(--fg);
   opacity: 1;
 
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--focus-2);
-  border-bottom-color: transparent;
+  border-color: var(--border);
+  border-bottom-color: var(--surface);
+  box-shadow: none;
+}
 
-  position: relative;
-  top: 1px;
+/* First active tab connects to container corner */
+.runner-tabs .tab.active:first-child {
+  border-bottom-left-radius: 0;
 }
 
 .page-width .runner-tabs.game-tabs {
@@ -1334,7 +1315,6 @@ button.tag,
   z-index: auto;
 
   background: transparent;
-  border-bottom: none;
   padding: 0;
   margin: 0;
 }
@@ -1351,14 +1331,14 @@ button.tag,
 
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
+  /* First tab connects to top-left corner */
+  border-top-left-radius: 0;
 
   background: var(--surface);
   padding: 1rem;
 
   min-height: 40vh;
   overflow-y: auto;
-
-  margin-top: -1px;
 }
 
 .tab-panel.active { display: block; }
