@@ -231,7 +231,7 @@ const CONFIG = {
 
     const btnCh = document.getElementById('filter-challenge');
     const btnRes = document.getElementById('filter-restrictions');
-    const btnRuleset = document.getElementById('filter-ruleset');
+    const btnGlitch = document.getElementById('filter-glitch');
     const btnCharacter = document.getElementById('filter-character');
     const activeFiltersWrap = document.getElementById('active-filters');
 
@@ -269,15 +269,15 @@ const CONFIG = {
       const chIds = [];
       const chLabelById = new Map();
       const restrictionsRaw = [];
-      const rulesetIds = [];
+      const glitchIds = [];
       const characterIds = [];
 
       rows.forEach(row => {
         const chId = norm(row.dataset.challengeId);
         const chLabel = (row.dataset.challengeLabel || '').toString().trim();
         const resRaw = parseRestrictionsRaw(row);
-        const rulesetId = norm(row.dataset.ruleset);
-        const characterId = norm(row.dataset.character);
+        const glitchId = norm(row.dataset.glitch);
+        const characterId = (row.dataset.character || '').toString().trim();
 
         if (chId) {
           chIds.push(chId);
@@ -285,7 +285,7 @@ const CONFIG = {
         }
 
         if (resRaw.length) restrictionsRaw.push(...resRaw);
-        if (rulesetId) rulesetIds.push(rulesetId);
+        if (glitchId) glitchIds.push(glitchId);
         if (characterId) characterIds.push(characterId);
       });
 
@@ -302,7 +302,7 @@ const CONFIG = {
       return {
         challenges: toList(chIds, chLabelById),
         restrictions: toList(restrictionsRaw),
-        rulesets: toList(rulesetIds),
+        glitches: toList(glitchIds),
         characters: toList(characterIds),
       };
     }
@@ -311,7 +311,7 @@ const CONFIG = {
 
     const activeChallenges = new Set();
     const activeRestrictions = new Set();
-    const activeRulesets = new Set();
+    const activeGlitches = new Set();
     const activeCharacters = new Set();
 
     let dateSortDir = 'desc';
@@ -333,7 +333,7 @@ const CONFIG = {
     function getSetForCol(col) {
       if (col === 'challenge') return activeChallenges;
       if (col === 'restrictions') return activeRestrictions;
-      if (col === 'ruleset') return activeRulesets;
+      if (col === 'glitch') return activeGlitches;
       if (col === 'character') return activeCharacters;
       return null;
     }
@@ -341,7 +341,7 @@ const CONFIG = {
     function getOptionsForCol(col) {
       if (col === 'challenge') return OPTIONS.challenges;
       if (col === 'restrictions') return OPTIONS.restrictions;
-      if (col === 'ruleset') return OPTIONS.rulesets;
+      if (col === 'glitch') return OPTIONS.glitches;
       if (col === 'character') return OPTIONS.characters;
       return [];
     }
@@ -365,10 +365,10 @@ const CONFIG = {
         btnRes.setAttribute('aria-expanded', count > 0 ? 'true' : 'false');
       }
 
-      if (btnRuleset) {
-        const count = activeRulesets.size;
-        btnRuleset.textContent = count ? `Ruleset (${count}) ▾` : 'All ▾';
-        btnRuleset.setAttribute('aria-expanded', count > 0 ? 'true' : 'false');
+      if (btnGlitch) {
+        const count = activeGlitches.size;
+        btnGlitch.textContent = count ? `Glitches (${count}) ▾` : 'All ▾';
+        btnGlitch.setAttribute('aria-expanded', count > 0 ? 'true' : 'false');
       }
 
       if (btnCharacter) {
@@ -392,13 +392,12 @@ const CONFIG = {
         chips.push({ kind: 'restrictions', id, label: getLabelFor('restrictions', id) });
       });
 
-      activeRulesets.forEach(id => {
-        chips.push({ kind: 'ruleset', id, label: getLabelFor('ruleset', id) });
+      activeGlitches.forEach(id => {
+        chips.push({ kind: 'glitch', id, label: getLabelFor('glitch', id) });
       });
 
       activeCharacters.forEach(id => {
         chips.push({ kind: 'character', id, label: getLabelFor('character', id) });
-      });
       });
 
       if (!chips.length) return;
@@ -417,7 +416,7 @@ const CONFIG = {
         let colLabel = 'Filter';
         if (c.kind === 'challenge') colLabel = 'Challenge';
         else if (c.kind === 'restrictions') colLabel = 'Restrictions';
-        else if (c.kind === 'ruleset') colLabel = 'Ruleset';
+        else if (c.kind === 'glitch') colLabel = 'Glitches Used';
         else if (c.kind === 'character') colLabel = 'Character';
         
         activeFiltersWrap.appendChild(
@@ -425,7 +424,7 @@ const CONFIG = {
             let set;
             if (c.kind === 'challenge') set = activeChallenges;
             else if (c.kind === 'restrictions') set = activeRestrictions;
-            else if (c.kind === 'ruleset') set = activeRulesets;
+            else if (c.kind === 'glitch') set = activeGlitches;
             else if (c.kind === 'character') set = activeCharacters;
             if (set) set.delete(c.id);
             render();
@@ -441,7 +440,7 @@ const CONFIG = {
       clearAll.addEventListener('click', () => {
         activeChallenges.clear();
         activeRestrictions.clear();
-        activeRulesets.clear();
+        activeGlitches.clear();
         activeCharacters.clear();
         render();
       });
@@ -455,9 +454,9 @@ const CONFIG = {
       return need.every(x => rowResListNorm.includes(x));
     }
 
-    function matchesRuleset(rowRuleset) {
-      if (!activeRulesets.size) return true;
-      return activeRulesets.has(norm(rowRuleset));
+    function matchesGlitch(rowGlitch) {
+      if (!activeGlitches.size) return true;
+      return activeGlitches.has(norm(rowGlitch));
     }
 
     function matchesCharacter(rowCharacter) {
@@ -471,12 +470,12 @@ const CONFIG = {
       const ch = norm(row.dataset.challengeId);
       const resRaw = parseRestrictionsRaw(row);
       const resNorm = resRaw.map(norm);
-      const ruleset = row.dataset.ruleset || '';
+      const glitch = row.dataset.glitch || '';
       const character = row.dataset.character || '';
 
       if (activeChallenges.size && !activeChallenges.has(ch)) return false;
       if (!matchesAllRestrictions(resNorm)) return false;
-      if (!matchesRuleset(ruleset)) return false;
+      if (!matchesGlitch(glitch)) return false;
       if (!matchesCharacter(character)) return false;
 
       if (needle) {
@@ -489,9 +488,7 @@ const CONFIG = {
           ' ' +
           norm(resRaw.join(' ')) +
           ' ' +
-          norm(ruleset) +
-          ' ' +
-          norm(character);
+          norm(glitch);
 
         if (!hay.includes(needle)) return false;
       }
@@ -664,7 +661,7 @@ const CONFIG = {
 
     runsRoot.querySelectorAll('[data-filter-btn]').forEach(btn => {
       const col = btn.getAttribute('data-filter-btn');
-      if (col !== 'challenge' && col !== 'restrictions' && col !== 'ruleset' && col !== 'character') return;
+      if (col !== 'challenge' && col !== 'restrictions' && col !== 'glitch' && col !== 'character') return;
 
       // Add ARIA attributes
       btn.setAttribute('aria-haspopup', 'true');
@@ -725,7 +722,7 @@ const CONFIG = {
         // Return focus to the button that opened it
         if (thActiveCol === 'challenge' && btnCh) btnCh.focus();
         if (thActiveCol === 'restrictions' && btnRes) btnRes.focus();
-        if (thActiveCol === 'ruleset' && btnRuleset) btnRuleset.focus();
+        if (thActiveCol === 'glitch' && btnGlitch) btnGlitch.focus();
         if (thActiveCol === 'character' && btnCharacter) btnCharacter.focus();
       }
     });
