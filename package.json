@@ -2,6 +2,10 @@
   "name": "challenge-run-site",
   "private": true,
   "scripts": {
+    "build": "npm run build:css && npm run build:js",
+    "build:css": "npx clean-css-cli assets/style.css -o assets/style.min.css",
+    "build:js": "npx terser assets/js/main.js -o assets/js/main.min.js -c -m && npx terser assets/js/utils.js -o assets/js/utils.min.js -c -m",
+
     "check:all": "npm run check:games-index && npm run check:run-categories && npm run check:codeowners",
     "check:codeowners": "node scripts/generate-codeowners.js --check",
     "check:games-index": "node scripts/generate-games-index.js --check",
@@ -26,5 +30,9 @@
   },
   "dependencies": {
     "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "clean-css-cli": "^5.6.3",
+    "terser": "^5.27.0"
   }
 }
