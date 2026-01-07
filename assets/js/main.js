@@ -262,13 +262,11 @@ const CONFIG = {
       // Handle HH:MM:SS.mmm or HH:MM:SS or MM:SS formats
       const parts = v.split(':');
       if (parts.length === 3) {
-        // HH:MM:SS or HH:MM:SS.mmm
         const hours = parseFloat(parts[0]) || 0;
         const mins = parseFloat(parts[1]) || 0;
         const secs = parseFloat(parts[2]) || 0;
         return hours * 3600 + mins * 60 + secs;
       } else if (parts.length === 2) {
-        // MM:SS
         const mins = parseFloat(parts[0]) || 0;
         const secs = parseFloat(parts[1]) || 0;
         return mins * 60 + secs;
