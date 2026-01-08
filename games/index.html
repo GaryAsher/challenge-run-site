@@ -9,7 +9,7 @@ title: Games
 <div class="page-width games-controls" id="games-controls">
 
   <h1>Games</h1>
-  <p class="muted">Jump by letter or filter by tags and challenges.</p>
+  <p class="muted">Jump by letter or filter by genre, platform, and challenges.</p>
 
   <!-- A–Z navigation -->
   <div class="az" id="az">
@@ -24,45 +24,66 @@ title: Games
 
   <!-- Text search -->
   <div class="filter-wrap" style="margin-bottom: 1.25rem;">
-    <div class="search-with-reset">
-      <input
-        id="q"
-        class="filter"
-        type="text"
-        placeholder="Search by game name..."
-        autocomplete="off"
-        inputmode="search"
-        enterkeyhint="search"
-        aria-label="Search games"
-      />
-      <button type="button" class="btn-reset-all" id="reset-all" title="Reset all filters" hidden>✕</button>
-    </div>
+    <input
+      id="q"
+      class="filter"
+      type="text"
+      placeholder="Search by game name..."
+      autocomplete="off"
+      inputmode="search"
+      enterkeyhint="search"
+      aria-label="Search games"
+    />
   </div>
 
-  <!-- Tags + Challenges row -->
-  <div class="filters-grid">
+  <!-- Genre + Platform + Challenges row -->
+  <div class="filters-grid filters-grid--three">
 
-    <!-- Tag filter -->
-    <div class="tag-filter" id="tag-filter">
-      <div class="muted filter-label">Filter by tags:</div>
+    <!-- Genre filter (was tags) -->
+    <div class="tag-filter" id="genre-filter">
+      <div class="muted filter-label">Filter by genre:</div>
 
       <div class="tag-picker">
-        <div class="tag-picked" id="tag-picked"></div>
+        <div class="tag-picked" id="genre-picked"></div>
 
         <div class="filter-wrap">
           <input
-            id="tag-search"
+            id="genre-search"
             class="tag-search"
             type="text"
-            placeholder="Type a tag..."
+            placeholder="Type a genre..."
             autocomplete="off"
             inputmode="search"
             enterkeyhint="done"
-            aria-label="Filter games by tag"
+            aria-label="Filter games by genre"
           />
         </div>
 
-        <div class="tag-suggestions" id="tag-suggestions" hidden></div>
+        <div class="tag-suggestions" id="genre-suggestions" hidden></div>
+      </div>
+    </div>
+
+    <!-- Platform filter -->
+    <div class="tag-filter" id="platform-filter">
+      <div class="muted filter-label">Filter by platform:</div>
+
+      <div class="tag-picker">
+        <div class="tag-picked" id="platform-picked"></div>
+
+        <div class="filter-wrap">
+          <input
+            id="platform-search"
+            class="tag-search"
+            type="text"
+            placeholder="Type a platform..."
+            autocomplete="off"
+            inputmode="search"
+            enterkeyhint="done"
+            aria-label="Filter games by platform"
+          />
+        </div>
+
+        <div class="tag-suggestions" id="platform-suggestions" hidden></div>
       </div>
     </div>
 
@@ -92,20 +113,26 @@ title: Games
 
   </div>
 
-  <!-- Results controls -->
-  <div class="results-controls">
-    <label class="muted" for="limit">Show:</label>
-    <select id="limit" class="select">
-      <option value="10" selected>10</option>
-      <option value="25">25</option>
-      <option value="50">50</option>
-      <option value="100">100</option>
-      <option value="250">250</option>
-      <option value="0">All</option>
-    </select>
+  <!-- Results controls bar -->
+  <div class="results-bar">
+    <div class="results-bar__left">
+      <label class="muted" for="limit">Show</label>
+      <select id="limit" class="select">
+        <option value="10" selected>10</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+        <option value="250">250</option>
+        <option value="0">All</option>
+      </select>
+    </div>
+    <div class="results-bar__center">
+      <p class="muted" id="status"></p>
+    </div>
+    <div class="results-bar__right">
+      <button type="button" class="btn btn--reset" id="reset-all" hidden>Reset Filters</button>
+    </div>
   </div>
-
-  <p class="muted" id="status"></p>
 
 </div>
 
@@ -121,7 +148,8 @@ title: Games
         href="{{ g.url | relative_url }}"
         data-name="{{ g.name | downcase }}"
         data-letter="{{ g.name | strip | slice: 0, 1 | upcase }}"
-        data-tags="{{ g.tags | join: ',' | downcase }}"
+        data-genres="{{ g.tags | join: ',' | downcase }}"
+        data-platforms="{{ g.platforms | default: empty | join: ',' | downcase }}"
         data-challenges="{{ g.challenges | default: empty | join: ',' | downcase }}"
       >
         {% assign game_cover = g.cover | default: "/assets/img/site/default-game.jpg" %}
@@ -142,28 +170,44 @@ const items = Array.from(document.querySelectorAll(".game-item"));
 const input = document.getElementById("q");
 const status = document.getElementById("status");
 const limitSelect = document.getElementById("limit");
+const resetBtn = document.getElementById("reset-all");
 
 // =========================================================
-// DOM: Tags filter elements + challenge filter elements
+// DOM: Filter elements - Genre (was tags), Platform, Challenge
 // =========================================================
-const tagFilterEl = document.getElementById("tag-filter");
-const tagPickedEl = document.getElementById("tag-picked");
-const tagSearchEl = document.getElementById("tag-search");
-const tagSugEl = document.getElementById("tag-suggestions");
+const genreFilterEl = document.getElementById("genre-filter");
+const genrePickedEl = document.getElementById("genre-picked");
+const genreSearchEl = document.getElementById("genre-search");
+const genreSugEl = document.getElementById("genre-suggestions");
+
+const platformFilterEl = document.getElementById("platform-filter");
+const platformPickedEl = document.getElementById("platform-picked");
+const platformSearchEl = document.getElementById("platform-search");
+const platformSugEl = document.getElementById("platform-suggestions");
 
 const challengeFilterEl = document.getElementById("challenge-filter");
 const challengePickedEl = document.getElementById("challenge-picked");
 const challengeSearchEl = document.getElementById("challenge-search");
 const challengeSugEl = document.getElementById("challenge-suggestions");
 
-const activeTags = new Set();
+const activeGenres = new Set();
+const activePlatforms = new Set();
 const activeChallenges = new Set();
 
 // =========================================================
 // Data: load label maps from Jekyll data files (safe via jsonify)
 // =========================================================
-const TAGS = [
+const GENRES = [
 {% for pair in site.data.tags %}
+  {
+    id: {{ pair[0] | jsonify }},
+    label: {{ pair[1].label | default: pair[0] | jsonify }}
+  }{% unless forloop.last %},{% endunless %}
+{% endfor %}
+].sort((a, b) => a.label.localeCompare(b.label));
+
+const PLATFORMS = [
+{% for pair in site.data.platforms %}
   {
     id: {{ pair[0] | jsonify }},
     label: {{ pair[1].label | default: pair[0] | jsonify }}
@@ -236,9 +280,7 @@ function renderSuggestions(qRaw, set, list, sugEl, { onPick } = {}) {
   const available = list.filter(x => !set.has(norm(x.id)));
   const filtered = q
     ? available.filter(x => {
-        // Search in id and label
         if (norm(x.label).includes(q) || norm(x.id).includes(q)) return true;
-        // Also search in aliases if present
         if (x.aliases && x.aliases.length) {
           return x.aliases.some(alias => norm(alias).includes(q));
         }
@@ -275,7 +317,50 @@ function renderSuggestions(qRaw, set, list, sugEl, { onPick } = {}) {
 }
 
 // =========================================================
-// Filtering: search + tags + challenges
+// Reset button visibility
+// =========================================================
+function updateResetButton() {
+  const hasFilters = input.value.trim() ||
+                     activeGenres.size > 0 ||
+                     activePlatforms.size > 0 ||
+                     activeChallenges.size > 0 ||
+                     location.hash;
+  if (resetBtn) resetBtn.hidden = !hasFilters;
+}
+
+function resetAllFilters() {
+  input.value = '';
+  activeGenres.clear();
+  activePlatforms.clear();
+  activeChallenges.clear();
+  
+  // Clear hash
+  history.pushState('', document.title, window.location.pathname + window.location.search);
+  
+  // Re-render picked chips
+  renderPicked(activeGenres, GENRES, genrePickedEl, { onRemove: () => {
+    renderPicked(activeGenres, GENRES, genrePickedEl);
+    applyFilter();
+  }});
+  renderPicked(activePlatforms, PLATFORMS, platformPickedEl, { onRemove: () => {
+    renderPicked(activePlatforms, PLATFORMS, platformPickedEl);
+    applyFilter();
+  }});
+  renderPicked(activeChallenges, CHALLENGES, challengePickedEl, { onRemove: () => {
+    renderPicked(activeChallenges, CHALLENGES, challengePickedEl);
+    applyFilter();
+  }});
+  
+  updateAzActive();
+  applyFilter();
+}
+
+if (resetBtn) {
+  resetBtn.addEventListener('click', resetAllFilters);
+}
+
+// =========================================================
+// Filtering: search + genres + platforms + challenges
 // =========================================================
 function applyFilter() {
   const q = norm(input.value);
@@ -289,7 +374,8 @@ function applyFilter() {
   for (const el of items) {
     const name = el.dataset.name || "";
     const nameExpanded = expandRomanNumerals(name);
-    const tags = (el.dataset.tags || "").split(",").map(norm).filter(Boolean);
+    const genres = (el.dataset.genres || "").split(",").map(norm).filter(Boolean);
+    const platforms = (el.dataset.platforms || "").split(",").map(norm).filter(Boolean);
     const challenges = (el.dataset.challenges || "").split(",").map(norm).filter(Boolean);
 
     const letter = (el.dataset.letter || "").toUpperCase();
@@ -302,13 +388,13 @@ function applyFilter() {
       (hashMode === "OTHER" && !startsWithDigit && !startsWithAtoZ) ||
       (hashMode.length === 1 && letter === hashMode);
 
-    // Match against both original and expanded (roman numeral) versions
     const nameMatch = !q || name.includes(q) || nameExpanded.includes(qExpanded);
 
     const ok =
       okHash &&
       nameMatch &&
-      Array.from(activeTags).every(t => tags.includes(t)) &&
+      Array.from(activeGenres).every(g => genres.includes(g)) &&
+      Array.from(activePlatforms).every(p => platforms.includes(p)) &&
       Array.from(activeChallenges).every(c => challenges.includes(c));
 
     if (ok) matches.push(el);
@@ -318,9 +404,8 @@ function applyFilter() {
   const shown = limit === 0 ? matches.length : Math.min(limit, matches.length);
   for (let i = 0; i < shown; i++) matches[i].style.display = "";
 
-  status.textContent =
-    `${shown} shown of ${matches.length} matches` +
-    (hashMode ? ` (section: ${hashMode})` : "");
+  status.textContent = `Showing ${shown} of ${matches.length} games.`;
+  updateResetButton();
 }
 
 // =========================================================
@@ -331,15 +416,11 @@ function wireDropdown({ filterEl, searchEl, sugEl, set, list, pickedEl }) {
     searchEl.value = "";
     renderPicked(set, list, pickedEl, { onRemove: onRemoveChip });
     applyFilter();
-
-    // Keep the dropdown open for rapid multi-picking, but refresh it.
     renderSuggestions("", set, list, sugEl, { onPick: afterPick });
   }
 
   function open() {
-    renderSuggestions(searchEl.value, set, list, sugEl, {
-      onPick: afterPick
-    });
+    renderSuggestions(searchEl.value, set, list, sugEl, { onPick: afterPick });
   }
 
   function close() {
@@ -355,39 +436,32 @@ function wireDropdown({ filterEl, searchEl, sugEl, set, list, pickedEl }) {
 
   renderPicked(set, list, pickedEl, { onRemove: onRemoveChip });
 
-  searchEl.addEventListener("focus", () => {
-    if (sugEl.hidden) open();
-  });
-
-  searchEl.addEventListener("pointerdown", () => {
-    if (sugEl.hidden) open();
-    else close();
-  });
-
+  searchEl.addEventListener("focus", () => { if (sugEl.hidden) open(); });
+  searchEl.addEventListener("pointerdown", () => { if (sugEl.hidden) open(); else close(); });
   searchEl.addEventListener("input", () => open());
-
-  searchEl.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      close();
-      searchEl.blur();
-    }
-  });
-
-  document.addEventListener("pointerdown", (e) => {
-    if (!filterEl.contains(e.target)) close();
-  }, true);
+  searchEl.addEventListener("keydown", (e) => { if (e.key === "Escape") { close(); searchEl.blur(); } });
+  document.addEventListener("pointerdown", (e) => { if (!filterEl.contains(e.target)) close(); }, true);
 }
 
 // =========================================================
-// Init
+// Init dropdowns
 // =========================================================
 wireDropdown({
-  filterEl: tagFilterEl,
-  searchEl: tagSearchEl,
-  sugEl: tagSugEl,
-  set: activeTags,
-  list: TAGS,
-  pickedEl: tagPickedEl
+  filterEl: genreFilterEl,
+  searchEl: genreSearchEl,
+  sugEl: genreSugEl,
+  set: activeGenres,
+  list: GENRES,
+  pickedEl: genrePickedEl
+});
+
+wireDropdown({
+  filterEl: platformFilterEl,
+  searchEl: platformSearchEl,
+  sugEl: platformSugEl,
+  set: activePlatforms,
+  list: PLATFORMS,
+  pickedEl: platformPickedEl
 });
 
 wireDropdown({
@@ -425,55 +499,6 @@ azLinks.forEach(link => {
 
 input.addEventListener("input", applyFilter);
 limitSelect.addEventListener("change", applyFilter);
-
-// =========================================================
-// Reset All Filters
-// =========================================================
-const resetBtn = document.getElementById('reset-all');
-
-function updateResetButton() {
-  const hasFilters = input.value.trim() ||
-                     activeTags.size > 0 ||
-                     activeChallenges.size > 0 ||
-                     location.hash;
-  if (resetBtn) resetBtn.hidden = !hasFilters;
-}
-
-function resetAllFilters() {
-  input.value = '';
-  activeTags.clear();
-  activeChallenges.clear();
-  
-  // Clear hash
-  history.pushState('', document.title, window.location.pathname + window.location.search);
-  
-  // Re-render picked chips
-  renderPicked(activeTags, TAGS, tagPickedEl, { onRemove: () => {
-    renderPicked(activeTags, TAGS, tagPickedEl);
-    applyFilter();
-    updateResetButton();
-  }});
-  renderPicked(activeChallenges, CHALLENGES, challengePickedEl, { onRemove: () => {
-    renderPicked(activeChallenges, CHALLENGES, challengePickedEl);
-    applyFilter();
-    updateResetButton();
-  }});
-  
-  updateAzActive();
-  applyFilter();
-  updateResetButton();
-}
-
-if (resetBtn) {
-  resetBtn.addEventListener('click', resetAllFilters);
-}
-
-// Update reset button visibility on filter changes
-const origApplyFilter = applyFilter;
-applyFilter = function() {
-  origApplyFilter();
-  updateResetButton();
-};
 
 updateAzActive();
 applyFilter();
