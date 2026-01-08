@@ -323,7 +323,7 @@ layout: default
         <!-- Search row (always visible) -->
         <div class="runs-filters runs-filters--main">
           <div class="runs-filter runs-filter--search">
-            <label class="muted" for="q">Search</label>
+            <span class="muted filter-label-text">Search</span>
             <input
               id="q"
               class="filter"
@@ -354,7 +354,7 @@ layout: default
           <div class="filters-panel__row">
             {% if show_character %}
             <div class="runs-filter runs-filter--compact">
-              <label class="muted" for="filter-character">{{ character_label }}</label>
+              <span class="muted filter-label-text">{{ character_label }}</span>
               <button
                 id="filter-character"
                 class="select th-caret"
@@ -368,7 +368,7 @@ layout: default
             {% endif %}
 
             <div class="runs-filter runs-filter--compact">
-              <label class="muted" for="filter-challenge">Challenge</label>
+              <span class="muted filter-label-text">Challenge</span>
               <button
                 id="filter-challenge"
                 class="select th-caret"
@@ -381,7 +381,7 @@ layout: default
             </div>
 
             <div class="runs-filter runs-filter--compact">
-              <label class="muted" for="filter-restrictions">Restrictions</label>
+              <span class="muted filter-label-text">Restrictions</span>
               <button
                 id="filter-restrictions"
                 class="select th-caret"
@@ -395,7 +395,7 @@ layout: default
 
             {% if game.glitches_data and game.glitches_data.size > 0 %}
             <div class="runs-filter runs-filter--compact">
-              <label class="muted" for="filter-glitch">Glitches</label>
+              <span class="muted filter-label-text">Glitches</span>
               <button
                 id="filter-glitch"
                 class="select th-caret"
@@ -415,7 +415,7 @@ layout: default
         <!-- Results bar: Show / Status / Reset -->
         <div class="results-bar results-bar--runs">
           <div class="results-bar__left">
-            <label class="muted" for="limit">Show</label>
+            <span class="muted filter-label-text">Show</span>
             <select id="limit" class="select">
               <option value="10" selected>10</option>
               <option value="25">25</option>
