@@ -17,31 +17,54 @@
  *   --no-data            Do not modify _data/tags.yml, _data/platforms.yml, or _data/challenges.yml
  *   --no-codeowners      Do not run scripts/generate-codeowners.js
  *
- * JSON format (example):
+ * JSON format (example - full Hades II style game):
  * {
  *   "game_id": "hades-2",
  *   "name": "Hades II",
  *   "name_aliases": ["Hades 2", "Hades2"],
  *   "status": "Tracking challenge categories, rules, and notable runs.",
  *   "tags": ["action","roguelike","roguelite","hack-and-slash","mythology"],
- *   "platforms": ["steam","playstation","xbox","nintendo-switch"],
- *   "tabs": {"challenges": true, "categories": true, "runs": true, "resources": true, "guides": true, "forums": true, "history": true},
+ *   "platforms": ["steam","epic","nintendo-switch","nintendo-switch-2"],
+ *   "timing_method": "IGT",
+ *   "tabs": {
+ *     "overview": true,
+ *     "runs": true,
+ *     "history": true,
+ *     "resources": true,
+ *     "forum": true,
+ *     "challenges": false,
+ *     "extra_1": false,
+ *     "extra_2": false
+ *   },
  *   "character_column": {"enabled": true, "label": "Weapon / Aspect"},
  *   "challenges": ["hitless","damageless","no-hit-no-damage"],
  *   "categories_data": [
- *     {"slug":"chaos-trials","label":"Chaos Trials","children":[{"slug":"trial-of-origin","label":"Trial of Origin"}]},
- *     {"slug":"underworld-any","label":"Underworld Any%"}
+ *     {
+ *       "slug": "chaos-trials",
+ *       "label": "Chaos Trials",
+ *       "children": [
+ *         {"slug": "trial-of-origin", "label": "Trial of Origin"},
+ *         {"slug": "trial-of-salt", "label": "Trial of Salt"}
+ *       ]
+ *     },
+ *     {"slug": "underworld-any", "label": "Underworld Any%"}
  *   ],
  *   "subcategories": ["God Only","Boonless","Arcanaless"],
  *   "glitches_data": [
- *     {"slug":"unrestricted","label":"Unrestricted"},
- *     {"slug":"nmg","label":"No Major Glitches"},
- *     {"slug":"glitchless","label":"Glitchless"}
+ *     {"slug": "unrestricted", "label": "Unrestricted"},
+ *     {"slug": "nmg", "label": "No Major Glitches"},
+ *     {"slug": "glitchless", "label": "Glitchless"}
  *   ],
  *   "cover_url": "https://example.com/hades-2.jpg",
  *   "cover_ext": "jpg",
  *   "cover_position": "center"
  * }
+ *
+ * Default values applied if not specified:
+ *   - status: "Tracking challenge categories, rules, and notable runs."
+ *   - timing_method: "IGT"
+ *   - tabs: overview, runs, history, resources, forum enabled; extra_1, extra_2 disabled
+ *   - cover_position: "center"
  */
 
 const fs = require("fs");
@@ -109,18 +132,35 @@ function yamlInlineArray(arr) {
 function buildGameFrontMatter(payload, coverRelPathMaybe) {
   const gameId = payload.game_id;
   const name = payload.name || gameId;
-  const status = payload.status || "";
+  const status = payload.status || "Tracking challenge categories, rules, and notable runs.";
 
   const reviewers = Array.isArray(payload.reviewers) ? payload.reviewers : [];
   const nameAliases = normalizeArray(payload.name_aliases).filter(Boolean);
   const tags = normalizeArray(payload.tags).filter(Boolean);
   const platforms = normalizeArray(payload.platforms).filter(Boolean);
-  const tabs = payload.tabs && typeof payload.tabs === "object" ? payload.tabs : null;
+  
+  // Default tabs - enable common ones by default
+  const defaultTabs = {
+    overview: true,
+    runs: true,
+    history: true,
+    resources: true,
+    forum: true,
+    extra_1: false,
+    extra_2: false
+  };
+  const tabs = payload.tabs && typeof payload.tabs === "object" 
+    ? { ...defaultTabs, ...payload.tabs } 
+    : defaultTabs;
+  
   const challenges = normalizeArray(payload.challenges).filter(Boolean);
 
   const categoriesData = Array.isArray(payload.categories_data) ? payload.categories_data : [];
   const subcategories = normalizeArray(payload.subcategories).filter(Boolean);
   const glitchesData = Array.isArray(payload.glitches_data) ? payload.glitches_data : [];
+
+  // Timing method (IGT, RTA, LRT, etc.)
+  const timingMethod = payload.timing_method || "IGT";
 
   // Character column config
   const characterColumn = payload.character_column && typeof payload.character_column === "object" 
@@ -160,12 +200,17 @@ function buildGameFrontMatter(payload, coverRelPathMaybe) {
     lines.push(`cover_position: ${yamlEscapeScalar(coverPosition)}`);
   }
 
-  if (tabs) {
-    lines.push("");
-    lines.push("tabs:");
-    const keys = Object.keys(tabs);
-    keys.sort((a, b) => a.localeCompare(b));
-    for (const k of keys) {
+  // Timing method
+  lines.push("");
+  lines.push("# Timing method displayed in Time column header (e.g., IGT, RTA, LRT)");
+  lines.push(`timing_method: ${yamlEscapeScalar(timingMethod)}`);
+
+  // Tabs - always include with sensible defaults
+  lines.push("");
+  lines.push("tabs:");
+  const tabOrder = ["overview", "runs", "history", "resources", "forum", "challenges", "extra_1", "extra_2"];
+  for (const k of tabOrder) {
+    if (tabs.hasOwnProperty(k)) {
       const v = !!tabs[k];
       lines.push(`${padYamlIndent(1)}${k}: ${v ? "true" : "false"}`);
     }
@@ -174,10 +219,12 @@ function buildGameFrontMatter(payload, coverRelPathMaybe) {
   // Character column
   if (characterColumn) {
     lines.push("");
+    lines.push("# Character/Weapon/Class column configuration (optional)");
+    lines.push("# Set to false or omit to hide the column");
     lines.push("character_column:");
     lines.push(`${padYamlIndent(1)}enabled: ${characterColumn.enabled ? "true" : "false"}`);
     if (characterColumn.label) {
-      lines.push(`${padYamlIndent(1)}label: ${yamlEscapeScalar(characterColumn.label)}`);
+      lines.push(`${padYamlIndent(1)}label: ${yamlEscapeScalar(characterColumn.label)}  # Column header text`);
     }
   }
 
@@ -216,6 +263,7 @@ function buildGameFrontMatter(payload, coverRelPathMaybe) {
   // Glitches data
   if (glitchesData.length) {
     lines.push("");
+    lines.push("# Glitch categories - what glitches are allowed");
     lines.push("glitches_data:");
     for (const item of glitchesData) {
       if (!item || typeof item !== "object") continue;
