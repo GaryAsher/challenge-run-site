@@ -21,6 +21,9 @@ platforms:
 cover: /assets/img/games/h/hades-2.jpg
 cover_position: center
 
+# Timing method displayed in Time column header (e.g., IGT, RTA, LRT)
+timing_method: IGT
+
 tabs:
   overview: true
   runs: true
