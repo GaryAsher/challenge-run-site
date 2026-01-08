@@ -71,9 +71,7 @@ layout: default
         <h2 class="mb-2">Run Categories</h2>
         <div class="tag-picked">
           {% for cat in page.categories_data %}
-            <a class="tag-chip" href="{{ page.url | relative_url }}runs/{{ cat.slug }}/">
-              {{ cat.label }}
-            </a>
+            <span class="tag-chip">{{ cat.label }}</span>
           {% endfor %}
         </div>
       </div>
