@@ -587,7 +587,8 @@ a.tag:hover,
 a.tag-chip:hover,
 button.tag:hover,
 .tag-chip:hover {
-  background: var(--panel);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border-color: var(--accent);
   text-decoration: none;
 }
 
@@ -1124,6 +1125,20 @@ button.tag,
 }
 
 /* ============================================================
+   Filter Options (Overview page)
+   ============================================================ */
+.filter-options-group {
+  margin-bottom: 0.5rem;
+}
+
+.filter-options-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 0 0 0.5rem 0;
+}
+
+/* ============================================================
    Games: Cards
    ============================================================ */
 .game-card {
@@ -1174,7 +1189,10 @@ button.tag,
 }
 
 .game-card:hover .game-card__bg { opacity: 0.6; }
-.game-card:hover { text-decoration: none; }
+.game-card:hover { 
+  text-decoration: none; 
+  border-color: var(--accent);
+}
 
 /* Games index: keep filtering by tags, but don't render tag chips inside cards */
 .game-card :is(.tag, .tags, .game-tags) {
@@ -1226,7 +1244,10 @@ button.tag,
   z-index: 2;
 }
 
-.runner-card:hover { text-decoration: none; }
+.runner-card:hover { 
+  text-decoration: none; 
+  border-color: var(--accent);
+}
 .runner-card:hover .runner-card__bg { opacity: 1; }
 
 /* ============================================================
@@ -1378,7 +1399,7 @@ button.tag,
   opacity: 0.75;
 
   /* Push tabs down to sit on container border */
-  margin-bottom: 0px;
+  margin-bottom: -1px;
 
   transition:
     background 120ms ease,
@@ -1562,11 +1583,6 @@ button.tag,
   background: var(--panel);
   color: var(--fg);
   border-color: rgba(255, 255, 255, 0.18);
-}
-
-.th-sort:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
 }
 
 .th-sort.is-active {
