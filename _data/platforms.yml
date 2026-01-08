@@ -1,0 +1,33 @@
+# Platforms data file
+# Used for filtering games by platform availability
+
+# Console
+nintendo-switch:
+  label: Nintendo Switch
+
+playstation:
+  label: PlayStation
+
+xbox:
+  label: Xbox
+
+# PC
+steam:
+  label: Steam
+
+epic:
+  label: Epic Games Store
+
+gog:
+  label: GOG
+
+# Mobile
+ios:
+  label: iOS
+
+android:
+  label: Android
+
+# Other
+pc:
+  label: PC (Other)
