@@ -5,6 +5,9 @@
 nintendo-switch:
   label: Nintendo Switch
 
+nintendo-switch-2:
+  label: Nintendo Switch 2
+
 playstation:
   label: PlayStation
 
@@ -13,13 +16,13 @@ xbox:
 
 # PC
 steam:
-  label: Steam
+  label: "PC: Steam"
 
 epic:
-  label: Epic Games Store
+  label: "PC: Epic Games Store"
 
 gog:
-  label: GOG
+  label: "PC: GOG"
 
 # Mobile
 ios:
