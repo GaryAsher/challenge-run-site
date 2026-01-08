@@ -13,6 +13,11 @@ tags:
   - roguelite
   - hack-and-slash
   - mythology
+platforms:
+  - steam
+  - playstation
+  - xbox
+  - nintendo-switch
 cover: /assets/img/games/h/hades-2.jpg
 cover_position: center
 
