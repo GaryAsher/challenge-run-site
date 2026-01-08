@@ -447,7 +447,17 @@ layout: default
               {% if game.glitches_data and game.glitches_data.size > 0 %}
               <th>Glitches Used</th>
               {% endif %}
-              <th>Time</th>
+
+              <th class="th-filter th-time">
+                <div class="th-title">
+                  <span>Time{% if game.timing_method %} ({{ game.timing_method }}){% endif %}</span>
+                </div>
+
+                <div class="th-time-sort" aria-label="Sort by Time">
+                  <button class="th-sort" id="th-time-asc" type="button" title="Sort fastest first">↑</button>
+                  <button class="th-sort" id="th-time-desc" type="button" title="Sort slowest first">↓</button>
+                </div>
+              </th>
 
               <th class="th-filter th-date">
                 <div class="th-title">
