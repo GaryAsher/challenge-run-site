@@ -57,6 +57,15 @@
               </div>
             {% endif %}
           </div>
+
+          {% if game.platforms and game.platforms.size > 0 %}
+          <div class="game-hero__platforms">
+            {% for plat in game.platforms %}
+              {% assign plat_meta = site.data.platforms[plat] %}
+              <span class="tag tag--platform">{{ plat_meta.label | default: plat }}</span>
+            {% endfor %}
+          </div>
+          {% endif %}
         </div>
       </section>
     </div>
