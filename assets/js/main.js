@@ -243,6 +243,10 @@ const CONFIG = {
     const thSortAsc = document.getElementById('th-sort-asc');
     const thSortDesc = document.getElementById('th-sort-desc');
 
+    // Time sort buttons
+    const thTimeAsc = document.getElementById('th-time-asc');
+    const thTimeDesc = document.getElementById('th-time-desc');
+
     const btnCh = document.getElementById('filter-challenge');
     const btnRes = document.getElementById('filter-restrictions');
     const btnGlitch = document.getElementById('filter-glitch');
@@ -329,6 +333,7 @@ const CONFIG = {
     const activeCharacters = new Set();
 
     let dateSortDir = 'desc';
+    let timeSortDir = null; // null = not sorting by time
     let thActiveCol = null;
 
     function closeThMenu() {
@@ -369,7 +374,7 @@ const CONFIG = {
     function updateTopButtonLabels() {
       if (btnCh) {
         const count = activeChallenges.size;
-        btnCh.textContent = count ? `Challenge (${count}) ▾` : 'All ▾';
+        btnCh.textContent = count ? `Challenge (${count}) ▾` : 'Any ▾';
         btnCh.setAttribute('aria-expanded', count > 0 ? 'true' : 'false');
       }
 
@@ -381,13 +386,13 @@ const CONFIG = {
 
       if (btnGlitch) {
         const count = activeGlitches.size;
-        btnGlitch.textContent = count ? `Glitches (${count}) ▾` : 'All ▾';
+        btnGlitch.textContent = count ? `Glitches (${count}) ▾` : 'Any ▾';
         btnGlitch.setAttribute('aria-expanded', count > 0 ? 'true' : 'false');
       }
 
       if (btnCharacter) {
         const count = activeCharacters.size;
-        btnCharacter.textContent = count ? `(${count}) ▾` : 'All ▾';
+        btnCharacter.textContent = count ? `Aspects (${count}) ▾` : 'Any ▾';
         btnCharacter.setAttribute('aria-expanded', count > 0 ? 'true' : 'false');
       }
     }
@@ -431,7 +436,7 @@ const CONFIG = {
         if (c.kind === 'challenge') colLabel = 'Challenge';
         else if (c.kind === 'restrictions') colLabel = 'Restrictions';
         else if (c.kind === 'glitch') colLabel = 'Glitches Used';
-        else if (c.kind === 'character') colLabel = 'Character';
+        else if (c.kind === 'character') colLabel = 'Aspects';
         
         activeFiltersWrap.appendChild(
           makeChip(`${colLabel}: ${c.label}`, () => {
@@ -446,20 +451,7 @@ const CONFIG = {
         );
       });
 
-      const clearAll = document.createElement('button');
-      clearAll.type = 'button';
-      clearAll.className = 'btn';
-      clearAll.textContent = 'Clear All';
-      clearAll.setAttribute('aria-label', 'Clear all filters');
-      clearAll.addEventListener('click', () => {
-        activeChallenges.clear();
-        activeRestrictions.clear();
-        activeGlitches.clear();
-        activeCharacters.clear();
-        render();
-      });
-
-      activeFiltersWrap.appendChild(clearAll);
+      // Clear All button removed - Reset Filters handles this now
     }
 
     function matchesAllRestrictions(rowResListNorm) {
@@ -534,20 +526,78 @@ const CONFIG = {
       });
     }
 
+    function parseTimeToSeconds(s) {
+      const v = (s || '').trim();
+      if (!v || v === '—') return NaN;
+
+      const parts = v.split(':');
+      if (parts.length === 3) {
+        // HH:MM:SS
+        return parseFloat(parts[0]) * 3600 + parseFloat(parts[1]) * 60 + parseFloat(parts[2]);
+      } else if (parts.length === 2) {
+        // MM:SS
+        return parseFloat(parts[0]) * 60 + parseFloat(parts[1]);
+      }
+      return NaN;
+    }
+
+    function sortRowsByTime(list) {
+      const dir = timeSortDir;
+
+      return list.sort((a, b) => {
+        const aTime = parseTimeToSeconds(a.dataset.time);
+        const bTime = parseTimeToSeconds(b.dataset.time);
+
+        const aBad = !Number.isFinite(aTime);
+        const bBad = !Number.isFinite(bTime);
+
+        if (aBad && bBad) {
+          return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
+        }
+        if (aBad) return 1;
+        if (bBad) return -1;
+
+        if (aTime === bTime) {
+          return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
+        }
+
+        return dir === 'asc' ? aTime - bTime : bTime - aTime;
+      });
+    }
+
     function updateDateSortButtons() {
       if (thSortAsc) {
-        thSortAsc.disabled = dateSortDir === 'asc';
-        thSortAsc.setAttribute('aria-pressed', dateSortDir === 'asc' ? 'true' : 'false');
+        thSortAsc.disabled = timeSortDir !== null && dateSortDir !== 'asc';
+        thSortAsc.classList.toggle('is-active', timeSortDir === null && dateSortDir === 'asc');
+        thSortAsc.setAttribute('aria-pressed', dateSortDir === 'asc' && timeSortDir === null ? 'true' : 'false');
       }
       if (thSortDesc) {
-        thSortDesc.disabled = dateSortDir === 'desc';
-        thSortDesc.setAttribute('aria-pressed', dateSortDir === 'desc' ? 'true' : 'false');
+        thSortDesc.disabled = timeSortDir !== null && dateSortDir !== 'desc';
+        thSortDesc.classList.toggle('is-active', timeSortDir === null && dateSortDir === 'desc');
+        thSortDesc.setAttribute('aria-pressed', dateSortDir === 'desc' && timeSortDir === null ? 'true' : 'false');
+      }
+    }
+
+    function updateTimeSortButtons() {
+      if (thTimeAsc) {
+        thTimeAsc.classList.toggle('is-active', timeSortDir === 'asc');
+        thTimeAsc.setAttribute('aria-pressed', timeSortDir === 'asc' ? 'true' : 'false');
+      }
+      if (thTimeDesc) {
+        thTimeDesc.classList.toggle('is-active', timeSortDir === 'desc');
+        thTimeDesc.setAttribute('aria-pressed', timeSortDir === 'desc' ? 'true' : 'false');
       }
     }
 
     function render() {
       let filtered = rows.filter(passesFilters);
-      filtered = sortRowsByDate(filtered);
+      
+      // Sort by time if time sort is active, otherwise by date
+      if (timeSortDir) {
+        filtered = sortRowsByTime(filtered);
+      } else {
+        filtered = sortRowsByDate(filtered);
+      }
 
       if (tbody) filtered.forEach(r => tbody.appendChild(r));
 
@@ -744,7 +794,9 @@ const CONFIG = {
     if (thSortAsc) {
       thSortAsc.addEventListener('click', () => {
         dateSortDir = 'asc';
+        timeSortDir = null; // Clear time sort when date sort is selected
         updateDateSortButtons();
+        updateTimeSortButtons();
         render();
       });
     }
@@ -752,7 +804,28 @@ const CONFIG = {
     if (thSortDesc) {
       thSortDesc.addEventListener('click', () => {
         dateSortDir = 'desc';
+        timeSortDir = null; // Clear time sort when date sort is selected
         updateDateSortButtons();
+        updateTimeSortButtons();
+        render();
+      });
+    }
+
+    // Time sort buttons
+    if (thTimeAsc) {
+      thTimeAsc.addEventListener('click', () => {
+        timeSortDir = 'asc';
+        updateDateSortButtons();
+        updateTimeSortButtons();
+        render();
+      });
+    }
+
+    if (thTimeDesc) {
+      thTimeDesc.addEventListener('click', () => {
+        timeSortDir = 'desc';
+        updateDateSortButtons();
+        updateTimeSortButtons();
         render();
       });
     }
@@ -774,8 +847,10 @@ const CONFIG = {
       activeGlitches.clear();
       activeCharacters.clear();
       dateSortDir = 'desc';
+      timeSortDir = null;
       
       updateDateSortButtons();
+      updateTimeSortButtons();
       updateTopButtonLabels();
       renderActiveFilterChips();
       render();
@@ -796,6 +871,7 @@ const CONFIG = {
     if (limitEl) limitEl.addEventListener('change', render);
 
     updateDateSortButtons();
+    updateTimeSortButtons();
     updateTopButtonLabels();
     render();
   }
