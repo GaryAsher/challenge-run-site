@@ -132,6 +132,45 @@ node scripts/generate-codeowners.js --check
 
 ---
 
+### generate-game-pages.js
+
+**Purpose**  
+Generates standard game subpages (history, forum, resources, rules, etc.) based on the tabs configuration in `_games/<game>.md`.
+
+**Pages created (based on tabs config)**
+- `games/<game_id>/runs/index.html` (always - main runs page)
+- `games/<game_id>/rules/index.html` (always)
+- `games/<game_id>/history/index.html` (if tabs.history)
+- `games/<game_id>/resources/index.html` (if tabs.resources)
+- `games/<game_id>/guides/index.html` (if tabs.resources)
+- `games/<game_id>/forum/index.html` (if tabs.forum)
+- `games/<game_id>/challenges/index.html` (if tabs.challenges)
+
+This script **modifies files**.
+
+**Used by**
+- `scaffold-game.js` (automatically called when scaffolding a new game)
+
+**Run manually**
+
+```bash
+node scripts/generate-game-pages.js
+```
+
+**Run for a single game**
+
+```bash
+node scripts/generate-game-pages.js --game hades-2
+```
+
+**Run in check mode (no changes)**
+
+```bash
+node scripts/generate-game-pages.js --check
+```
+
+---
+
 ### generate-run-category-pages.js
 
 **Purpose**  
