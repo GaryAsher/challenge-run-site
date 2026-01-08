@@ -15,9 +15,9 @@ tags:
   - mythology
 platforms:
   - steam
-  - playstation
-  - xbox
+  - epic
   - nintendo-switch
+  - nintendo-switch-2
 cover: /assets/img/games/h/hades-2.jpg
 cover_position: center
 
