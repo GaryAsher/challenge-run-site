@@ -4,7 +4,7 @@
  *
  * Scaffolds a new game file in _games/<game_id>.md from a JSON payload,
  * optionally downloads a cover image into assets/img/games/<letter>/<game_id>.<ext>,
- * optionally appends missing tags/challenges to _data/*.yml (preserving section headers),
+ * optionally appends missing tags/platforms/challenges to _data/*.yml (preserving section headers),
  * and (by default) runs scripts/generate-codeowners.js to keep CODEOWNERS in sync.
  *
  * Usage:
@@ -14,19 +14,30 @@
  *   --dry-run           Print planned actions, write nothing
  *   --force             Overwrite existing _games/<game_id>.md if it exists
  *   --no-download        Do not download cover image even if cover_url is provided
- *   --no-data            Do not modify _data/tags.yml or _data/challenges.yml
+ *   --no-data            Do not modify _data/tags.yml, _data/platforms.yml, or _data/challenges.yml
  *   --no-codeowners      Do not run scripts/generate-codeowners.js
  *
  * JSON format (example):
  * {
  *   "game_id": "hades-2",
  *   "name": "Hades II",
+ *   "name_aliases": ["Hades 2", "Hades2"],
  *   "status": "Tracking challenge categories, rules, and notable runs.",
  *   "tags": ["action","roguelike","roguelite","hack-and-slash","mythology"],
+ *   "platforms": ["steam","playstation","xbox","nintendo-switch"],
  *   "tabs": {"challenges": true, "categories": true, "runs": true, "resources": true, "guides": true, "forums": true, "history": true},
- *   "challenges": ["no-hit","no-damage","no-hit-no-damage"],
- *   "categories_data": [{"slug":"chaos-trials","label":"Chaos Trials"}],
+ *   "character_column": {"enabled": true, "label": "Weapon / Aspect"},
+ *   "challenges": ["hitless","damageless","no-hit-no-damage"],
+ *   "categories_data": [
+ *     {"slug":"chaos-trials","label":"Chaos Trials","children":[{"slug":"trial-of-origin","label":"Trial of Origin"}]},
+ *     {"slug":"underworld-any","label":"Underworld Any%"}
+ *   ],
  *   "subcategories": ["God Only","Boonless","Arcanaless"],
+ *   "glitches_data": [
+ *     {"slug":"unrestricted","label":"Unrestricted"},
+ *     {"slug":"nmg","label":"No Major Glitches"},
+ *     {"slug":"glitchless","label":"Glitchless"}
+ *   ],
  *   "cover_url": "https://example.com/hades-2.jpg",
  *   "cover_ext": "jpg",
  *   "cover_position": "center"
@@ -101,12 +112,20 @@ function buildGameFrontMatter(payload, coverRelPathMaybe) {
   const status = payload.status || "";
 
   const reviewers = Array.isArray(payload.reviewers) ? payload.reviewers : [];
+  const nameAliases = normalizeArray(payload.name_aliases).filter(Boolean);
   const tags = normalizeArray(payload.tags).filter(Boolean);
+  const platforms = normalizeArray(payload.platforms).filter(Boolean);
   const tabs = payload.tabs && typeof payload.tabs === "object" ? payload.tabs : null;
   const challenges = normalizeArray(payload.challenges).filter(Boolean);
 
   const categoriesData = Array.isArray(payload.categories_data) ? payload.categories_data : [];
   const subcategories = normalizeArray(payload.subcategories).filter(Boolean);
+  const glitchesData = Array.isArray(payload.glitches_data) ? payload.glitches_data : [];
+
+  // Character column config
+  const characterColumn = payload.character_column && typeof payload.character_column === "object" 
+    ? payload.character_column 
+    : null;
 
   const coverPosition = payload.cover_position || "center";
 
@@ -116,6 +135,12 @@ function buildGameFrontMatter(payload, coverRelPathMaybe) {
   lines.push(`game_id: ${yamlEscapeScalar(gameId)}`);
   lines.push(`reviewers: ${yamlInlineArray(reviewers)}`);
   lines.push(`name: ${yamlEscapeScalar(name)}`);
+
+  if (nameAliases.length) {
+    lines.push("name_aliases:");
+    for (const a of nameAliases) lines.push(`${padYamlIndent(1)}- ${yamlEscapeScalar(a)}`);
+  }
+
   if (status) lines.push(`status: ${yamlEscapeScalar(status)}`);
 
   if (tags.length) {
@@ -123,6 +148,11 @@ function buildGameFrontMatter(payload, coverRelPathMaybe) {
     for (const t of tags) lines.push(`${padYamlIndent(1)}- ${yamlEscapeScalar(t)}`);
   } else {
     lines.push("tags: []");
+  }
+
+  if (platforms.length) {
+    lines.push("platforms:");
+    for (const p of platforms) lines.push(`${padYamlIndent(1)}- ${yamlEscapeScalar(p)}`);
   }
 
   if (coverRelPathMaybe) {
@@ -141,6 +171,16 @@ function buildGameFrontMatter(payload, coverRelPathMaybe) {
     }
   }
 
+  // Character column
+  if (characterColumn) {
+    lines.push("");
+    lines.push("character_column:");
+    lines.push(`${padYamlIndent(1)}enabled: ${characterColumn.enabled ? "true" : "false"}`);
+    if (characterColumn.label) {
+      lines.push(`${padYamlIndent(1)}label: ${yamlEscapeScalar(characterColumn.label)}`);
+    }
+  }
+
   if (challenges.length) {
     lines.push("");
     lines.push("challenges:");
@@ -155,6 +195,15 @@ function buildGameFrontMatter(payload, coverRelPathMaybe) {
       if (!item.slug || !item.label) continue;
       lines.push(`${padYamlIndent(1)}- slug: ${yamlEscapeScalar(item.slug)}`);
       lines.push(`${padYamlIndent(2)}label: ${yamlEscapeScalar(item.label)}`);
+      // Handle children (subcategories)
+      if (item.children && Array.isArray(item.children) && item.children.length > 0) {
+        lines.push(`${padYamlIndent(2)}children:`);
+        for (const child of item.children) {
+          if (!child || !child.slug || !child.label) continue;
+          lines.push(`${padYamlIndent(3)}- slug: ${yamlEscapeScalar(child.slug)}`);
+          lines.push(`${padYamlIndent(4)}label: ${yamlEscapeScalar(child.label)}`);
+        }
+      }
     }
   }
 
@@ -162,6 +211,18 @@ function buildGameFrontMatter(payload, coverRelPathMaybe) {
     lines.push("");
     lines.push("subcategories:");
     for (const s of subcategories) lines.push(`${padYamlIndent(1)}- ${yamlEscapeScalar(s)}`);
+  }
+
+  // Glitches data
+  if (glitchesData.length) {
+    lines.push("");
+    lines.push("glitches_data:");
+    for (const item of glitchesData) {
+      if (!item || typeof item !== "object") continue;
+      if (!item.slug || !item.label) continue;
+      lines.push(`${padYamlIndent(1)}- slug: ${yamlEscapeScalar(item.slug)}`);
+      lines.push(`${padYamlIndent(2)}label: ${yamlEscapeScalar(item.label)}`);
+    }
   }
 
   lines.push("---");
@@ -296,6 +357,31 @@ function ensureChallengeExists(chKey, dryRun) {
   }
 }
 
+const PLATFORMS_YML = path.join(DATA_DIR, "platforms.yml");
+
+function ensurePlatformExists(platformKey, dryRun) {
+  if (!exists(PLATFORMS_YML)) return;
+
+  const original = readText(PLATFORMS_YML);
+  if (hasKeyInSimpleMapYaml(original, platformKey)) return;
+
+  const label = platformKey
+    .split("-")
+    .map((w) => w ? w[0].toUpperCase() + w.slice(1) : w)
+    .join(" ");
+
+  // Platforms file doesn't have section headers, just append
+  const entry = `\n${platformKey}:\n  label: ${yamlEscapeScalar(label)}\n`;
+
+  if (dryRun) {
+    console.log(`[dry-run] would add platform '${platformKey}' to ${path.relative(ROOT, PLATFORMS_YML)}`);
+  } else {
+    const updated = original.replace(/\s+$/, "") + entry;
+    writeText(PLATFORMS_YML, updated);
+    console.log(`Added platform '${platformKey}' to ${path.relative(ROOT, PLATFORMS_YML)}`);
+  }
+}
+
 function runGenerateCodeowners(dryRun) {
   const scriptPath = path.join(ROOT, "scripts", "generate-codeowners.js");
   if (!exists(scriptPath)) {
@@ -367,7 +453,7 @@ async function main() {
   console.log(`Scaffolding game: ${gameId}`);
   console.log(`- Game file: ${path.relative(ROOT, gameFilePath)}`);
   if (coverRel) console.log(`- Cover: ${coverRel}${coverDest ? " (download)" : ""}`);
-  if (!noData) console.log(`- Data updates: ${path.relative(ROOT, TAGS_YML)}, ${path.relative(ROOT, CHALLENGES_YML)}`);
+  if (!noData) console.log(`- Data updates: tags.yml, platforms.yml, challenges.yml`);
   if (!noCodeowners) console.log(`- Will run: scripts/generate-codeowners.js`);
   if (dryRun) console.log("- Mode: dry-run (no files will be written)");
 
@@ -396,10 +482,13 @@ async function main() {
     }
   }
 
-  // Update _data/tags.yml and _data/challenges.yml
+  // Update _data/tags.yml, _data/platforms.yml, and _data/challenges.yml
   if (!noData) {
     const tags = normalizeArray(payload.tags).filter(Boolean);
     for (const t of tags) ensureTagExists(String(t).trim(), dryRun);
+
+    const platforms = normalizeArray(payload.platforms).filter(Boolean);
+    for (const p of platforms) ensurePlatformExists(String(p).trim(), dryRun);
 
     const challenges = normalizeArray(payload.challenges).filter(Boolean);
     for (const c of challenges) ensureChallengeExists(String(c).trim(), dryRun);
@@ -410,7 +499,49 @@ async function main() {
     runGenerateCodeowners(dryRun);
   }
 
+  // Generate game subpages (history, forum, resources, etc.)
+  runGenerateGamePages(gameId, dryRun);
+
+  // Generate run category pages
+  runGenerateRunCategories(gameId, dryRun);
+
   console.log("Done.");
+}
+
+function runGenerateGamePages(gameId, dryRun) {
+  const scriptPath = path.join(ROOT, "scripts", "generate-game-pages.js");
+  if (!exists(scriptPath)) {
+    console.warn(`Warning: ${path.relative(ROOT, scriptPath)} not found, skipping game page generation.`);
+    return;
+  }
+  if (dryRun) {
+    console.log(`[dry-run] would run: node scripts/generate-game-pages.js --game ${gameId}`);
+    return;
+  }
+
+  console.log(`Generating game pages for ${gameId}...`);
+  const res = spawnSync("node", [scriptPath, "--game", gameId], { stdio: "inherit" });
+  if (res.status !== 0) {
+    console.warn(`Warning: generate-game-pages.js exited with status ${res.status}`);
+  }
+}
+
+function runGenerateRunCategories(gameId, dryRun) {
+  const scriptPath = path.join(ROOT, "scripts", "generate-run-category-pages.js");
+  if (!exists(scriptPath)) {
+    console.warn(`Warning: ${path.relative(ROOT, scriptPath)} not found, skipping run category generation.`);
+    return;
+  }
+  if (dryRun) {
+    console.log(`[dry-run] would run: node scripts/generate-run-category-pages.js --game ${gameId}`);
+    return;
+  }
+
+  console.log(`Generating run category pages for ${gameId}...`);
+  const res = spawnSync("node", [scriptPath, "--game", gameId], { stdio: "inherit" });
+  if (res.status !== 0) {
+    console.warn(`Warning: generate-run-category-pages.js exited with status ${res.status}`);
+  }
 }
 
 main().catch((err) => die(err.stack || err.message || String(err)));
