@@ -1378,7 +1378,7 @@ button.tag,
   opacity: 0.75;
 
   /* Push tabs down to sit on container border */
-  margin-bottom: -1px;
+  margin-bottom: 0px;
 
   transition:
     background 120ms ease,
