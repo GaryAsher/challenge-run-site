@@ -1,15 +1,32 @@
 Copyright (c) 2025 Challenge Run Community (CRC)
-
 All rights reserved.
 
-This website, its source code, structure, content, and design are the exclusive property of
-Challenge Run Community (CRC).
+This repository and all associated materials, including but not limited to
+source code, configuration files, site structure, content, text, graphics,
+design, layout, styling, documentation, and data models (collectively, the
+"Project"), are the exclusive property of Challenge Run Community (CRC).
 
-No part of this project may be copied, reproduced, modified, distributed, or used to create
-derivative works without explicit written permission from the project owner.
+Challenge Run Community (CRC) is an unincorporated project entity. Ownership and
+authorship of the Project are retained by the project owner.
 
-Permission to contribute to this repository may be granted to trusted community members at
-the discretion of the project owner. Such permission does not grant redistribution or reuse
-rights outside of this repository.
+No permission is granted to copy, reproduce, modify, distribute, sublicense,
+deploy, publicly display, or create derivative works from any part of the
+Project without explicit written authorization from the project owner.
 
-Unauthorized use of this project or its contents is prohibited.
+Access to this repository does not grant any license or rights beyond those
+necessary to view the contents on the hosting platform.
+
+Permission to contribute may be granted to selected contributors at the sole
+discretion of the project owner. Such permission applies only to contributions
+submitted within this repository and does not grant any rights to reuse,
+redistribute, or deploy the Project or any portion thereof.
+
+The names "Challenge Run Community", "CRC", and all associated identifiers,
+logos, branding, visual identity, terminology, and project concepts are
+protected identifiers of this Project. No rights to use these identifiers are
+granted under this license.
+
+Unauthorized use of the Project or its contents is strictly prohibited.
+
+This license may be updated at any time. Continued access or contribution after
+changes constitutes acceptance of the updated terms.
