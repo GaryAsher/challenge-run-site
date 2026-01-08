@@ -206,7 +206,8 @@ const CONFIG = {
   }
 
   // =========================================================
-  // Runs table filtering (Search + Searchable filters + Time/Date sort)
+  // Runs table filtering (Search + Header filters + Date sort + Limit)
+  // Category filtering/navigation removed (categories are pages).
   // =========================================================
   function initRunsTable() {
     const table = document.getElementById('runs-table');
@@ -233,32 +234,20 @@ const CONFIG = {
     const rows = Array.from(table.querySelectorAll('.run-row'));
     const tbody = table.querySelector('tbody');
 
-    // Sort buttons
+    const thMenu = document.getElementById('th-menu');
+    const thMenuQ = document.getElementById('th-menu-q');
+    const thMenuList = document.getElementById('th-menu-list');
+    const thMenuClear = document.getElementById('th-menu-clear');
+    const thMenuClose = document.getElementById('th-menu-close');
+
     const thSortAsc = document.getElementById('th-sort-asc');
     const thSortDesc = document.getElementById('th-sort-desc');
-    const thTimeAsc = document.getElementById('th-time-asc');
-    const thTimeDesc = document.getElementById('th-time-desc');
 
-    // Searchable filter elements
-    const challengeFilterEl = document.getElementById('challenge-filter');
-    const challengePickedEl = document.getElementById('challenge-picked');
-    const challengeSearchEl = document.getElementById('challenge-search');
-    const challengeSugEl = document.getElementById('challenge-suggestions');
-
-    const restrictionsFilterEl = document.getElementById('restrictions-filter');
-    const restrictionsPickedEl = document.getElementById('restrictions-picked');
-    const restrictionsSearchEl = document.getElementById('restrictions-search');
-    const restrictionsSugEl = document.getElementById('restrictions-suggestions');
-
-    const glitchFilterEl = document.getElementById('glitch-filter');
-    const glitchPickedEl = document.getElementById('glitch-picked');
-    const glitchSearchEl = document.getElementById('glitch-search');
-    const glitchSugEl = document.getElementById('glitch-suggestions');
-
-    const characterFilterEl = document.getElementById('character-filter');
-    const characterPickedEl = document.getElementById('character-picked');
-    const characterSearchEl = document.getElementById('character-search');
-    const characterSugEl = document.getElementById('character-suggestions');
+    const btnCh = document.getElementById('filter-challenge');
+    const btnRes = document.getElementById('filter-restrictions');
+    const btnGlitch = document.getElementById('filter-glitch');
+    const btnCharacter = document.getElementById('filter-character');
+    const activeFiltersWrap = document.getElementById('active-filters');
 
     rows.forEach((r, i) => (r.dataset._i = String(i)));
 
@@ -268,22 +257,14 @@ const CONFIG = {
     function parseDateToNumber(s) {
       const v = (s || '').trim();
       if (!v) return NaN;
+
       const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(v);
-      if (m) return Date.UTC(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10));
+      if (m) {
+        return Date.UTC(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10));
+      }
+
       const t = Date.parse(v);
       return Number.isFinite(t) ? t : NaN;
-    }
-
-    function parseTimeToSeconds(s) {
-      const v = (s || '').trim();
-      if (!v || v === '—') return NaN;
-      const parts = v.split(':');
-      if (parts.length === 3) {
-        return (parseFloat(parts[0]) || 0) * 3600 + (parseFloat(parts[1]) || 0) * 60 + (parseFloat(parts[2]) || 0);
-      } else if (parts.length === 2) {
-        return (parseFloat(parts[0]) || 0) * 60 + (parseFloat(parts[1]) || 0);
-      }
-      return NaN;
     }
 
     function getLimit() {
@@ -292,34 +273,44 @@ const CONFIG = {
     }
 
     function parseRestrictionsRaw(row) {
-      return (row.dataset.restrictions || '').split('||').map(s => s.trim()).filter(Boolean);
+      return (row.dataset.restrictions || '')
+        .split('||')
+        .map(s => (s || '').toString().trim())
+        .filter(Boolean);
     }
 
-    // Build OPTIONS from row data
     function buildOptions() {
-      const chIds = [], chLabelById = new Map();
-      const restrictionsRaw = [], glitchIds = [], characterIds = [];
+      const chIds = [];
+      const chLabelById = new Map();
+      const restrictionsRaw = [];
+      const glitchIds = [];
+      const characterIds = [];
 
       rows.forEach(row => {
         const chId = norm(row.dataset.challengeId);
-        const chLabel = (row.dataset.challengeLabel || '').trim();
+        const chLabel = (row.dataset.challengeLabel || '').toString().trim();
+        const resRaw = parseRestrictionsRaw(row);
+        const glitchId = norm(row.dataset.glitch);
+        const characterId = (row.dataset.character || '').toString().trim();
+
         if (chId) {
           chIds.push(chId);
           if (!chLabelById.has(chId)) chLabelById.set(chId, chLabel || chId);
         }
-        parseRestrictionsRaw(row).forEach(r => restrictionsRaw.push(r));
-        const glitch = norm(row.dataset.glitch);
-        if (glitch) glitchIds.push(glitch);
-        const char = (row.dataset.character || '').trim();
-        if (char) characterIds.push(char);
+
+        if (resRaw.length) restrictionsRaw.push(...resRaw);
+        if (glitchId) glitchIds.push(glitchId);
+        if (characterId) characterIds.push(characterId);
       });
 
       function toList(values, map) {
-        return uniq(values.filter(Boolean)).map(v => {
-          const id = norm(v);
-          const label = (map && map.get(id)) || v;
-          return { id, label };
-        }).sort((a, b) => a.label.localeCompare(b.label));
+        return uniq(values.filter(Boolean))
+          .map(v => {
+            const id = norm(v);
+            const label = (map && map.get(id)) || v;
+            return { id, label };
+          })
+          .sort((a, b) => a.label.localeCompare(b.label));
       }
 
       return {
@@ -338,71 +329,435 @@ const CONFIG = {
     const activeCharacters = new Set();
 
     let dateSortDir = 'desc';
-    let timeSortDir = null; // null = no sort, 'asc' = fastest first, 'desc' = slowest first
+    let thActiveCol = null;
 
-    // Filtering logic
-    function matchesAllRestrictions(rowResNorm) {
+    function closeThMenu() {
+      if (!thMenu) return;
+
+      if (thMenuQ && document.activeElement === thMenuQ) thMenuQ.blur();
+      if (thMenuQ) thMenuQ.value = '';
+
+      thMenu.hidden = true;
+      thMenu.setAttribute('aria-hidden', 'true');
+      thActiveCol = null;
+
+      if (thMenuClear) thMenuClear.textContent = 'Clear';
+    }
+
+    function getSetForCol(col) {
+      if (col === 'challenge') return activeChallenges;
+      if (col === 'restrictions') return activeRestrictions;
+      if (col === 'glitch') return activeGlitches;
+      if (col === 'character') return activeCharacters;
+      return null;
+    }
+
+    function getOptionsForCol(col) {
+      if (col === 'challenge') return OPTIONS.challenges;
+      if (col === 'restrictions') return OPTIONS.restrictions;
+      if (col === 'glitch') return OPTIONS.glitches;
+      if (col === 'character') return OPTIONS.characters;
+      return [];
+    }
+
+    function getLabelFor(col, id) {
+      const list = getOptionsForCol(col);
+      const hit = list.find(x => x.id === id);
+      return hit ? hit.label : id;
+    }
+
+    function updateTopButtonLabels() {
+      if (btnCh) {
+        const count = activeChallenges.size;
+        btnCh.textContent = count ? `Challenge (${count}) ▾` : 'All ▾';
+        btnCh.setAttribute('aria-expanded', count > 0 ? 'true' : 'false');
+      }
+
+      if (btnRes) {
+        const count = activeRestrictions.size;
+        btnRes.textContent = count ? `Restrictions (${count}) ▾` : 'Any ▾';
+        btnRes.setAttribute('aria-expanded', count > 0 ? 'true' : 'false');
+      }
+
+      if (btnGlitch) {
+        const count = activeGlitches.size;
+        btnGlitch.textContent = count ? `Glitches (${count}) ▾` : 'All ▾';
+        btnGlitch.setAttribute('aria-expanded', count > 0 ? 'true' : 'false');
+      }
+
+      if (btnCharacter) {
+        const count = activeCharacters.size;
+        btnCharacter.textContent = count ? `(${count}) ▾` : 'All ▾';
+        btnCharacter.setAttribute('aria-expanded', count > 0 ? 'true' : 'false');
+      }
+    }
+
+    function renderActiveFilterChips() {
+      if (!activeFiltersWrap) return;
+
+      activeFiltersWrap.innerHTML = '';
+      const chips = [];
+
+      activeChallenges.forEach(id => {
+        chips.push({ kind: 'challenge', id, label: getLabelFor('challenge', id) });
+      });
+
+      activeRestrictions.forEach(id => {
+        chips.push({ kind: 'restrictions', id, label: getLabelFor('restrictions', id) });
+      });
+
+      activeGlitches.forEach(id => {
+        chips.push({ kind: 'glitch', id, label: getLabelFor('glitch', id) });
+      });
+
+      activeCharacters.forEach(id => {
+        chips.push({ kind: 'character', id, label: getLabelFor('character', id) });
+      });
+
+      if (!chips.length) return;
+
+      function makeChip(text, onRemove) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'tag';
+        b.textContent = text + ' ×';
+        b.setAttribute('aria-label', `Remove filter: ${text}`);
+        b.addEventListener('click', onRemove);
+        return b;
+      }
+
+      chips.forEach(c => {
+        let colLabel = 'Filter';
+        if (c.kind === 'challenge') colLabel = 'Challenge';
+        else if (c.kind === 'restrictions') colLabel = 'Restrictions';
+        else if (c.kind === 'glitch') colLabel = 'Glitches Used';
+        else if (c.kind === 'character') colLabel = 'Character';
+        
+        activeFiltersWrap.appendChild(
+          makeChip(`${colLabel}: ${c.label}`, () => {
+            let set;
+            if (c.kind === 'challenge') set = activeChallenges;
+            else if (c.kind === 'restrictions') set = activeRestrictions;
+            else if (c.kind === 'glitch') set = activeGlitches;
+            else if (c.kind === 'character') set = activeCharacters;
+            if (set) set.delete(c.id);
+            render();
+          })
+        );
+      });
+
+      const clearAll = document.createElement('button');
+      clearAll.type = 'button';
+      clearAll.className = 'btn';
+      clearAll.textContent = 'Clear All';
+      clearAll.setAttribute('aria-label', 'Clear all filters');
+      clearAll.addEventListener('click', () => {
+        activeChallenges.clear();
+        activeRestrictions.clear();
+        activeGlitches.clear();
+        activeCharacters.clear();
+        render();
+      });
+
+      activeFiltersWrap.appendChild(clearAll);
+    }
+
+    function matchesAllRestrictions(rowResListNorm) {
       if (!activeRestrictions.size) return true;
-      return Array.from(activeRestrictions).every(r => rowResNorm.includes(r));
+      const need = Array.from(activeRestrictions);
+      return need.every(x => rowResListNorm.includes(x));
+    }
+
+    function matchesGlitch(rowGlitch) {
+      if (!activeGlitches.size) return true;
+      return activeGlitches.has(norm(rowGlitch));
+    }
+
+    function matchesCharacter(rowCharacter) {
+      if (!activeCharacters.size) return true;
+      return activeCharacters.has(norm(rowCharacter));
     }
 
     function passesFilters(row) {
       const needle = norm(q && q.value);
+
       const ch = norm(row.dataset.challengeId);
       const resRaw = parseRestrictionsRaw(row);
       const resNorm = resRaw.map(norm);
-      const glitch = norm(row.dataset.glitch || '');
-      const character = norm(row.dataset.character || '');
+      const glitch = row.dataset.glitch || '';
+      const character = row.dataset.character || '';
 
       if (activeChallenges.size && !activeChallenges.has(ch)) return false;
       if (!matchesAllRestrictions(resNorm)) return false;
-      if (activeGlitches.size && !activeGlitches.has(glitch)) return false;
-      if (activeCharacters.size && !activeCharacters.has(character)) return false;
+      if (!matchesGlitch(glitch)) return false;
+      if (!matchesCharacter(character)) return false;
 
       if (needle) {
-        const hay = norm(row.dataset.runner) + ' ' + norm(row.dataset.category) + ' ' +
-                    norm(row.dataset.challengeLabel) + ' ' + norm(resRaw.join(' ')) + ' ' + glitch;
+        const hay =
+          norm(row.dataset.runner) +
+          ' ' +
+          norm(row.dataset.category) +
+          ' ' +
+          norm(row.dataset.challengeLabel) +
+          ' ' +
+          norm(resRaw.join(' ')) +
+          ' ' +
+          norm(glitch);
+
         if (!hay.includes(needle)) return false;
       }
+
       return true;
     }
 
-    // Sorting
     function sortRowsByDate(list) {
+      const dir = dateSortDir;
+
       return list.sort((a, b) => {
         const aDate = parseDateToNumber(a.dataset.date);
         const bDate = parseDateToNumber(b.dataset.date);
-        const aBad = !Number.isFinite(aDate), bBad = !Number.isFinite(bDate);
-        if (aBad && bBad) return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
+
+        const aBad = !Number.isFinite(aDate);
+        const bBad = !Number.isFinite(bDate);
+
+        if (aBad && bBad) {
+          return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
+        }
         if (aBad) return 1;
         if (bBad) return -1;
-        if (aDate === bDate) return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
-        return dateSortDir === 'asc' ? aDate - bDate : bDate - aDate;
+
+        if (aDate === bDate) {
+          return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
+        }
+
+        return dir === 'asc' ? aDate - bDate : bDate - aDate;
       });
     }
 
-    function sortRowsByTime(list) {
-      if (!timeSortDir) return list;
-      return list.sort((a, b) => {
-        const aTime = parseTimeToSeconds(a.dataset.time);
-        const bTime = parseTimeToSeconds(b.dataset.time);
-        const aBad = !Number.isFinite(aTime), bBad = !Number.isFinite(bTime);
-        if (aBad && bBad) return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
-        if (aBad) return 1;
-        if (bBad) return -1;
-        if (aTime === bTime) return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
-        return timeSortDir === 'asc' ? aTime - bTime : bTime - aTime;
+    function updateDateSortButtons() {
+      if (thSortAsc) {
+        thSortAsc.disabled = dateSortDir === 'asc';
+        thSortAsc.setAttribute('aria-pressed', dateSortDir === 'asc' ? 'true' : 'false');
+      }
+      if (thSortDesc) {
+        thSortDesc.disabled = dateSortDir === 'desc';
+        thSortDesc.setAttribute('aria-pressed', dateSortDir === 'desc' ? 'true' : 'false');
+      }
+    }
+
+    function render() {
+      let filtered = rows.filter(passesFilters);
+      filtered = sortRowsByDate(filtered);
+
+      if (tbody) filtered.forEach(r => tbody.appendChild(r));
+
+      const lim = getLimit();
+      const total = filtered.length;
+
+      rows.forEach(r => (r.style.display = 'none'));
+
+      if (lim === 0) {
+        filtered.forEach(r => (r.style.display = ''));
+        if (status) status.textContent = 'Showing ' + total + ' matching runs.';
+        updateTopButtonLabels();
+        renderActiveFilterChips();
+        return;
+      }
+
+      filtered.forEach((r, idx) => {
+        r.style.display = idx < lim ? '' : 'none';
+      });
+
+      if (status) {
+        status.textContent = 'Showing ' + Math.min(lim, total) + ' of ' + total + ' matching runs.';
+      }
+
+      updateTopButtonLabels();
+      renderActiveFilterChips();
+    }
+
+    // Debounced render for menu list to avoid performance issues
+    let debounceTimer;
+    function renderThMenuListDebounced() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => renderThMenuList(), CONFIG.DEBOUNCE_MS);
+    }
+
+    function renderThMenuList() {
+      if (!thMenuList || !thMenuQ || !thActiveCol) return;
+
+      const qv = norm(thMenuQ.value);
+      const list = getOptionsForCol(thActiveCol);
+      const set = getSetForCol(thActiveCol);
+
+      thMenuList.innerHTML = '';
+
+      const available = set ? list.filter(x => !set.has(x.id)) : list;
+
+      const filtered = available.filter(x => {
+        if (!qv) return true;
+        return norm(x.label).includes(qv) || norm(x.id).includes(qv);
+      });
+
+      if (!filtered.length) {
+        const empty = document.createElement('div');
+        empty.className = 'th-menu__empty muted';
+        empty.textContent = available.length
+          ? 'No matches.'
+          : 'All options selected. Remove a filter chip to re-add.';
+        thMenuList.appendChild(empty);
+        return;
+      }
+
+      filtered.slice(0, CONFIG.MAX_SUGGESTIONS).forEach(x => {
+        const lab = document.createElement('label');
+        lab.className = 'th-menu__item';
+
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = false;
+        cb.setAttribute('aria-label', `Select ${x.label}`);
+
+        cb.addEventListener('change', () => {
+          if (!set) return;
+
+          if (cb.checked) set.add(x.id);
+          else set.delete(x.id);
+
+          render();
+          renderThMenuList();
+        });
+
+        const txt = document.createElement('span');
+        txt.textContent = x.label;
+
+        lab.appendChild(cb);
+        lab.appendChild(txt);
+        thMenuList.appendChild(lab);
       });
     }
 
-    function updateSortButtons() {
-      if (thSortAsc) thSortAsc.disabled = dateSortDir === 'asc' && !timeSortDir;
-      if (thSortDesc) thSortDesc.disabled = dateSortDir === 'desc' && !timeSortDir;
-      if (thTimeAsc) thTimeAsc.disabled = timeSortDir === 'asc';
-      if (thTimeDesc) thTimeDesc.disabled = timeSortDir === 'desc';
+    function openThMenuFor(col, anchorEl) {
+      if (!thMenu) return;
+
+      thActiveCol = col;
+      thMenu.hidden = false;
+      thMenu.setAttribute('aria-hidden', 'false');
+
+      const r = anchorEl.getBoundingClientRect();
+
+      const left = Math.min(window.innerWidth - CONFIG.MENU_WIDTH - 12, Math.max(12, r.left));
+
+      thMenu.style.left = left + 'px';
+      thMenu.style.top = r.bottom + 8 + 'px';
+
+      if (thMenuQ) thMenuQ.value = '';
+      renderThMenuList();
+
+      requestAnimationFrame(() => {
+        if (!thMenuQ || thMenu.hidden) return;
+
+        const menuW = thMenu.offsetWidth || CONFIG.MENU_WIDTH;
+        const menuH = thMenu.offsetHeight || 300;
+
+        const clampedLeft = Math.min(window.innerWidth - menuW - 12, Math.max(12, r.left));
+
+        const clampedTop = Math.min(window.innerHeight - menuH - 12, r.bottom + 8);
+
+        thMenu.style.left = clampedLeft + 'px';
+        thMenu.style.top = clampedTop + 'px';
+
+        thMenuQ.focus();
+      });
     }
 
-    // Reset button
+    const runsRoot = table.closest('.game-shell') || table.closest('.page-width') || document;
+
+    runsRoot.querySelectorAll('[data-filter-btn]').forEach(btn => {
+      const col = btn.getAttribute('data-filter-btn');
+      if (col !== 'challenge' && col !== 'restrictions' && col !== 'glitch' && col !== 'character') return;
+
+      // Add ARIA attributes
+      btn.setAttribute('aria-haspopup', 'true');
+      btn.setAttribute('aria-expanded', 'false');
+
+      btn.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (thMenu && !thMenu.hidden && thActiveCol === col) {
+          closeThMenu();
+          return;
+        }
+
+        openThMenuFor(col, btn);
+      });
+    });
+
+    if (thMenuQ) thMenuQ.addEventListener('input', renderThMenuListDebounced);
+
+    if (thMenuClear) {
+      thMenuClear.addEventListener('click', () => {
+        if (!thActiveCol) return;
+        const set = getSetForCol(thActiveCol);
+        if (!set) return;
+
+        set.clear();
+        render();
+        renderThMenuList();
+      });
+    }
+
+    if (thMenuClose) thMenuClose.addEventListener('click', closeThMenu);
+
+    document.addEventListener(
+      'pointerdown',
+      e => {
+        if (!thMenu || thMenu.hidden) return;
+        if (thMenu.contains(e.target)) return;
+
+        const isCaret = e.target && e.target.closest && e.target.closest('[data-filter-btn]');
+        if (isCaret) return;
+
+        closeThMenu();
+      },
+      true
+    );
+
+    window.addEventListener('resize', () => {
+      if (thMenu && !thMenu.hidden) closeThMenu();
+    });
+
+    // Escape key to close menu and return focus
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && thMenu && !thMenu.hidden) {
+        e.preventDefault();
+        closeThMenu();
+        // Return focus to the button that opened it
+        if (thActiveCol === 'challenge' && btnCh) btnCh.focus();
+        if (thActiveCol === 'restrictions' && btnRes) btnRes.focus();
+        if (thActiveCol === 'glitch' && btnGlitch) btnGlitch.focus();
+        if (thActiveCol === 'character' && btnCharacter) btnCharacter.focus();
+      }
+    });
+
+    if (thSortAsc) {
+      thSortAsc.addEventListener('click', () => {
+        dateSortDir = 'asc';
+        updateDateSortButtons();
+        render();
+      });
+    }
+
+    if (thSortDesc) {
+      thSortDesc.addEventListener('click', () => {
+        dateSortDir = 'desc';
+        updateDateSortButtons();
+        render();
+      });
+    }
+
+    // Reset button functionality
     function updateResetButton() {
       const hasFilters = (q && q.value.trim()) ||
                          activeChallenges.size > 0 ||
@@ -418,216 +773,32 @@ const CONFIG = {
       activeRestrictions.clear();
       activeGlitches.clear();
       activeCharacters.clear();
-      timeSortDir = null;
       dateSortDir = 'desc';
       
-      // Re-render all picked areas
-      if (challengePickedEl) challengePickedEl.innerHTML = '';
-      if (restrictionsPickedEl) restrictionsPickedEl.innerHTML = '';
-      if (glitchPickedEl) glitchPickedEl.innerHTML = '';
-      if (characterPickedEl) characterPickedEl.innerHTML = '';
-      
-      updateSortButtons();
+      updateDateSortButtons();
+      updateTopButtonLabels();
+      renderActiveFilterChips();
       render();
     }
 
-    if (resetBtn) resetBtn.addEventListener('click', resetAllFilters);
+    if (resetBtn) {
+      resetBtn.addEventListener('click', resetAllFilters);
+    }
 
-    // Render
-    function render() {
-      let filtered = rows.filter(passesFilters);
-      if (timeSortDir) {
-        filtered = sortRowsByTime(filtered);
-      } else {
-        filtered = sortRowsByDate(filtered);
-      }
-      if (tbody) filtered.forEach(r => tbody.appendChild(r));
-
-      const lim = getLimit();
-      const total = filtered.length;
-      rows.forEach(r => (r.style.display = 'none'));
-
-      if (lim === 0) {
-        filtered.forEach(r => (r.style.display = ''));
-      } else {
-        filtered.forEach((r, idx) => { r.style.display = idx < lim ? '' : 'none'; });
-      }
-
-      if (status) {
-        const shown = lim === 0 ? total : Math.min(lim, total);
-        status.textContent = 'Showing ' + shown + ' of ' + total + ' matching runs.';
-      }
+    // Wrap render to update reset button
+    const origRender = render;
+    render = function() {
+      origRender();
       updateResetButton();
-    }
-
-    // Searchable dropdown helpers (similar to games page)
-    function renderPicked(set, list, pickedEl, { onRemove }) {
-      if (!pickedEl) return;
-      pickedEl.innerHTML = '';
-      const entries = Array.from(set);
-      if (!entries.length) return;
-
-      for (const id of entries) {
-        const meta = list.find(x => norm(x.id) === norm(id));
-        const label = meta ? meta.label : id;
-        const chip = document.createElement('button');
-        chip.type = 'button';
-        chip.className = 'tag-chip';
-        chip.textContent = label + ' ×';
-        chip.addEventListener('click', () => {
-          set.delete(norm(id));
-          if (onRemove) onRemove();
-        });
-        pickedEl.appendChild(chip);
-      }
-    }
-
-    function renderSuggestions(qRaw, set, list, sugEl, { onPick }) {
-      if (!sugEl) return;
-      const qv = norm(qRaw);
-      sugEl.innerHTML = '';
-
-      const available = list.filter(x => !set.has(norm(x.id)));
-      const filtered = qv ? available.filter(x => norm(x.label).includes(qv) || norm(x.id).includes(qv)) : available;
-      const show = filtered.slice(0, 30);
-
-      if (!show.length) {
-        const empty = document.createElement('div');
-        empty.className = 'tag-suggestion is-empty';
-        empty.textContent = 'No matches.';
-        sugEl.appendChild(empty);
-        sugEl.hidden = false;
-        return;
-      }
-
-      for (const item of show) {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'tag-suggestion';
-        btn.textContent = item.label;
-        btn.addEventListener('click', () => {
-          set.add(norm(item.id));
-          if (onPick) onPick(item);
-        });
-        sugEl.appendChild(btn);
-      }
-      sugEl.hidden = false;
-    }
-
-    function wireDropdown({ filterEl, searchEl, sugEl, set, list, pickedEl }) {
-      if (!filterEl || !searchEl || !sugEl) return;
-
-      function afterPick() {
-        searchEl.value = '';
-        renderPicked(set, list, pickedEl, { onRemove: onRemoveChip });
-        render();
-        renderSuggestions('', set, list, sugEl, { onPick: afterPick });
-      }
-
-      function open() {
-        renderSuggestions(searchEl.value, set, list, sugEl, { onPick: afterPick });
-      }
-
-      function close() {
-        sugEl.hidden = true;
-      }
-
-      function onRemoveChip() {
-        searchEl.value = '';
-        renderPicked(set, list, pickedEl, { onRemove: onRemoveChip });
-        render();
-        close();
-      }
-
-      renderPicked(set, list, pickedEl, { onRemove: onRemoveChip });
-
-      searchEl.addEventListener('focus', () => { if (sugEl.hidden) open(); });
-      searchEl.addEventListener('pointerdown', () => { if (sugEl.hidden) open(); else close(); });
-      searchEl.addEventListener('input', open);
-      searchEl.addEventListener('keydown', (e) => { if (e.key === 'Escape') { close(); searchEl.blur(); } });
-      document.addEventListener('pointerdown', (e) => { if (!filterEl.contains(e.target)) close(); }, true);
-    }
-
-    // Wire up all dropdowns
-    wireDropdown({
-      filterEl: challengeFilterEl,
-      searchEl: challengeSearchEl,
-      sugEl: challengeSugEl,
-      set: activeChallenges,
-      list: OPTIONS.challenges,
-      pickedEl: challengePickedEl
-    });
-
-    wireDropdown({
-      filterEl: restrictionsFilterEl,
-      searchEl: restrictionsSearchEl,
-      sugEl: restrictionsSugEl,
-      set: activeRestrictions,
-      list: OPTIONS.restrictions,
-      pickedEl: restrictionsPickedEl
-    });
-
-    wireDropdown({
-      filterEl: glitchFilterEl,
-      searchEl: glitchSearchEl,
-      sugEl: glitchSugEl,
-      set: activeGlitches,
-      list: OPTIONS.glitches,
-      pickedEl: glitchPickedEl
-    });
-
-    wireDropdown({
-      filterEl: characterFilterEl,
-      searchEl: characterSearchEl,
-      sugEl: characterSugEl,
-      set: activeCharacters,
-      list: OPTIONS.characters,
-      pickedEl: characterPickedEl
-    });
-
-    // Date sort buttons
-    if (thSortAsc) {
-      thSortAsc.addEventListener('click', () => {
-        timeSortDir = null;
-        dateSortDir = 'asc';
-        updateSortButtons();
-        render();
-      });
-    }
-
-    if (thSortDesc) {
-      thSortDesc.addEventListener('click', () => {
-        timeSortDir = null;
-        dateSortDir = 'desc';
-        updateSortButtons();
-        render();
-      });
-    }
-
-    // Time sort buttons
-    if (thTimeAsc) {
-      thTimeAsc.addEventListener('click', () => {
-        timeSortDir = 'asc';
-        updateSortButtons();
-        render();
-      });
-    }
-
-    if (thTimeDesc) {
-      thTimeDesc.addEventListener('click', () => {
-        timeSortDir = 'desc';
-        updateSortButtons();
-        render();
-      });
-    }
+    };
 
     if (q) q.addEventListener('input', render);
     if (limitEl) limitEl.addEventListener('change', render);
 
-    updateSortButtons();
+    updateDateSortButtons();
+    updateTopButtonLabels();
     render();
   }
-
 
   // =========================================================
   // Game navigation helper
