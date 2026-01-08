@@ -41,7 +41,7 @@
   --radius-lg: 14px;
   --radius-xl: 16px;
 
-  --space-1: 0.35rem;
+  --space: 0.35rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
   --space-4: 1rem;
@@ -1399,7 +1399,7 @@ button.tag,
   opacity: 0.75;
 
   /* Push tabs down to sit on container border */
-  margin-bottom: -1px;
+  margin-bottom: 0px;
 
   transition:
     background 120ms ease,
