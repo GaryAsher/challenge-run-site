@@ -1,0 +1,226 @@
+---
+layout: default
+title: Submit a Game
+---
+
+<div class="page-width">
+  <h1>Submit a Game</h1>
+  <p class="muted mb-4">Request a new game to be added to the Challenge Run Community database.</p>
+
+  <div class="card">
+    <h2 class="mb-2">Game Submission Form</h2>
+    <p class="muted mb-4">Fill out this form to request a new game be added. Our team will review your submission and add the game if it meets our criteria.</p>
+
+    <form id="game-submit-form" class="submit-form">
+      <!-- Game Info -->
+      <fieldset class="submit-fieldset">
+        <legend>Game Information</legend>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="game-name">Game Name <span class="required">*</span></label>
+            <input type="text" id="game-name" name="game_name" required placeholder="e.g., Hades II">
+          </div>
+          
+          <div class="form-group">
+            <label for="game-aliases">Alternative Names (optional)</label>
+            <input type="text" id="game-aliases" name="aliases" placeholder="e.g., Hades 2, Hades2">
+            <small class="form-hint">Separate multiple names with commas</small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="game-platforms">Platforms <span class="required">*</span></label>
+          <input type="text" id="game-platforms" name="platforms" required placeholder="e.g., PC: Steam, PC: Epic Games Store, Nintendo Switch">
+          <small class="form-hint">Separate multiple platforms with commas</small>
+        </div>
+
+        <div class="form-group">
+          <label for="game-genre">Genre/Tags <span class="required">*</span></label>
+          <input type="text" id="game-genre" name="tags" required placeholder="e.g., Action, Roguelike, Hack and Slash">
+          <small class="form-hint">Separate multiple tags with commas</small>
+        </div>
+      </fieldset>
+
+      <!-- Challenge Info -->
+      <fieldset class="submit-fieldset">
+        <legend>Challenge Run Information</legend>
+
+        <div class="form-group">
+          <label for="challenges">Challenge Types <span class="required">*</span></label>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" name="challenges[]" value="hitless"> Hitless
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" name="challenges[]" value="damageless"> Damageless
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" name="challenges[]" value="no-hit-no-damage"> No Hit / No Damage
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" name="challenges[]" value="deathless"> Deathless
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" name="challenges[]" value="other"> Other (specify below)
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="other-challenges">Other Challenge Types (optional)</label>
+          <input type="text" id="other-challenges" name="other_challenges" placeholder="Any additional challenge types specific to this game">
+        </div>
+
+        <div class="form-group">
+          <label for="categories">Run Categories <span class="required">*</span></label>
+          <textarea id="categories" name="categories" rows="4" required placeholder="List the main run categories for this game, e.g.:&#10;- Any%&#10;- All Bosses&#10;- 100%"></textarea>
+          <small class="form-hint">One category per line</small>
+        </div>
+      </fieldset>
+
+      <!-- Community Info -->
+      <fieldset class="submit-fieldset">
+        <legend>Community Information</legend>
+
+        <div class="form-group">
+          <label for="community-size">Estimated Community Size</label>
+          <select id="community-size" name="community_size">
+            <option value="">Select...</option>
+            <option value="small">Small (< 10 active runners)</option>
+            <option value="medium">Medium (10-50 active runners)</option>
+            <option value="large">Large (50+ active runners)</option>
+            <option value="unknown">Unknown</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="discord">Community Discord (optional)</label>
+          <input type="url" id="discord" name="discord_url" placeholder="https://discord.gg/...">
+        </div>
+
+        <div class="form-group">
+          <label for="resources">Existing Resources (optional)</label>
+          <textarea id="resources" name="resources" rows="3" placeholder="Links to guides, spreadsheets, or other community resources"></textarea>
+        </div>
+      </fieldset>
+
+      <!-- Submitter Info -->
+      <fieldset class="submit-fieldset">
+        <legend>Your Information</legend>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="submitter-name">Your Name <span class="required">*</span></label>
+            <input type="text" id="submitter-name" name="submitter_name" required placeholder="Your display name">
+          </div>
+          
+          <div class="form-group">
+            <label for="submitter-contact">Contact (optional)</label>
+            <input type="text" id="submitter-contact" name="submitter_contact" placeholder="Discord username or email">
+            <small class="form-hint">So we can follow up if needed</small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="additional-notes">Additional Notes (optional)</label>
+          <textarea id="additional-notes" name="notes" rows="3" placeholder="Anything else we should know about this game or its challenge run community"></textarea>
+        </div>
+      </fieldset>
+
+      <!-- Submit -->
+      <div class="form-actions">
+        <button type="submit" class="btn btn--primary">Submit Game Request</button>
+        <p class="muted mt-2"><small>Game requests are typically reviewed within 1-2 weeks.</small></p>
+      </div>
+    </form>
+
+    <!-- Success message (hidden by default) -->
+    <div id="submit-success" class="submit-success" hidden>
+      <h3>✓ Game Request Submitted!</h3>
+      <p>Your game request has been submitted for review. We'll add it to our database if it meets our criteria.</p>
+      <p class="muted">Request ID: <code id="submission-id"></code></p>
+      <a href="{{ '/games/' | relative_url }}" class="btn">← Back to Games</a>
+    </div>
+  </div>
+</div>
+
+<style>
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-weight: normal;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: auto;
+  min-height: auto;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('game-submit-form');
+  const successDiv = document.getElementById('submit-success');
+  const submissionIdEl = document.getElementById('submission-id');
+
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      // Collect form data
+      const formData = new FormData(form);
+      const data = {
+        type: 'game_request',
+        submitted_at: new Date().toISOString()
+      };
+
+      // Get all checkbox values
+      const challenges = formData.getAll('challenges[]');
+      data.challenges = challenges;
+
+      // Get other form values
+      for (const [key, value] of formData.entries()) {
+        if (key === 'challenges[]') continue;
+        if (key === 'aliases' || key === 'platforms' || key === 'tags') {
+          data[key] = value.split(',').map(s => s.trim()).filter(Boolean);
+        } else if (key === 'categories') {
+          data[key] = value.split('\n').map(s => s.replace(/^[-•]\s*/, '').trim()).filter(Boolean);
+        } else {
+          data[key] = value;
+        }
+      }
+
+      // Generate a submission ID
+      const submissionId = 'GAME-' + Date.now().toString(36).toUpperCase();
+      data.submission_id = submissionId;
+
+      // For now, just log and show success
+      console.log('Game submission:', JSON.stringify(data, null, 2));
+
+      // Show success message
+      form.hidden = true;
+      successDiv.hidden = false;
+      submissionIdEl.textContent = submissionId;
+
+      // Store in localStorage for demo purposes
+      try {
+        const submissions = JSON.parse(localStorage.getItem('crc_game_requests') || '[]');
+        submissions.push(data);
+        localStorage.setItem('crc_game_requests', JSON.stringify(submissions));
+      } catch (err) {
+        console.warn('Could not save submission to localStorage:', err);
+      }
+    });
+  }
+});
+</script>
