@@ -1,0 +1,213 @@
+---
+layout: default
+title: Submit a Run - Hades II
+---
+
+{% assign game = site.games | where: "game_id", "hades-2" | first %}
+{% include game-header-tabs.html game=game active="runs" %}
+
+<div class="page-width">
+  <div class="game-shell">
+    <section class="tab-panel active">
+      <div class="card">
+        <h2 class="mb-2">Submit a Run</h2>
+        <p class="muted mb-4">Use this form to submit your Hades II challenge run for review. All submissions are reviewed by moderators before being added to the database.</p>
+
+        <form id="run-submit-form" class="submit-form">
+          <!-- Runner Info -->
+          <fieldset class="submit-fieldset">
+            <legend>Runner Information</legend>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="runner-name">Runner Name <span class="required">*</span></label>
+                <input type="text" id="runner-name" name="runner_name" required placeholder="Your display name">
+              </div>
+              
+              <div class="form-group">
+                <label for="runner-id">Runner ID (optional)</label>
+                <input type="text" id="runner-id" name="runner_id" placeholder="Your runner ID if you have one">
+                <small class="form-hint">Leave blank if this is your first submission</small>
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Run Details -->
+          <fieldset class="submit-fieldset">
+            <legend>Run Details</legend>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="category">Category <span class="required">*</span></label>
+                <select id="category" name="category_slug" required>
+                  <option value="">Select a category...</option>
+                  <optgroup label="Chaos Trials">
+                    <option value="chaos-trials/trial-of-origin">Trial of Origin</option>
+                    <option value="chaos-trials/trial-of-salt">Trial of Salt</option>
+                    <option value="chaos-trials/trial-of-humility">Trial of Humility</option>
+                    <option value="chaos-trials/trial-of-vengeance">Trial of Vengeance</option>
+                    <option value="chaos-trials/trial-of-moon">Trial of Moon</option>
+                    <option value="chaos-trials/trial-of-vigor">Trial of Vigor</option>
+                    <option value="chaos-trials/trial-of-flame">Trial of Flame</option>
+                    <option value="chaos-trials/trial-of-gold">Trial of Gold</option>
+                    <option value="chaos-trials/trial-of-fury">Trial of Fury</option>
+                    <option value="chaos-trials/trial-of-precarity">Trial of Precarity</option>
+                    <option value="chaos-trials/trial-of-heartache">Trial of Heartache</option>
+                    <option value="chaos-trials/trial-of-haste">Trial of Haste</option>
+                    <option value="chaos-trials/trial-of-blood">Trial of Blood</option>
+                    <option value="chaos-trials/trial-of-doom">Trial of Doom</option>
+                    <option value="chaos-trials/trial-of-destiny">Trial of Destiny</option>
+                  </optgroup>
+                  <optgroup label="Other Categories">
+                    <option value="underworld-any">Underworld Any%</option>
+                    <option value="surface-any">Surface Any%</option>
+                    <option value="underworld-vor4">Underworld VoR4</option>
+                    <option value="surface-vor4">Surface VoR4</option>
+                  </optgroup>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="challenge">Challenge Type <span class="required">*</span></label>
+                <select id="challenge" name="challenge_id" required>
+                  <option value="">Select a challenge...</option>
+                  <option value="hitless">Hitless</option>
+                  <option value="damageless">Damageless</option>
+                  <option value="no-hit-no-damage">No Hit / No Damage</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="weapon">Weapon / Aspect <span class="required">*</span></label>
+                <input type="text" id="weapon" name="character" required placeholder="e.g., Moonstone Axe / Aspect of Thanatos">
+              </div>
+
+              <div class="form-group">
+                <label for="glitch">Glitch Category <span class="required">*</span></label>
+                <select id="glitch" name="glitch_id" required>
+                  <option value="">Select glitch rules...</option>
+                  <option value="unrestricted">Unrestricted</option>
+                  <option value="nmg">No Major Glitches</option>
+                  <option value="glitchless">Glitchless</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="restrictions">Restrictions (optional)</label>
+              <input type="text" id="restrictions" name="restrictions" placeholder="e.g., God Only, Boonless, Arcanaless">
+              <small class="form-hint">Separate multiple restrictions with commas</small>
+            </div>
+          </fieldset>
+
+          <!-- Timing -->
+          <fieldset class="submit-fieldset">
+            <legend>Timing</legend>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="time">Time (IGT) <span class="required">*</span></label>
+                <input type="text" id="time" name="time_primary" required placeholder="HH:MM:SS or MM:SS">
+                <small class="form-hint">In-Game Time format</small>
+              </div>
+
+              <div class="form-group">
+                <label for="date">Date Completed <span class="required">*</span></label>
+                <input type="date" id="date" name="date_completed" required>
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Video -->
+          <fieldset class="submit-fieldset">
+            <legend>Video Evidence</legend>
+            
+            <div class="form-group">
+              <label for="video">Video Link <span class="required">*</span></label>
+              <input type="url" id="video" name="video_link" required placeholder="https://youtube.com/watch?v=... or https://twitch.tv/videos/...">
+              <small class="form-hint">YouTube or Twitch VOD link required</small>
+            </div>
+          </fieldset>
+
+          <!-- Notes -->
+          <fieldset class="submit-fieldset">
+            <legend>Additional Information</legend>
+            
+            <div class="form-group">
+              <label for="notes">Notes (optional)</label>
+              <textarea id="notes" name="notes" rows="3" placeholder="Any additional information about your run..."></textarea>
+            </div>
+          </fieldset>
+
+          <!-- Submit -->
+          <div class="form-actions">
+            <button type="submit" class="btn btn--primary">Submit Run for Review</button>
+            <p class="muted mt-2"><small>Submissions are typically reviewed within 48 hours.</small></p>
+          </div>
+        </form>
+
+        <!-- Success message (hidden by default) -->
+        <div id="submit-success" class="submit-success" hidden>
+          <h3>✓ Run Submitted Successfully!</h3>
+          <p>Your run has been submitted for review. You will be notified once it has been approved.</p>
+          <p class="muted">Submission ID: <code id="submission-id"></code></p>
+          <a href="{{ game.url | relative_url }}runs/" class="btn">← Back to Runs</a>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('run-submit-form');
+  const successDiv = document.getElementById('submit-success');
+  const submissionIdEl = document.getElementById('submission-id');
+
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      // Collect form data
+      const formData = new FormData(form);
+      const data = {
+        game_id: 'hades-2',
+        submitted_at: new Date().toISOString()
+      };
+
+      for (const [key, value] of formData.entries()) {
+        if (key === 'restrictions' && value) {
+          // Split restrictions by comma
+          data[key] = value.split(',').map(s => s.trim()).filter(Boolean);
+        } else {
+          data[key] = value;
+        }
+      }
+
+      // Generate a submission ID
+      const submissionId = 'SUB-' + Date.now().toString(36).toUpperCase();
+      data.submission_id = submissionId;
+
+      // For now, just log and show success
+      // In production, this would POST to a backend/Google Form
+      console.log('Run submission:', JSON.stringify(data, null, 2));
+
+      // Show success message
+      form.hidden = true;
+      successDiv.hidden = false;
+      submissionIdEl.textContent = submissionId;
+
+      // Store in localStorage for demo purposes
+      try {
+        const submissions = JSON.parse(localStorage.getItem('crc_submissions') || '[]');
+        submissions.push(data);
+        localStorage.setItem('crc_submissions', JSON.stringify(submissions));
+      } catch (err) {
+        console.warn('Could not save submission to localStorage:', err);
+      }
+    });
+  }
+});
+</script>
