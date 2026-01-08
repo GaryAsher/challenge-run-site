@@ -328,7 +328,7 @@ layout: default
               id="q"
               class="filter"
               type="text"
-              placeholder="Search runner, challenge, restrictions..."
+              placeholder="Search {% if show_character %}{{ character_label | downcase }}, {% endif %}runner, challenge, restrictions{% if game.glitches_data and game.glitches_data.size > 0 %}, glitches{% endif %}..."
               autocomplete="off"
               inputmode="search"
               enterkeyhint="search"
@@ -349,68 +349,94 @@ layout: default
           </div>
         </div>
 
-        <!-- Collapsible Advanced Search panel - all 4 filters in one row -->
+        <!-- Collapsible Advanced Search panel - type-ahead filters like games page -->
         <div class="filters-panel" id="advanced-filters" hidden>
-          <div class="filters-panel__row">
+          <div class="filters-grid filters-grid--runs">
             {% if show_character %}
-            <div class="runs-filter runs-filter--compact">
-              <span class="muted filter-label-text">{{ character_label }}</span>
-              <button
-                id="filter-character"
-                class="select th-caret"
-                type="button"
-                aria-label="Filter {{ character_label }}"
-                data-filter-btn="character"
-              >
-                Any ▾
-              </button>
+            <div class="tag-filter" id="character-filter">
+              <div class="muted filter-label">Filter by {{ character_label | downcase }}:</div>
+              <div class="tag-picker">
+                <div class="tag-picked" id="character-picked"></div>
+                <div class="filter-wrap">
+                  <input
+                    id="character-search"
+                    class="tag-search"
+                    type="text"
+                    placeholder="Type a {{ character_label | downcase }}..."
+                    autocomplete="off"
+                    inputmode="search"
+                    enterkeyhint="done"
+                    aria-label="Filter by {{ character_label }}"
+                  />
+                </div>
+                <div class="tag-suggestions" id="character-suggestions" hidden></div>
+              </div>
             </div>
             {% endif %}
 
-            <div class="runs-filter runs-filter--compact">
-              <span class="muted filter-label-text">Challenge</span>
-              <button
-                id="filter-challenge"
-                class="select th-caret"
-                type="button"
-                aria-label="Filter Challenge"
-                data-filter-btn="challenge"
-              >
-                Any ▾
-              </button>
+            <div class="tag-filter" id="challenge-filter">
+              <div class="muted filter-label">Filter by challenge:</div>
+              <div class="tag-picker">
+                <div class="tag-picked" id="challenge-picked"></div>
+                <div class="filter-wrap">
+                  <input
+                    id="challenge-search"
+                    class="tag-search"
+                    type="text"
+                    placeholder="Type a challenge..."
+                    autocomplete="off"
+                    inputmode="search"
+                    enterkeyhint="done"
+                    aria-label="Filter by challenge"
+                  />
+                </div>
+                <div class="tag-suggestions" id="challenge-suggestions" hidden></div>
+              </div>
             </div>
 
-            <div class="runs-filter runs-filter--compact">
-              <span class="muted filter-label-text">Restrictions</span>
-              <button
-                id="filter-restrictions"
-                class="select th-caret"
-                type="button"
-                aria-label="Filter Restrictions"
-                data-filter-btn="restrictions"
-              >
-                Any ▾
-              </button>
+            <div class="tag-filter" id="restrictions-filter">
+              <div class="muted filter-label">Filter by restrictions:</div>
+              <div class="tag-picker">
+                <div class="tag-picked" id="restrictions-picked"></div>
+                <div class="filter-wrap">
+                  <input
+                    id="restrictions-search"
+                    class="tag-search"
+                    type="text"
+                    placeholder="Type a restriction..."
+                    autocomplete="off"
+                    inputmode="search"
+                    enterkeyhint="done"
+                    aria-label="Filter by restrictions"
+                  />
+                </div>
+                <div class="tag-suggestions" id="restrictions-suggestions" hidden></div>
+              </div>
             </div>
 
             {% if game.glitches_data and game.glitches_data.size > 0 %}
-            <div class="runs-filter runs-filter--compact">
-              <span class="muted filter-label-text">Glitches</span>
-              <button
-                id="filter-glitch"
-                class="select th-caret"
-                type="button"
-                aria-label="Filter Glitches Used"
-                data-filter-btn="glitch"
-              >
-                Any ▾
-              </button>
+            <div class="tag-filter" id="glitch-filter">
+              <div class="muted filter-label">Filter by glitches:</div>
+              <div class="tag-picker">
+                <div class="tag-picked" id="glitch-picked"></div>
+                <div class="filter-wrap">
+                  <input
+                    id="glitch-search"
+                    class="tag-search"
+                    type="text"
+                    placeholder="Type a glitch category..."
+                    autocomplete="off"
+                    inputmode="search"
+                    enterkeyhint="done"
+                    aria-label="Filter by glitches"
+                  />
+                </div>
+                <div class="tag-suggestions" id="glitch-suggestions" hidden></div>
+              </div>
             </div>
             {% endif %}
           </div>
         </div>
-
-        <div id="active-filters" class="active-filters"></div>
 
         <!-- Results bar: Show / Status / Reset -->
         <div class="results-bar results-bar--runs">
@@ -625,25 +651,6 @@ layout: default
             {% endfor %}
           </tbody>
         </table>
-
-        <div class="th-menu" id="th-menu" hidden>
-          <div class="th-menu__top">
-            <input
-              id="th-menu-q"
-              class="filter th-menu__q"
-              type="text"
-              placeholder="Search..."
-              autocomplete="off"
-            />
-          </div>
-
-          <div class="th-menu__list" id="th-menu-list"></div>
-
-          <div class="th-menu__actions">
-            <button class="btn" id="th-menu-clear" type="button">Clear</button>
-            <button class="btn" id="th-menu-close" type="button">Close</button>
-          </div>
-        </div>
       </div>
 
     {% else %}
