@@ -22,10 +22,10 @@ This document specifies the Google Form fields for submitting new games to CRC.
 
 ## Section 2: Game Classification
 
-### 3. Tags (Required, Max 5)
+### 3. Genres (Required, Max 5)
 - **Type**: Checkboxes (max 5 selections)
 - **Maps to**: `tags`
-- **Help text**: "Select up to 5 tags that best describe this game. Reference Steam's top tags."
+- **Help text**: "Select up to 5 genre tags that best describe this game. Reference Steam's top tags."
 - **Options**:
   - [ ] Action
   - [ ] Adventure
