@@ -782,6 +782,12 @@ button.tag,
   transform: rotate(180deg);
 }
 
+/* Highlight Advanced Search when expanded */
+.btn--filter-toggle.is-active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--focus-2);
+}
+
 /* Collapsible filters panel */
 .filters-panel {
   margin-top: 0.75rem;
@@ -1347,8 +1353,8 @@ button.tag,
   z-index: 50;
 
   background: var(--bg);
-  padding: 0.75rem 0;
-  border-bottom: 1px solid var(--border);
+  padding: 0.75rem 0 0 0;
+  border-bottom: none;
 }
 
 .runner-tabs .tab {
@@ -1362,12 +1368,17 @@ button.tag,
 
   border-top-left-radius: var(--radius-md);
   border-top-right-radius: var(--radius-md);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 
   background: transparent;
   color: var(--text-dim);
 
   font-weight: 650;
   opacity: 0.75;
+
+  /* Push tabs down to sit on container border */
+  margin-bottom: -1px;
 
   transition:
     background 120ms ease,
@@ -1383,16 +1394,14 @@ button.tag,
 }
 
 .runner-tabs .tab.active {
-  background: var(--panel);
+  /* Keep the outside/page background color, not container color */
+  background: var(--bg);
   color: var(--fg);
   opacity: 1;
 
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--focus-2);
-  border-bottom-color: transparent;
-
-  position: relative;
-  top: 1px;
+  border-color: var(--border);
+  border-bottom-color: var(--surface);
+  box-shadow: none;
 }
 
 .page-width .runner-tabs.game-tabs {
@@ -1401,9 +1410,8 @@ button.tag,
   z-index: auto;
 
   background: transparent;
-  border-bottom: none;
   padding: 0;
-  margin: 0 0 1rem 0;
+  margin: 0;
 }
 
 .page-width + .page-width .table-wrap {
@@ -1418,14 +1426,13 @@ button.tag,
 
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
+  border-top-left-radius: 0;
 
   background: var(--surface);
   padding: 1rem;
 
   min-height: 40vh;
   overflow-y: auto;
-
-  margin-top: -1px;
 }
 
 .tab-panel.active { display: block; }
@@ -1562,12 +1569,20 @@ button.tag,
   cursor: not-allowed;
 }
 
-.th-date .th-title {
+.th-sort.is-active {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+
+.th-date .th-title,
+.th-time .th-title {
   display: flex;
   justify-content: center;
 }
 
-.th-date-sort {
+.th-date-sort,
+.th-time-sort {
   display: inline-flex;
   gap: 0.35rem;
   align-items: center;
@@ -1575,7 +1590,8 @@ button.tag,
   margin-top: 0.35rem;
 }
 
-.th-date-sort .th-sort {
+.th-date-sort .th-sort,
+.th-time-sort .th-sort {
   min-width: 32px;
   text-align: center;
 }
