@@ -9,7 +9,7 @@ title: Games
 <div class="page-width games-controls" id="games-controls">
 
   <h1>Games</h1>
-  <p class="muted">Jump by letter or filter by genre, platform, and challenges.</p>
+  <p class="muted">Jump by letter or filter by platform, genre, and challenges.</p>
 
   <!-- A–Z navigation -->
   <div class="az" id="az">
@@ -36,32 +36,8 @@ title: Games
     />
   </div>
 
-  <!-- Genre + Platform + Challenges row -->
+  <!-- Platform + Genre + Challenges row -->
   <div class="filters-grid filters-grid--three">
-
-    <!-- Genre filter (was tags) -->
-    <div class="tag-filter" id="genre-filter">
-      <div class="muted filter-label">Filter by genre:</div>
-
-      <div class="tag-picker">
-        <div class="tag-picked" id="genre-picked"></div>
-
-        <div class="filter-wrap">
-          <input
-            id="genre-search"
-            class="tag-search"
-            type="text"
-            placeholder="Type a genre..."
-            autocomplete="off"
-            inputmode="search"
-            enterkeyhint="done"
-            aria-label="Filter games by genre"
-          />
-        </div>
-
-        <div class="tag-suggestions" id="genre-suggestions" hidden></div>
-      </div>
-    </div>
 
     <!-- Platform filter -->
     <div class="tag-filter" id="platform-filter">
@@ -84,6 +60,30 @@ title: Games
         </div>
 
         <div class="tag-suggestions" id="platform-suggestions" hidden></div>
+      </div>
+    </div>
+
+    <!-- Genre filter (was tags) -->
+    <div class="tag-filter" id="genre-filter">
+      <div class="muted filter-label">Filter by genre:</div>
+
+      <div class="tag-picker">
+        <div class="tag-picked" id="genre-picked"></div>
+
+        <div class="filter-wrap">
+          <input
+            id="genre-search"
+            class="tag-search"
+            type="text"
+            placeholder="Type a genre..."
+            autocomplete="off"
+            inputmode="search"
+            enterkeyhint="done"
+            aria-label="Filter games by genre"
+          />
+        </div>
+
+        <div class="tag-suggestions" id="genre-suggestions" hidden></div>
       </div>
     </div>
 
