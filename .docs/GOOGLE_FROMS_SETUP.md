@@ -28,14 +28,6 @@ This document explains how to create and configure Google Forms for CRC submissi
 | Restrictions | Checkboxes | No | God Only, Boonless, Arcanaless, Other (please specify) |
 | Other Restrictions | Short answer | No | - |
 
-#### Section 3: Timing & Evidence
-| Question | Type | Required | Validation |
-|----------|------|----------|------------|
-| Time (IGT) | Short answer | Yes | Help text: "Format: HH:MM:SS or MM:SS" |
-| Date Completed | Date | Yes | - |
-| Video Link | Short answer | Yes | URL validation |
-| Notes | Paragraph | No | - |
-
 ### After Creating
 
 1. Click the "Send" button
@@ -108,20 +100,7 @@ Timing Method options:
 - LRT (Loadless Real Time)
 - Other
 
-#### Section 3: Community Information
-| Question | Type | Required |
-|----------|------|----------|
-| Estimated Community Size | Dropdown | No |
-| Community Discord | Short answer | No |
-| Existing Resources | Paragraph | No |
-
-Community Size options:
-- Small (< 10 active runners)
-- Medium (10-50 active runners)
-- Large (50+ active runners)
-- Unknown
-
-#### Section 4: Your Information
+#### Section 3: Your Information
 | Question | Type | Required |
 |----------|------|----------|
 | Your Name | Short answer | Yes |
