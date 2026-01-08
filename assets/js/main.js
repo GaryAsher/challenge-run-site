@@ -234,12 +234,6 @@ const CONFIG = {
     const rows = Array.from(table.querySelectorAll('.run-row'));
     const tbody = table.querySelector('tbody');
 
-    const thMenu = document.getElementById('th-menu');
-    const thMenuQ = document.getElementById('th-menu-q');
-    const thMenuList = document.getElementById('th-menu-list');
-    const thMenuClear = document.getElementById('th-menu-clear');
-    const thMenuClose = document.getElementById('th-menu-close');
-
     const thSortAsc = document.getElementById('th-sort-asc');
     const thSortDesc = document.getElementById('th-sort-desc');
 
@@ -247,11 +241,22 @@ const CONFIG = {
     const thTimeAsc = document.getElementById('th-time-asc');
     const thTimeDesc = document.getElementById('th-time-desc');
 
-    const btnCh = document.getElementById('filter-challenge');
-    const btnRes = document.getElementById('filter-restrictions');
-    const btnGlitch = document.getElementById('filter-glitch');
-    const btnCharacter = document.getElementById('filter-character');
-    const activeFiltersWrap = document.getElementById('active-filters');
+    // Type-ahead filter elements (new pattern matching games page)
+    const challengeSearch = document.getElementById('challenge-search');
+    const challengePicked = document.getElementById('challenge-picked');
+    const challengeSuggestions = document.getElementById('challenge-suggestions');
+
+    const restrictionsSearch = document.getElementById('restrictions-search');
+    const restrictionsPicked = document.getElementById('restrictions-picked');
+    const restrictionsSuggestions = document.getElementById('restrictions-suggestions');
+
+    const glitchSearch = document.getElementById('glitch-search');
+    const glitchPicked = document.getElementById('glitch-picked');
+    const glitchSuggestions = document.getElementById('glitch-suggestions');
+
+    const characterSearch = document.getElementById('character-search');
+    const characterPicked = document.getElementById('character-picked');
+    const characterSuggestions = document.getElementById('character-suggestions');
 
     rows.forEach((r, i) => (r.dataset._i = String(i)));
 
@@ -334,124 +339,123 @@ const CONFIG = {
 
     let dateSortDir = 'desc';
     let timeSortDir = null; // null = not sorting by time
-    let thActiveCol = null;
-
-    function closeThMenu() {
-      if (!thMenu) return;
-
-      if (thMenuQ && document.activeElement === thMenuQ) thMenuQ.blur();
-      if (thMenuQ) thMenuQ.value = '';
-
-      thMenu.hidden = true;
-      thMenu.setAttribute('aria-hidden', 'true');
-      thActiveCol = null;
-
-      if (thMenuClear) thMenuClear.textContent = 'Clear';
-    }
-
-    function getSetForCol(col) {
-      if (col === 'challenge') return activeChallenges;
-      if (col === 'restrictions') return activeRestrictions;
-      if (col === 'glitch') return activeGlitches;
-      if (col === 'character') return activeCharacters;
-      return null;
-    }
-
-    function getOptionsForCol(col) {
-      if (col === 'challenge') return OPTIONS.challenges;
-      if (col === 'restrictions') return OPTIONS.restrictions;
-      if (col === 'glitch') return OPTIONS.glitches;
-      if (col === 'character') return OPTIONS.characters;
-      return [];
-    }
 
     function getLabelFor(col, id) {
-      const list = getOptionsForCol(col);
+      let list;
+      if (col === 'challenge') list = OPTIONS.challenges;
+      else if (col === 'restrictions') list = OPTIONS.restrictions;
+      else if (col === 'glitch') list = OPTIONS.glitches;
+      else if (col === 'character') list = OPTIONS.characters;
+      else list = [];
+      
       const hit = list.find(x => x.id === id);
       return hit ? hit.label : id;
     }
 
-    function updateTopButtonLabels() {
-      if (btnCh) {
-        const count = activeChallenges.size;
-        btnCh.textContent = count ? `Challenge (${count}) ▾` : 'Any ▾';
-        btnCh.setAttribute('aria-expanded', count > 0 ? 'true' : 'false');
-      }
+    // =========================================================
+    // Type-ahead UI helpers (matching games page pattern)
+    // =========================================================
+    function renderPicked(set, list, pickedEl, { onRemove } = {}) {
+      if (!pickedEl) return;
+      pickedEl.innerHTML = '';
 
-      if (btnRes) {
-        const count = activeRestrictions.size;
-        btnRes.textContent = count ? `Restrictions (${count}) ▾` : 'Any ▾';
-        btnRes.setAttribute('aria-expanded', count > 0 ? 'true' : 'false');
-      }
+      const entries = Array.from(set);
+      if (!entries.length) return;
 
-      if (btnGlitch) {
-        const count = activeGlitches.size;
-        btnGlitch.textContent = count ? `Glitches (${count}) ▾` : 'Any ▾';
-        btnGlitch.setAttribute('aria-expanded', count > 0 ? 'true' : 'false');
-      }
+      for (const id of entries) {
+        const meta = list.find(x => norm(x.id) === norm(id));
+        const label = meta ? meta.label : id;
 
-      if (btnCharacter) {
-        const count = activeCharacters.size;
-        btnCharacter.textContent = count ? `Aspects (${count}) ▾` : 'Any ▾';
-        btnCharacter.setAttribute('aria-expanded', count > 0 ? 'true' : 'false');
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'tag-chip';
+        chip.textContent = label + ' ×';
+
+        chip.addEventListener('click', () => {
+          set.delete(norm(id));
+          if (onRemove) onRemove();
+        });
+
+        pickedEl.appendChild(chip);
       }
     }
 
-    function renderActiveFilterChips() {
-      if (!activeFiltersWrap) return;
+    function renderSuggestions(qRaw, set, list, sugEl, { onPick } = {}) {
+      if (!sugEl) return;
+      const q = norm(qRaw);
+      sugEl.innerHTML = '';
 
-      activeFiltersWrap.innerHTML = '';
-      const chips = [];
+      const available = list.filter(x => !set.has(norm(x.id)));
+      const filtered = q
+        ? available.filter(x => norm(x.label).includes(q) || norm(x.id).includes(q))
+        : available;
 
-      activeChallenges.forEach(id => {
-        chips.push({ kind: 'challenge', id, label: getLabelFor('challenge', id) });
-      });
+      const show = filtered.slice(0, 30);
 
-      activeRestrictions.forEach(id => {
-        chips.push({ kind: 'restrictions', id, label: getLabelFor('restrictions', id) });
-      });
-
-      activeGlitches.forEach(id => {
-        chips.push({ kind: 'glitch', id, label: getLabelFor('glitch', id) });
-      });
-
-      activeCharacters.forEach(id => {
-        chips.push({ kind: 'character', id, label: getLabelFor('character', id) });
-      });
-
-      if (!chips.length) return;
-
-      function makeChip(text, onRemove) {
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'tag';
-        b.textContent = text + ' ×';
-        b.setAttribute('aria-label', `Remove filter: ${text}`);
-        b.addEventListener('click', onRemove);
-        return b;
+      if (!show.length) {
+        const empty = document.createElement('div');
+        empty.className = 'tag-suggestion is-empty';
+        empty.textContent = available.length ? 'No matches.' : 'All selected.';
+        sugEl.appendChild(empty);
+        sugEl.hidden = false;
+        return;
       }
 
-      chips.forEach(c => {
-        let colLabel = 'Filter';
-        if (c.kind === 'challenge') colLabel = 'Challenge';
-        else if (c.kind === 'restrictions') colLabel = 'Restrictions';
-        else if (c.kind === 'glitch') colLabel = 'Glitches Used';
-        else if (c.kind === 'character') colLabel = 'Aspects';
-        
-        activeFiltersWrap.appendChild(
-          makeChip(`${colLabel}: ${c.label}`, () => {
-            let set;
-            if (c.kind === 'challenge') set = activeChallenges;
-            else if (c.kind === 'restrictions') set = activeRestrictions;
-            else if (c.kind === 'glitch') set = activeGlitches;
-            else if (c.kind === 'character') set = activeCharacters;
-            if (set) set.delete(c.id);
-            render();
-          })
-        );
+      show.forEach(x => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'tag-suggestion';
+        btn.textContent = x.label;
+
+        btn.addEventListener('click', () => {
+          set.add(norm(x.id));
+          if (onPick) onPick();
+        });
+
+        sugEl.appendChild(btn);
       });
 
-      // Clear All button removed - Reset Filters handles this now
+      sugEl.hidden = false;
+    }
+
+    function setupTypeAheadFilter(searchEl, pickedEl, sugEl, set, list) {
+      if (!searchEl) return;
+
+      function updateUI() {
+        renderPicked(set, list, pickedEl, {
+          onRemove: () => {
+            updateUI();
+            render();
+          }
+        });
+        renderSuggestions(searchEl.value, set, list, sugEl, {
+          onPick: () => {
+            searchEl.value = '';
+            updateUI();
+            render();
+          }
+        });
+      }
+
+      searchEl.addEventListener('focus', updateUI);
+      searchEl.addEventListener('input', updateUI);
+
+      // Close suggestions when clicking outside
+      document.addEventListener('click', e => {
+        if (!sugEl) return;
+        const picker = searchEl.closest('.tag-picker');
+        if (picker && !picker.contains(e.target)) {
+          sugEl.hidden = true;
+        }
+      });
+
+      // Initial render of picked items
+      renderPicked(set, list, pickedEl, {
+        onRemove: () => {
+          renderPicked(set, list, pickedEl, { onRemove: () => { updateUI(); render(); } });
+          render();
+        }
+      });
     }
 
     function matchesAllRestrictions(rowResListNorm) {
@@ -632,8 +636,6 @@ const CONFIG = {
       if (lim === 0) {
         filtered.forEach(r => (r.style.display = ''));
         if (status) status.textContent = 'Showing ' + total + ' matching runs.';
-        updateTopButtonLabels();
-        renderActiveFilterChips();
         return;
       }
 
@@ -644,175 +646,15 @@ const CONFIG = {
       if (status) {
         status.textContent = 'Showing ' + Math.min(lim, total) + ' of ' + total + ' matching runs.';
       }
-
-      updateTopButtonLabels();
-      renderActiveFilterChips();
     }
 
-    // Debounced render for menu list to avoid performance issues
-    let debounceTimer;
-    function renderThMenuListDebounced() {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => renderThMenuList(), CONFIG.DEBOUNCE_MS);
-    }
-
-    function renderThMenuList() {
-      if (!thMenuList || !thMenuQ || !thActiveCol) return;
-
-      const qv = norm(thMenuQ.value);
-      const list = getOptionsForCol(thActiveCol);
-      const set = getSetForCol(thActiveCol);
-
-      thMenuList.innerHTML = '';
-
-      const available = set ? list.filter(x => !set.has(x.id)) : list;
-
-      const filtered = available.filter(x => {
-        if (!qv) return true;
-        return norm(x.label).includes(qv) || norm(x.id).includes(qv);
-      });
-
-      if (!filtered.length) {
-        const empty = document.createElement('div');
-        empty.className = 'th-menu__empty muted';
-        empty.textContent = available.length
-          ? 'No matches.'
-          : 'All options selected. Remove a filter chip to re-add.';
-        thMenuList.appendChild(empty);
-        return;
-      }
-
-      filtered.slice(0, CONFIG.MAX_SUGGESTIONS).forEach(x => {
-        const lab = document.createElement('label');
-        lab.className = 'th-menu__item';
-
-        const cb = document.createElement('input');
-        cb.type = 'checkbox';
-        cb.checked = false;
-        cb.setAttribute('aria-label', `Select ${x.label}`);
-
-        cb.addEventListener('change', () => {
-          if (!set) return;
-
-          if (cb.checked) set.add(x.id);
-          else set.delete(x.id);
-
-          render();
-          renderThMenuList();
-        });
-
-        const txt = document.createElement('span');
-        txt.textContent = x.label;
-
-        lab.appendChild(cb);
-        lab.appendChild(txt);
-        thMenuList.appendChild(lab);
-      });
-    }
-
-    function openThMenuFor(col, anchorEl) {
-      if (!thMenu) return;
-
-      thActiveCol = col;
-      thMenu.hidden = false;
-      thMenu.setAttribute('aria-hidden', 'false');
-
-      const r = anchorEl.getBoundingClientRect();
-
-      const left = Math.min(window.innerWidth - CONFIG.MENU_WIDTH - 12, Math.max(12, r.left));
-
-      thMenu.style.left = left + 'px';
-      thMenu.style.top = r.bottom + 8 + 'px';
-
-      if (thMenuQ) thMenuQ.value = '';
-      renderThMenuList();
-
-      requestAnimationFrame(() => {
-        if (!thMenuQ || thMenu.hidden) return;
-
-        const menuW = thMenu.offsetWidth || CONFIG.MENU_WIDTH;
-        const menuH = thMenu.offsetHeight || 300;
-
-        const clampedLeft = Math.min(window.innerWidth - menuW - 12, Math.max(12, r.left));
-
-        const clampedTop = Math.min(window.innerHeight - menuH - 12, r.bottom + 8);
-
-        thMenu.style.left = clampedLeft + 'px';
-        thMenu.style.top = clampedTop + 'px';
-
-        thMenuQ.focus();
-      });
-    }
-
-    const runsRoot = table.closest('.game-shell') || table.closest('.page-width') || document;
-
-    runsRoot.querySelectorAll('[data-filter-btn]').forEach(btn => {
-      const col = btn.getAttribute('data-filter-btn');
-      if (col !== 'challenge' && col !== 'restrictions' && col !== 'glitch' && col !== 'character') return;
-
-      // Add ARIA attributes
-      btn.setAttribute('aria-haspopup', 'true');
-      btn.setAttribute('aria-expanded', 'false');
-
-      btn.addEventListener('click', e => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (thMenu && !thMenu.hidden && thActiveCol === col) {
-          closeThMenu();
-          return;
-        }
-
-        openThMenuFor(col, btn);
-      });
-    });
-
-    if (thMenuQ) thMenuQ.addEventListener('input', renderThMenuListDebounced);
-
-    if (thMenuClear) {
-      thMenuClear.addEventListener('click', () => {
-        if (!thActiveCol) return;
-        const set = getSetForCol(thActiveCol);
-        if (!set) return;
-
-        set.clear();
-        render();
-        renderThMenuList();
-      });
-    }
-
-    if (thMenuClose) thMenuClose.addEventListener('click', closeThMenu);
-
-    document.addEventListener(
-      'pointerdown',
-      e => {
-        if (!thMenu || thMenu.hidden) return;
-        if (thMenu.contains(e.target)) return;
-
-        const isCaret = e.target && e.target.closest && e.target.closest('[data-filter-btn]');
-        if (isCaret) return;
-
-        closeThMenu();
-      },
-      true
-    );
-
-    window.addEventListener('resize', () => {
-      if (thMenu && !thMenu.hidden) closeThMenu();
-    });
-
-    // Escape key to close menu and return focus
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && thMenu && !thMenu.hidden) {
-        e.preventDefault();
-        closeThMenu();
-        // Return focus to the button that opened it
-        if (thActiveCol === 'challenge' && btnCh) btnCh.focus();
-        if (thActiveCol === 'restrictions' && btnRes) btnRes.focus();
-        if (thActiveCol === 'glitch' && btnGlitch) btnGlitch.focus();
-        if (thActiveCol === 'character' && btnCharacter) btnCharacter.focus();
-      }
-    });
+    // =========================================================
+    // Setup type-ahead filters for Advanced Search
+    // =========================================================
+    setupTypeAheadFilter(challengeSearch, challengePicked, challengeSuggestions, activeChallenges, OPTIONS.challenges);
+    setupTypeAheadFilter(restrictionsSearch, restrictionsPicked, restrictionsSuggestions, activeRestrictions, OPTIONS.restrictions);
+    setupTypeAheadFilter(glitchSearch, glitchPicked, glitchSuggestions, activeGlitches, OPTIONS.glitches);
+    setupTypeAheadFilter(characterSearch, characterPicked, characterSuggestions, activeCharacters, OPTIONS.characters);
 
     if (thSortAsc) {
       thSortAsc.addEventListener('click', () => {
@@ -863,6 +705,34 @@ const CONFIG = {
       if (resetBtn) resetBtn.hidden = !hasFilters;
     }
 
+    function refreshAllTypeAheadUIs() {
+      // Re-render picked chips for all filters
+      renderPicked(activeChallenges, OPTIONS.challenges, challengePicked, {
+        onRemove: () => { refreshAllTypeAheadUIs(); render(); }
+      });
+      renderPicked(activeRestrictions, OPTIONS.restrictions, restrictionsPicked, {
+        onRemove: () => { refreshAllTypeAheadUIs(); render(); }
+      });
+      renderPicked(activeGlitches, OPTIONS.glitches, glitchPicked, {
+        onRemove: () => { refreshAllTypeAheadUIs(); render(); }
+      });
+      renderPicked(activeCharacters, OPTIONS.characters, characterPicked, {
+        onRemove: () => { refreshAllTypeAheadUIs(); render(); }
+      });
+      
+      // Clear search inputs
+      if (challengeSearch) challengeSearch.value = '';
+      if (restrictionsSearch) restrictionsSearch.value = '';
+      if (glitchSearch) glitchSearch.value = '';
+      if (characterSearch) characterSearch.value = '';
+      
+      // Hide suggestions
+      if (challengeSuggestions) challengeSuggestions.hidden = true;
+      if (restrictionsSuggestions) restrictionsSuggestions.hidden = true;
+      if (glitchSuggestions) glitchSuggestions.hidden = true;
+      if (characterSuggestions) characterSuggestions.hidden = true;
+    }
+
     function resetAllFilters() {
       if (q) q.value = '';
       activeChallenges.clear();
@@ -874,8 +744,7 @@ const CONFIG = {
       
       updateDateSortButtons();
       updateTimeSortButtons();
-      updateTopButtonLabels();
-      renderActiveFilterChips();
+      refreshAllTypeAheadUIs();
       render();
     }
 
@@ -895,7 +764,6 @@ const CONFIG = {
 
     updateDateSortButtons();
     updateTimeSortButtons();
-    updateTopButtonLabels();
     render();
   }
 
