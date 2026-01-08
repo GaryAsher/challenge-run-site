@@ -567,14 +567,12 @@ const CONFIG = {
 
     function updateDateSortButtons() {
       if (thSortAsc) {
-        thSortAsc.disabled = timeSortDir !== null && dateSortDir !== 'asc';
-        thSortAsc.classList.toggle('is-active', timeSortDir === null && dateSortDir === 'asc');
-        thSortAsc.setAttribute('aria-pressed', dateSortDir === 'asc' && timeSortDir === null ? 'true' : 'false');
+        thSortAsc.classList.toggle('is-active', dateSortDir === 'asc');
+        thSortAsc.setAttribute('aria-pressed', dateSortDir === 'asc' ? 'true' : 'false');
       }
       if (thSortDesc) {
-        thSortDesc.disabled = timeSortDir !== null && dateSortDir !== 'desc';
-        thSortDesc.classList.toggle('is-active', timeSortDir === null && dateSortDir === 'desc');
-        thSortDesc.setAttribute('aria-pressed', dateSortDir === 'desc' && timeSortDir === null ? 'true' : 'false');
+        thSortDesc.classList.toggle('is-active', dateSortDir === 'desc');
+        thSortDesc.setAttribute('aria-pressed', dateSortDir === 'desc' ? 'true' : 'false');
       }
     }
 
@@ -592,9 +590,34 @@ const CONFIG = {
     function render() {
       let filtered = rows.filter(passesFilters);
       
-      // Sort by time if time sort is active, otherwise by date
+      // Sort by primary sort (time if active, then date as secondary)
       if (timeSortDir) {
-        filtered = sortRowsByTime(filtered);
+        // Primary: time, Secondary: date
+        filtered = filtered.sort((a, b) => {
+          const aTime = parseTimeToSeconds(a.dataset.time);
+          const bTime = parseTimeToSeconds(b.dataset.time);
+          const aDate = parseDateToNumber(a.dataset.date);
+          const bDate = parseDateToNumber(b.dataset.date);
+
+          const aTimeBad = !Number.isFinite(aTime);
+          const bTimeBad = !Number.isFinite(bTime);
+
+          // If both have valid times, sort by time
+          if (!aTimeBad && !bTimeBad && aTime !== bTime) {
+            return timeSortDir === 'asc' ? aTime - bTime : bTime - aTime;
+          }
+
+          // If times are equal or one is missing, use date as tiebreaker
+          const aDateBad = !Number.isFinite(aDate);
+          const bDateBad = !Number.isFinite(bDate);
+
+          if (!aDateBad && !bDateBad && aDate !== bDate) {
+            return dateSortDir === 'asc' ? aDate - bDate : bDate - aDate;
+          }
+
+          // Fallback to original order
+          return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
+        });
       } else {
         filtered = sortRowsByDate(filtered);
       }
@@ -794,7 +817,6 @@ const CONFIG = {
     if (thSortAsc) {
       thSortAsc.addEventListener('click', () => {
         dateSortDir = 'asc';
-        timeSortDir = null; // Clear time sort when date sort is selected
         updateDateSortButtons();
         updateTimeSortButtons();
         render();
@@ -804,7 +826,6 @@ const CONFIG = {
     if (thSortDesc) {
       thSortDesc.addEventListener('click', () => {
         dateSortDir = 'desc';
-        timeSortDir = null; // Clear time sort when date sort is selected
         updateDateSortButtons();
         updateTimeSortButtons();
         render();
@@ -814,7 +835,8 @@ const CONFIG = {
     // Time sort buttons
     if (thTimeAsc) {
       thTimeAsc.addEventListener('click', () => {
-        timeSortDir = 'asc';
+        // Toggle: if already asc, turn off time sort
+        timeSortDir = timeSortDir === 'asc' ? null : 'asc';
         updateDateSortButtons();
         updateTimeSortButtons();
         render();
@@ -823,7 +845,8 @@ const CONFIG = {
 
     if (thTimeDesc) {
       thTimeDesc.addEventListener('click', () => {
-        timeSortDir = 'desc';
+        // Toggle: if already desc, turn off time sort
+        timeSortDir = timeSortDir === 'desc' ? null : 'desc';
         updateDateSortButtons();
         updateTimeSortButtons();
         render();
