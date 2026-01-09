@@ -399,6 +399,9 @@ jobs:
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          add-paths: |
+            _queue_games/${{ steps.generate.outputs.game_id }}.md
+          fail-on-no-changes: true
           commit-message: "feat: Add new game - ${{ steps.generate.outputs.game_name }}"
           title: "🎮 New Game Submission: ${{ steps.generate.outputs.game_name }}"
           body: |
