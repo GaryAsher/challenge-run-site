@@ -210,15 +210,19 @@ jobs:
           pr_url = os.environ.get("PR_URL","").strip()
           pr_list = "https://github.com/GaryAsher/challenge-run-site/pulls"
 
+          FORUM_TAG_ID = "1459087089021882561"
+          
           data = {
             "thread_name": f"Game submission: {game_name} ({game_id})",
             "content": (
               "🆕 **New game submission PR**\n"
               f"**{game_name}** (`{game_id}`)\n"
               f"PR: {pr_url}\n"
-              f"All submissions: {pr_list}"
-            )
+              f"All submissions: <{pr_list}>"
+            ),
+            "applied_tags": [FORUM_TAG_ID]
           }
+
           print(json.dumps(data))
           PY
           )"
