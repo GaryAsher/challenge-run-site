@@ -518,34 +518,34 @@ jobs:
               issue_number: context.payload.issue.number,
               body: `## ✅ Run Approved!
 
-A pull request has been created: ${prUrl}
-
-The PR will run validation checks automatically. Once checks pass, merge the PR to complete the submission.
-
-This issue will be closed when the PR is merged.`
-            });
-            
-            // Update labels
-            await github.rest.issues.removeLabel({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.payload.issue.number,
-              name: 'awaiting-confirmation'
-            }).catch(() => {});
-            
-            await github.rest.issues.removeLabel({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.payload.issue.number,
-              name: 'pending-review'
-            }).catch(() => {});
-            
-            await github.rest.issues.addLabels({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.payload.issue.number,
-              labels: ['pr-created']
-            });
+              A pull request has been created: ${prUrl}
+              
+              The PR will run validation checks automatically. Once checks pass, merge the PR to complete the submission.
+              
+              This issue will be closed when the PR is merged.`
+                          });
+                          
+                          // Update labels
+                          await github.rest.issues.removeLabel({
+                            owner: context.repo.owner,
+                            repo: context.repo.repo,
+                            issue_number: context.payload.issue.number,
+                            name: 'awaiting-confirmation'
+                          }).catch(() => {});
+                          
+                          await github.rest.issues.removeLabel({
+                            owner: context.repo.owner,
+                            repo: context.repo.repo,
+                            issue_number: context.payload.issue.number,
+                            name: 'pending-review'
+                          }).catch(() => {});
+                          
+                          await github.rest.issues.addLabels({
+                            owner: context.repo.owner,
+                            repo: context.repo.repo,
+                            issue_number: context.payload.issue.number,
+                            labels: ['pr-created']
+                          });
 
       # ============================================================
       # PROCESS REJECTION
@@ -566,34 +566,34 @@ This issue will be closed when the PR is merged.`
               issue_number: issue.number,
               body: `## ❌ Run Rejected
 
-**Reason:** ${reason}
-
-If you believe this was in error, please open a new submission with the issues addressed.`
-            });
-            
-            // Update labels
-            await github.rest.issues.removeLabel({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issue.number,
-              name: 'awaiting-confirmation'
-            }).catch(() => {});
-            
-            await github.rest.issues.removeLabel({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issue.number,
-              name: 'pending-review'
-            }).catch(() => {});
-            
-            // Close issue
-            await github.rest.issues.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issue.number,
-              state: 'closed',
-              state_reason: 'not_planned'
-            });
+              **Reason:** ${reason}
+              
+              If you believe this was in error, please open a new submission with the issues addressed.`
+                          });
+                          
+                          // Update labels
+                          await github.rest.issues.removeLabel({
+                            owner: context.repo.owner,
+                            repo: context.repo.repo,
+                            issue_number: issue.number,
+                            name: 'awaiting-confirmation'
+                          }).catch(() => {});
+                          
+                          await github.rest.issues.removeLabel({
+                            owner: context.repo.owner,
+                            repo: context.repo.repo,
+                            issue_number: issue.number,
+                            name: 'pending-review'
+                          }).catch(() => {});
+                          
+                          // Close issue
+                          await github.rest.issues.update({
+                            owner: context.repo.owner,
+                            repo: context.repo.repo,
+                            issue_number: issue.number,
+                            state: 'closed',
+                            state_reason: 'not_planned'
+                          });
 
       # ============================================================
       # PROCESS COMMUNITY REVIEW
@@ -611,24 +611,24 @@ If you believe this was in error, please open a new submission with the issues a
               issue_number: issue.number,
               body: `## 🔍 Flagged for Community Review
 
-This run has been flagged for additional review by community moderators.
-
-A community moderator will review this submission and make a final decision.
-
-**Community moderators:** Use \`/approve\` or \`/reject [reason]\` when review is complete.`
-            });
-            
-            // Update labels
-            await github.rest.issues.removeLabel({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issue.number,
-              name: 'awaiting-confirmation'
-            }).catch(() => {});
-            
-            await github.rest.issues.removeLabel({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issue.number,
-              name: 'pending-review'
-            }).catch(() => {});
+              This run has been flagged for additional review by community moderators.
+              
+              A community moderator will review this submission and make a final decision.
+              
+              **Community moderators:** Use \`/approve\` or \`/reject [reason]\` when review is complete.`
+                          });
+                          
+                          // Update labels
+                          await github.rest.issues.removeLabel({
+                            owner: context.repo.owner,
+                            repo: context.repo.repo,
+                            issue_number: issue.number,
+                            name: 'awaiting-confirmation'
+                          }).catch(() => {});
+                          
+                          await github.rest.issues.removeLabel({
+                            owner: context.repo.owner,
+                            repo: context.repo.repo,
+                            issue_number: issue.number,
+                            name: 'pending-review'
+                          }).catch(() => {});
