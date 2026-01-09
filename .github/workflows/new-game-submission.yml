@@ -2,7 +2,7 @@
 
 name: Process New Game Submission
 
-"on":
+on:
   repository_dispatch:
     types:
       - new-game-submission
@@ -17,16 +17,16 @@ name: Process New Game Submission
         required: false
         type: string
       tags:
-        description: "Tags (comma-separated or newline-separated)"
+        description: "Tags (comma, semicolon, pipe, or newline separated)"
         required: false
         default: ""
         type: string
       categories:
-        description: "Categories (comma-separated or newline-separated)"
+        description: "Categories (comma, semicolon, pipe, or newline separated)"
         required: true
         type: string
       challenges:
-        description: "Challenge types (comma-separated or newline-separated)"
+        description: "Challenge types (comma, semicolon, pipe, or newline separated)"
         required: true
         type: string
       character_column:
@@ -65,14 +65,28 @@ jobs:
           set -euo pipefail
 
           split_list() {
-            # Reads a string that may contain commas and/or newlines
-            # Outputs one cleaned item per line
+            # Accepts commas, semicolons, pipes, and/or newlines.
+            # Outputs one cleaned item per line.
             printf '%s' "$1" \
               | tr '\r' '\n' \
-              | sed 's/,/\n/g' \
+              | sed 's/[;,|]/\n/g' \
               | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
               | sed '/^$/d'
           }
+
+          yaml_quote() {
+            python - <<'PY'
+          import sys, json
+          s = sys.stdin.read()
+          s = s.strip("\n")
+          # Emit a YAML-safe double-quoted string
+          print(json.dumps(s))
+          PY
+          }
+
+          # Collect inputs from dispatch vs manual
+          DETAILS_JSON="{}"
+          CREDIT_REQUESTED="false"
 
           if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
             GAME_NAME="${{ github.event.client_payload.game_name }}"
@@ -83,6 +97,8 @@ jobs:
             CHAR_ENABLED="${{ github.event.client_payload.character_column }}"
             CHAR_LABEL="${{ github.event.client_payload.character_label }}"
             SUBMITTER="${{ github.event.client_payload.submitter_handle }}"
+            CREDIT_REQUESTED="${{ github.event.client_payload.credit_requested }}"
+            DETAILS_JSON='${{ github.event.client_payload.details }}'
           else
             GAME_NAME="${{ inputs.game_name }}"
             GAME_ID="${{ inputs.game_id }}"
@@ -92,6 +108,7 @@ jobs:
             CHAR_ENABLED="${{ inputs.character_column }}"
             CHAR_LABEL="${{ inputs.character_label }}"
             SUBMITTER="${{ inputs.submitter_handle }}"
+            DETAILS_JSON="{}"
           fi
 
           if [ -z "${GAME_ID}" ]; then
@@ -100,60 +117,121 @@ jobs:
 
           FIRST_LETTER="$(echo "$GAME_ID" | cut -c1)"
 
-          echo "DEBUG: GAME_NAME=$GAME_NAME"
-          echo "DEBUG: GAME_ID=$GAME_ID"
-          echo "DEBUG: SUBMITTER=$SUBMITTER"
+          # Parse details JSON safely (may be empty string)
+          if [ -z "${DETAILS_JSON}" ] || [ "${DETAILS_JSON}" = "null" ]; then
+            DETAILS_JSON="{}"
+          fi
 
-          echo "DEBUG: RAW TAGS >>>"
-          printf '%s\n' "$TAGS"
-          echo "<<< END RAW TAGS"
+          DETAILS_OUT="$(python - <<'PY'
+          import json, os, sys
 
-          echo "DEBUG: RAW CHALLENGES >>>"
-          printf '%s\n' "$CHALLENGES"
-          echo "<<< END RAW CHALLENGES"
+          raw = os.environ.get("DETAILS_JSON", "{}")
+          try:
+            d = json.loads(raw) if raw.strip() else {}
+          except Exception:
+            d = {}
 
-          echo "DEBUG: RAW CATEGORIES >>>"
-          printf '%s\n' "$CATEGORIES"
-          echo "<<< END RAW CATEGORIES"
+          def get(k):
+            v = d.get(k, "")
+            if v is None:
+              return ""
+            return str(v)
 
-          echo "DEBUG: split_list(TAGS) >>>"
-          split_list "$TAGS" | cat
-          echo "<<< END split_list(TAGS)"
+          # Print as KEY=VALUE lines
+          keys = [
+            "name_aliases",
+            "platforms",
+            "subcategories",
+            "glitch_categories",
+            "notable_glitches",
+            "glitchless_bans",
+            "restrictions",
+            "timing_primary",
+            "timing_secondary",
+            "moderate_interest",
+            "feedback",
+            "character_options",
+          ]
 
-          echo "DEBUG: split_list(CHALLENGES) >>>"
-          split_list "$CHALLENGES" | cat
-          echo "<<< END split_list(CHALLENGES)"
+          for k in keys:
+            print(f"{k}={get(k)}")
+          PY
+          )"
 
-          echo "DEBUG: split_list(CATEGORIES) >>>"
-          split_list "$CATEGORIES" | cat
-          echo "<<< END split_list(CATEGORIES)"
+          # Load parsed values into variables
+          while IFS= read -r line; do
+            key="${line%%=*}"
+            val="${line#*=}"
+            case "$key" in
+              name_aliases) ALIASES_RAW="$val" ;;
+              platforms) PLATFORMS_RAW="$val" ;;
+              subcategories) SUBCATS_RAW="$val" ;;
+              glitch_categories) GLITCH_CATS_RAW="$val" ;;
+              notable_glitches) NOTABLE_GLITCHES_RAW="$val" ;;
+              glitchless_bans) GLITCHLESS_BANS_RAW="$val" ;;
+              restrictions) RESTRICTIONS_RAW="$val" ;;
+              timing_primary) TIMING_PRIMARY_RAW="$val" ;;
+              timing_secondary) TIMING_SECONDARY_RAW="$val" ;;
+              moderate_interest) MOD_INTEREST_RAW="$val" ;;
+              feedback) FEEDBACK_RAW="$val" ;;
+              character_options) CHAR_OPTIONS_RAW="$val" ;;
+            esac
+          done <<< "$DETAILS_OUT"
 
           mkdir -p _queue_games
 
-          cat > "_queue_games/${GAME_ID}.md" <<EOF
-          ---
-          layout: game
-          game_id: ${GAME_ID}
-          reviewers: []
-          name: "${GAME_NAME}"
-          status: "Pending review - submitted by ${SUBMITTER}"
-          EOF
+          # Start front matter
+          {
+            echo "---"
+            echo "layout: game"
+            echo "game_id: ${GAME_ID}"
+            echo "reviewers: []"
+            echo "name: $(printf '%s' "$GAME_NAME" | yaml_quote)"
+            echo "status: $(printf '%s' "Pending review - submitted by ${SUBMITTER}" | yaml_quote)"
+            echo "credit_requested: ${CREDIT_REQUESTED:-false}"
 
-          # tags: [] if none provided
-          if [ -z "$(split_list "$TAGS" | head -n 1)" ]; then
-            echo "tags: []" >> "_queue_games/${GAME_ID}.md"
-          else
-            echo "tags:" >> "_queue_games/${GAME_ID}.md"
-            while IFS= read -r tag; do
-              [ -n "$tag" ] && echo "  - ${tag}" >> "_queue_games/${GAME_ID}.md"
-            done < <(split_list "$TAGS")
-          fi
+            # Aliases
+            if [ -n "${ALIASES_RAW:-}" ] && [ -n "$(split_list "$ALIASES_RAW" | head -n 1)" ]; then
+              echo "aliases:"
+              while IFS= read -r a; do
+                [ -n "$a" ] && echo "  - $(printf '%s' "$a" | yaml_quote)"
+              done < <(split_list "$ALIASES_RAW")
+            fi
 
-          # Placeholders that moderators will fill in
-          cat >> "_queue_games/${GAME_ID}.md" <<EOF
-          platforms: []
-          release_year:
+            # tags
+            if [ -z "$(split_list "$TAGS" | head -n 1)" ]; then
+              echo "tags: []"
+            else
+              echo "tags:"
+              while IFS= read -r tag; do
+                [ -n "$tag" ] && echo "  - $(printf '%s' "$tag" | yaml_quote)"
+              done < <(split_list "$TAGS")
+            fi
 
+            # platforms
+            if [ -z "$(split_list "${PLATFORMS_RAW:-}" | head -n 1)" ]; then
+              echo "platforms: []"
+            else
+              echo "platforms:"
+              while IFS= read -r p; do
+                [ -n "$p" ] && echo "  - $(printf '%s' "$p" | yaml_quote)"
+              done < <(split_list "${PLATFORMS_RAW:-}")
+            fi
+
+            echo "release_year:"
+            echo ""
+
+            # glitches_data
+            if [ -n "${GLITCH_CATS_RAW:-}" ] && [ -n "$(split_list "$GLITCH_CATS_RAW" | head -n 1)" ]; then
+              echo "glitches_data:"
+              while IFS= read -r gc; do
+                [ -z "$gc" ] && continue
+                slug="$(echo "$gc" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//')"
+                echo "  - slug: ${slug}"
+                echo "    label: $(printf '%s' "$gc" | yaml_quote)"
+              done < <(split_list "$GLITCH_CATS_RAW")
+            else
+              cat <<'EOF'
           # Glitch categories placeholder (reviewers fill this in if applicable)
           glitches_data:
             - slug: unrestricted
@@ -161,12 +239,24 @@ jobs:
             - slug: glitchless
               label: Glitchless
           EOF
+            fi
 
-          cat >> "_queue_games/${GAME_ID}.md" <<EOF
+            # Reviewer notes from form
+            if [ -n "${NOTABLE_GLITCHES_RAW:-}" ]; then
+              echo "notable_glitches: |"
+              while IFS= read -r l; do echo "  ${l}"; done <<< "${NOTABLE_GLITCHES_RAW}"
+            fi
+            if [ -n "${GLITCHLESS_BANS_RAW:-}" ]; then
+              echo "glitchless_bans: |"
+              while IFS= read -r l; do echo "  ${l}"; done <<< "${GLITCHLESS_BANS_RAW}"
+            fi
 
-          cover: /assets/img/games/${FIRST_LETTER}/${GAME_ID}.jpg
-          cover_position: center
+            echo ""
+            echo "cover: /assets/img/games/${FIRST_LETTER}/${GAME_ID}.jpg"
+            echo "cover_position: center"
+            echo ""
 
+            cat <<'EOF'
           tabs:
             overview: true
             runs: true
@@ -178,36 +268,69 @@ jobs:
             forum: false
             extra_1: false
             extra_2: false
-
-          character_column:
-            enabled: ${CHAR_ENABLED:-false}
-            label: "${CHAR_LABEL:-Character}"
-
-          challenges:
           EOF
 
-          while IFS= read -r ch; do
-            [ -n "$ch" ] && echo "  - ${ch}" >> "_queue_games/${GAME_ID}.md"
-          done < <(split_list "$CHALLENGES")
+            # Character column
+            echo ""
+            echo "character_column:"
+            echo "  enabled: ${CHAR_ENABLED:-false}"
+            echo "  label: $(printf '%s' "${CHAR_LABEL:-Character}" | yaml_quote)"
+            if [ "${CHAR_ENABLED:-false}" = "true" ] && [ -n "${CHAR_OPTIONS_RAW:-}" ] && [ -n "$(split_list "$CHAR_OPTIONS_RAW" | head -n 1)" ]; then
+              echo "  options:"
+              while IFS= read -r opt; do
+                [ -n "$opt" ] && echo "    - $(printf '%s' "$opt" | yaml_quote)"
+              done < <(split_list "$CHAR_OPTIONS_RAW")
+            fi
 
-          cat >> "_queue_games/${GAME_ID}.md" <<EOF
+            # challenges
+            echo ""
+            echo "challenges:"
+            while IFS= read -r ch; do
+              [ -n "$ch" ] && echo "  - $(printf '%s' "$ch" | yaml_quote)"
+            done < <(split_list "$CHALLENGES")
 
-          categories_data:
-          EOF
+            # restrictions
+            if [ -n "${RESTRICTIONS_RAW:-}" ] && [ -n "$(split_list "$RESTRICTIONS_RAW" | head -n 1)" ]; then
+              echo ""
+              echo "restrictions:"
+              while IFS= read -r r; do
+                [ -n "$r" ] && echo "  - $(printf '%s' "$r" | yaml_quote)"
+              done < <(split_list "$RESTRICTIONS_RAW")
+            fi
 
-          while IFS= read -r cat_name; do
-            [ -z "$cat_name" ] && continue
-            cat_slug="$(echo "$cat_name" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//')"
-            echo "  - slug: ${cat_slug}" >> "_queue_games/${GAME_ID}.md"
-            echo "    label: ${cat_name}" >> "_queue_games/${GAME_ID}.md"
-          done < <(split_list "$CATEGORIES")
+            # timing
+            if [ -n "${TIMING_PRIMARY_RAW:-}" ] || [ -n "${TIMING_SECONDARY_RAW:-}" ]; then
+              echo ""
+              echo "timing:"
+              [ -n "${TIMING_PRIMARY_RAW:-}" ] && echo "  primary: $(printf '%s' "$TIMING_PRIMARY_RAW" | yaml_quote)"
+              [ -n "${TIMING_SECONDARY_RAW:-}" ] && echo "  secondary: $(printf '%s' "$TIMING_SECONDARY_RAW" | yaml_quote)"
+            fi
 
-          echo "---" >> "_queue_games/${GAME_ID}.md"
-          echo "" >> "_queue_games/${GAME_ID}.md"
-          echo "Game submitted via form. Awaiting review." >> "_queue_games/${GAME_ID}.md"
+            # categories
+            echo ""
+            echo "categories_data:"
+            while IFS= read -r cat_name; do
+              [ -z "$cat_name" ] && continue
+              cat_slug="$(echo "$cat_name" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//')"
+              echo "  - slug: ${cat_slug}"
+              echo "    label: $(printf '%s' "$cat_name" | yaml_quote)"
+            done < <(split_list "$CATEGORIES")
+
+            echo "---"
+            echo ""
+            echo "Game submitted via form. Awaiting review."
+            echo ""
+            echo "Reviewer notes:"
+            [ -n "${SUBCATS_RAW:-}" ] && echo "- Sub-categories:\n${SUBCATS_RAW}"
+            [ -n "${MOD_INTEREST_RAW:-}" ] && echo "- Moderate interest: ${MOD_INTEREST_RAW}"
+            [ -n "${FEEDBACK_RAW:-}" ] && echo "- Feedback:\n${FEEDBACK_RAW}"
+          } > "_queue_games/${GAME_ID}.md"
 
           echo "game_id=${GAME_ID}" >> "$GITHUB_OUTPUT"
           echo "game_name=${GAME_NAME}" >> "$GITHUB_OUTPUT"
+
+        env:
+          DETAILS_JSON: ${{ github.event.client_payload.details }}
 
       - name: Create Pull Request
         id: cpr
@@ -232,13 +355,6 @@ jobs:
             - [ ] Challenge types are valid
             - [ ] Cover image uploaded to `assets/img/games/`
             - [ ] Move file from `_queue_games/` to `_games/`
-
-            ### To Complete This Submission
-            1. Upload a cover image (1280x720 recommended)
-            2. Add tags, platforms, release year, and adjust glitches
-            3. Move the game file: `mv _queue_games/${{ steps.generate.outputs.game_id }}.md _games/`
-            4. Update the status field
-            5. Merge this PR
 
             ---
             *Submitted via Google Form*
