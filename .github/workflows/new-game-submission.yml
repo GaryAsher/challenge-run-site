@@ -16,7 +16,8 @@ name: Process New Game Submission
         type: string
       tags:
         description: "Tags (comma-separated or newline-separated)"
-        required: true
+        required: false
+        default: ""
         type: string
       categories:
         description: "Categories (comma-separated or newline-separated)"
@@ -113,6 +114,12 @@ jobs:
             [ -n "$tag" ] && echo "  - ${tag}" >> "_queue_games/${GAME_ID}.md"
           done < <(split_list "$TAGS")
 
+          # Placeholders that moderators will fill in
+          cat >> "_queue_games/${GAME_ID}.md" <<EOF
+          platforms: []
+          release_year:
+          EOF
+
           cat >> "_queue_games/${GAME_ID}.md" <<EOF
           cover: /assets/img/games/${FIRST_LETTER}/${GAME_ID}.jpg
           cover_position: center
@@ -174,7 +181,9 @@ jobs:
 
             ### Checklist for Reviewers
             - [ ] Game name and ID are correct
-            - [ ] Tags are appropriate
+            - [ ] Add tags (moderators add genres)
+            - [ ] Add platforms
+            - [ ] Add release year
             - [ ] Categories make sense
             - [ ] Challenge types are valid
             - [ ] Cover image uploaded to `assets/img/games/`
@@ -182,9 +191,10 @@ jobs:
 
             ### To Complete This Submission
             1. Upload a cover image (1280x720 recommended)
-            2. Move the game file: `mv _queue_games/${{ steps.generate.outputs.game_id }}.md _games/`
-            3. Update the status field
-            4. Merge this PR
+            2. Add tags, platforms, and release year
+            3. Move the game file: `mv _queue_games/${{ steps.generate.outputs.game_id }}.md _games/`
+            4. Update the status field
+            5. Merge this PR
 
             ---
             *Submitted via Google Form*
@@ -216,7 +226,7 @@ jobs:
           pr_list = "https://github.com/GaryAsher/challenge-run-site/pulls"
 
           FORUM_TAG_ID = "1459087089021882561"
-          
+
           data = {
             "thread_name": f"Game submission: {game_name} ({game_id})",
             "content": (
