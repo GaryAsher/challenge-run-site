@@ -1,3 +1,5 @@
+# .github/workflows/new-game-submission.yml
+
 name: Process New Game Submission
 
 on:
@@ -42,6 +44,16 @@ on:
         required: false
         default: ""
         type: string
+      credit_requested:
+        description: "Credit requested? (true/false)"
+        required: false
+        default: "false"
+        type: string
+      details:
+        description: "Optional JSON details (advanced). If blank, defaults to {}"
+        required: false
+        default: "{}"
+        type: string
 
 permissions:
   contents: write
@@ -63,33 +75,37 @@ jobs:
       - name: Generate game file
         id: generate
         shell: bash
+        env:
+          DETAILS_JSON: ${{ github.event.client_payload.details }}
         run: |
           set -euo pipefail
 
           split_list() {
-            # Accepts commas, semicolons, pipes, and/or newlines.
+            # Accept commas, semicolons, pipes, and/or newlines.
             # Outputs one cleaned item per line.
-            printf '%s' "$1" \
+            printf '%s' "${1-}" \
               | tr '\r' '\n' \
               | sed 's/[;,|]/\n/g' \
               | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
               | sed '/^$/d'
           }
 
-          yaml_quote() {
-            python - <<'PY'
-          import sys, json
-          s = sys.stdin.read()
-          s = s.strip("\n")
-          # Emit a YAML-safe double-quoted string
-          print(json.dumps(s))
-          PY
+          slugify() {
+            printf '%s' "${1-}" \
+              | tr '[:upper:]' '[:lower:]' \
+              | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//'
           }
 
-          # Collect inputs from dispatch vs manual
-          DETAILS_JSON="{}"
+          yaml_quote() {
+            # YAML-safe double-quoted string via JSON escaping
+            python -c 'import json,sys; print(json.dumps(sys.argv[1]))' "${1-}"
+          }
+
+          # Defaults
+          DETAILS_IN="${DETAILS_JSON:-}"
           CREDIT_REQUESTED="false"
 
+          # Collect inputs from dispatch vs manual
           if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
             GAME_NAME="${{ github.event.client_payload.game_name }}"
             GAME_ID="${{ github.event.client_payload.game_id }}"
@@ -109,25 +125,32 @@ jobs:
             CHAR_ENABLED="${{ inputs.character_column }}"
             CHAR_LABEL="${{ inputs.character_label }}"
             SUBMITTER="${{ inputs.submitter_handle }}"
-            DETAILS_JSON="{}"
-            CREDIT_REQUESTED="false"
+            CREDIT_REQUESTED="${{ inputs.credit_requested }}"
+            DETAILS_IN="${{ inputs.details }}"
           fi
 
-          if [ -z "${GAME_ID}" ]; then
-            GAME_ID="$(echo "$GAME_NAME" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//')"
+          # Normalize booleans
+          CHAR_ENABLED="$(printf '%s' "${CHAR_ENABLED:-false}" | tr '[:upper:]' '[:lower:]')"
+          case "${CHAR_ENABLED:-false}" in true|false) ;; *) CHAR_ENABLED="false" ;; esac
+
+          CREDIT_REQUESTED="$(printf '%s' "${CREDIT_REQUESTED:-false}" | tr '[:upper:]' '[:lower:]')"
+          case "${CREDIT_REQUESTED:-false}" in true|false) ;; *) CREDIT_REQUESTED="false" ;; esac
+
+          if [ -z "${GAME_ID:-}" ]; then
+            GAME_ID="$(slugify "$GAME_NAME")"
           fi
 
-          FIRST_LETTER="$(echo "$GAME_ID" | cut -c1)"
+          FIRST_LETTER="$(printf '%s' "$GAME_ID" | cut -c1)"
 
-          # Parse details JSON safely (may be empty string)
-          if [ -z "${DETAILS_JSON}" ] || [ "${DETAILS_JSON}" = "null" ]; then
-            DETAILS_JSON="{}"
+          # Parse details JSON safely
+          if [ -z "${DETAILS_IN:-}" ] || [ "${DETAILS_IN:-}" = "null" ]; then
+            DETAILS_IN="{}"
           fi
 
           DETAILS_OUT="$(python - <<'PY'
-          import json, os, sys
+          import json, os
 
-          raw = os.environ.get("DETAILS_JSON", "{}")
+          raw = os.environ.get("DETAILS_IN", "{}")
           try:
             d = json.loads(raw) if raw.strip() else {}
           except Exception:
@@ -139,7 +162,6 @@ jobs:
               return ""
             return str(v)
 
-          # Print as KEY=VALUE lines
           keys = [
             "name_aliases",
             "platforms",
@@ -161,6 +183,19 @@ jobs:
           )"
 
           # Load parsed values into variables
+          ALIASES_RAW=""
+          PLATFORMS_RAW=""
+          SUBCATS_RAW=""
+          GLITCH_CATS_RAW=""
+          NOTABLE_GLITCHES_RAW=""
+          GLITCHLESS_BANS_RAW=""
+          RESTRICTIONS_RAW=""
+          TIMING_PRIMARY_RAW=""
+          TIMING_SECONDARY_RAW=""
+          MOD_INTEREST_RAW=""
+          FEEDBACK_RAW=""
+          CHAR_OPTIONS_RAW=""
+
           while IFS= read -r line; do
             key="${line%%=*}"
             val="${line#*=}"
@@ -182,71 +217,70 @@ jobs:
 
           mkdir -p _queue_games
 
-          STATUS_TEXT="Pending review - submitted by ${SUBMITTER}"
+          STATUS_TEXT="Pending review - submitted by ${SUBMITTER:-}"
           CHAR_LABEL_SAFE="${CHAR_LABEL:-Character}"
 
-          # Start front matter
+          out="_queue_games/${GAME_ID}.md"
+
           {
             echo "---"
             echo "layout: game"
             echo "game_id: ${GAME_ID}"
             echo "reviewers: []"
-            echo "name: $(printf '%s' "$GAME_NAME" | yaml_quote)"
-            echo "status: $(printf '%s' "$STATUS_TEXT" | yaml_quote)"
-            echo "credit_requested: ${CREDIT_REQUESTED:-false}"
+            echo "name: $(yaml_quote "$GAME_NAME")"
+            echo "status: $(yaml_quote "$STATUS_TEXT")"
+            echo "credit_requested: ${CREDIT_REQUESTED}"
 
-            # Aliases
-            if [ -n "${ALIASES_RAW:-}" ] && [ -n "$(split_list "$ALIASES_RAW" | head -n 1)" ]; then
+            # aliases
+            if [ -n "${ALIASES_RAW:-}" ] && [ -n "$(split_list "$ALIASES_RAW" | head -n 1 || true)" ]; then
               echo "aliases:"
               while IFS= read -r a; do
-                [ -n "$a" ] && echo "  - $(printf '%s' "$a" | yaml_quote)"
+                [ -n "$a" ] && echo "  - $(yaml_quote "$a")"
               done < <(split_list "$ALIASES_RAW")
             fi
 
             # tags
-            if [ -z "$(split_list "$TAGS" | head -n 1)" ]; then
+            if [ -z "$(split_list "${TAGS:-}" | head -n 1 || true)" ]; then
               echo "tags: []"
             else
               echo "tags:"
               while IFS= read -r tag; do
-                [ -n "$tag" ] && echo "  - $(printf '%s' "$tag" | yaml_quote)"
+                [ -n "$tag" ] && echo "  - $(yaml_quote "$tag")"
               done < <(split_list "$TAGS")
             fi
 
             # platforms
-            if [ -z "$(split_list "${PLATFORMS_RAW:-}" | head -n 1)" ]; then
+            if [ -z "$(split_list "${PLATFORMS_RAW:-}" | head -n 1 || true)" ]; then
               echo "platforms: []"
             else
               echo "platforms:"
               while IFS= read -r p; do
-                [ -n "$p" ] && echo "  - $(printf '%s' "$p" | yaml_quote)"
-              done < <(split_list "${PLATFORMS_RAW:-}")
+                [ -n "$p" ] && echo "  - $(yaml_quote "$p")"
+              done < <(split_list "$PLATFORMS_RAW")
             fi
 
             echo "release_year:"
             echo ""
 
             # glitches_data
-            if [ -n "${GLITCH_CATS_RAW:-}" ] && [ -n "$(split_list "$GLITCH_CATS_RAW" | head -n 1)" ]; then
+            if [ -n "${GLITCH_CATS_RAW:-}" ] && [ -n "$(split_list "$GLITCH_CATS_RAW" | head -n 1 || true)" ]; then
               echo "glitches_data:"
               while IFS= read -r gc; do
                 [ -z "$gc" ] && continue
-                slug="$(echo "$gc" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//')"
+                slug="$(slugify "$gc")"
                 echo "  - slug: ${slug}"
-                echo "    label: $(printf '%s' "$gc" | yaml_quote)"
+                echo "    label: $(yaml_quote "$gc")"
               done < <(split_list "$GLITCH_CATS_RAW")
             else
-              cat <<'EOF'
-          # Glitch categories placeholder (reviewers fill this in if applicable)
-          glitches_data:
-            - slug: unrestricted
-              label: Unrestricted
-            - slug: glitchless
-              label: Glitchless
-          EOF
+              echo "# Glitch categories placeholder (reviewers fill this in if applicable)"
+              echo "glitches_data:"
+              echo "  - slug: unrestricted"
+              echo "    label: $(yaml_quote "Unrestricted")"
+              echo "  - slug: glitchless"
+              echo "    label: $(yaml_quote "Glitchless")"
             fi
 
-            # Reviewer notes from form
+            # reviewer notes fields from form
             if [ -n "${NOTABLE_GLITCHES_RAW:-}" ]; then
               echo "notable_glitches: |"
               while IFS= read -r l; do echo "  ${l}"; done <<< "${NOTABLE_GLITCHES_RAW}"
@@ -261,29 +295,26 @@ jobs:
             echo "cover_position: center"
             echo ""
 
-            cat <<'EOF'
-          tabs:
-            overview: true
-            runs: true
-            history: true
-            challenges: true
-            guides: true
-            resources: true
-            rules: true
-            forum: false
-            extra_1: false
-            extra_2: false
-          EOF
+            echo "tabs:"
+            echo "  overview: true"
+            echo "  runs: true"
+            echo "  history: true"
+            echo "  challenges: true"
+            echo "  guides: true"
+            echo "  resources: true"
+            echo "  rules: true"
+            echo "  forum: false"
+            echo "  extra_1: false"
+            echo "  extra_2: false"
 
-            # Character column
             echo ""
             echo "character_column:"
-            echo "  enabled: ${CHAR_ENABLED:-false}"
-            echo "  label: $(printf '%s' "$CHAR_LABEL_SAFE" | yaml_quote)"
-            if [ "${CHAR_ENABLED:-false}" = "true" ] && [ -n "${CHAR_OPTIONS_RAW:-}" ] && [ -n "$(split_list "$CHAR_OPTIONS_RAW" | head -n 1)" ]; then
+            echo "  enabled: ${CHAR_ENABLED}"
+            echo "  label: $(yaml_quote "$CHAR_LABEL_SAFE")"
+            if [ "${CHAR_ENABLED}" = "true" ] && [ -n "${CHAR_OPTIONS_RAW:-}" ] && [ -n "$(split_list "$CHAR_OPTIONS_RAW" | head -n 1 || true)" ]; then
               echo "  options:"
               while IFS= read -r opt; do
-                [ -n "$opt" ] && echo "    - $(printf '%s' "$opt" | yaml_quote)"
+                [ -n "$opt" ] && echo "    - $(yaml_quote "$opt")"
               done < <(split_list "$CHAR_OPTIONS_RAW")
             fi
 
@@ -291,15 +322,15 @@ jobs:
             echo ""
             echo "challenges:"
             while IFS= read -r ch; do
-              [ -n "$ch" ] && echo "  - $(printf '%s' "$ch" | yaml_quote)"
+              [ -n "$ch" ] && echo "  - $(yaml_quote "$ch")"
             done < <(split_list "$CHALLENGES")
 
             # restrictions
-            if [ -n "${RESTRICTIONS_RAW:-}" ] && [ -n "$(split_list "$RESTRICTIONS_RAW" | head -n 1)" ]; then
+            if [ -n "${RESTRICTIONS_RAW:-}" ] && [ -n "$(split_list "$RESTRICTIONS_RAW" | head -n 1 || true)" ]; then
               echo ""
               echo "restrictions:"
               while IFS= read -r r; do
-                [ -n "$r" ] && echo "  - $(printf '%s' "$r" | yaml_quote)"
+                [ -n "$r" ] && echo "  - $(yaml_quote "$r")"
               done < <(split_list "$RESTRICTIONS_RAW")
             fi
 
@@ -307,8 +338,8 @@ jobs:
             if [ -n "${TIMING_PRIMARY_RAW:-}" ] || [ -n "${TIMING_SECONDARY_RAW:-}" ]; then
               echo ""
               echo "timing:"
-              [ -n "${TIMING_PRIMARY_RAW:-}" ] && echo "  primary: $(printf '%s' "$TIMING_PRIMARY_RAW" | yaml_quote)"
-              [ -n "${TIMING_SECONDARY_RAW:-}" ] && echo "  secondary: $(printf '%s' "$TIMING_SECONDARY_RAW" | yaml_quote)"
+              [ -n "${TIMING_PRIMARY_RAW:-}" ] && echo "  primary: $(yaml_quote "$TIMING_PRIMARY_RAW")"
+              [ -n "${TIMING_SECONDARY_RAW:-}" ] && echo "  secondary: $(yaml_quote "$TIMING_SECONDARY_RAW")"
             fi
 
             # categories
@@ -316,9 +347,9 @@ jobs:
             echo "categories_data:"
             while IFS= read -r cat_name; do
               [ -z "$cat_name" ] && continue
-              cat_slug="$(echo "$cat_name" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//')"
+              cat_slug="$(slugify "$cat_name")"
               echo "  - slug: ${cat_slug}"
-              echo "    label: $(printf '%s' "$cat_name" | yaml_quote)"
+              echo "    label: $(yaml_quote "$cat_name")"
             done < <(split_list "$CATEGORIES")
 
             echo "---"
@@ -326,16 +357,23 @@ jobs:
             echo "Game submitted via form. Awaiting review."
             echo ""
             echo "Reviewer notes:"
-            [ -n "${SUBCATS_RAW:-}" ] && echo "- Sub-categories:\n${SUBCATS_RAW}"
-            [ -n "${MOD_INTEREST_RAW:-}" ] && echo "- Moderate interest: ${MOD_INTEREST_RAW}"
-            [ -n "${FEEDBACK_RAW:-}" ] && echo "- Feedback:\n${FEEDBACK_RAW}"
-          } > "_queue_games/${GAME_ID}.md"
+            if [ -n "${SUBCATS_RAW:-}" ]; then
+              echo "- Sub-categories:"
+              echo "${SUBCATS_RAW}"
+            fi
+            if [ -n "${MOD_INTEREST_RAW:-}" ]; then
+              echo "- Moderate interest: ${MOD_INTEREST_RAW}"
+            fi
+            if [ -n "${FEEDBACK_RAW:-}" ]; then
+              echo "- Feedback:"
+              echo "${FEEDBACK_RAW}"
+            fi
+          } > "$out"
 
           echo "game_id=${GAME_ID}" >> "$GITHUB_OUTPUT"
           echo "game_name=${GAME_NAME}" >> "$GITHUB_OUTPUT"
-
         env:
-          DETAILS_JSON: ${{ github.event.client_payload.details }}
+          DETAILS_IN: ${{ github.event.client_payload.details }}
 
       - name: Create Pull Request
         id: cpr
