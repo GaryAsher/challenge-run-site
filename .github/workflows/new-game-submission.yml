@@ -67,7 +67,7 @@ jobs:
         id: generate
         shell: bash
         env:
-          DETAILS_FROM_DISPATCH: ${{ github.event.client_payload.details }}
+          DETAILS_FROM_DISPATCH: ${{ toJson(github.event.client_payload.details) }}
         run: |
           set -euo pipefail
 
@@ -273,9 +273,9 @@ jobs:
               echo "# Glitch categories placeholder (reviewers fill this in if applicable)"
               echo "glitches_data:"
               echo "  - slug: unrestricted"
-              echo "    label: $(yaml_quote "Unrestricted")"
+              echo "    label: $(yaml_quote Unrestricted)"
               echo "  - slug: glitchless"
-              echo "    label: $(yaml_quote "Glitchless")"
+              echo "    label: $(yaml_quote Glitchless)"
             fi
 
             if [ -n "${NOTABLE_GLITCHES_RAW:-}" ]; then
