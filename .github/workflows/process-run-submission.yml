@@ -42,51 +42,51 @@ jobs:
             if (label === 'approved') {
               message = `## ⚠️ Confirm Approval
               
-You are about to **approve** this run submission.
+            You are about to **approve** this run submission.
 
-This will:
-- Create a run file in \`_queue_runs/\`
-- Create a runner profile if it doesn't exist
-- Open a PR for final validation
-
-**To confirm:** Comment \`/confirm\`
-**To cancel:** Comment \`/cancel\` or remove the \`approved\` label`;
-            } else if (label === 'rejected') {
-              message = `## ⚠️ Confirm Rejection
-
-You are about to **reject** this run submission.
-
-This will:
-- Create a rejected run file in \`_runs/rejected/\`
-- Close this issue
-
-**To confirm with reason:** Comment \`/confirm [reason]\`
-**To cancel:** Comment \`/cancel\` or remove the \`rejected\` label
-
-Example: \`/confirm Video is private and cannot be verified\``;
-            } else if (label === 'needs-community-review') {
-              message = `## 🔍 Flagged for Community Review
-
-This run has been flagged for additional review by the game's community moderators.
-
-**To confirm:** Comment \`/confirm\`
-**To cancel:** Comment \`/cancel\` or remove the label`;
-            }
+            This will:
+            - Create a run file in \`_queue_runs/\`
+            - Create a runner profile if it doesn't exist
+            - Open a PR for final validation
             
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issue.number,
-              body: message
-            });
+            **To confirm:** Comment \`/confirm\`
+            **To cancel:** Comment \`/cancel\` or remove the \`approved\` label`;
+                        } else if (label === 'rejected') {
+                          message = `## ⚠️ Confirm Rejection
             
-            // Add awaiting-confirmation label
-            await github.rest.issues.addLabels({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issue.number,
-              labels: ['awaiting-confirmation']
-            });
+            You are about to **reject** this run submission.
+            
+            This will:
+            - Create a rejected run file in \`_runs/rejected/\`
+            - Close this issue
+            
+            **To confirm with reason:** Comment \`/confirm [reason]\`
+            **To cancel:** Comment \`/cancel\` or remove the \`rejected\` label
+            
+            Example: \`/confirm Video is private and cannot be verified\``;
+                        } else if (label === 'needs-community-review') {
+                          message = `## 🔍 Flagged for Community Review
+            
+            This run has been flagged for additional review by the game's community moderators.
+            
+            **To confirm:** Comment \`/confirm\`
+            **To cancel:** Comment \`/cancel\` or remove the label`;
+                        }
+                        
+                        await github.rest.issues.createComment({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          issue_number: issue.number,
+                          body: message
+                        });
+                        
+                        // Add awaiting-confirmation label
+                        await github.rest.issues.addLabels({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          issue_number: issue.number,
+                          labels: ['awaiting-confirmation']
+                        });
 
   # ============================================================
   # HANDLE COMMAND COMMENTS
