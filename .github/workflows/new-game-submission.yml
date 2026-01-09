@@ -100,7 +100,6 @@ jobs:
             CHAR_LABEL="${{ github.event.client_payload.character_label }}"
             SUBMITTER="${{ github.event.client_payload.submitter_handle }}"
             CREDIT_REQUESTED="${{ github.event.client_payload.credit_requested }}"
-            DETAILS_JSON='${{ github.event.client_payload.details }}'
           else
             GAME_NAME="${{ inputs.game_name }}"
             GAME_ID="${{ inputs.game_id }}"
@@ -111,6 +110,7 @@ jobs:
             CHAR_LABEL="${{ inputs.character_label }}"
             SUBMITTER="${{ inputs.submitter_handle }}"
             DETAILS_JSON="{}"
+            CREDIT_REQUESTED="false"
           fi
 
           if [ -z "${GAME_ID}" ]; then
