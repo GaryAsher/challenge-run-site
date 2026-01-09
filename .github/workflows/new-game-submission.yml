@@ -1,11 +1,8 @@
-# .github/workflows/new-game-submission.yml
-
 name: Process New Game Submission
 
 on:
   repository_dispatch:
-    types:
-      - new-game-submission
+    types: [new-game-submission]
   workflow_dispatch:
     inputs:
       game_name:
@@ -62,46 +59,19 @@ permissions:
 jobs:
   create-game-pr:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Generate game file
+      - name: Generate queued game file
         id: generate
         shell: bash
         env:
-          DETAILS_JSON: ${{ github.event.client_payload.details }}
+          DETAILS_FROM_DISPATCH: ${{ github.event.client_payload.details }}
         run: |
           set -euo pipefail
-          
-      - name: Debug generated output
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo "Generated game_id: '${{ steps.generate.outputs.game_id }}'"
-          echo "Generated game_name: '${{ steps.generate.outputs.game_name }}'"
-
-          echo "=== ls _queue_games ==="
-          ls -la _queue_games || true
-
-          echo "=== show generated file (first 120 lines) ==="
-          sed -n '1,120p' "_queue_games/${{ steps.generate.outputs.game_id }}.md" || true
-
-          echo "=== git status porcelain ==="
-          git status --porcelain || true
-
-          echo "=== git diff name-status ==="
-          git diff --name-status || true
 
           split_list() {
-            # Accept commas, semicolons, pipes, and/or newlines.
-            # Outputs one cleaned item per line.
             printf '%s' "${1-}" \
               | tr '\r' '\n' \
               | sed 's/[;,|]/\n/g' \
@@ -116,15 +86,12 @@ jobs:
           }
 
           yaml_quote() {
-            # YAML-safe double-quoted string via JSON escaping
             python -c 'import json,sys; print(json.dumps(sys.argv[1]))' "${1-}"
           }
 
-          # Defaults
-          DETAILS_IN="${DETAILS_JSON:-}"
-          CREDIT_REQUESTED="false"
+          # ---- Inputs: dispatch vs workflow_dispatch ----
+          DETAILS_IN="{}"
 
-          # Collect inputs from dispatch vs manual
           if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
             GAME_NAME="${{ github.event.client_payload.game_name }}"
             GAME_ID="${{ github.event.client_payload.game_id }}"
@@ -135,6 +102,7 @@ jobs:
             CHAR_LABEL="${{ github.event.client_payload.character_label }}"
             SUBMITTER="${{ github.event.client_payload.submitter_handle }}"
             CREDIT_REQUESTED="${{ github.event.client_payload.credit_requested }}"
+            DETAILS_IN="${DETAILS_FROM_DISPATCH:-}"
           else
             GAME_NAME="${{ inputs.game_name }}"
             GAME_ID="${{ inputs.game_id }}"
@@ -148,39 +116,56 @@ jobs:
             DETAILS_IN="${{ inputs.details }}"
           fi
 
-          # Normalize booleans
+          # ---- Hard requirements ----
+          if [ -z "${GAME_NAME:-}" ]; then
+            echo "ERROR: GAME_NAME is empty"
+            exit 1
+          fi
+          if [ -z "${CATEGORIES:-}" ]; then
+            echo "ERROR: CATEGORIES is empty"
+            exit 1
+          fi
+          if [ -z "${CHALLENGES:-}" ]; then
+            echo "ERROR: CHALLENGES is empty"
+            exit 1
+          fi
+
+          # ---- Normalize booleans ----
           CHAR_ENABLED="$(printf '%s' "${CHAR_ENABLED:-false}" | tr '[:upper:]' '[:lower:]')"
-          case "${CHAR_ENABLED:-false}" in true|false) ;; *) CHAR_ENABLED="false" ;; esac
+          case "${CHAR_ENABLED}" in true|false) ;; *) CHAR_ENABLED="false" ;; esac
 
           CREDIT_REQUESTED="$(printf '%s' "${CREDIT_REQUESTED:-false}" | tr '[:upper:]' '[:lower:]')"
-          case "${CREDIT_REQUESTED:-false}" in true|false) ;; *) CREDIT_REQUESTED="false" ;; esac
+          case "${CREDIT_REQUESTED}" in true|false) ;; *) CREDIT_REQUESTED="false" ;; esac
 
+          # ---- Slug fallback ----
           if [ -z "${GAME_ID:-}" ]; then
             GAME_ID="$(slugify "$GAME_NAME")"
+          fi
+          if [ -z "${GAME_ID:-}" ]; then
+            echo "ERROR: GAME_ID resolved to empty"
+            exit 1
           fi
 
           FIRST_LETTER="$(printf '%s' "$GAME_ID" | cut -c1)"
 
-          # Parse details JSON safely
+          # ---- Parse details JSON safely ----
           if [ -z "${DETAILS_IN:-}" ] || [ "${DETAILS_IN:-}" = "null" ]; then
             DETAILS_IN="{}"
           fi
 
+          export DETAILS_IN
           DETAILS_OUT="$(python - <<'PY'
           import json, os
-
           raw = os.environ.get("DETAILS_IN", "{}")
           try:
             d = json.loads(raw) if raw.strip() else {}
           except Exception:
             d = {}
-
           def get(k):
             v = d.get(k, "")
             if v is None:
               return ""
             return str(v)
-
           keys = [
             "name_aliases",
             "platforms",
@@ -195,13 +180,12 @@ jobs:
             "feedback",
             "character_options",
           ]
-
           for k in keys:
             print(f"{k}={get(k)}")
           PY
           )"
 
-          # Load parsed values into variables
+          # ---- Load parsed values ----
           ALIASES_RAW=""
           PLATFORMS_RAW=""
           SUBCATS_RAW=""
@@ -238,7 +222,6 @@ jobs:
 
           STATUS_TEXT="Pending review - submitted by ${SUBMITTER:-}"
           CHAR_LABEL_SAFE="${CHAR_LABEL:-Character}"
-
           out="_queue_games/${GAME_ID}.md"
 
           {
@@ -250,7 +233,6 @@ jobs:
             echo "status: $(yaml_quote "$STATUS_TEXT")"
             echo "credit_requested: ${CREDIT_REQUESTED}"
 
-            # aliases
             if [ -n "${ALIASES_RAW:-}" ] && [ -n "$(split_list "$ALIASES_RAW" | head -n 1 || true)" ]; then
               echo "aliases:"
               while IFS= read -r a; do
@@ -258,7 +240,6 @@ jobs:
               done < <(split_list "$ALIASES_RAW")
             fi
 
-            # tags
             if [ -z "$(split_list "${TAGS:-}" | head -n 1 || true)" ]; then
               echo "tags: []"
             else
@@ -268,7 +249,6 @@ jobs:
               done < <(split_list "$TAGS")
             fi
 
-            # platforms
             if [ -z "$(split_list "${PLATFORMS_RAW:-}" | head -n 1 || true)" ]; then
               echo "platforms: []"
             else
@@ -281,7 +261,6 @@ jobs:
             echo "release_year:"
             echo ""
 
-            # glitches_data
             if [ -n "${GLITCH_CATS_RAW:-}" ] && [ -n "$(split_list "$GLITCH_CATS_RAW" | head -n 1 || true)" ]; then
               echo "glitches_data:"
               while IFS= read -r gc; do
@@ -299,7 +278,6 @@ jobs:
               echo "    label: $(yaml_quote "Glitchless")"
             fi
 
-            # reviewer notes fields from form
             if [ -n "${NOTABLE_GLITCHES_RAW:-}" ]; then
               echo "notable_glitches: |"
               while IFS= read -r l; do echo "  ${l}"; done <<< "${NOTABLE_GLITCHES_RAW}"
@@ -337,14 +315,12 @@ jobs:
               done < <(split_list "$CHAR_OPTIONS_RAW")
             fi
 
-            # challenges
             echo ""
             echo "challenges:"
             while IFS= read -r ch; do
               [ -n "$ch" ] && echo "  - $(yaml_quote "$ch")"
             done < <(split_list "$CHALLENGES")
 
-            # restrictions
             if [ -n "${RESTRICTIONS_RAW:-}" ] && [ -n "$(split_list "$RESTRICTIONS_RAW" | head -n 1 || true)" ]; then
               echo ""
               echo "restrictions:"
@@ -353,7 +329,6 @@ jobs:
               done < <(split_list "$RESTRICTIONS_RAW")
             fi
 
-            # timing
             if [ -n "${TIMING_PRIMARY_RAW:-}" ] || [ -n "${TIMING_SECONDARY_RAW:-}" ]; then
               echo ""
               echo "timing:"
@@ -361,7 +336,6 @@ jobs:
               [ -n "${TIMING_SECONDARY_RAW:-}" ] && echo "  secondary: $(yaml_quote "$TIMING_SECONDARY_RAW")"
             fi
 
-            # categories
             echo ""
             echo "categories_data:"
             while IFS= read -r cat_name; do
@@ -389,10 +363,9 @@ jobs:
             fi
           } > "$out"
 
+          echo "WROTE: $out"
           echo "game_id=${GAME_ID}" >> "$GITHUB_OUTPUT"
           echo "game_name=${GAME_NAME}" >> "$GITHUB_OUTPUT"
-        env:
-          DETAILS_IN: ${{ github.event.client_payload.details }}
 
       - name: Create Pull Request
         id: cpr
@@ -400,8 +373,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           add-paths: |
-            _queue_games/${{ steps.generate.outputs.game_id }}.md
-          fail-on-no-changes: true
+            _queue_games/**
           commit-message: "feat: Add new game - ${{ steps.generate.outputs.game_name }}"
           title: "🎮 New Game Submission: ${{ steps.generate.outputs.game_name }}"
           body: |
@@ -419,11 +391,11 @@ jobs:
             - [ ] Categories make sense
             - [ ] Challenge types are valid
             - [ ] Cover image uploaded to `assets/img/games/`
-            - [ ] Move file from `_queue_games/` to `_games/`
+            - [ ] Move the game file from `_queue_games/` to `_games/`
 
             ---
             *Submitted via Google Form*
-          branch: "new-game/${{ steps.generate.outputs.game_id }}"
+          branch: "new-game/${{ steps.generate.outputs.game_id }}-${{ github.run_id }}"
           delete-branch: true
           labels: |
             new-game
@@ -449,7 +421,6 @@ jobs:
           game_id = os.environ.get("GAME_ID","").strip()
           pr_url = os.environ.get("PR_URL","").strip()
           pr_list = "https://github.com/GaryAsher/challenge-run-site/pulls"
-
           FORUM_TAG_ID = "1459087089021882561"
 
           data = {
