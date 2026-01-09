@@ -86,9 +86,9 @@ jobs:
 
           FIRST_LETTER="$(echo "$GAME_ID" | cut -c1)"
 
-          mkdir -p _queue_games
+          mkdir -p _games
 
-          cat > "_queue_games/${GAME_ID}.md" <<EOF
+          cat > "_games/${GAME_ID}.md" <<EOF
           ---
           layout: game
           game_id: ${GAME_ID}
@@ -101,10 +101,10 @@ jobs:
           IFS=',' read -ra TAG_ARRAY <<< "$TAGS"
           for tag in "${TAG_ARRAY[@]}"; do
             tag="$(echo "$tag" | xargs)"
-            [ -n "$tag" ] && echo "  - ${tag}" >> "_queue_games/${GAME_ID}.md"
+            [ -n "$tag" ] && echo "  - ${tag}" >> "_games/${GAME_ID}.md"
           done
 
-          cat >> "_queue_games/${GAME_ID}.md" <<EOF
+          cat >> "_games/${GAME_ID}.md" <<EOF
           cover: /assets/img/games/${FIRST_LETTER}/${GAME_ID}.jpg
           cover_position: center
 
@@ -130,10 +130,10 @@ jobs:
           IFS=',' read -ra CHALLENGE_ARRAY <<< "$CHALLENGES"
           for ch in "${CHALLENGE_ARRAY[@]}"; do
             ch="$(echo "$ch" | xargs)"
-            [ -n "$ch" ] && echo "  - ${ch}" >> "_queue_games/${GAME_ID}.md"
+            [ -n "$ch" ] && echo "  - ${ch}" >> "_games/${GAME_ID}.md"
           done
 
-          cat >> "_queue_games/${GAME_ID}.md" <<EOF
+          cat >> "_games/${GAME_ID}.md" <<EOF
 
           categories_data:
           EOF
@@ -143,13 +143,13 @@ jobs:
             cat_name="$(echo "$cat" | xargs)"
             [ -z "$cat_name" ] && continue
             cat_slug="$(echo "$cat_name" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//')"
-            echo "  - slug: ${cat_slug}" >> "_queue_games/${GAME_ID}.md"
-            echo "    label: ${cat_name}" >> "_queue_games/${GAME_ID}.md"
+            echo "  - slug: ${cat_slug}" >> "_games/${GAME_ID}.md"
+            echo "    label: ${cat_name}" >> "_games/${GAME_ID}.md"
           done
 
-          echo "---" >> "_queue_games/${GAME_ID}.md"
-          echo "" >> "_queue_games/${GAME_ID}.md"
-          echo "Game submitted via form. Awaiting review." >> "_queue_games/${GAME_ID}.md"
+          echo "---" >> "_games/${GAME_ID}.md"
+          echo "" >> "_games/${GAME_ID}.md"
+          echo "Game submitted via form. Awaiting review." >> "_games/${GAME_ID}.md"
 
           echo "game_id=${GAME_ID}" >> "$GITHUB_OUTPUT"
           echo "game_name=${GAME_NAME}" >> "$GITHUB_OUTPUT"
@@ -173,11 +173,11 @@ jobs:
             - [ ] Categories make sense
             - [ ] Challenge types are valid
             - [ ] Cover image uploaded to `assets/img/games/`
-            - [ ] Move file from `_queue_games/` to `_games/`
+            - [ ] Move file from `_games/` to `_games/`
 
             ### To Complete This Submission
             1. Upload a cover image (1280x720 recommended)
-            2. Move the game file: `mv _queue_games/${{ steps.generate.outputs.game_id }}.md _games/`
+            2. Move the game file: `mv _games/${{ steps.generate.outputs.game_id }}.md _games/`
             3. Update the status field
             4. Merge this PR
 
