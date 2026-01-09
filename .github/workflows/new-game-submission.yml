@@ -1,5 +1,3 @@
-# .github/workflows/new-game-submission.yml
-
 name: Process New Game Submission
 
 "on":
