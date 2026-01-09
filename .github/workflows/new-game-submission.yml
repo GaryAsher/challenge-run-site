@@ -79,6 +79,25 @@ jobs:
           DETAILS_JSON: ${{ github.event.client_payload.details }}
         run: |
           set -euo pipefail
+          
+      - name: Debug generated output
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Generated game_id: '${{ steps.generate.outputs.game_id }}'"
+          echo "Generated game_name: '${{ steps.generate.outputs.game_name }}'"
+
+          echo "=== ls _queue_games ==="
+          ls -la _queue_games || true
+
+          echo "=== show generated file (first 120 lines) ==="
+          sed -n '1,120p' "_queue_games/${{ steps.generate.outputs.game_id }}.md" || true
+
+          echo "=== git status porcelain ==="
+          git status --porcelain || true
+
+          echo "=== git diff name-status ==="
+          git diff --name-status || true
 
           split_list() {
             # Accept commas, semicolons, pipes, and/or newlines.
