@@ -1,3 +1,5 @@
+# .github/workflows/new-game-submission.yml
+
 name: Process New Game Submission
 
 "on":
@@ -15,15 +17,15 @@ name: Process New Game Submission
         required: false
         type: string
       tags:
-        description: "Tags (comma-separated)"
+        description: "Tags (comma-separated or newline-separated)"
         required: true
         type: string
       categories:
-        description: "Categories (comma-separated)"
+        description: "Categories (comma-separated or newline-separated)"
         required: true
         type: string
       challenges:
-        description: "Challenge types (comma-separated)"
+        description: "Challenge types (comma-separated or newline-separated)"
         required: true
         type: string
       character_column:
@@ -36,9 +38,10 @@ name: Process New Game Submission
         required: false
         default: "Character"
         type: string
-      submitter_email:
-        description: "Submitter email"
-        required: true
+      submitter_handle:
+        description: "Submitter Discord name or internet handle"
+        required: false
+        default: ""
         type: string
 
 jobs:
@@ -60,6 +63,16 @@ jobs:
         run: |
           set -euo pipefail
 
+          split_list() {
+            # Reads a string that may contain commas and/or newlines
+            # Outputs one cleaned item per line
+            printf '%s' "$1" \
+              | tr '\r' '\n' \
+              | sed 's/,/\n/g' \
+              | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
+              | sed '/^$/d'
+          }
+
           if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
             GAME_NAME="${{ github.event.client_payload.game_name }}"
             GAME_ID="${{ github.event.client_payload.game_id }}"
@@ -68,7 +81,7 @@ jobs:
             CHALLENGES="${{ github.event.client_payload.challenges }}"
             CHAR_ENABLED="${{ github.event.client_payload.character_column }}"
             CHAR_LABEL="${{ github.event.client_payload.character_label }}"
-            EMAIL="${{ github.event.client_payload.submitter_email }}"
+            SUBMITTER="${{ github.event.client_payload.submitter_handle }}"
           else
             GAME_NAME="${{ inputs.game_name }}"
             GAME_ID="${{ inputs.game_id }}"
@@ -77,7 +90,7 @@ jobs:
             CHALLENGES="${{ inputs.challenges }}"
             CHAR_ENABLED="${{ inputs.character_column }}"
             CHAR_LABEL="${{ inputs.character_label }}"
-            EMAIL="${{ inputs.submitter_email }}"
+            SUBMITTER="${{ inputs.submitter_handle }}"
           fi
 
           if [ -z "${GAME_ID}" ]; then
@@ -94,15 +107,13 @@ jobs:
           game_id: ${GAME_ID}
           reviewers: []
           name: "${GAME_NAME}"
-          status: "Pending review - submitted by ${EMAIL}"
+          status: "Pending review - submitted by ${SUBMITTER}"
           tags:
           EOF
 
-          IFS=',' read -ra TAG_ARRAY <<< "$TAGS"
-          for tag in "${TAG_ARRAY[@]}"; do
-            tag="$(echo "$tag" | xargs)"
+          while IFS= read -r tag; do
             [ -n "$tag" ] && echo "  - ${tag}" >> "_queue_games/${GAME_ID}.md"
-          done
+          done < <(split_list "$TAGS")
 
           cat >> "_queue_games/${GAME_ID}.md" <<EOF
           cover: /assets/img/games/${FIRST_LETTER}/${GAME_ID}.jpg
@@ -127,25 +138,21 @@ jobs:
           challenges:
           EOF
 
-          IFS=',' read -ra CHALLENGE_ARRAY <<< "$CHALLENGES"
-          for ch in "${CHALLENGE_ARRAY[@]}"; do
-            ch="$(echo "$ch" | xargs)"
+          while IFS= read -r ch; do
             [ -n "$ch" ] && echo "  - ${ch}" >> "_queue_games/${GAME_ID}.md"
-          done
+          done < <(split_list "$CHALLENGES")
 
           cat >> "_queue_games/${GAME_ID}.md" <<EOF
 
           categories_data:
           EOF
 
-          IFS=',' read -ra CAT_ARRAY <<< "$CATEGORIES"
-          for cat in "${CAT_ARRAY[@]}"; do
-            cat_name="$(echo "$cat" | xargs)"
+          while IFS= read -r cat_name; do
             [ -z "$cat_name" ] && continue
             cat_slug="$(echo "$cat_name" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//')"
             echo "  - slug: ${cat_slug}" >> "_queue_games/${GAME_ID}.md"
             echo "    label: ${cat_name}" >> "_queue_games/${GAME_ID}.md"
-          done
+          done < <(split_list "$CATEGORIES")
 
           echo "---" >> "_queue_games/${GAME_ID}.md"
           echo "" >> "_queue_games/${GAME_ID}.md"
