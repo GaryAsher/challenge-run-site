@@ -189,8 +189,7 @@ jobs:
             new-game
             needs-review
 
-      - name: Notify Discord forum (new game submission PR)
-        continue-on-error: true
+      - name: Notify Discord forum (debug)
         if: ${{ steps.cpr.outputs.pull-request-url != '' }}
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
@@ -200,29 +199,26 @@ jobs:
         shell: bash
         run: |
           python - <<'PY'
-          import json, os, sys, urllib.request, urllib.error
+          import json, os, urllib.request, urllib.error, sys
 
           webhook = os.environ["DISCORD_WEBHOOK_URL"].strip()
-          # Ask Discord to return JSON (very helpful for debugging)
           url = webhook + ("&" if "?" in webhook else "?") + "wait=true"
 
           game_name = os.environ.get("GAME_NAME","").strip()
           game_id = os.environ.get("GAME_ID","").strip()
           pr_url = os.environ.get("PR_URL","").strip()
 
-          pr_list = "https://github.com/GaryAsher/challenge-run-site/pulls"
           payload = {
             "thread_name": f"Game submission: {game_name} ({game_id})",
-            "content": (
-              "🆕 **New game submission PR**\n"
-              f"**{game_name}** (`{game_id}`)\n"
-              f"PR: {pr_url}\n"
-              f"All submissions: {pr_list}"
-            )
+            "content": f"Test post\n{pr_url}"
           }
 
-          data = json.dumps(payload).encode("utf-8")
-          req = urllib.request.Request(url, data=data, headers={"Content-Type":"application/json"}, method="POST")
+          req = urllib.request.Request(
+            url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type":"application/json"},
+            method="POST"
+          )
 
           try:
             with urllib.request.urlopen(req) as resp:
@@ -233,6 +229,5 @@ jobs:
             body = e.read().decode("utf-8") if e.fp else ""
             print("Discord HTTPError:", e.code)
             print("Discord body:", body)
-            sys.exit(0)  # continue-on-error handles it, but exit 0 keeps logs clean
+            sys.exit(1)
           PY
-
