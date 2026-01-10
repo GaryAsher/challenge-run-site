@@ -85,60 +85,23 @@ jobs:
           echo "character_label: ${DBG_CHAR_LABEL}"
           echo "submitter_handle: ${DBG_SUBMITTER}"
           echo "credit_requested: ${DBG_CREDIT}"
-          echo "details (raw): ${DBG_DETAILS}"
+          echo "details length: ${#DBG_DETAILS} chars"
           echo "=== END PAYLOAD DEBUG ==="
 
       - name: Generate queued game file
         id: generate
-        shell: bash
         env:
-          DETAILS_FROM_DISPATCH: ${{ github.event.client_payload.details }}
+          DETAILS_IN: ${{ github.event.client_payload.details || inputs.details || '{}' }}
+          GAME_NAME: ${{ github.event.client_payload.game_name || inputs.game_name }}
+          GAME_ID_INPUT: ${{ github.event.client_payload.game_id || inputs.game_id }}
+          CATEGORIES: ${{ github.event.client_payload.categories || inputs.categories }}
+          CHALLENGES: ${{ github.event.client_payload.challenges || inputs.challenges }}
+          CHAR_ENABLED: ${{ github.event.client_payload.character_column || inputs.character_column || 'false' }}
+          CHAR_LABEL: ${{ github.event.client_payload.character_label || inputs.character_label || 'Character' }}
+          SUBMITTER: ${{ github.event.client_payload.submitter_handle || inputs.submitter_handle }}
+          CREDIT_REQUESTED: ${{ github.event.client_payload.credit_requested || inputs.credit_requested || 'false' }}
         run: |
           set -euo pipefail
-
-          # =====================================================================
-          # HELPER FUNCTIONS
-          # =====================================================================
-          
-          slugify() {
-            printf '%s' "${1-}" \
-              | tr '[:upper:]' '[:lower:]' \
-              | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//'
-          }
-
-          # =====================================================================
-          # LOAD INPUTS (dispatch vs workflow_dispatch)
-          # =====================================================================
-          
-          DETAILS_IN="{}"
-
-          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
-            GAME_NAME="${{ github.event.client_payload.game_name }}"
-            GAME_ID="${{ github.event.client_payload.game_id }}"
-            TAGS="${{ github.event.client_payload.tags }}"
-            CATEGORIES="${{ github.event.client_payload.categories }}"
-            CHALLENGES="${{ github.event.client_payload.challenges }}"
-            CHAR_ENABLED="${{ github.event.client_payload.character_column }}"
-            CHAR_LABEL="${{ github.event.client_payload.character_label }}"
-            SUBMITTER="${{ github.event.client_payload.submitter_handle }}"
-            CREDIT_REQUESTED="${{ github.event.client_payload.credit_requested }}"
-            DETAILS_IN="${DETAILS_FROM_DISPATCH:-}"
-          else
-            GAME_NAME="${{ inputs.game_name }}"
-            GAME_ID="${{ inputs.game_id }}"
-            TAGS="${{ inputs.tags }}"
-            CATEGORIES="${{ inputs.categories }}"
-            CHALLENGES="${{ inputs.challenges }}"
-            CHAR_ENABLED="${{ inputs.character_column }}"
-            CHAR_LABEL="${{ inputs.character_label }}"
-            SUBMITTER="${{ inputs.submitter_handle }}"
-            CREDIT_REQUESTED="${{ inputs.credit_requested }}"
-            DETAILS_IN="${{ inputs.details }}"
-          fi
-
-          # =====================================================================
-          # VALIDATION
-          # =====================================================================
           
           echo "=== VALIDATION ==="
           
@@ -159,344 +122,51 @@ jobs:
             exit 1
           fi
           echo "✓ CHALLENGES present"
-
-          # =====================================================================
-          # NORMALIZE INPUTS
-          # =====================================================================
-
-          # Normalize booleans
-          CHAR_ENABLED="$(printf '%s' "${CHAR_ENABLED:-false}" | tr '[:upper:]' '[:lower:]')"
-          case "${CHAR_ENABLED}" in true|false) ;; *) CHAR_ENABLED="false" ;; esac
-
-          CREDIT_REQUESTED="$(printf '%s' "${CREDIT_REQUESTED:-false}" | tr '[:upper:]' '[:lower:]')"
-          case "${CREDIT_REQUESTED}" in true|false) ;; *) CREDIT_REQUESTED="false" ;; esac
-
+          
           # Generate game ID if not provided
-          if [ -z "${GAME_ID:-}" ]; then 
-            GAME_ID="$(slugify "$GAME_NAME")"
+          if [ -z "${GAME_ID_INPUT:-}" ]; then
+            GAME_ID=$(echo "${GAME_NAME}" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//')
+          else
+            GAME_ID="${GAME_ID_INPUT}"
           fi
           
           if [ -z "${GAME_ID:-}" ]; then 
             echo "::error::GAME_ID resolved to empty"
             exit 1
           fi
-          
           echo "✓ GAME_ID: ${GAME_ID}"
+          
+          FIRST_LETTER=$(echo "${GAME_ID}" | cut -c1)
+          
+          # Normalize booleans
+          CHAR_ENABLED=$(echo "${CHAR_ENABLED:-false}" | tr '[:upper:]' '[:lower:]')
+          case "${CHAR_ENABLED}" in true|false) ;; *) CHAR_ENABLED="false" ;; esac
+          
+          CREDIT_REQUESTED=$(echo "${CREDIT_REQUESTED:-false}" | tr '[:upper:]' '[:lower:]')
+          case "${CREDIT_REQUESTED}" in true|false) ;; *) CREDIT_REQUESTED="false" ;; esac
+          
           echo "✓ CHAR_ENABLED: ${CHAR_ENABLED}"
           echo "✓ CHAR_LABEL: ${CHAR_LABEL:-Character}"
-
-          FIRST_LETTER="$(printf '%s' "$GAME_ID" | cut -c1)"
-
-          # =====================================================================
-          # PARSE AND GENERATE USING PYTHON (handles all edge cases)
-          # =====================================================================
           
-          echo "=== GENERATING GAME FILE ==="
-          
+          # Prepare output
           mkdir -p _queue_games
           OUT_FILE="_queue_games/${GAME_ID}.md"
-
+          
           # Handle empty/null details
           if [ -z "${DETAILS_IN:-}" ] || [ "${DETAILS_IN:-}" = "null" ]; then
             DETAILS_IN="{}"
           fi
-
-          # Export all variables for Python
+          
+          echo "=== GENERATING GAME FILE ==="
+          
+          # Export for Python script
           export GAME_NAME GAME_ID FIRST_LETTER CATEGORIES CHALLENGES
           export CHAR_ENABLED CHAR_LABEL SUBMITTER CREDIT_REQUESTED
           export DETAILS_IN OUT_FILE
-
-          python3 - <<'PYTHON_SCRIPT'
-import json
-import os
-import re
-import sys
-
-# =============================================================================
-# HELPER FUNCTIONS
-# =============================================================================
-
-def split_list(s):
-    """Split a string by newlines, commas, semicolons, or pipes."""
-    if not s:
-        return []
-    # First, convert escaped newlines to real newlines
-    s = s.replace('\\n', '\n')
-    # Replace delimiters with newlines
-    s = s.replace('\r\n', '\n').replace('\r', '\n')
-    s = re.sub(r'[;,|]', '\n', s)
-    # Split and clean
-    items = [line.strip() for line in s.split('\n')]
-    return [item for item in items if item]
-
-def slugify(s):
-    """Convert string to URL-friendly slug."""
-    if not s:
-        return ""
-    s = s.lower().strip()
-    s = re.sub(r'[^a-z0-9]+', '-', s)
-    s = re.sub(r'-+', '-', s).strip('-')
-    return s
-
-def yaml_quote(s):
-    """Quote a string for YAML output."""
-    if not s:
-        return '""'
-    return json.dumps(str(s))
-
-# =============================================================================
-# LOAD ENVIRONMENT VARIABLES
-# =============================================================================
-
-game_name = os.environ.get('GAME_NAME', '')
-game_id = os.environ.get('GAME_ID', '')
-first_letter = os.environ.get('FIRST_LETTER', '')
-categories_raw = os.environ.get('CATEGORIES', '')
-challenges_raw = os.environ.get('CHALLENGES', '')
-char_enabled = os.environ.get('CHAR_ENABLED', 'false') == 'true'
-char_label = os.environ.get('CHAR_LABEL', 'Character') or 'Character'
-submitter = os.environ.get('SUBMITTER', '')
-credit_requested = os.environ.get('CREDIT_REQUESTED', 'false') == 'true'
-details_raw = os.environ.get('DETAILS_IN', '{}')
-out_file = os.environ.get('OUT_FILE', '')
-
-# =============================================================================
-# PARSE DETAILS JSON
-# =============================================================================
-
-def load_details(s):
-    if not s or s == 'null':
-        return {}
-    try:
-        obj = json.loads(s)
-    except json.JSONDecodeError as e:
-        print(f"DEBUG: JSON parse error: {e}", file=sys.stderr)
-        return {}
-    
-    # Handle double-encoded JSON
-    if isinstance(obj, str):
-        try:
-            obj2 = json.loads(obj)
-            if isinstance(obj2, dict):
-                return obj2
-        except:
-            pass
-        return {}
-    
-    return obj if isinstance(obj, dict) else {}
-
-details = load_details(details_raw)
-
-def get_detail(key, default=''):
-    v = details.get(key, default)
-    if v is None:
-        return default
-    return str(v)
-
-# Extract all details
-aliases = split_list(get_detail('name_aliases'))
-subcategories_raw = split_list(get_detail('subcategories'))
-glitch_categories = split_list(get_detail('glitch_categories'))
-glitches_doc = split_list(get_detail('glitches_doc'))
-restrictions = split_list(get_detail('restrictions'))
-timing_primary = get_detail('timing_primary', 'RTA')
-timing_secondary = get_detail('timing_secondary')
-moderate_interest = get_detail('moderate_interest')
-feedback = get_detail('feedback')
-character_options = split_list(get_detail('character_options'))
-
-# Debug output
-print(f"DEBUG: Parsed details:", file=sys.stderr)
-print(f"  - aliases: {aliases}", file=sys.stderr)
-print(f"  - subcategories: {subcategories_raw}", file=sys.stderr)
-print(f"  - glitch_categories: {glitch_categories}", file=sys.stderr)
-print(f"  - restrictions: {restrictions}", file=sys.stderr)
-print(f"  - character_options: {character_options}", file=sys.stderr)
-
-# =============================================================================
-# PROCESS CATEGORIES WITH SUBCATEGORIES
-# =============================================================================
-
-categories = split_list(categories_raw)
-challenges = split_list(challenges_raw)
-
-# Build parent -> children map from subcategories
-# Format: "Parent - Child" or "Parent-Child"
-children_map = {}
-for rel in subcategories_raw:
-    if ' - ' in rel:
-        parent, child = rel.split(' - ', 1)
-    elif '-' in rel:
-        parts = rel.split('-', 1)
-        parent = parts[0].strip()
-        child = parts[1].strip() if len(parts) > 1 else ''
-    else:
-        continue
-    
-    parent = parent.strip()
-    child = child.strip()
-    
-    if parent and child:
-        if parent not in children_map:
-            children_map[parent] = []
-        children_map[parent].append(child)
-
-# =============================================================================
-# GENERATE YAML OUTPUT
-# =============================================================================
-
-lines = []
-
-# Header
-lines.append('---')
-lines.append('layout: game')
-lines.append(f'game_id: {game_id}')
-lines.append('reviewers: []')
-lines.append('')
-
-# Name section
-lines.append(f'name: {yaml_quote(game_name)}')
-if aliases:
-    lines.append('name_aliases:')
-    for alias in aliases:
-        lines.append(f'  - {yaml_quote(alias)}')
-else:
-    lines.append('name_aliases: []')
-
-status_text = f"Pending review - submitted by {submitter}" if submitter else "Pending review"
-lines.append(f'status: {yaml_quote(status_text)}')
-lines.append('')
-
-# Metadata (to be filled by moderators)
-lines.append('# TODO: Add tags and platforms')
-lines.append('tags: []')
-lines.append('platforms: []')
-lines.append('')
-
-# Cover image
-lines.append(f'cover: /assets/img/games/{first_letter}/{game_id}.jpg')
-lines.append('cover_position: center')
-lines.append('')
-
-# Timing
-lines.append(f'timing_method: {yaml_quote(timing_primary)}')
-lines.append('')
-
-# Tabs
-lines.append('tabs:')
-lines.append('  overview: true')
-lines.append('  runs: true')
-lines.append('  history: true')
-lines.append('  resources: true')
-lines.append('  forum: true')
-lines.append('  extra_1: false')
-lines.append('  extra_2: false')
-lines.append('')
-
-# Character column
-lines.append('character_column:')
-lines.append(f'  enabled: {str(char_enabled).lower()}')
-lines.append(f'  label: {yaml_quote(char_label)}')
-lines.append('')
-
-# Challenges
-lines.append('challenges:')
-for ch in challenges:
-    lines.append(f'  - {slugify(ch)}')
-lines.append('')
-
-# Glitch categories
-lines.append('glitches_data:')
-if glitch_categories:
-    for gc in glitch_categories:
-        lines.append(f'  - slug: {slugify(gc)}')
-        lines.append(f'    label: {yaml_quote(gc)}')
-else:
-    lines.append('  - slug: unrestricted')
-    lines.append('    label: "Unrestricted"')
-    lines.append('  - slug: glitchless')
-    lines.append('    label: "Glitchless"')
-lines.append('')
-
-# Restrictions
-lines.append('restrictions:')
-if restrictions:
-    for r in restrictions:
-        lines.append(f'  - {yaml_quote(r)}')
-else:
-    lines.append('  []')
-lines.append('')
-
-# Categories data
-lines.append('categories_data:')
-for cat in categories:
-    cat_slug = slugify(cat)
-    lines.append(f'  - slug: {cat_slug}')
-    lines.append(f'    label: {yaml_quote(cat)}')
-    
-    # Check for children
-    if cat in children_map:
-        lines.append('    children:')
-        for child in children_map[cat]:
-            lines.append(f'      - slug: {slugify(child)}')
-            lines.append(f'        label: {yaml_quote(child)}')
-
-lines.append('---')
-lines.append('')
-
-# Body content
-lines.append('Game submitted via form. Awaiting review.')
-lines.append('')
-
-# Reviewer notes (HTML comment)
-notes = []
-if submitter:
-    notes.append(f'Submitted by: {submitter}')
-if credit_requested:
-    notes.append('Credit requested: Yes')
-if moderate_interest:
-    notes.append(f'Moderation interest: {moderate_interest}')
-if character_options:
-    notes.append('')
-    notes.append('Character/Weapon/Class options:')
-    for opt in character_options:
-        notes.append(f'  - {opt}')
-if glitches_doc:
-    notes.append('')
-    notes.append('Glitch documentation:')
-    for doc in glitches_doc:
-        notes.append(f'  - {doc}')
-if timing_secondary:
-    notes.append(f'Secondary timing: {timing_secondary}')
-if feedback:
-    notes.append('')
-    notes.append('Submitter feedback:')
-    notes.append(feedback.replace('\\n', '\n'))
-
-if notes:
-    lines.append('<!-- REVIEWER NOTES')
-    lines.append('')
-    for note in notes:
-        lines.append(note)
-    lines.append('')
-    lines.append('-->')
-
-# =============================================================================
-# WRITE OUTPUT FILE
-# =============================================================================
-
-with open(out_file, 'w') as f:
-    f.write('\n'.join(lines))
-
-print(f"✓ Generated {out_file}")
-print(f"  - {len(categories)} categories")
-print(f"  - {len(challenges)} challenges")
-print(f"  - {len(aliases)} aliases")
-print(f"  - {len(restrictions)} restrictions")
-print(f"  - {len(character_options)} character options")
-
-PYTHON_SCRIPT
-
+          
+          # Run the Python generator script
+          python3 scripts/generate-game-file.py
+          
           # Output for next steps
           echo "game_id=${GAME_ID}" >> "$GITHUB_OUTPUT"
           echo "game_name=${GAME_NAME}" >> "$GITHUB_OUTPUT"
@@ -508,9 +178,10 @@ PYTHON_SCRIPT
           cat "_queue_games/${{ steps.generate.outputs.game_id }}.md"
           echo ""
           echo "=== YAML VALIDATION ==="
-          python3 -c "
+          python3 << 'EOF'
           import yaml
-          with open('_queue_games/${{ steps.generate.outputs.game_id }}.md', 'r') as f:
+          game_id = "${{ steps.generate.outputs.game_id }}"
+          with open(f'_queue_games/{game_id}.md', 'r') as f:
               content = f.read()
               parts = content.split('---')
               if len(parts) >= 3:
@@ -518,16 +189,16 @@ PYTHON_SCRIPT
                   try:
                       data = yaml.safe_load(front_matter)
                       print('✓ YAML is valid')
-                      print(f'  - game_id: {data.get(\"game_id\")}')
-                      print(f'  - name: {data.get(\"name\")}')
-                      print(f'  - name_aliases: {data.get(\"name_aliases\", [])}')
-                      print(f'  - challenges: {data.get(\"challenges\", [])}')
-                      print(f'  - restrictions: {data.get(\"restrictions\", [])}')
-                      print(f'  - categories_data count: {len(data.get(\"categories_data\", []))}')
+                      print(f'  - game_id: {data.get("game_id")}')
+                      print(f'  - name: {data.get("name")}')
+                      print(f'  - name_aliases: {data.get("name_aliases", [])}')
+                      print(f'  - challenges: {data.get("challenges", [])}')
+                      print(f'  - restrictions: {data.get("restrictions", [])}')
+                      print(f'  - categories_data count: {len(data.get("categories_data", []))}')
                   except yaml.YAMLError as e:
                       print(f'✗ YAML Error: {e}')
                       exit(1)
-          "
+          EOF
 
       - name: Create Pull Request
         id: cpr
@@ -573,30 +244,29 @@ PYTHON_SCRIPT
 
       - name: Notify Discord forum (new game submission PR)
         continue-on-error: true
-        if: ${{ steps.cpr.outputs.pull-request-url != '' }}
+        if: steps.cpr.outputs.pull-request-url != ''
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           PR_URL: ${{ steps.cpr.outputs.pull-request-url }}
           GAME_ID: ${{ steps.generate.outputs.game_id }}
           GAME_NAME: ${{ steps.generate.outputs.game_name }}
-        shell: bash
         run: |
-          set -euo pipefail
-
           if [ -z "${DISCORD_WEBHOOK_URL:-}" ]; then
             echo "DISCORD_WEBHOOK_URL not set, skipping Discord notification"
             exit 0
           fi
-
-          payload="$(python3 - <<'PY'
-          import json, os
+          
+          # Build JSON payload safely
+          PAYLOAD=$(python3 << 'EOF'
+          import json
+          import os
           
           game_name = os.environ.get("GAME_NAME", "").strip()
           game_id = os.environ.get("GAME_ID", "").strip()
           pr_url = os.environ.get("PR_URL", "").strip()
           pr_list = "https://github.com/GaryAsher/challenge-run-site/pulls"
           FORUM_TAG_ID = "1459087089021882561"
-
+          
           data = {
               "thread_name": f"Game submission: {game_name} ({game_id})",
               "content": (
@@ -608,13 +278,13 @@ PYTHON_SCRIPT
               "applied_tags": [FORUM_TAG_ID]
           }
           print(json.dumps(data))
-          PY
-          )"
-
+          EOF
+          )
+          
           curl -sS -X POST "${DISCORD_WEBHOOK_URL}?wait=true" \
             -H "Content-Type: application/json" \
             -H "User-Agent: GitHubActions-CRC" \
-            --data "$payload" \
+            --data "${PAYLOAD}" \
             --fail-with-body
           
           echo "✓ Discord notification sent"
