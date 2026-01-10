@@ -516,6 +516,7 @@ jobs:
           # Output for next steps
           echo "game_id=${GAME_ID}" >> "$GITHUB_OUTPUT"
           echo "game_name=${GAME_NAME}" >> "$GITHUB_OUTPUT"
+          echo "first_letter=${FIRST_LETTER}" >> "$GITHUB_OUTPUT"
 
       - name: Verify generated file
         run: |
@@ -568,7 +569,7 @@ jobs:
             - [ ] Review categories and subcategories
             - [ ] Review glitch categories (`glitches_data`)
             - [ ] Review challenge types
-            - [ ] Upload cover image to `assets/img/games/${{ steps.generate.outputs.game_id | slice: 0, 1 }}/`
+            - [ ] Upload cover image to `assets/img/games/${{ steps.generate.outputs.first_letter }}/`
             - [ ] Move file from `_queue_games/` to `_games/`
 
             ### File Location
