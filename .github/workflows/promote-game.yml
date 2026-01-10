@@ -1,0 +1,155 @@
+name: Promote Approved Game
+
+on:
+  # Trigger when a PR with 'new-game' label is closed (merged)
+  pull_request:
+    types: [closed]
+    paths:
+      - '_queue_games/*.md'
+  
+  # Manual trigger to promote a specific game
+  workflow_dispatch:
+    inputs:
+      game_id:
+        description: "Game ID to promote (filename without .md)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  promote-game:
+    # Only run if PR was merged (not just closed)
+    if: |
+      (github.event_name == 'workflow_dispatch') ||
+      (github.event.pull_request.merged == true)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Identify game to promote
+        id: identify
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # Manual trigger - use input
+            GAME_ID="${{ inputs.game_id }}"
+          else
+            # PR trigger - find changed files in _queue_games
+            GAME_ID=""
+            
+            # Get list of files changed in the PR
+            CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.merge_commit_sha }} 2>/dev/null || echo "")
+            
+            echo "Changed files: ${CHANGED_FILES}"
+            
+            # Find .md files in _queue_games
+            for file in ${CHANGED_FILES}; do
+              if [[ "$file" == _queue_games/*.md ]] && [[ "$file" != *".gitkeep"* ]]; then
+                # Extract game_id from filename
+                FILENAME=$(basename "$file" .md)
+                GAME_ID="${FILENAME}"
+                echo "Found queued game: ${GAME_ID}"
+                break
+              fi
+            done
+          fi
+          
+          if [ -z "${GAME_ID}" ]; then
+            echo "::error::No game found to promote"
+            exit 1
+          fi
+          
+          echo "game_id=${GAME_ID}" >> "$GITHUB_OUTPUT"
+          echo "Will promote: ${GAME_ID}"
+
+      - name: Promote game file
+        id: promote
+        env:
+          GAME_ID: ${{ steps.identify.outputs.game_id }}
+        run: |
+          SOURCE="_queue_games/${GAME_ID}.md"
+          DEST="_games/${GAME_ID}.md"
+          
+          if [ ! -f "${SOURCE}" ]; then
+            echo "::error::Source file not found: ${SOURCE}"
+            exit 1
+          fi
+          
+          if [ -f "${DEST}" ]; then
+            echo "::warning::Destination already exists, will overwrite: ${DEST}"
+          fi
+          
+          echo "Moving ${SOURCE} -> ${DEST}"
+          mv "${SOURCE}" "${DEST}"
+          
+          # Update status in the file (remove "Pending review" prefix)
+          sed -i 's/status: "Pending review - submitted by/status: "Submitted by/g' "${DEST}"
+          sed -i 's/status: "Pending review"/status: "Active"/g' "${DEST}"
+          
+          echo "✓ Game file promoted"
+
+      - name: Generate game pages
+        env:
+          GAME_ID: ${{ steps.identify.outputs.game_id }}
+        run: |
+          echo "Generating pages for ${GAME_ID}..."
+          node scripts/generate-game-pages.js --game "${GAME_ID}"
+          echo "✓ Game pages generated"
+
+      - name: Generate run category pages
+        env:
+          GAME_ID: ${{ steps.identify.outputs.game_id }}
+        run: |
+          echo "Generating run category pages for ${GAME_ID}..."
+          node scripts/generate-run-category-pages.js --game "${GAME_ID}" || echo "Note: generate-run-category-pages.js may need the game to have runs first"
+          echo "✓ Run category pages generated (if applicable)"
+
+      - name: Commit and push changes
+        env:
+          GAME_ID: ${{ steps.identify.outputs.game_id }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Add all changes
+          git add -A
+          
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          
+          git commit -m "chore: Promote game ${GAME_ID} to active games"
+          git push
+          
+          echo "✓ Changes committed and pushed"
+
+      - name: Summary
+        env:
+          GAME_ID: ${{ steps.identify.outputs.game_id }}
+        run: |
+          echo "## Game Promoted Successfully! 🎮" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Game ID:** \`${GAME_ID}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### What happened:" >> $GITHUB_STEP_SUMMARY
+          echo "1. ✅ Moved \`_queue_games/${GAME_ID}.md\` → \`_games/${GAME_ID}.md\`" >> $GITHUB_STEP_SUMMARY
+          echo "2. ✅ Generated game pages in \`games/${GAME_ID}/\`" >> $GITHUB_STEP_SUMMARY
+          echo "3. ✅ Committed changes to repository" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next steps:" >> $GITHUB_STEP_SUMMARY
+          echo "- Add a cover image to \`assets/img/games/\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Update tags and platforms in the game file" >> $GITHUB_STEP_SUMMARY
