@@ -10,8 +10,26 @@ import re
 import sys
 
 
+def split_list_by_newlines_only(s):
+    """
+    Split a string ONLY by newlines (not commas).
+    Use this for free-text fields where commas might appear in the content.
+    """
+    if not s:
+        return []
+    # Convert escaped newlines to real newlines
+    s = s.replace('\\n', '\n')
+    s = s.replace('\r\n', '\n').replace('\r', '\n')
+    # Split and clean
+    items = [line.strip() for line in s.split('\n')]
+    return [item for item in items if item]
+
+
 def split_list(s):
-    """Split a string by newlines, commas, semicolons, or pipes."""
+    """
+    Split a string by newlines, commas, semicolons, or pipes.
+    Use this for structured fields where items are expected to be simple values.
+    """
     if not s:
         return []
     # First, convert escaped newlines to real newlines
@@ -64,6 +82,30 @@ def load_details(s):
     return obj if isinstance(obj, dict) else {}
 
 
+def filter_glitch_categories(categories):
+    """
+    Filter out placeholder/skip options from glitch categories.
+    Returns cleaned list of actual glitch category names.
+    """
+    skip_patterns = [
+        "does not have",
+        "at this time",
+        "no glitch",
+        "n/a",
+        "none",
+        "not applicable",
+    ]
+    
+    filtered = []
+    for cat in categories:
+        cat_lower = cat.lower()
+        should_skip = any(pattern in cat_lower for pattern in skip_patterns)
+        if not should_skip and cat.strip():
+            filtered.append(cat)
+    
+    return filtered
+
+
 def main():
     # Load environment variables
     game_name = os.environ.get('GAME_NAME', '')
@@ -88,49 +130,56 @@ def main():
         return str(v)
 
     # Extract all details
-    aliases = split_list(get_detail('name_aliases'))
-    subcategories_raw = split_list(get_detail('subcategories'))
-    glitch_categories = split_list(get_detail('glitch_categories'))
-    glitches_doc = split_list(get_detail('glitches_doc'))
-    restrictions = split_list(get_detail('restrictions'))
+    # Use newline-only splitting for free-text fields to preserve commas in content
+    aliases = split_list_by_newlines_only(get_detail('name_aliases'))
+    subcategories_raw = split_list_by_newlines_only(get_detail('subcategories'))
+    
+    # Glitch categories come from checkboxes (comma-separated) then filter
+    glitch_categories_raw = split_list(get_detail('glitch_categories'))
+    glitch_categories = filter_glitch_categories(glitch_categories_raw)
+    
+    # Glitch docs are free text with commas possible
+    glitches_doc = split_list_by_newlines_only(get_detail('glitches_doc'))
+    
+    # Restrictions are free text
+    restrictions = split_list_by_newlines_only(get_detail('restrictions'))
+    
     timing_primary = get_detail('timing_primary', 'RTA')
     timing_secondary = get_detail('timing_secondary')
     moderate_interest = get_detail('moderate_interest')
     feedback = get_detail('feedback')
-    character_options = split_list(get_detail('character_options'))
+    
+    # Character options are free text
+    character_options = split_list_by_newlines_only(get_detail('character_options'))
 
     # Debug output
     print(f"DEBUG: Parsed details:", file=sys.stderr)
     print(f"  - aliases: {aliases}", file=sys.stderr)
     print(f"  - subcategories: {subcategories_raw}", file=sys.stderr)
-    print(f"  - glitch_categories: {glitch_categories}", file=sys.stderr)
+    print(f"  - glitch_categories (raw): {glitch_categories_raw}", file=sys.stderr)
+    print(f"  - glitch_categories (filtered): {glitch_categories}", file=sys.stderr)
+    print(f"  - glitches_doc: {glitches_doc}", file=sys.stderr)
     print(f"  - restrictions: {restrictions}", file=sys.stderr)
     print(f"  - character_options: {character_options}", file=sys.stderr)
 
-    # Process categories and challenges
-    categories = split_list(categories_raw)
-    challenges = split_list(challenges_raw)
+    # Process categories and challenges (these come from form as comma-separated)
+    categories = split_list_by_newlines_only(categories_raw)
+    challenges = split_list(challenges_raw)  # Checkboxes are comma-separated
 
     # Build parent -> children map from subcategories
-    # Format: "Parent - Child" or "Parent-Child"
+    # Format: "Parent - Child"
     children_map = {}
     for rel in subcategories_raw:
+        # Only split on " - " (with spaces) to avoid breaking category names with hyphens
         if ' - ' in rel:
             parent, child = rel.split(' - ', 1)
-        elif '-' in rel:
-            parts = rel.split('-', 1)
-            parent = parts[0].strip()
-            child = parts[1].strip() if len(parts) > 1 else ''
-        else:
-            continue
-        
-        parent = parent.strip()
-        child = child.strip()
-        
-        if parent and child:
-            if parent not in children_map:
-                children_map[parent] = []
-            children_map[parent].append(child)
+            parent = parent.strip()
+            child = child.strip()
+            
+            if parent and child:
+                if parent not in children_map:
+                    children_map[parent] = []
+                children_map[parent].append(child)
 
     # Generate YAML output
     lines = []
@@ -200,6 +249,7 @@ def main():
             lines.append(f'  - slug: {slugify(gc)}')
             lines.append(f'    label: {yaml_quote(gc)}')
     else:
+        # Default glitch categories
         lines.append('  - slug: unrestricted')
         lines.append('    label: "Unrestricted"')
         lines.append('  - slug: glitchless')
@@ -259,6 +309,7 @@ def main():
     if feedback:
         notes.append('')
         notes.append('Submitter feedback:')
+        # Convert escaped newlines to real newlines for readability
         notes.append(feedback.replace('\\n', '\n'))
 
     if notes:
@@ -278,6 +329,7 @@ def main():
     print(f"  - {len(challenges)} challenges")
     print(f"  - {len(aliases)} aliases")
     print(f"  - {len(restrictions)} restrictions")
+    print(f"  - {len(glitch_categories)} glitch categories")
     print(f"  - {len(character_options)} character options")
 
 
