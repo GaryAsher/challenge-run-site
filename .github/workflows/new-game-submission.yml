@@ -67,7 +67,8 @@ jobs:
         id: generate
         shell: bash
         env:
-          DETAILS_FROM_DISPATCH: ${{ toJson(github.event.client_payload.details) }}
+          # IMPORTANT: details is already a JSON string coming from Apps Script
+          DETAILS_FROM_DISPATCH: ${{ github.event.client_payload.details }}
         run: |
           set -euo pipefail
 
@@ -89,7 +90,6 @@ jobs:
             python -c 'import json,sys; print(json.dumps(sys.argv[1]))' "${1-}"
           }
 
-          # ---- Inputs: dispatch vs workflow_dispatch ----
           DETAILS_IN="{}"
 
           if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
@@ -116,7 +116,6 @@ jobs:
             DETAILS_IN="${{ inputs.details }}"
           fi
 
-          # ---- Hard requirements ----
           if [ -z "${GAME_NAME:-}" ]; then
             echo "ERROR: GAME_NAME is empty"
             exit 1
@@ -130,14 +129,12 @@ jobs:
             exit 1
           fi
 
-          # ---- Normalize booleans ----
           CHAR_ENABLED="$(printf '%s' "${CHAR_ENABLED:-false}" | tr '[:upper:]' '[:lower:]')"
           case "${CHAR_ENABLED}" in true|false) ;; *) CHAR_ENABLED="false" ;; esac
 
           CREDIT_REQUESTED="$(printf '%s' "${CREDIT_REQUESTED:-false}" | tr '[:upper:]' '[:lower:]')"
           case "${CREDIT_REQUESTED}" in true|false) ;; *) CREDIT_REQUESTED="false" ;; esac
 
-          # ---- Slug fallback ----
           if [ -z "${GAME_ID:-}" ]; then
             GAME_ID="$(slugify "$GAME_NAME")"
           fi
@@ -148,7 +145,6 @@ jobs:
 
           FIRST_LETTER="$(printf '%s' "$GAME_ID" | cut -c1)"
 
-          # ---- Parse details JSON safely ----
           if [ -z "${DETAILS_IN:-}" ] || [ "${DETAILS_IN:-}" = "null" ]; then
             DETAILS_IN="{}"
           fi
@@ -168,11 +164,9 @@ jobs:
             return str(v)
           keys = [
             "name_aliases",
-            "platforms",
             "subcategories",
             "glitch_categories",
-            "notable_glitches",
-            "glitchless_bans",
+            "glitches_doc",
             "restrictions",
             "timing_primary",
             "timing_secondary",
@@ -185,13 +179,10 @@ jobs:
           PY
           )"
 
-          # ---- Load parsed values ----
-          ALIASES_RAW=""
-          PLATFORMS_RAW=""
+          NAME_ALIASES_RAW=""
           SUBCATS_RAW=""
           GLITCH_CATS_RAW=""
-          NOTABLE_GLITCHES_RAW=""
-          GLITCHLESS_BANS_RAW=""
+          GLITCHES_DOC_RAW=""
           RESTRICTIONS_RAW=""
           TIMING_PRIMARY_RAW=""
           TIMING_SECONDARY_RAW=""
@@ -203,12 +194,10 @@ jobs:
             key="${line%%=*}"
             val="${line#*=}"
             case "$key" in
-              name_aliases) ALIASES_RAW="$val" ;;
-              platforms) PLATFORMS_RAW="$val" ;;
+              name_aliases) NAME_ALIASES_RAW="$val" ;;
               subcategories) SUBCATS_RAW="$val" ;;
               glitch_categories) GLITCH_CATS_RAW="$val" ;;
-              notable_glitches) NOTABLE_GLITCHES_RAW="$val" ;;
-              glitchless_bans) GLITCHLESS_BANS_RAW="$val" ;;
+              glitches_doc) GLITCHES_DOC_RAW="$val" ;;
               restrictions) RESTRICTIONS_RAW="$val" ;;
               timing_primary) TIMING_PRIMARY_RAW="$val" ;;
               timing_secondary) TIMING_SECONDARY_RAW="$val" ;;
@@ -224,53 +213,144 @@ jobs:
           CHAR_LABEL_SAFE="${CHAR_LABEL:-Character}"
           out="_queue_games/${GAME_ID}.md"
 
+          TIMING_METHOD_RAW="${TIMING_PRIMARY_RAW:-}"
+          if [ -z "${TIMING_METHOD_RAW}" ]; then
+            TIMING_METHOD_RAW="${TIMING_SECONDARY_RAW:-}"
+          fi
+          TIMING_METHOD_SLUG="$(slugify "${TIMING_METHOD_RAW}")"
+          case "${TIMING_METHOD_SLUG}" in
+            igt*) TIMING_METHOD="IGT" ;;
+            lrt*) TIMING_METHOD="LRT" ;;
+            rta*) TIMING_METHOD="RTA" ;;
+            *) TIMING_METHOD="RTA" ;;
+          esac
+
+          # Build categories_data with optional children from SUBCATS_RAW ("Parent - Child")
+          CATEGORIES_YAML="$(python - <<'PY'
+          import os, re, json
+
+          def split_list(s):
+            s = (s or "").replace("\r\n","\n").replace("\r","\n").strip()
+            if not s:
+              return []
+            if "\n" in s:
+              items = [x.strip() for x in s.split("\n")]
+            else:
+              items = [x.strip() for x in re.split(r"[;,|]", s)]
+            return [x for x in items if x]
+
+          def slugify(s):
+            s = (s or "").strip().lower()
+            s = re.sub(r"[^a-z0-9]+", "-", s)
+            s = re.sub(r"-{2,}", "-", s).strip("-")
+            return s
+
+          cats_raw = os.environ.get("CATEGORIES","")
+          sub_raw = os.environ.get("SUBCATS_RAW","")
+
+          cats = split_list(cats_raw)
+          pairs = split_list(sub_raw)
+
+          children_by_parent = {}
+          for p in pairs:
+            if " - " in p:
+              parent, child = p.split(" - ", 1)
+            elif "-" in p:
+              parent, child = p.split("-", 1)
+            else:
+              continue
+            parent = parent.strip()
+            child = child.strip()
+            if not parent or not child:
+              continue
+            children_by_parent.setdefault(parent, []).append(child)
+
+          lines = []
+          lines.append("categories_data:")
+          for c in cats:
+            lines.append(f"  - slug: {slugify(c)}")
+            lines.append(f"    label: {json.dumps(c)}")
+            kids = children_by_parent.get(c) or []
+            if kids:
+              lines.append("    children:")
+              for k in kids:
+                lines.append(f"      - slug: {slugify(k)}")
+                lines.append(f"        label: {json.dumps(k)}")
+
+          print("\n".join(lines))
+          PY
+          )"
+
+          export CATEGORIES SUBCATS_RAW
+
           {
             echo "---"
             echo "layout: game"
             echo "game_id: ${GAME_ID}"
             echo "reviewers: []"
             echo "name: $(yaml_quote "$GAME_NAME")"
-            echo "status: $(yaml_quote "$STATUS_TEXT")"
-            echo "credit_requested: ${CREDIT_REQUESTED}"
-
-            if [ -n "${ALIASES_RAW:-}" ] && [ -n "$(split_list "$ALIASES_RAW" | head -n 1 || true)" ]; then
-              echo "aliases:"
+            echo "name_aliases:"
+            if [ -n "${NAME_ALIASES_RAW:-}" ] && [ -n "$(split_list "$NAME_ALIASES_RAW" | head -n 1 || true)" ]; then
               while IFS= read -r a; do
                 [ -n "$a" ] && echo "  - $(yaml_quote "$a")"
-              done < <(split_list "$ALIASES_RAW")
+              done < <(split_list "$NAME_ALIASES_RAW")
+            else
+              echo "  - $(yaml_quote "$GAME_NAME")"
             fi
+
+            echo "status: $(yaml_quote "$STATUS_TEXT")"
 
             if [ -z "$(split_list "${TAGS:-}" | head -n 1 || true)" ]; then
               echo "tags: []"
             else
               echo "tags:"
               while IFS= read -r tag; do
-                [ -n "$tag" ] && echo "  - $(yaml_quote "$tag")"
+                [ -n "$tag" ] && echo "  - $(yaml_quote "$(slugify "$tag")")"
               done < <(split_list "$TAGS")
             fi
 
-            if [ -z "$(split_list "${PLATFORMS_RAW:-}" | head -n 1 || true)" ]; then
-              echo "platforms: []"
-            else
-              echo "platforms:"
-              while IFS= read -r p; do
-                [ -n "$p" ] && echo "  - $(yaml_quote "$p")"
-              done < <(split_list "$PLATFORMS_RAW")
+            echo "platforms: []"
+            echo "cover: /assets/img/games/${FIRST_LETTER}/${GAME_ID}.jpg"
+            echo "cover_position: center"
+            echo ""
+            echo "timing_method: ${TIMING_METHOD}"
+            echo ""
+            echo "tabs:"
+            echo "  overview: true"
+            echo "  runs: true"
+            echo "  history: true"
+            echo "  resources: true"
+            echo "  forum: true"
+            echo "  extra_1: false"
+            echo "  extra_2: false"
+            echo ""
+            echo "character_column:"
+            echo "  enabled: ${CHAR_ENABLED}"
+            echo "  label: $(yaml_quote "$CHAR_LABEL_SAFE")"
+
+            echo ""
+            echo "challenges:"
+            while IFS= read -r ch; do
+              [ -n "$ch" ] && echo "  - $(yaml_quote "$(slugify "$ch")")"
+            done < <(split_list "$CHALLENGES")
+
+            echo ""
+            if [ -n "${SUBCATS_RAW:-}" ] && [ -n "$(split_list "$SUBCATS_RAW" | head -n 1 || true)" ]; then
+              echo "subcategories:"
+              while IFS= read -r sc; do
+                [ -n "$sc" ] && echo "  - $(yaml_quote "$sc")"
+              done < <(split_list "$SUBCATS_RAW")
             fi
 
-            echo "release_year:"
             echo ""
-
             if [ -n "${GLITCH_CATS_RAW:-}" ] && [ -n "$(split_list "$GLITCH_CATS_RAW" | head -n 1 || true)" ]; then
               echo "glitches_data:"
               while IFS= read -r gc; do
                 [ -z "$gc" ] && continue
-                slug="$(slugify "$gc")"
-                echo "  - slug: ${slug}"
+                echo "  - slug: $(slugify "$gc")"
                 echo "    label: $(yaml_quote "$gc")"
               done < <(split_list "$GLITCH_CATS_RAW")
             else
-              echo "# Glitch categories placeholder (reviewers fill this in if applicable)"
               echo "glitches_data:"
               echo "  - slug: unrestricted"
               echo "    label: $(yaml_quote Unrestricted)"
@@ -278,89 +358,24 @@ jobs:
               echo "    label: $(yaml_quote Glitchless)"
             fi
 
-            if [ -n "${NOTABLE_GLITCHES_RAW:-}" ]; then
-              echo "notable_glitches: |"
-              while IFS= read -r l; do echo "  ${l}"; done <<< "${NOTABLE_GLITCHES_RAW}"
-            fi
-            if [ -n "${GLITCHLESS_BANS_RAW:-}" ]; then
-              echo "glitchless_bans: |"
-              while IFS= read -r l; do echo "  ${l}"; done <<< "${GLITCHLESS_BANS_RAW}"
+            echo ""
+            if [ -n "${GLITCHES_DOC_RAW:-}" ] && [ -n "$(split_list "$GLITCHES_DOC_RAW" | head -n 1 || true)" ]; then
+              echo "glitches_doc: |"
+              while IFS= read -r l; do echo "  ${l}"; done < <(split_list "$GLITCHES_DOC_RAW")
             fi
 
             echo ""
-            echo "cover: /assets/img/games/${FIRST_LETTER}/${GAME_ID}.jpg"
-            echo "cover_position: center"
-            echo ""
-
-            echo "tabs:"
-            echo "  overview: true"
-            echo "  runs: true"
-            echo "  history: true"
-            echo "  challenges: true"
-            echo "  guides: true"
-            echo "  resources: true"
-            echo "  rules: true"
-            echo "  forum: false"
-            echo "  extra_1: false"
-            echo "  extra_2: false"
-
-            echo ""
-            echo "character_column:"
-            echo "  enabled: ${CHAR_ENABLED}"
-            echo "  label: $(yaml_quote "$CHAR_LABEL_SAFE")"
-            if [ "${CHAR_ENABLED}" = "true" ] && [ -n "${CHAR_OPTIONS_RAW:-}" ] && [ -n "$(split_list "$CHAR_OPTIONS_RAW" | head -n 1 || true)" ]; then
-              echo "  options:"
-              while IFS= read -r opt; do
-                [ -n "$opt" ] && echo "    - $(yaml_quote "$opt")"
-              done < <(split_list "$CHAR_OPTIONS_RAW")
-            fi
-
-            echo ""
-            echo "challenges:"
-            while IFS= read -r ch; do
-              [ -n "$ch" ] && echo "  - $(yaml_quote "$ch")"
-            done < <(split_list "$CHALLENGES")
-
             if [ -n "${RESTRICTIONS_RAW:-}" ] && [ -n "$(split_list "$RESTRICTIONS_RAW" | head -n 1 || true)" ]; then
-              echo ""
               echo "restrictions:"
               while IFS= read -r r; do
                 [ -n "$r" ] && echo "  - $(yaml_quote "$r")"
               done < <(split_list "$RESTRICTIONS_RAW")
             fi
 
-            if [ -n "${TIMING_PRIMARY_RAW:-}" ] || [ -n "${TIMING_SECONDARY_RAW:-}" ]; then
-              echo ""
-              echo "timing:"
-              [ -n "${TIMING_PRIMARY_RAW:-}" ] && echo "  primary: $(yaml_quote "$TIMING_PRIMARY_RAW")"
-              [ -n "${TIMING_SECONDARY_RAW:-}" ] && echo "  secondary: $(yaml_quote "$TIMING_SECONDARY_RAW")"
-            fi
-
             echo ""
-            echo "categories_data:"
-            while IFS= read -r cat_name; do
-              [ -z "$cat_name" ] && continue
-              cat_slug="$(slugify "$cat_name")"
-              echo "  - slug: ${cat_slug}"
-              echo "    label: $(yaml_quote "$cat_name")"
-            done < <(split_list "$CATEGORIES")
+            printf '%s\n' "$CATEGORIES_YAML"
 
             echo "---"
-            echo ""
-            echo "Game submitted via form. Awaiting review."
-            echo ""
-            echo "Reviewer notes:"
-            if [ -n "${SUBCATS_RAW:-}" ]; then
-              echo "- Sub-categories:"
-              echo "${SUBCATS_RAW}"
-            fi
-            if [ -n "${MOD_INTEREST_RAW:-}" ]; then
-              echo "- Moderate interest: ${MOD_INTEREST_RAW}"
-            fi
-            if [ -n "${FEEDBACK_RAW:-}" ]; then
-              echo "- Feedback:"
-              echo "${FEEDBACK_RAW}"
-            fi
           } > "$out"
 
           echo "WROTE: $out"
@@ -384,14 +399,13 @@ jobs:
 
             ### Checklist for Reviewers
             - [ ] Game name and ID are correct
-            - [ ] Add tags (moderators add genres)
-            - [ ] Add platforms
-            - [ ] Add release year
-            - [ ] Review glitch categories (`glitches_data`) and adjust as needed
-            - [ ] Categories make sense
-            - [ ] Challenge types are valid
-            - [ ] Cover image uploaded to `assets/img/games/`
-            - [ ] Move the game file from `_queue_games/` to `_games/`
+            - [ ] Fill in platforms, year, tags if needed
+            - [ ] Confirm timing method
+            - [ ] Confirm glitch categories and glitch notes
+            - [ ] Confirm categories and subcategories
+            - [ ] Confirm challenge IDs (slugified)
+            - [ ] Upload cover image to assets/img/games/
+            - [ ] Move the game file from _queue_games/ to _games/
 
             ---
             *Submitted via Google Form*
