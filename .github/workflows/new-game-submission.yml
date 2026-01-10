@@ -100,22 +100,10 @@ jobs:
           # HELPER FUNCTIONS
           # =====================================================================
           
-          split_list() {
-            printf '%s' "${1-}" \
-              | tr '\r' '\n' \
-              | sed 's/[;,|]/\n/g' \
-              | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
-              | sed '/^$/d'
-          }
-
           slugify() {
             printf '%s' "${1-}" \
               | tr '[:upper:]' '[:lower:]' \
               | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//'
-          }
-
-          yaml_quote() {
-            python3 -c 'import json,sys; print(json.dumps(sys.argv[1]))' "${1-}"
           }
 
           # =====================================================================
@@ -164,13 +152,13 @@ jobs:
             echo "::error::CATEGORIES is empty"
             exit 1
           fi
-          echo "✓ CATEGORIES: ${CATEGORIES:0:50}..."
+          echo "✓ CATEGORIES present"
           
           if [ -z "${CHALLENGES:-}" ]; then 
             echo "::error::CHALLENGES is empty"
             exit 1
           fi
-          echo "✓ CHALLENGES: ${CHALLENGES:0:50}..."
+          echo "✓ CHALLENGES present"
 
           # =====================================================================
           # NORMALIZE INPUTS
@@ -200,329 +188,315 @@ jobs:
           FIRST_LETTER="$(printf '%s' "$GAME_ID" | cut -c1)"
 
           # =====================================================================
-          # PARSE DETAILS JSON
+          # PARSE AND GENERATE USING PYTHON (handles all edge cases)
           # =====================================================================
           
-          echo "=== PARSING DETAILS JSON ==="
+          echo "=== GENERATING GAME FILE ==="
           
+          mkdir -p _queue_games
+          OUT_FILE="_queue_games/${GAME_ID}.md"
+
           # Handle empty/null details
           if [ -z "${DETAILS_IN:-}" ] || [ "${DETAILS_IN:-}" = "null" ]; then
             DETAILS_IN="{}"
           fi
 
-          export DETAILS_IN
-          DETAILS_OUT="$(python3 - <<'PY'
-          import json, os, sys
+          # Export all variables for Python
+          export GAME_NAME GAME_ID FIRST_LETTER CATEGORIES CHALLENGES
+          export CHAR_ENABLED CHAR_LABEL SUBMITTER CREDIT_REQUESTED
+          export DETAILS_IN OUT_FILE
 
-          raw = os.environ.get("DETAILS_IN", "{}").strip()
-          print(f"DEBUG: Raw details input: {raw[:200]}...", file=sys.stderr)
+          python3 - <<'PYTHON_SCRIPT'
+import json
+import os
+import re
+import sys
 
-          def load_details(s):
-              if not s or s == "null":
-                  return {}
-              try:
-                  obj = json.loads(s)
-              except json.JSONDecodeError as e:
-                  print(f"DEBUG: JSON parse error: {e}", file=sys.stderr)
-                  return {}
-              
-              # Handle double-encoded JSON
-              if isinstance(obj, str):
-                  try:
-                      obj2 = json.loads(obj)
-                      if isinstance(obj2, dict):
-                          print("DEBUG: Unwrapped double-encoded JSON", file=sys.stderr)
-                          return obj2
-                  except:
-                      pass
-                  return {}
-              
-              if isinstance(obj, dict):
-                  return obj
-              return {}
+# =============================================================================
+# HELPER FUNCTIONS
+# =============================================================================
 
-          d = load_details(raw)
-          print(f"DEBUG: Parsed {len(d)} fields from details", file=sys.stderr)
+def split_list(s):
+    """Split a string by newlines, commas, semicolons, or pipes."""
+    if not s:
+        return []
+    # First, convert escaped newlines to real newlines
+    s = s.replace('\\n', '\n')
+    # Replace delimiters with newlines
+    s = s.replace('\r\n', '\n').replace('\r', '\n')
+    s = re.sub(r'[;,|]', '\n', s)
+    # Split and clean
+    items = [line.strip() for line in s.split('\n')]
+    return [item for item in items if item]
 
-          def get(k):
-              v = d.get(k, "")
-              if v is None:
-                  return ""
-              return str(v)
+def slugify(s):
+    """Convert string to URL-friendly slug."""
+    if not s:
+        return ""
+    s = s.lower().strip()
+    s = re.sub(r'[^a-z0-9]+', '-', s)
+    s = re.sub(r'-+', '-', s).strip('-')
+    return s
 
-          keys = [
-              "name_aliases",
-              "platforms",
-              "subcategories",
-              "glitch_categories",
-              "glitches_doc",
-              "restrictions",
-              "timing_primary",
-              "timing_secondary",
-              "moderate_interest",
-              "feedback",
-              "character_options",
-          ]
+def yaml_quote(s):
+    """Quote a string for YAML output."""
+    if not s:
+        return '""'
+    return json.dumps(str(s))
 
-          for k in keys:
-              val = get(k)
-              print(f"{k}={val}")
-              if val:
-                  print(f"DEBUG: {k} = {val[:50]}...", file=sys.stderr)
-          PY
-          )"
+# =============================================================================
+# LOAD ENVIRONMENT VARIABLES
+# =============================================================================
 
-          # Load parsed values into shell variables
-          ALIASES_RAW=""
-          PLATFORMS_RAW=""
-          SUBCATS_RAW=""
-          GLITCH_CATS_RAW=""
-          GLITCHES_DOC_RAW=""
-          RESTRICTIONS_RAW=""
-          TIMING_PRIMARY_RAW=""
-          TIMING_SECONDARY_RAW=""
-          MOD_INTEREST_RAW=""
-          FEEDBACK_RAW=""
-          CHAR_OPTIONS_RAW=""
+game_name = os.environ.get('GAME_NAME', '')
+game_id = os.environ.get('GAME_ID', '')
+first_letter = os.environ.get('FIRST_LETTER', '')
+categories_raw = os.environ.get('CATEGORIES', '')
+challenges_raw = os.environ.get('CHALLENGES', '')
+char_enabled = os.environ.get('CHAR_ENABLED', 'false') == 'true'
+char_label = os.environ.get('CHAR_LABEL', 'Character') or 'Character'
+submitter = os.environ.get('SUBMITTER', '')
+credit_requested = os.environ.get('CREDIT_REQUESTED', 'false') == 'true'
+details_raw = os.environ.get('DETAILS_IN', '{}')
+out_file = os.environ.get('OUT_FILE', '')
 
-          while IFS= read -r line; do
-            key="${line%%=*}"
-            val="${line#*=}"
-            case "$key" in
-              name_aliases) ALIASES_RAW="$val" ;;
-              platforms) PLATFORMS_RAW="$val" ;;
-              subcategories) SUBCATS_RAW="$val" ;;
-              glitch_categories) GLITCH_CATS_RAW="$val" ;;
-              glitches_doc) GLITCHES_DOC_RAW="$val" ;;
-              restrictions) RESTRICTIONS_RAW="$val" ;;
-              timing_primary) TIMING_PRIMARY_RAW="$val" ;;
-              timing_secondary) TIMING_SECONDARY_RAW="$val" ;;
-              moderate_interest) MOD_INTEREST_RAW="$val" ;;
-              feedback) FEEDBACK_RAW="$val" ;;
-              character_options) CHAR_OPTIONS_RAW="$val" ;;
-            esac
-          done <<< "$DETAILS_OUT"
+# =============================================================================
+# PARSE DETAILS JSON
+# =============================================================================
 
-          echo "✓ Parsed details fields"
+def load_details(s):
+    if not s or s == 'null':
+        return {}
+    try:
+        obj = json.loads(s)
+    except json.JSONDecodeError as e:
+        print(f"DEBUG: JSON parse error: {e}", file=sys.stderr)
+        return {}
+    
+    # Handle double-encoded JSON
+    if isinstance(obj, str):
+        try:
+            obj2 = json.loads(obj)
+            if isinstance(obj2, dict):
+                return obj2
+        except:
+            pass
+        return {}
+    
+    return obj if isinstance(obj, dict) else {}
 
-          # =====================================================================
-          # BUILD CATEGORIES YAML (with subcategory children)
-          # =====================================================================
+details = load_details(details_raw)
 
-          mkdir -p _queue_games
-          
-          STATUS_TEXT="Pending review - submitted by ${SUBMITTER:-anonymous}"
-          CHAR_LABEL_SAFE="${CHAR_LABEL:-Character}"
+def get_detail(key, default=''):
+    v = details.get(key, default)
+    if v is None:
+        return default
+    return str(v)
 
-          out="_queue_games/${GAME_ID}.md"
+# Extract all details
+aliases = split_list(get_detail('name_aliases'))
+subcategories_raw = split_list(get_detail('subcategories'))
+glitch_categories = split_list(get_detail('glitch_categories'))
+glitches_doc = split_list(get_detail('glitches_doc'))
+restrictions = split_list(get_detail('restrictions'))
+timing_primary = get_detail('timing_primary', 'RTA')
+timing_secondary = get_detail('timing_secondary')
+moderate_interest = get_detail('moderate_interest')
+feedback = get_detail('feedback')
+character_options = split_list(get_detail('character_options'))
 
-          # Build categories_data YAML with children from subcategories
-          export CATEGORIES SUBCATS_RAW
-          CATEGORIES_YAML="$(python3 - <<'PY'
-          import os, re, json
+# Debug output
+print(f"DEBUG: Parsed details:", file=sys.stderr)
+print(f"  - aliases: {aliases}", file=sys.stderr)
+print(f"  - subcategories: {subcategories_raw}", file=sys.stderr)
+print(f"  - glitch_categories: {glitch_categories}", file=sys.stderr)
+print(f"  - restrictions: {restrictions}", file=sys.stderr)
+print(f"  - character_options: {character_options}", file=sys.stderr)
 
-          def split_list(s):
-              s = (s or "").replace("\r\n", "\n").replace("\r", "\n")
-              s = re.sub(r"[;,|]", "\n", s)
-              out = []
-              for line in s.split("\n"):
-                  line = line.strip()
-                  if line:
-                      out.append(line)
-              return out
+# =============================================================================
+# PROCESS CATEGORIES WITH SUBCATEGORIES
+# =============================================================================
 
-          def slugify(s):
-              s = (s or "").strip().lower()
-              s = re.sub(r"[^a-z0-9]+", "-", s)
-              s = re.sub(r"-+", "-", s).strip("-")
-              return s
+categories = split_list(categories_raw)
+challenges = split_list(challenges_raw)
 
-          cats = split_list(os.environ.get("CATEGORIES", ""))
-          rels = split_list(os.environ.get("SUBCATS_RAW", ""))
+# Build parent -> children map from subcategories
+# Format: "Parent - Child" or "Parent-Child"
+children_map = {}
+for rel in subcategories_raw:
+    if ' - ' in rel:
+        parent, child = rel.split(' - ', 1)
+    elif '-' in rel:
+        parts = rel.split('-', 1)
+        parent = parts[0].strip()
+        child = parts[1].strip() if len(parts) > 1 else ''
+    else:
+        continue
+    
+    parent = parent.strip()
+    child = child.strip()
+    
+    if parent and child:
+        if parent not in children_map:
+            children_map[parent] = []
+        children_map[parent].append(child)
 
-          # Build parent -> children map
-          children = {}
-          for r in rels:
-              if " - " in r:
-                  parent, child = r.split(" - ", 1)
-              elif "-" in r:
-                  parts = r.split("-", 1)
-                  parent, child = parts[0].strip(), parts[1].strip() if len(parts) > 1 else ""
-              else:
-                  continue
-              
-              parent = parent.strip()
-              child = child.strip()
-              
-              if parent and child:
-                  children.setdefault(parent, []).append((slugify(child), child))
+# =============================================================================
+# GENERATE YAML OUTPUT
+# =============================================================================
 
-          # Generate YAML
-          lines = ["categories_data:"]
-          for c in cats:
-              cslug = slugify(c)
-              lines.append(f"  - slug: {cslug}")
-              lines.append(f"    label: {json.dumps(c)}")
-              
-              kids = children.get(c, [])
-              if kids:
-                  lines.append("    children:")
-                  for kslug, klabel in kids:
-                      lines.append(f"      - slug: {kslug}")
-                      lines.append(f"        label: {json.dumps(klabel)}")
+lines = []
 
-          print("\n".join(lines))
-          PY
-          )"
+# Header
+lines.append('---')
+lines.append('layout: game')
+lines.append(f'game_id: {game_id}')
+lines.append('reviewers: []')
+lines.append('')
 
-          echo "✓ Built categories YAML"
+# Name section
+lines.append(f'name: {yaml_quote(game_name)}')
+if aliases:
+    lines.append('name_aliases:')
+    for alias in aliases:
+        lines.append(f'  - {yaml_quote(alias)}')
+else:
+    lines.append('name_aliases: []')
 
-          # =====================================================================
-          # GENERATE THE GAME FILE
-          # =====================================================================
-          
-          echo "=== GENERATING ${out} ==="
+status_text = f"Pending review - submitted by {submitter}" if submitter else "Pending review"
+lines.append(f'status: {yaml_quote(status_text)}')
+lines.append('')
 
-          {
-            echo "---"
-            echo "layout: game"
-            echo "game_id: ${GAME_ID}"
-            echo "reviewers: []"
-            echo "name: $(yaml_quote "$GAME_NAME")"
+# Metadata (to be filled by moderators)
+lines.append('# TODO: Add tags and platforms')
+lines.append('tags: []')
+lines.append('platforms: []')
+lines.append('')
 
-            # name_aliases
-            if [ -n "$(split_list "${ALIASES_RAW:-}" | head -n 1 || true)" ]; then
-              echo "name_aliases:"
-              while IFS= read -r a; do
-                [ -n "$a" ] && echo "  - $(yaml_quote "$a")"
-              done < <(split_list "$ALIASES_RAW")
-            else
-              echo "name_aliases: []"
-            fi
+# Cover image
+lines.append(f'cover: /assets/img/games/{first_letter}/{game_id}.jpg')
+lines.append('cover_position: center')
+lines.append('')
 
-            echo "status: $(yaml_quote "$STATUS_TEXT")"
-            echo ""
-            echo "# TODO (Moderators): Add tags, platforms, and upload cover image"
-            echo "tags: []"
-            echo "platforms: []"
-            echo ""
-            echo "cover: /assets/img/games/${FIRST_LETTER}/${GAME_ID}.jpg"
-            echo "cover_position: center"
-            echo ""
-            echo "timing_method: $(yaml_quote "${TIMING_PRIMARY_RAW:-RTA}")"
-            echo ""
-            
-            cat <<'TABS_EOF'
-          tabs:
-            overview: true
-            runs: true
-            history: true
-            resources: true
-            forum: true
-            extra_1: false
-            extra_2: false
-          TABS_EOF
+# Timing
+lines.append(f'timing_method: {yaml_quote(timing_primary)}')
+lines.append('')
 
-            echo ""
-            echo "character_column:"
-            echo "  enabled: ${CHAR_ENABLED}"
-            echo "  label: $(yaml_quote "$CHAR_LABEL_SAFE")"
+# Tabs
+lines.append('tabs:')
+lines.append('  overview: true')
+lines.append('  runs: true')
+lines.append('  history: true')
+lines.append('  resources: true')
+lines.append('  forum: true')
+lines.append('  extra_1: false')
+lines.append('  extra_2: false')
+lines.append('')
 
-            # Character options (for reviewer reference)
-            if [ "${CHAR_ENABLED}" = "true" ] && [ -n "$(split_list "${CHAR_OPTIONS_RAW:-}" | head -n 1 || true)" ]; then
-              echo "  # Submitted options:"
-              while IFS= read -r opt; do
-                [ -n "$opt" ] && echo "  #   - ${opt}"
-              done < <(split_list "$CHAR_OPTIONS_RAW")
-            fi
+# Character column
+lines.append('character_column:')
+lines.append(f'  enabled: {str(char_enabled).lower()}')
+lines.append(f'  label: {yaml_quote(char_label)}')
+lines.append('')
 
-            # Challenges
-            echo ""
-            echo "challenges:"
-            while IFS= read -r ch; do
-              [ -z "$ch" ] && continue
-              echo "  - $(slugify "$ch")"
-            done < <(split_list "$CHALLENGES")
+# Challenges
+lines.append('challenges:')
+for ch in challenges:
+    lines.append(f'  - {slugify(ch)}')
+lines.append('')
 
-            # Glitch categories
-            echo ""
-            if [ -n "$(split_list "${GLITCH_CATS_RAW:-}" | head -n 1 || true)" ]; then
-              echo "glitches_data:"
-              while IFS= read -r gc; do
-                [ -z "$gc" ] && continue
-                echo "  - slug: $(slugify "$gc")"
-                echo "    label: $(yaml_quote "$gc")"
-              done < <(split_list "$GLITCH_CATS_RAW")
-            else
-              echo "glitches_data:"
-              echo "  - slug: unrestricted"
-              echo "    label: \"Unrestricted\""
-              echo "  - slug: glitchless"
-              echo "    label: \"Glitchless\""
-            fi
+# Glitch categories
+lines.append('glitches_data:')
+if glitch_categories:
+    for gc in glitch_categories:
+        lines.append(f'  - slug: {slugify(gc)}')
+        lines.append(f'    label: {yaml_quote(gc)}')
+else:
+    lines.append('  - slug: unrestricted')
+    lines.append('    label: "Unrestricted"')
+    lines.append('  - slug: glitchless')
+    lines.append('    label: "Glitchless"')
+lines.append('')
 
-            # Glitches documentation
-            if [ -n "${GLITCHES_DOC_RAW:-}" ]; then
-              echo ""
-              echo "# Glitch documentation provided by submitter:"
-              echo "glitches_doc: |"
-              while IFS= read -r l; do 
-                echo "  ${l}"
-              done <<< "${GLITCHES_DOC_RAW}"
-            fi
+# Restrictions
+lines.append('restrictions:')
+if restrictions:
+    for r in restrictions:
+        lines.append(f'  - {yaml_quote(r)}')
+else:
+    lines.append('  []')
+lines.append('')
 
-            # Restrictions
-            echo ""
-            if [ -n "$(split_list "${RESTRICTIONS_RAW:-}" | head -n 1 || true)" ]; then
-              echo "restrictions:"
-              while IFS= read -r r; do
-                [ -n "$r" ] && echo "  - $(yaml_quote "$r")"
-              done < <(split_list "$RESTRICTIONS_RAW")
-            else
-              echo "restrictions: []"
-            fi
+# Categories data
+lines.append('categories_data:')
+for cat in categories:
+    cat_slug = slugify(cat)
+    lines.append(f'  - slug: {cat_slug}')
+    lines.append(f'    label: {yaml_quote(cat)}')
+    
+    # Check for children
+    if cat in children_map:
+        lines.append('    children:')
+        for child in children_map[cat]:
+            lines.append(f'      - slug: {slugify(child)}')
+            lines.append(f'        label: {yaml_quote(child)}')
 
-            # Categories data
-            echo ""
-            printf '%s\n' "$CATEGORIES_YAML"
+lines.append('---')
+lines.append('')
 
-            echo "---"
-            echo ""
-            echo "Game submitted via form. Awaiting review."
-            echo ""
-            
-            # Reviewer notes section
-            echo "<!-- REVIEWER NOTES"
-            echo ""
-            if [ -n "${SUBMITTER:-}" ]; then
-              echo "Submitted by: ${SUBMITTER}"
-            fi
-            if [ "${CREDIT_REQUESTED}" = "true" ]; then
-              echo "Credit requested: Yes"
-            fi
-            if [ -n "${MOD_INTEREST_RAW:-}" ]; then
-              echo "Moderation interest: ${MOD_INTEREST_RAW}"
-            fi
-            if [ -n "$(split_list "${SUBCATS_RAW:-}" | head -n 1 || true)" ]; then
-              echo ""
-              echo "Subcategory relationships (Parent - Child):"
-              echo "${SUBCATS_RAW}"
-            fi
-            if [ -n "${TIMING_SECONDARY_RAW:-}" ]; then
-              echo ""
-              echo "Secondary timing method: ${TIMING_SECONDARY_RAW}"
-            fi
-            if [ -n "${FEEDBACK_RAW:-}" ]; then
-              echo ""
-              echo "Submitter feedback:"
-              echo "${FEEDBACK_RAW}"
-            fi
-            echo ""
-            echo "-->"
-          } > "$out"
+# Body content
+lines.append('Game submitted via form. Awaiting review.')
+lines.append('')
 
-          echo "✓ Wrote ${out}"
-          
+# Reviewer notes (HTML comment)
+notes = []
+if submitter:
+    notes.append(f'Submitted by: {submitter}')
+if credit_requested:
+    notes.append('Credit requested: Yes')
+if moderate_interest:
+    notes.append(f'Moderation interest: {moderate_interest}')
+if character_options:
+    notes.append('')
+    notes.append('Character/Weapon/Class options:')
+    for opt in character_options:
+        notes.append(f'  - {opt}')
+if glitches_doc:
+    notes.append('')
+    notes.append('Glitch documentation:')
+    for doc in glitches_doc:
+        notes.append(f'  - {doc}')
+if timing_secondary:
+    notes.append(f'Secondary timing: {timing_secondary}')
+if feedback:
+    notes.append('')
+    notes.append('Submitter feedback:')
+    notes.append(feedback.replace('\\n', '\n'))
+
+if notes:
+    lines.append('<!-- REVIEWER NOTES')
+    lines.append('')
+    for note in notes:
+        lines.append(note)
+    lines.append('')
+    lines.append('-->')
+
+# =============================================================================
+# WRITE OUTPUT FILE
+# =============================================================================
+
+with open(out_file, 'w') as f:
+    f.write('\n'.join(lines))
+
+print(f"✓ Generated {out_file}")
+print(f"  - {len(categories)} categories")
+print(f"  - {len(challenges)} challenges")
+print(f"  - {len(aliases)} aliases")
+print(f"  - {len(restrictions)} restrictions")
+print(f"  - {len(character_options)} character options")
+
+PYTHON_SCRIPT
+
           # Output for next steps
           echo "game_id=${GAME_ID}" >> "$GITHUB_OUTPUT"
           echo "game_name=${GAME_NAME}" >> "$GITHUB_OUTPUT"
@@ -538,7 +512,6 @@ jobs:
           import yaml
           with open('_queue_games/${{ steps.generate.outputs.game_id }}.md', 'r') as f:
               content = f.read()
-              # Extract front matter
               parts = content.split('---')
               if len(parts) >= 3:
                   front_matter = parts[1]
@@ -547,7 +520,9 @@ jobs:
                       print('✓ YAML is valid')
                       print(f'  - game_id: {data.get(\"game_id\")}')
                       print(f'  - name: {data.get(\"name\")}')
+                      print(f'  - name_aliases: {data.get(\"name_aliases\", [])}')
                       print(f'  - challenges: {data.get(\"challenges\", [])}')
+                      print(f'  - restrictions: {data.get(\"restrictions\", [])}')
                       print(f'  - categories_data count: {len(data.get(\"categories_data\", []))}')
                   except yaml.YAMLError as e:
                       print(f'✗ YAML Error: {e}')
