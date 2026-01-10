@@ -65,17 +65,27 @@ jobs:
 
       - name: Debug - Show incoming payload
         if: github.event_name == 'repository_dispatch'
+        env:
+          DBG_GAME_NAME: ${{ github.event.client_payload.game_name }}
+          DBG_GAME_ID: ${{ github.event.client_payload.game_id }}
+          DBG_CATEGORIES: ${{ github.event.client_payload.categories }}
+          DBG_CHALLENGES: ${{ github.event.client_payload.challenges }}
+          DBG_CHAR_COL: ${{ github.event.client_payload.character_column }}
+          DBG_CHAR_LABEL: ${{ github.event.client_payload.character_label }}
+          DBG_SUBMITTER: ${{ github.event.client_payload.submitter_handle }}
+          DBG_CREDIT: ${{ github.event.client_payload.credit_requested }}
+          DBG_DETAILS: ${{ github.event.client_payload.details }}
         run: |
           echo "=== INCOMING PAYLOAD DEBUG ==="
-          echo "game_name: ${{ github.event.client_payload.game_name }}"
-          echo "game_id: ${{ github.event.client_payload.game_id }}"
-          echo "categories: ${{ github.event.client_payload.categories }}"
-          echo "challenges: ${{ github.event.client_payload.challenges }}"
-          echo "character_column: ${{ github.event.client_payload.character_column }}"
-          echo "character_label: ${{ github.event.client_payload.character_label }}"
-          echo "submitter_handle: ${{ github.event.client_payload.submitter_handle }}"
-          echo "credit_requested: ${{ github.event.client_payload.credit_requested }}"
-          echo "details (raw): ${{ github.event.client_payload.details }}"
+          echo "game_name: ${DBG_GAME_NAME}"
+          echo "game_id: ${DBG_GAME_ID}"
+          echo "categories: ${DBG_CATEGORIES}"
+          echo "challenges: ${DBG_CHALLENGES}"
+          echo "character_column: ${DBG_CHAR_COL}"
+          echo "character_label: ${DBG_CHAR_LABEL}"
+          echo "submitter_handle: ${DBG_SUBMITTER}"
+          echo "credit_requested: ${DBG_CREDIT}"
+          echo "details (raw): ${DBG_DETAILS}"
           echo "=== END PAYLOAD DEBUG ==="
 
       - name: Generate queued game file
