@@ -1,0 +1,47 @@
+---
+layout: default
+title: TESTGAMENAME2 Rules
+game_id: testgamename2
+permalink: /games/testgamename2/rules/
+---
+
+{% assign game = site.games | where: "game_id", page.game_id | first %}
+{% include game-header-tabs.html game=game active="overview" %}
+
+<div class="page-width">
+  <div class="game-shell">
+    <section class="tab-panel active">
+      <p class="muted mb-3">
+        <a href="{{ game.url | relative_url }}">← Overview</a>
+      </p>
+
+      <h1>Rules & Definitions</h1>
+      <p class="muted mb-4">Category definitions and challenge rules for {{ game.name }}.</p>
+
+      {% if game.challenges and game.challenges.size > 0 %}
+      <div class="card">
+        <h2>Challenge Definitions</h2>
+        <div class="tag-picked">
+          {% for ch_id in game.challenges %}
+            {% assign ch_meta = site.data.challenges[ch_id] %}
+            <span class="tag-chip">{{ ch_meta.label | default: ch_id }}</span>
+          {% endfor %}
+        </div>
+        <p class="muted mt-3">Detailed definitions coming soon.</p>
+      </div>
+      {% endif %}
+
+      {% if game.categories_data and game.categories_data.size > 0 %}
+      <div class="card mt-4">
+        <h2>Category Rules</h2>
+        <div class="tag-picked">
+          {% for cat in game.categories_data %}
+            <span class="tag-chip">{{ cat.label }}</span>
+          {% endfor %}
+        </div>
+        <p class="muted mt-3">Category-specific rules coming soon.</p>
+      </div>
+      {% endif %}
+    </section>
+  </div>
+</div>

@@ -1,0 +1,18 @@
+---
+layout: default
+title: TESTGAMENAME2 Forum
+game_id: testgamename2
+permalink: /games/testgamename2/forum/
+---
+
+{% assign game = site.games | where: "game_id", page.game_id | first %}
+{% include game-header-tabs.html game=game active="forum" %}
+
+<div class="page-width">
+  <div class="game-shell">
+    <section class="tab-panel active">
+      <h1>Forum</h1>
+      <p class="muted">Coming soon.</p>
+    </section>
+  </div>
+</div>
