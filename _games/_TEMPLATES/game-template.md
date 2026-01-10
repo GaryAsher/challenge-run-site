@@ -1,17 +1,19 @@
 ---
 layout: game
 game_id: __GAME_ID__
-name: __GAME_NAME__
-name_aliases: []
-status: __STATUS__
-
 reviewers: []
+
+name: "__GAME_NAME__"
+name_aliases: []
+status: "__STATUS__"
 
 tags: []
 platforms: []
 
 cover: /assets/img/games/__FIRST_LETTER__/__GAME_ID__.jpg
 cover_position: center
+
+timing_method: RTA
 
 tabs:
   overview: true
@@ -22,21 +24,19 @@ tabs:
   extra_1: false
   extra_2: false
 
-# Character/Weapon/Class column configuration (optional)
-# character_column:
-#   enabled: true
-#   label: "Character"
+character_column:
+  enabled: false
+  label: "Character"
 
 challenges: []
 
+glitches_data:
+  - slug: unrestricted
+    label: "Unrestricted"
+  - slug: glitchless
+    label: "Glitchless"
+
+restrictions: []
+
 categories_data: []
-
-subcategories: []
-
-# Glitch categories (optional)
-# glitches_data:
-#   - slug: unrestricted
-#     label: Unrestricted
-#   - slug: glitchless
-#     label: Glitchless
 ---
