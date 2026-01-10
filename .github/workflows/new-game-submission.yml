@@ -67,7 +67,7 @@ jobs:
         id: generate
         shell: bash
         env:
-          # IMPORTANT: details is already a JSON string coming from Apps Script
+          # IMPORTANT: do NOT toJson() this, Apps Script already JSON.stringify()'d it
           DETAILS_FROM_DISPATCH: ${{ github.event.client_payload.details }}
         run: |
           set -euo pipefail
@@ -90,6 +90,7 @@ jobs:
             python -c 'import json,sys; print(json.dumps(sys.argv[1]))' "${1-}"
           }
 
+          # Inputs: dispatch vs workflow_dispatch
           DETAILS_IN="{}"
 
           if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
@@ -116,35 +117,25 @@ jobs:
             DETAILS_IN="${{ inputs.details }}"
           fi
 
-          if [ -z "${GAME_NAME:-}" ]; then
-            echo "ERROR: GAME_NAME is empty"
-            exit 1
-          fi
-          if [ -z "${CATEGORIES:-}" ]; then
-            echo "ERROR: CATEGORIES is empty"
-            exit 1
-          fi
-          if [ -z "${CHALLENGES:-}" ]; then
-            echo "ERROR: CHALLENGES is empty"
-            exit 1
-          fi
+          # Hard requirements
+          if [ -z "${GAME_NAME:-}" ]; then echo "ERROR: GAME_NAME is empty"; exit 1; fi
+          if [ -z "${CATEGORIES:-}" ]; then echo "ERROR: CATEGORIES is empty"; exit 1; fi
+          if [ -z "${CHALLENGES:-}" ]; then echo "ERROR: CHALLENGES is empty"; exit 1; fi
 
+          # Normalize booleans
           CHAR_ENABLED="$(printf '%s' "${CHAR_ENABLED:-false}" | tr '[:upper:]' '[:lower:]')"
           case "${CHAR_ENABLED}" in true|false) ;; *) CHAR_ENABLED="false" ;; esac
 
           CREDIT_REQUESTED="$(printf '%s' "${CREDIT_REQUESTED:-false}" | tr '[:upper:]' '[:lower:]')"
           case "${CREDIT_REQUESTED}" in true|false) ;; *) CREDIT_REQUESTED="false" ;; esac
 
-          if [ -z "${GAME_ID:-}" ]; then
-            GAME_ID="$(slugify "$GAME_NAME")"
-          fi
-          if [ -z "${GAME_ID:-}" ]; then
-            echo "ERROR: GAME_ID resolved to empty"
-            exit 1
-          fi
+          # Slug fallback
+          if [ -z "${GAME_ID:-}" ]; then GAME_ID="$(slugify "$GAME_NAME")"; fi
+          if [ -z "${GAME_ID:-}" ]; then echo "ERROR: GAME_ID resolved to empty"; exit 1; fi
 
           FIRST_LETTER="$(printf '%s' "$GAME_ID" | cut -c1)"
 
+          # Details JSON: be robust to empty, null, or double-encoded strings
           if [ -z "${DETAILS_IN:-}" ] || [ "${DETAILS_IN:-}" = "null" ]; then
             DETAILS_IN="{}"
           fi
@@ -152,18 +143,40 @@ jobs:
           export DETAILS_IN
           DETAILS_OUT="$(python - <<'PY'
           import json, os
-          raw = os.environ.get("DETAILS_IN", "{}")
-          try:
-            d = json.loads(raw) if raw.strip() else {}
-          except Exception:
-            d = {}
+
+          raw = os.environ.get("DETAILS_IN", "{}").strip()
+
+          def load_details(s):
+            if not s or s == "null":
+              return {}
+            try:
+              obj = json.loads(s)
+            except Exception:
+              return {}
+            # If details came in double-encoded, json.loads gives us a string.
+            if isinstance(obj, str):
+              try:
+                obj2 = json.loads(obj)
+                if isinstance(obj2, dict):
+                  return obj2
+              except Exception:
+                return {}
+              return {}
+            if isinstance(obj, dict):
+              return obj
+            return {}
+
+          d = load_details(raw)
+
           def get(k):
             v = d.get(k, "")
             if v is None:
               return ""
             return str(v)
+
           keys = [
             "name_aliases",
+            "platforms",
             "subcategories",
             "glitch_categories",
             "glitches_doc",
@@ -174,12 +187,15 @@ jobs:
             "feedback",
             "character_options",
           ]
+
           for k in keys:
             print(f"{k}={get(k)}")
           PY
           )"
 
-          NAME_ALIASES_RAW=""
+          # Load parsed values
+          ALIASES_RAW=""
+          PLATFORMS_RAW=""
           SUBCATS_RAW=""
           GLITCH_CATS_RAW=""
           GLITCHES_DOC_RAW=""
@@ -194,7 +210,8 @@ jobs:
             key="${line%%=*}"
             val="${line#*=}"
             case "$key" in
-              name_aliases) NAME_ALIASES_RAW="$val" ;;
+              name_aliases) ALIASES_RAW="$val" ;;
+              platforms) PLATFORMS_RAW="$val" ;;
               subcategories) SUBCATS_RAW="$val" ;;
               glitch_categories) GLITCH_CATS_RAW="$val" ;;
               glitches_doc) GLITCHES_DOC_RAW="$val" ;;
@@ -213,75 +230,62 @@ jobs:
           CHAR_LABEL_SAFE="${CHAR_LABEL:-Character}"
           out="_queue_games/${GAME_ID}.md"
 
-          TIMING_METHOD_RAW="${TIMING_PRIMARY_RAW:-}"
-          if [ -z "${TIMING_METHOD_RAW}" ]; then
-            TIMING_METHOD_RAW="${TIMING_SECONDARY_RAW:-}"
-          fi
-          TIMING_METHOD_SLUG="$(slugify "${TIMING_METHOD_RAW}")"
-          case "${TIMING_METHOD_SLUG}" in
-            igt*) TIMING_METHOD="IGT" ;;
-            lrt*) TIMING_METHOD="LRT" ;;
-            rta*) TIMING_METHOD="RTA" ;;
-            *) TIMING_METHOD="RTA" ;;
-          esac
-
-          # Build categories_data with optional children from SUBCATS_RAW ("Parent - Child")
+          # Build category children map from SUBCATS_RAW ("Parent - Child" per line)
+          # We'll generate YAML in Python to avoid bash edge cases.
+          export CATEGORIES SUBCATS_RAW
           CATEGORIES_YAML="$(python - <<'PY'
           import os, re, json
 
           def split_list(s):
-            s = (s or "").replace("\r\n","\n").replace("\r","\n").strip()
-            if not s:
-              return []
-            if "\n" in s:
-              items = [x.strip() for x in s.split("\n")]
-            else:
-              items = [x.strip() for x in re.split(r"[;,|]", s)]
-            return [x for x in items if x]
+            s = (s or "").replace("\r\n","\n").replace("\r","\n")
+            s = re.sub(r"[;,|]", "\n", s)
+            out = []
+            for line in s.split("\n"):
+              line = line.strip()
+              if line:
+                out.append(line)
+            return out
 
           def slugify(s):
             s = (s or "").strip().lower()
-            s = re.sub(r"[^a-z0-9]+", "-", s)
-            s = re.sub(r"-{2,}", "-", s).strip("-")
+            s = re.sub(r"[^a-z0-9]+","-",s)
+            s = re.sub(r"-+","-",s).strip("-")
             return s
 
-          cats_raw = os.environ.get("CATEGORIES","")
-          sub_raw = os.environ.get("SUBCATS_RAW","")
+          cats = split_list(os.environ.get("CATEGORIES",""))
+          rels = split_list(os.environ.get("SUBCATS_RAW",""))
 
-          cats = split_list(cats_raw)
-          pairs = split_list(sub_raw)
-
-          children_by_parent = {}
-          for p in pairs:
-            if " - " in p:
-              parent, child = p.split(" - ", 1)
-            elif "-" in p:
-              parent, child = p.split("-", 1)
+          # parent label -> list of (child slug, child label)
+          children = {}
+          for r in rels:
+            if " - " in r:
+              parent, child = r.split(" - ", 1)
+            elif "-" in r:
+              parent, child = r.split("-", 1)
+              parent, child = parent.strip(), child.strip()
             else:
               continue
-            parent = parent.strip()
-            child = child.strip()
             if not parent or not child:
               continue
-            children_by_parent.setdefault(parent, []).append(child)
+            children.setdefault(parent.strip(), []).append((slugify(child), child.strip()))
 
+          # Emit categories_data YAML
           lines = []
           lines.append("categories_data:")
           for c in cats:
-            lines.append(f"  - slug: {slugify(c)}")
+            cslug = slugify(c)
+            lines.append(f"  - slug: {cslug}")
             lines.append(f"    label: {json.dumps(c)}")
-            kids = children_by_parent.get(c) or []
+            kids = children.get(c, [])
             if kids:
               lines.append("    children:")
-              for k in kids:
-                lines.append(f"      - slug: {slugify(k)}")
-                lines.append(f"        label: {json.dumps(k)}")
+              for kslug, klabel in kids:
+                lines.append(f"      - slug: {kslug}")
+                lines.append(f"        label: {json.dumps(klabel)}")
 
           print("\n".join(lines))
           PY
           )"
-
-          export CATEGORIES SUBCATS_RAW
 
           {
             echo "---"
@@ -289,61 +293,52 @@ jobs:
             echo "game_id: ${GAME_ID}"
             echo "reviewers: []"
             echo "name: $(yaml_quote "$GAME_NAME")"
-            echo "name_aliases:"
-            if [ -n "${NAME_ALIASES_RAW:-}" ] && [ -n "$(split_list "$NAME_ALIASES_RAW" | head -n 1 || true)" ]; then
+
+            # name_aliases
+            if [ -n "$(split_list "${ALIASES_RAW:-}" | head -n 1 || true)" ]; then
+              echo "name_aliases:"
               while IFS= read -r a; do
                 [ -n "$a" ] && echo "  - $(yaml_quote "$a")"
-              done < <(split_list "$NAME_ALIASES_RAW")
+              done < <(split_list "$ALIASES_RAW")
             else
-              echo "  - $(yaml_quote "$GAME_NAME")"
+              echo "name_aliases: []"
             fi
 
             echo "status: $(yaml_quote "$STATUS_TEXT")"
-
-            if [ -z "$(split_list "${TAGS:-}" | head -n 1 || true)" ]; then
-              echo "tags: []"
-            else
-              echo "tags:"
-              while IFS= read -r tag; do
-                [ -n "$tag" ] && echo "  - $(yaml_quote "$(slugify "$tag")")"
-              done < <(split_list "$TAGS")
-            fi
-
+            echo "tags: []"
             echo "platforms: []"
             echo "cover: /assets/img/games/${FIRST_LETTER}/${GAME_ID}.jpg"
             echo "cover_position: center"
             echo ""
-            echo "timing_method: ${TIMING_METHOD}"
+            echo "timing_method: $(yaml_quote "${TIMING_PRIMARY_RAW:-RTA}")"
             echo ""
-            echo "tabs:"
-            echo "  overview: true"
-            echo "  runs: true"
-            echo "  history: true"
-            echo "  resources: true"
-            echo "  forum: true"
-            echo "  extra_1: false"
-            echo "  extra_2: false"
+            cat <<'EOF'
+          tabs:
+            overview: true
+            runs: true
+            history: true
+            resources: true
+            forum: true
+            extra_1: false
+            extra_2: false
+          EOF
+
             echo ""
             echo "character_column:"
             echo "  enabled: ${CHAR_ENABLED}"
             echo "  label: $(yaml_quote "$CHAR_LABEL_SAFE")"
 
+            # challenges: slugify each challenge label
             echo ""
             echo "challenges:"
             while IFS= read -r ch; do
-              [ -n "$ch" ] && echo "  - $(yaml_quote "$(slugify "$ch")")"
+              [ -z "$ch" ] && continue
+              echo "  - $(slugify "$ch")"
             done < <(split_list "$CHALLENGES")
 
+            # Glitch categories
             echo ""
-            if [ -n "${SUBCATS_RAW:-}" ] && [ -n "$(split_list "$SUBCATS_RAW" | head -n 1 || true)" ]; then
-              echo "subcategories:"
-              while IFS= read -r sc; do
-                [ -n "$sc" ] && echo "  - $(yaml_quote "$sc")"
-              done < <(split_list "$SUBCATS_RAW")
-            fi
-
-            echo ""
-            if [ -n "${GLITCH_CATS_RAW:-}" ] && [ -n "$(split_list "$GLITCH_CATS_RAW" | head -n 1 || true)" ]; then
+            if [ -n "$(split_list "${GLITCH_CATS_RAW:-}" | head -n 1 || true)" ]; then
               echo "glitches_data:"
               while IFS= read -r gc; do
                 [ -z "$gc" ] && continue
@@ -353,29 +348,50 @@ jobs:
             else
               echo "glitches_data:"
               echo "  - slug: unrestricted"
-              echo "    label: $(yaml_quote Unrestricted)"
+              echo "    label: $(yaml_quote "Unrestricted")"
               echo "  - slug: glitchless"
-              echo "    label: $(yaml_quote Glitchless)"
+              echo "    label: $(yaml_quote "Glitchless")"
             fi
 
-            echo ""
-            if [ -n "${GLITCHES_DOC_RAW:-}" ] && [ -n "$(split_list "$GLITCHES_DOC_RAW" | head -n 1 || true)" ]; then
+            # glitches_doc (only include when not empty)
+            if [ -n "$(split_list "${GLITCHES_DOC_RAW:-}" | head -n 1 || true)" ]; then
+              echo ""
               echo "glitches_doc: |"
-              while IFS= read -r l; do echo "  ${l}"; done < <(split_list "$GLITCHES_DOC_RAW")
+              while IFS= read -r l; do echo "  ${l}"; done <<< "${GLITCHES_DOC_RAW}"
             fi
 
-            echo ""
-            if [ -n "${RESTRICTIONS_RAW:-}" ] && [ -n "$(split_list "$RESTRICTIONS_RAW" | head -n 1 || true)" ]; then
+            # restrictions (list)
+            if [ -n "$(split_list "${RESTRICTIONS_RAW:-}" | head -n 1 || true)" ]; then
+              echo ""
               echo "restrictions:"
               while IFS= read -r r; do
                 [ -n "$r" ] && echo "  - $(yaml_quote "$r")"
               done < <(split_list "$RESTRICTIONS_RAW")
+            else
+              echo ""
+              echo "restrictions: []"
             fi
 
+            # categories_data with children
             echo ""
             printf '%s\n' "$CATEGORIES_YAML"
 
             echo "---"
+            echo ""
+            echo "Game submitted via form. Awaiting review."
+            echo ""
+            echo "Reviewer notes:"
+            if [ -n "$(split_list "${SUBCATS_RAW:-}" | head -n 1 || true)" ]; then
+              echo "- Category branches (Parent - Child):"
+              echo "${SUBCATS_RAW}"
+            fi
+            if [ -n "${MOD_INTEREST_RAW:-}" ]; then
+              echo "- Moderate interest: ${MOD_INTEREST_RAW}"
+            fi
+            if [ -n "${FEEDBACK_RAW:-}" ]; then
+              echo "- Feedback:"
+              echo "${FEEDBACK_RAW}"
+            fi
           } > "$out"
 
           echo "WROTE: $out"
@@ -399,13 +415,14 @@ jobs:
 
             ### Checklist for Reviewers
             - [ ] Game name and ID are correct
-            - [ ] Fill in platforms, year, tags if needed
-            - [ ] Confirm timing method
-            - [ ] Confirm glitch categories and glitch notes
-            - [ ] Confirm categories and subcategories
-            - [ ] Confirm challenge IDs (slugified)
-            - [ ] Upload cover image to assets/img/games/
-            - [ ] Move the game file from _queue_games/ to _games/
+            - [ ] Add tags (moderators add genres)
+            - [ ] Add platforms
+            - [ ] Add release year
+            - [ ] Review glitch categories (`glitches_data`) and adjust as needed
+            - [ ] Categories and subcategory branches make sense
+            - [ ] Challenge IDs look correct
+            - [ ] Cover image uploaded to `assets/img/games/`
+            - [ ] Move the game file from `_queue_games/` to `_games/`
 
             ---
             *Submitted via Google Form*
@@ -427,8 +444,6 @@ jobs:
         run: |
           set -euo pipefail
 
-          pr_list="https://github.com/GaryAsher/challenge-run-site/pulls"
-
           payload="$(python - <<'PY'
           import json, os
           game_name = os.environ.get("GAME_NAME","").strip()
@@ -447,7 +462,6 @@ jobs:
             ),
             "applied_tags": [FORUM_TAG_ID]
           }
-
           print(json.dumps(data))
           PY
           )"
