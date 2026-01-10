@@ -1,7 +1,23 @@
 #!/usr/bin/env python3
 """
 Generate a game markdown file from form submission data.
-Used by the new-game-submission GitHub workflow.
+VERSION 5.0 - Reordered form with community challenges
+
+Form Q-numbers:
+  Q1  - Game Name
+  Q2  - Aliases
+  Q3  - Platforms
+  Q4  - Categories
+  Q5  - Challenge Types
+  Q6  - Community Challenges (game-specific)
+  Q7  - Glitch Rules
+  Q8  - Glitch Docs
+  Q9 - Timing Method
+  Q10 - Character Column Label
+  Q11 - Character Options
+  Q12 - Restrictions
+  Q13 - Discord & Preferences
+  Q14 - Feedback
 """
 
 import json
@@ -10,34 +26,21 @@ import re
 import sys
 
 
-def split_list_by_newlines_only(s):
-    """
-    Split a string ONLY by newlines (not commas).
-    Use this for free-text fields where commas might appear in the content.
-    """
+def split_by_newlines(s):
+    """Split string by newlines only (preserves commas in content)."""
     if not s:
         return []
-    # Convert escaped newlines to real newlines
-    s = s.replace('\\n', '\n')
-    s = s.replace('\r\n', '\n').replace('\r', '\n')
-    # Split and clean
+    s = s.replace('\\n', '\n').replace('\r\n', '\n').replace('\r', '\n')
     items = [line.strip() for line in s.split('\n')]
     return [item for item in items if item]
 
 
-def split_list(s):
-    """
-    Split a string by newlines, commas, semicolons, or pipes.
-    Use this for structured fields where items are expected to be simple values.
-    """
+def split_by_delimiters(s):
+    """Split string by newlines, commas, semicolons, or pipes."""
     if not s:
         return []
-    # First, convert escaped newlines to real newlines
-    s = s.replace('\\n', '\n')
-    # Replace delimiters with newlines
-    s = s.replace('\r\n', '\n').replace('\r', '\n')
+    s = s.replace('\\n', '\n').replace('\r\n', '\n').replace('\r', '\n')
     s = re.sub(r'[;,|]', '\n', s)
-    # Split and clean
     items = [line.strip() for line in s.split('\n')]
     return [item for item in items if item]
 
@@ -69,7 +72,6 @@ def load_details(s):
         print(f"DEBUG: JSON parse error: {e}", file=sys.stderr)
         return {}
     
-    # Handle double-encoded JSON
     if isinstance(obj, str):
         try:
             obj2 = json.loads(obj)
@@ -83,27 +85,103 @@ def load_details(s):
 
 
 def filter_glitch_categories(categories):
-    """
-    Filter out placeholder/skip options from glitch categories.
-    Returns cleaned list of actual glitch category names.
-    """
+    """Filter out placeholder options and map to proper slugs/labels."""
     skip_patterns = [
+        "doesn't have",
         "does not have",
+        "no meaningful",
         "at this time",
-        "no glitch",
         "n/a",
-        "none",
-        "not applicable",
     ]
     
-    filtered = []
-    for cat in categories:
-        cat_lower = cat.lower()
-        should_skip = any(pattern in cat_lower for pattern in skip_patterns)
-        if not should_skip and cat.strip():
-            filtered.append(cat)
+    label_map = {
+        "unrestricted (all glitches allowed)": ("unrestricted", "Unrestricted"),
+        "unrestricted": ("unrestricted", "Unrestricted"),
+        "no major glitches (nmg)": ("nmg", "No Major Glitches (NMG)"),
+        "no major glitches": ("nmg", "No Major Glitches (NMG)"),
+        "nmg": ("nmg", "No Major Glitches (NMG)"),
+        "glitchless": ("glitchless", "Glitchless"),
+    }
     
-    return filtered
+    result = []
+    for cat in categories:
+        cat_lower = cat.lower().strip()
+        
+        if any(pattern in cat_lower for pattern in skip_patterns):
+            continue
+        
+        if cat_lower in label_map:
+            slug, label = label_map[cat_lower]
+        else:
+            slug = slugify(cat)
+            label = cat.strip()
+        
+        if slug and label:
+            result.append((slug, label))
+    
+    return result
+
+
+def parse_categories_with_children(categories_raw):
+    """Parse categories that may include "Parent - Child" format."""
+    lines = split_by_newlines(categories_raw)
+    
+    categories = []
+    children_map = {}
+    
+    for line in lines:
+        if ' - ' in line:
+            parent, child = line.split(' - ', 1)
+            parent = parent.strip()
+            child = child.strip()
+            
+            if parent not in categories:
+                categories.append(parent)
+            
+            if parent not in children_map:
+                children_map[parent] = []
+            if child not in children_map[parent]:
+                children_map[parent].append(child)
+        else:
+            cat = line.strip()
+            if cat and cat not in categories:
+                categories.append(cat)
+    
+    return categories, children_map
+
+
+def parse_community_challenges(raw):
+    """
+    Parse community challenges from freeform text.
+    Expected formats:
+      - Simple: "Challenge Name" (one per line)
+      - With description: "Challenge Name: Description here"
+      - With description: "Challenge Name - Description here"
+    """
+    lines = split_by_newlines(raw)
+    challenges = []
+    
+    for line in lines:
+        # Try to split on ": " or " - " for name/description
+        if ': ' in line:
+            name, desc = line.split(': ', 1)
+        elif ' - ' in line and not line.startswith('-'):
+            name, desc = line.split(' - ', 1)
+        else:
+            name = line
+            desc = ""
+        
+        name = name.strip()
+        desc = desc.strip()
+        
+        if name:
+            challenges.append({
+                'slug': slugify(name),
+                'label': name,
+                'description': desc
+            })
+    
+    return challenges
 
 
 def main():
@@ -125,61 +203,38 @@ def main():
 
     def get_detail(key, default=''):
         v = details.get(key, default)
-        if v is None:
-            return default
-        return str(v)
+        return str(v) if v is not None else default
 
-    # Extract all details
-    # Use newline-only splitting for free-text fields to preserve commas in content
-    aliases = split_list_by_newlines_only(get_detail('name_aliases'))
-    subcategories_raw = split_list_by_newlines_only(get_detail('subcategories'))
-    
-    # Glitch categories come from checkboxes (comma-separated) then filter
-    glitch_categories_raw = split_list(get_detail('glitch_categories'))
+    # Extract details
+    aliases = split_by_newlines(get_detail('name_aliases'))
+    glitch_categories_raw = split_by_delimiters(get_detail('glitch_categories'))
     glitch_categories = filter_glitch_categories(glitch_categories_raw)
-    
-    # Glitch docs are free text with commas possible
-    glitches_doc = split_list_by_newlines_only(get_detail('glitches_doc'))
-    
-    # Restrictions are free text
-    restrictions = split_list_by_newlines_only(get_detail('restrictions'))
-    
+    glitches_doc = split_by_newlines(get_detail('glitches_doc'))
+    restrictions = split_by_newlines(get_detail('restrictions'))
     timing_primary = get_detail('timing_primary', 'RTA')
-    timing_secondary = get_detail('timing_secondary')
-    moderate_interest = get_detail('moderate_interest')
-    feedback = get_detail('feedback')
+    character_options = split_by_newlines(get_detail('character_options'))
     
-    # Character options are free text
-    character_options = split_list_by_newlines_only(get_detail('character_options'))
+    platforms = split_by_newlines(get_detail('platforms'))
+    community_challenges = parse_community_challenges(get_detail('community_challenges'))
+    discord_handle = get_detail('discord_handle', submitter)
+    wants_credit = get_detail('wants_credit', 'false') == 'true' or credit_requested
+    wants_moderate = get_detail('wants_moderate', 'false') == 'true'
+    feedback = get_detail('feedback', '')
+
+    if discord_handle:
+        submitter = discord_handle
 
     # Debug output
     print(f"DEBUG: Parsed details:", file=sys.stderr)
     print(f"  - aliases: {aliases}", file=sys.stderr)
-    print(f"  - subcategories: {subcategories_raw}", file=sys.stderr)
-    print(f"  - glitch_categories (raw): {glitch_categories_raw}", file=sys.stderr)
-    print(f"  - glitch_categories (filtered): {glitch_categories}", file=sys.stderr)
-    print(f"  - glitches_doc: {glitches_doc}", file=sys.stderr)
+    print(f"  - glitch_categories: {glitch_categories}", file=sys.stderr)
+    print(f"  - platforms: {platforms}", file=sys.stderr)
+    print(f"  - community_challenges: {len(community_challenges)}", file=sys.stderr)
     print(f"  - restrictions: {restrictions}", file=sys.stderr)
-    print(f"  - character_options: {character_options}", file=sys.stderr)
 
-    # Process categories and challenges (these come from form as comma-separated)
-    categories = split_list_by_newlines_only(categories_raw)
-    challenges = split_list(challenges_raw)  # Checkboxes are comma-separated
-
-    # Build parent -> children map from subcategories
-    # Format: "Parent - Child"
-    children_map = {}
-    for rel in subcategories_raw:
-        # Only split on " - " (with spaces) to avoid breaking category names with hyphens
-        if ' - ' in rel:
-            parent, child = rel.split(' - ', 1)
-            parent = parent.strip()
-            child = child.strip()
-            
-            if parent and child:
-                if parent not in children_map:
-                    children_map[parent] = []
-                children_map[parent].append(child)
+    # Parse categories
+    categories, children_map = parse_categories_with_children(categories_raw)
+    challenges = split_by_delimiters(challenges_raw)
 
     # Generate YAML output
     lines = []
@@ -204,10 +259,17 @@ def main():
     lines.append(f'status: {yaml_quote(status_text)}')
     lines.append('')
 
-    # Metadata (to be filled by moderators)
-    lines.append('# TODO: Add tags and platforms')
+    # Metadata   
+    lines.append('# TODO: Add tags (genres)')
     lines.append('tags: []')
-    lines.append('platforms: []')
+    
+    if platforms:
+        lines.append('platforms:')
+        for p in platforms:
+            lines.append(f'  - {p}')
+    else:
+        lines.append('# TODO: Add platforms')
+        lines.append('platforms: []')
     lines.append('')
 
     # Cover image
@@ -236,20 +298,31 @@ def main():
     lines.append(f'  label: {yaml_quote(char_label)}')
     lines.append('')
 
-    # Challenges
+    # Standard challenges (from checkboxes)
+    lines.append('# Standard challenge types (site-wide definitions)')
     lines.append('challenges:')
     for ch in challenges:
         lines.append(f'  - {slugify(ch)}')
     lines.append('')
 
+    # Community challenges (game-specific)
+    if community_challenges:
+        lines.append('# Game-specific community challenges')
+        lines.append('community_challenges:')
+        for cc in community_challenges:
+            lines.append(f'  - slug: {cc["slug"]}')
+            lines.append(f'    label: {yaml_quote(cc["label"])}')
+            if cc['description']:
+                lines.append(f'    description: {yaml_quote(cc["description"])}')
+        lines.append('')
+
     # Glitch categories
     lines.append('glitches_data:')
     if glitch_categories:
-        for gc in glitch_categories:
-            lines.append(f'  - slug: {slugify(gc)}')
-            lines.append(f'    label: {yaml_quote(gc)}')
+        for slug, label in glitch_categories:
+            lines.append(f'  - slug: {slug}')
+            lines.append(f'    label: {yaml_quote(label)}')
     else:
-        # Default glitch categories
         lines.append('  - slug: unrestricted')
         lines.append('    label: "Unrestricted"')
         lines.append('  - slug: glitchless')
@@ -272,7 +345,6 @@ def main():
         lines.append(f'  - slug: {cat_slug}')
         lines.append(f'    label: {yaml_quote(cat)}')
         
-        # Check for children
         if cat in children_map:
             lines.append('    children:')
             for child in children_map[cat]:
@@ -286,14 +358,14 @@ def main():
     lines.append('Game submitted via form. Awaiting review.')
     lines.append('')
 
-    # Reviewer notes (HTML comment)
+    # Reviewer notes
     notes = []
     if submitter:
         notes.append(f'Submitted by: {submitter}')
-    if credit_requested:
+    if wants_credit:
         notes.append('Credit requested: Yes')
-    if moderate_interest:
-        notes.append(f'Moderation interest: {moderate_interest}')
+    if wants_moderate:
+        notes.append('Moderation interest: Yes')
     if character_options:
         notes.append('')
         notes.append('Character/Weapon/Class options:')
@@ -304,12 +376,9 @@ def main():
         notes.append('Glitch documentation:')
         for doc in glitches_doc:
             notes.append(f'  - {doc}')
-    if timing_secondary:
-        notes.append(f'Secondary timing: {timing_secondary}')
     if feedback:
         notes.append('')
         notes.append('Submitter feedback:')
-        # Convert escaped newlines to real newlines for readability
         notes.append(feedback.replace('\\n', '\n'))
 
     if notes:
@@ -320,17 +389,16 @@ def main():
         lines.append('')
         lines.append('-->')
 
-    # Write output file
+    # Write output
     with open(out_file, 'w') as f:
         f.write('\n'.join(lines))
 
     print(f"✓ Generated {out_file}")
     print(f"  - {len(categories)} categories")
-    print(f"  - {len(challenges)} challenges")
-    print(f"  - {len(aliases)} aliases")
-    print(f"  - {len(restrictions)} restrictions")
+    print(f"  - {len(challenges)} standard challenges")
+    print(f"  - {len(community_challenges)} community challenges")
     print(f"  - {len(glitch_categories)} glitch categories")
-    print(f"  - {len(character_options)} character options")
+    print(f"  - {len(platforms)} platforms")
 
 
 if __name__ == '__main__':
