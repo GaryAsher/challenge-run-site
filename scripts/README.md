@@ -1,292 +1,236 @@
-# Scripts
+# Scripts Documentation
 
-This folder contains small Node scripts used to keep the repository consistent.
-Most contributors will never need to run these manually unless a guide or CI error tells them to.
+This folder contains build, validation, and automation scripts for Challenge Run Central.
 
-If a GitHub check fails, the error message will usually name the script you need to run.
+## Prerequisites
 
----
+- Node.js 18+ (for JavaScript scripts)
+- Python 3.8+ (for Python scripts)
 
-## Quick start
-
-Run scripts from the repository root.
-
+Install dependencies:
 ```bash
-npm install
-```
-
-Run this once after a fresh clone, or anytime package.json changes.
-
----
-
-## What each script does
-
-### validate-schema.js
-
-**Purpose**  
-Validates the repository's content and shared data files for correctness.
-
-**What it checks**
-- `_data/tags.yml` and `_data/challenges.yml` load correctly
-- `_games/*.md` uses valid IDs and references known tags and challenges
-- `_runners/*.md` uses valid IDs and references known games
-- `_runs/**/*.md` has required fields and valid references
-- Date and time formats are valid where present
-
-This script is **read-only**. It never modifies files.
-
-**Used by**
-- CI check: Validate repo schema
-
-**Run manually**
-
-```bash
-npm run validate:schema
+npm ci
 ```
 
 ---
 
-### validate-runs.js
+## Script Reference
 
-**Purpose**  
-Validates queued run submissions before they are promoted into `_runs/`.
+### Game Generation
 
-**Where it looks**
-- `_queue_runs/<game_id>/**/*.md`
-- Ignores `README.md` files inside the queue
+#### `generate-game-file.py`
+Creates a game markdown file from form submission data. Called by GitHub Actions, not typically run manually.
 
-**What it checks**
-- YAML front matter exists
-- Filename matches the required pattern
-- Folder `game_id` matches filename and front matter
-- Required fields exist
-- IDs and slugs follow the ID and Slug Spec
-- `date_submitted` matches the filename date
-- Optional timing fields are valid if present
+**Environment Variables:**
+- `GAME_NAME` - Full game name
+- `GAME_ID` - URL slug
+- `CATEGORIES` - Newline-separated category list
+- `CHALLENGES` - Comma-separated challenge types
+- `DETAILS_IN` - JSON with additional fields
+- `OUT_FILE` - Output file path
 
-This script is **read-only**.
-
-**Used by**
-- CI check: Validate queued runs
-
-**Run manually**
-
+**Usage (manual testing):**
 ```bash
-npm run validate:runs
+export GAME_NAME="Test Game"
+export GAME_ID="test-game"
+export CATEGORIES="Any%"
+export CHALLENGES="hitless,damageless"
+export DETAILS_IN='{}'
+export OUT_FILE="_queue_games/test-game.md"
+export FIRST_LETTER="t"
+export CHAR_ENABLED="false"
+export CHAR_LABEL="Character"
+export SUBMITTER=""
+export CREDIT_REQUESTED="false"
+
+python3 scripts/generate-game-file.py
 ```
 
 ---
 
-### promote-runs.js
+#### `generate-game-pages.js`
+Generates the page structure for games (runs/, history/, resources/, etc.).
 
-**Purpose**  
-Moves approved runs from `_queue_runs/` into the canonical `_runs/` structure.
-
-**Typical behavior**
-- Processes runs based on approval status
-- Moves or copies runs into `_runs/<game_id>/...`
-- May archive or ignore rejected runs depending on configuration
-
-This script **modifies files**.
-
-**Used by**
-- Maintainers and moderators
-
-**Run manually**
-
+**Usage:**
 ```bash
-npm run promote:runs
+# Generate pages for all games
+node scripts/generate-game-pages.js
+
+# Generate for a specific game
+node scripts/generate-game-pages.js --game hades-2
+
+# Check mode (don't write, just verify)
+node scripts/generate-game-pages.js --check
 ```
 
-**Run in preview mode (no changes)**
-
-```bash
-node scripts/promote-runs.js --dry-run
+**What it creates:**
+```
+games/{game-id}/
+├── runs/index.html
+├── history/index.html
+├── resources/index.html
+├── guides/index.html
+├── forum/index.html
+├── rules/index.html
+└── challenges/index.html (if enabled)
 ```
 
 ---
 
-### generate-codeowners.js
+#### `generate-run-category-pages.js`
+Creates individual category pages under a game's runs/ folder.
 
-**Purpose**  
-Generates `.github/CODEOWNERS` based on ownership metadata in `_games/*.md`.
+**Usage:**
+```bash
+# All games
+node scripts/generate-run-category-pages.js
 
-**Typical behavior**
-- Regenerates CODEOWNERS entries per game
-- Ensures CI and local state stay in sync
+# Specific game
+node scripts/generate-run-category-pages.js --game hades-2
+```
 
-**Used by**
-- CI check: check-codeowners.yml
+**What it creates:**
+```
+games/{game-id}/runs/
+├── {category-slug}/index.html
+├── {category-slug}/{child-slug}/index.html
+└── ...
+```
 
-**Run (update CODEOWNERS)**
+---
 
+### Validation
+
+#### `validate-schema.js`
+Validates game file structure against expected schema.
+
+**Usage:**
+```bash
+node scripts/validate-schema.js
+```
+
+**Checks:**
+- Required fields present (game_id, name, layout)
+- Valid YAML syntax
+- Valid field types
+- Slug format correctness
+
+---
+
+#### `validate-runs.js`
+Validates run submission files.
+
+**Usage:**
+```bash
+# Validate all runs
+node scripts/validate-runs.js
+
+# Validate specific file
+node scripts/validate-runs.js --file _runs/2025-01-01__game__runner__cat__01.md
+```
+
+**Checks:**
+- Filename format matches pattern
+- Required fields (game_id, runner_id, category, time, date)
+- Game exists
+- Category exists in game
+- Date format valid
+
+---
+
+### Run Management
+
+#### `promote-runs.js`
+Moves verified runs from `_queue_runs/` to `_runs/`.
+
+**Usage:**
+```bash
+# Promote specific run
+node scripts/promote-runs.js --file _queue_runs/run-file.md
+
+# Promote all approved runs (used by workflow)
+node scripts/promote-runs.js --all-approved
+```
+
+---
+
+### Utilities
+
+#### `generate-codeowners.js`
+Generates the CODEOWNERS file based on game moderators.
+
+**Usage:**
 ```bash
 node scripts/generate-codeowners.js
 ```
 
-**Run (check only, no changes)**
+---
 
+#### `scaffold-game.js`
+Creates a new game file from a JSON config (alternative to form).
+
+**Usage:**
 ```bash
-node scripts/generate-codeowners.js --check
+node scripts/scaffold-game.js scripts/examples/minimal-game.json
+```
+
+**Example JSON:**
+```json
+{
+  "game_id": "my-game",
+  "name": "My Game",
+  "categories": ["Any%", "100%"],
+  "challenges": ["hitless", "damageless"]
+}
 ```
 
 ---
 
-### generate-game-pages.js
+## Shared Libraries
 
-**Purpose**  
-Generates standard game subpages (history, forum, resources, rules, etc.) based on the tabs configuration in `_games/<game>.md`.
+### `lib/index.js`
+Main export file for shared utilities.
 
-**Pages created (based on tabs config)**
-- `games/<game_id>/runs/index.html` (always - main runs page)
-- `games/<game_id>/rules/index.html` (always)
-- `games/<game_id>/history/index.html` (if tabs.history)
-- `games/<game_id>/resources/index.html` (if tabs.resources)
-- `games/<game_id>/guides/index.html` (if tabs.resources)
-- `games/<game_id>/forum/index.html` (if tabs.forum)
-- `games/<game_id>/challenges/index.html` (if tabs.challenges)
+### `lib/parsers/front-matter.js`
+Parses YAML front matter from markdown files.
 
-This script **modifies files**.
+### `lib/utils/file-utils.js`
+File system utilities (read, write, check existence).
 
-**Used by**
-- `scaffold-game.js` (automatically called when scaffolding a new game)
+### `lib/validators/`
+- `constants.js` - Validation constants
+- `field-validators.js` - Field validation functions
 
-**Run manually**
+---
 
+## Adding New Scripts
+
+1. Create your script in `scripts/`
+2. If it uses shared utilities, import from `./lib`
+3. Add CLI argument parsing if needed
+4. Document usage in this README
+5. If it should run in CI, create a workflow in `.github/workflows/`
+
+---
+
+## Common Tasks
+
+### Test a form submission locally
+```bash
+# Set environment variables (see generate-game-file.py section)
+# Then run:
+python3 scripts/generate-game-file.py
+cat _queue_games/test-game.md
+```
+
+### Regenerate all game pages
 ```bash
 node scripts/generate-game-pages.js
+node scripts/generate-run-category-pages.js
 ```
 
-**Run for a single game**
-
+### Validate everything
 ```bash
-node scripts/generate-game-pages.js --game hades-2
+node scripts/validate-schema.js
+node scripts/validate-runs.js
 ```
-
-**Run in check mode (no changes)**
-
-```bash
-node scripts/generate-game-pages.js --check
-```
-
----
-
-### generate-run-category-pages.js
-
-**Purpose**  
-Generates run category pages for each game based on category definitions.
-
-**Typical behavior**
-- Reads category data from game files
-- Creates or refreshes run category pages
-- Ensures generated pages are deterministic
-
-This script **modifies files**.
-
-**Used by**
-- CI check: validate-generated-run-pages.yml
-
-**Run manually**
-
-```bash
-npm run generate:run-categories
-```
-
-**Run for a single game**
-
-```bash
-node scripts/generate-run-category-pages.js --game hades-2
-```
-
-**Run in check mode (no changes)**
-
-```bash
-npm run check:run-categories
-```
-
----
-
-## Shared Library (`lib/`)
-
-All scripts share common utilities via the `lib/` folder to ensure consistency and reduce duplication.
-
-### Structure
-
-```
-scripts/lib/
-├── index.js                    # Re-exports all modules
-├── parsers/
-│   └── front-matter.js         # YAML front matter parsing
-├── validators/
-│   ├── constants.js            # Regex patterns and validation constants
-│   └── field-validators.js     # Field validation functions
-└── utils/
-    └── file-utils.js           # File system utilities
-```
-
-### Usage in scripts
-
-```javascript
-// Import everything you need from lib
-const {
-  parseFrontMatter,
-  mustSlug,
-  isDir,
-  ID_RE,
-} = require('./lib');
-```
-
-### Available exports
-
-**Parsers (`lib/parsers/front-matter.js`)**
-- `parseFrontMatter(content)` - Parse YAML front matter from file content
-- `extractFrontMatterData(content)` - Get just the data object (no body)
-- `stripQuotes(value)` - Remove surrounding quotes from a string
-- `parseScalar(value)` - Parse a scalar value handling booleans
-- `asArray(value)` - Ensure a value is an array
-- `loadYamlFile(path, readFn)` - Load and parse a YAML file
-
-**Constants (`lib/validators/constants.js`)**
-- `ID_RE` - Regex for kebab-case IDs
-- `CATEGORY_SLUG_RE` - Regex for category slugs with nesting
-- `DATE_RE` - Regex for YYYY-MM-DD dates
-- `TIME_RE` - Regex for HH:MM:SS times
-- `RUN_FILENAME_RE` - Regex for run filename pattern
-- `STATUS_SET` - Set of valid status values
-- `TIMING_SET` - Set of valid timing methods
-
-**Field Validators (`lib/validators/field-validators.js`)**
-- `mustSlug(fileRel, field, value)` - Validate kebab-case slug
-- `mustString(fileRel, field, value)` - Validate non-empty string
-- `mustArrayOfStrings(fileRel, field, value)` - Validate string array
-- `mustTimeOrNull(fileRel, field, value)` - Validate time format
-- `mustTimingOrNull(fileRel, field, value)` - Validate timing method
-- `mustDate(fileRel, field, value)` - Validate date format
-- `mustCategorySlug(fileRel, field, value)` - Validate category slug
-- `mustStatus(fileRel, field, value)` - Validate status value
-- `mustUrl(fileRel, field, value)` - Validate URL
-- `mustBoolean(fileRel, field, value)` - Validate boolean
-- `mustExist(fileRel, field, value)` - Validate required field
-- `parseRunFilename(filename)` - Parse run filename components
-
-**File Utils (`lib/utils/file-utils.js`)**
-- `isDir(path)` - Check if path is a directory
-- `isFile(path)` - Check if path is a file
-- `listFilesRecursive(dir)` - List all files recursively
-- `listMdFilesRecursive(dir)` - List markdown files (excluding README)
-- `readText(path)` - Read file as text
-- `writeText(path, content)` - Write text file (creates dirs)
-- `ensureDir(dir)` - Create directory if needed
-- `rel(path, root)` - Get relative path with forward slashes
-- `fileExists(path)` - Check if file exists
-- `writeFileIfChanged(path, content, checkOnly)` - Write only if changed
-
----
-
-## Notes
-
-- Scripts are intentionally small and single-purpose.
-- Validation scripts never modify files.
-- Generator and promotion scripts should be run intentionally and committed afterward.
-- If CI fails, read the error message carefully. It usually tells you exactly which script to run.
-- All scripts use the shared `lib/` folder for common functionality.
