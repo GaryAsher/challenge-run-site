@@ -49,8 +49,7 @@ challenges_data:
     description: " - Do not become stunned by any effect (represented by a star orbiting around Melinoë’s head). - Do not trigger damage nullifiers such as Dodge, Daze, The Lovers, or any similar effects that convert an enemy hit into zero damage. You may select boons with these effects so long as the dodge / miss effect does not activate."
   - slug: damageless
     label: "Damageless"
-    description: "- Do not lose any Health or Armor. - Chaos' Atrophic curse is NOT considered a hit or damage.
-"
+    description: "- Do not lose any Health or Armor. - Chaos' Atrophic curse is NOT considered a hit or damage."
   - slug: no-hit-no-damage
     label: "No-Hit / No-Damage"
     description: "Do not lose any health. Do not trigger any Dodge or Deflect abilities. Do not block any attacks."
