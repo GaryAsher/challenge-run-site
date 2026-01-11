@@ -24,8 +24,8 @@ This document specifies the Google Form fields for submitting new games to CRC.
 
 ### 3. Genres (Required, Max 5)
 - **Type**: Checkboxes (max 5 selections)
-- **Maps to**: `tags`
-- **Help text**: "Select up to 5 genre tags that best describe this game. Reference Steam's top tags."
+- **Maps to**: `genres`
+- **Help text**: "Select up to 5 genre tags that best describe this game. Reference Steam's top genre tags."
 - **Options**:
   - [ ] Action
   - [ ] Adventure
@@ -194,7 +194,7 @@ This document specifies the Google Form fields for submitting new games to CRC.
 | A | Timestamp | - |
 | B | Full Game Name | `name` |
 | C | Short Names | `name_aliases` |
-| D | Tags | `tags` |
+| D | Genres | `genres` |
 | E | Category 1 | `categories_data[0]` |
 | F | Category 2 | `categories_data[1]` |
 | G | Category 3 | `categories_data[2]` |
@@ -232,7 +232,7 @@ function onFormSubmit(e) {
     TIMESTAMP: 0,
     GAME_NAME: 1,
     NAME_ALIASES: 2,
-    TAGS: 3,
+    GENRES: 3,
     CAT_1: 4, CAT_2: 5, CAT_3: 6, CAT_4: 7, CAT_5: 8,
     HAS_SUBCATS: 9,
     SUBCATS: 10,
@@ -270,7 +270,7 @@ function onFormSubmit(e) {
       game_name: gameName,
       game_id: gameId,
       name_aliases: row[COL.NAME_ALIASES] || '',
-      tags: row[COL.TAGS] || '',
+      genres: row[COL.GENRES] || '',
       categories: categories,
       glitch_categories: row[COL.GLITCH_CATS] || '',
       notable_glitches: row[COL.NOTABLE_GLITCHES] || '',
