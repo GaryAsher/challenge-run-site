@@ -10,8 +10,8 @@ name_aliases:
   - "TESTALIAS3"
 status: "Pending review - submitted by TESTDISCORDNAME"
 
-# TODO: Add tags and platforms
-tags: []
+# TODO: Add genres and platforms
+genres: []
 platforms: []
 
 cover: /assets/img/games/t/testgamename1.jpg
