@@ -51,15 +51,33 @@ layout: default
         </a>
       </div>
 
-      <!-- Challenges section -->
+      <!-- Standard Challenges section -->
       {% if page.challenges and page.challenges.size > 0 %}
       <div class="card card--compact">
-        <h2 class="mb-2">Tracked Challenges</h2>
+        <h2 class="mb-2">Standard Challenge Types</h2>
         <p class="muted mb-3">Challenge types being tracked for this game:</p>
         <div class="tag-picked">
           {% for ch_id in page.challenges %}
             {% assign ch_meta = site.data.challenges[ch_id] %}
             <span class="tag-chip">{{ ch_meta.label | default: ch_id }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Community Challenges section -->
+      {% if page.community_challenges and page.community_challenges.size > 0 %}
+      <div class="card card--compact mt-4">
+        <h2 class="mb-2">Community Challenges</h2>
+        <p class="muted mb-3">Game-specific challenges from the {{ page.name }} community:</p>
+        <div class="community-challenges-list">
+          {% for cc in page.community_challenges %}
+            <div class="community-challenge">
+              <span class="tag-chip tag-chip--accent">{{ cc.label }}</span>
+              {% if cc.description %}
+                <span class="community-challenge__desc">{{ cc.description }}</span>
+              {% endif %}
+            </div>
           {% endfor %}
         </div>
       </div>
@@ -72,15 +90,70 @@ layout: default
         <div class="tag-picked">
           {% for cat in page.categories_data %}
             <span class="tag-chip">{{ cat.label }}</span>
+            {% if cat.children %}
+              {% for child in cat.children %}
+                <span class="tag-chip tag-chip--sub">{{ child.label }}</span>
+              {% endfor %}
+            {% endif %}
           {% endfor %}
         </div>
       </div>
       {% endif %}
 
-      <!-- Filter Options section - shows all available filters -->
+      <!-- Glitch Rules Accordion -->
+      {% if page.glitches_data and page.glitches_data.size > 0 %}
+      <div class="card card--compact mt-4">
+        <h2 class="mb-2">Glitch Categories</h2>
+        <p class="muted mb-3">Click to expand rules for each glitch category:</p>
+        <div class="accordion">
+          {% for glitch in page.glitches_data %}
+          <details class="accordion-item">
+            <summary class="accordion-header">
+              <span class="accordion-title">{{ glitch.label }}</span>
+              <span class="accordion-icon">▼</span>
+            </summary>
+            <div class="accordion-content">
+              {% if glitch.description %}
+                <p>{{ glitch.description }}</p>
+              {% elsif glitch.slug == "unrestricted" %}
+                <p>Any glitches or exploits are allowed. No restrictions on techniques used.</p>
+              {% elsif glitch.slug == "nmg" %}
+                <p>No major glitches that significantly break intended game progression. Minor skips and optimizations allowed.</p>
+              {% elsif glitch.slug == "glitchless" %}
+                <p>No glitches of any kind. Game must be played as intended by developers.</p>
+              {% else %}
+                <p class="muted">Rules for this category are defined by the community. Check the Resources tab for detailed documentation.</p>
+              {% endif %}
+              {% if glitch.allowed %}
+                <p class="mt-2"><strong>Allowed:</strong> {{ glitch.allowed | join: ", " }}</p>
+              {% endif %}
+              {% if glitch.banned %}
+                <p class="mt-2"><strong>Banned:</strong> {{ glitch.banned | join: ", " }}</p>
+              {% endif %}
+            </div>
+          </details>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Restrictions section -->
+      {% if page.restrictions and page.restrictions.size > 0 %}
+      <div class="card card--compact mt-4">
+        <h2 class="mb-2">Optional Restrictions</h2>
+        <p class="muted mb-3">Additional restrictions runners can apply to their runs:</p>
+        <div class="tag-picked">
+          {% for res in page.restrictions %}
+            <span class="tag-chip tag-chip--outline">{{ res }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Filter Options section - shows all available filters from actual runs -->
       {% assign game_runs = site.runs | where: "game_id", page.game_id %}
-      
-      {% comment %} Collect unique characters/weapons {% endcomment %}
+
+      <!-- Collect unique characters/weapons -->
       {% assign all_characters = "" | split: "" %}
       {% for r in game_runs %}
         {% if r.character and r.character != "" and r.character != "—" %}
@@ -89,7 +162,7 @@ layout: default
       {% endfor %}
       {% assign unique_characters = all_characters | uniq | sort %}
 
-      {% comment %} Collect unique restrictions {% endcomment %}
+      <!-- Collect unique restrictions from submitted runs -->
       {% assign all_restrictions = "" | split: "" %}
       {% for r in game_runs %}
         {% if r.restrictions %}
