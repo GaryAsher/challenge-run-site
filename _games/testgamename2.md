@@ -8,7 +8,7 @@ name_aliases:
   - "TESTGAME2ALIAS1"
   - "TESTGAME2ALIAS2"
   - "TESTGAME2ALIAS3"
-status: "Pending review - submitted by TESTDISCORDNAME"
+status: "Submitted by TESTDISCORDNAME"
 
 # TODO: Add tags and platforms
 tags: []
