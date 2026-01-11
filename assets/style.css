@@ -2255,3 +2255,155 @@ a.resource-card:hover {
   font-size: 0.9rem;
   padding: 0.5rem 1rem;
 }
+
+/* ==========================================================================
+   ACCORDION & COMMUNITY CHALLENGES
+   ========================================================================== */
+.accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.accordion-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface, var(--bg));
+  overflow: hidden;
+}
+
+/* Accordion Header (using <summary> element) */
+.accordion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--fg);
+  background: var(--bg-soft, var(--panel));
+  list-style: none;
+  transition: background 0.15s ease;
+}
+
+.accordion-header::-webkit-details-marker {
+  display: none;
+}
+
+.accordion-header:hover {
+  background: var(--hover-bg, color-mix(in srgb, var(--accent) 10%, transparent));
+}
+
+.accordion-title {
+  flex: 1;
+}
+
+.accordion-icon {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+}
+
+.accordion-item[open] .accordion-icon {
+  transform: rotate(180deg);
+}
+
+/* Accordion Content */
+.accordion-content {
+  padding: 1rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  background: var(--bg);
+}
+
+.accordion-content p {
+  margin: 0;
+}
+
+.accordion-content p + p {
+  margin-top: 0.5rem;
+}
+
+.accordion-content ul {
+  margin: 0.5rem 0 0 0;
+  padding-left: 1.25rem;
+}
+
+.accordion-content li {
+  margin-bottom: 0.25rem;
+}
+
+/* Community Challenges List */
+.community-challenges-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.community-challenge {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.community-challenge__desc {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  padding-top: 0.2rem;
+  flex: 1;
+  min-width: 200px;
+}
+
+/* Tag Chip Variants */
+.tag-chip--accent {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+
+.tag-chip--accent:hover {
+  background: var(--accent);
+  filter: brightness(1.1);
+}
+
+.tag-chip--sub {
+  font-size: calc(var(--pill-font-size) * 0.9);
+  opacity: 0.85;
+  padding-left: 0.5rem;
+}
+
+.tag-chip--sub::before {
+  content: "↳ ";
+  opacity: 0.5;
+  margin-right: 0.1rem;
+}
+
+.tag-chip--outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--fg);
+}
+
+.tag-chip--outline:hover {
+  background: var(--bg-soft);
+}
+
+/* Rules list styling in accordion */
+.rules-list {
+  margin: 0.5rem 0;
+}
+
+.rules-list--allowed {
+  color: var(--success, #22c55e);
+}
+
+.rules-list--banned {
+  color: var(--danger, #ef4444);
+}
+
+.rules-label {
+  font-weight: 600;
+  margin-right: 0.5rem;
+}
