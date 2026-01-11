@@ -8,11 +8,25 @@ body:
       value: |
         ## Submit Your Challenge Run
         
-        **Prefer Google Form?** [Submit via Google Form](https://forms.google.com/YOUR_FORM_ID) (same process, friendlier interface)
+        Fill out all required fields below. A moderator will review your submission within 48 hours.
         
         ---
         
-        Fill out all required fields below. A moderator will review your submission within 48 hours.
+        ### 📹 Video Requirements
+        
+        **Accepted sources:**
+        - ✅ YouTube (any public video)
+        - ✅ Twitch **Highlights** or **Clips** (permanent)
+        - ✅ Bilibili
+        
+        **NOT accepted:**
+        - ❌ Regular Twitch VODs (they expire after ~60 days!)
+        - ❌ Private/unlisted videos
+        - ❌ Live stream links
+        
+        > 💡 **Tip:** If using Twitch, create a Highlight from your VOD to make it permanent.
+        
+        ---
 
   # ============================================================
   # GAME SELECTION
@@ -24,6 +38,7 @@ body:
       description: Select your game. If not listed, choose "Other" and specify below.
       options:
         - hades-2
+        - hollow-knight
         - OTHER (specify below)
     validations:
       required: true
@@ -33,7 +48,7 @@ body:
     attributes:
       label: Game (if not listed)
       description: Only fill this if you selected "OTHER" above. Use lowercase-with-hyphens format.
-      placeholder: "e.g., hollow-knight"
+      placeholder: "e.g., celeste"
     validations:
       required: false
 
@@ -63,59 +78,28 @@ body:
     attributes:
       label: Contact (Optional)
       description: Discord username or other way to reach you if we have questions
-      placeholder: "e.g., Discord: username#1234"
+      placeholder: "e.g., Discord: username"
     validations:
       required: false
 
   # ============================================================
   # RUN DETAILS
   # ============================================================
-  - type: dropdown
+  - type: input
     id: category_slug
     attributes:
-      label: Category
-      description: Select the run category
-      options:
-        # Hades 2 categories
-        - underworld-any
-        - underworld-vor4
-        - surface-any
-        - surface-vor4
-        - chaos-trials
-        - chaos-trials/trial-of-blood
-        - chaos-trials/trial-of-destiny
-        - chaos-trials/trial-of-doom
-        - chaos-trials/trial-of-flame
-        - chaos-trials/trial-of-fury
-        - chaos-trials/trial-of-gold
-        - chaos-trials/trial-of-haste
-        - chaos-trials/trial-of-heartache
-        - chaos-trials/trial-of-humility
-        - chaos-trials/trial-of-moon
-        - chaos-trials/trial-of-origin
-        - chaos-trials/trial-of-precarity
-        - chaos-trials/trial-of-salt
-        - chaos-trials/trial-of-vengeance
-        - chaos-trials/trial-of-vigor
-        - OTHER (specify below)
+      label: Category Slug
+      description: "The URL-safe category ID (e.g., any, underworld-any, pantheons/pantheon-5)"
+      placeholder: "e.g., any"
     validations:
       required: true
-
-  - type: input
-    id: category_other
-    attributes:
-      label: Category (if not listed)
-      description: Only fill this if you selected "OTHER" above
-      placeholder: "e.g., new-category-name"
-    validations:
-      required: false
 
   - type: input
     id: category_label
     attributes:
       label: Category Display Name
-      description: How the category should appear (e.g., "Underworld Any%")
-      placeholder: "e.g., Underworld Any%"
+      description: How the category should appear (e.g., "Any%", "Underworld Any%")
+      placeholder: "e.g., Any%"
     validations:
       required: true
 
@@ -126,9 +110,10 @@ body:
       description: What type of challenge run is this?
       options:
         - hitless
-        - no-damage
+        - damageless
         - deathless
         - no-hit-no-damage
+        - blindfolded
         - OTHER (specify below)
     validations:
       required: true
@@ -149,7 +134,9 @@ body:
     id: video_link
     attributes:
       label: Video Link
-      description: YouTube or Twitch VOD link (required for verification)
+      description: |
+        YouTube, Twitch Highlight/Clip, or Bilibili.
+        ⚠️ Regular Twitch VODs expire! Please use a Highlight instead.
       placeholder: "https://www.youtube.com/watch?v=..."
     validations:
       required: true
@@ -159,15 +146,15 @@ body:
     attributes:
       label: Date Completed
       description: When did you complete this run? (YYYY-MM-DD format)
-      placeholder: "2025-01-04"
+      placeholder: "2025-01-10"
     validations:
       required: true
 
   - type: input
     id: time_primary
     attributes:
-      label: Run Time (Optional)
-      description: "Format: HH:MM:SS or HH:MM:SS.mmm"
+      label: Run Time
+      description: "Format: HH:MM:SS or MM:SS.mmm"
       placeholder: "01:23:45"
     validations:
       required: false
@@ -179,22 +166,35 @@ body:
       description: How was the time measured?
       options:
         - ""
-        - RTA
-        - IGT
-        - LRT
+        - RTA (Real Time Attack)
+        - LRT (Load Removed Time)
+        - IGT (In-Game Time)
     validations:
       required: false
 
   # ============================================================
   # ADDITIONAL INFO
   # ============================================================
+  - type: dropdown
+    id: glitch_category
+    attributes:
+      label: Glitch Category
+      description: What glitch rules did you follow?
+      options:
+        - ""
+        - unrestricted
+        - nmg
+        - glitchless
+    validations:
+      required: false
+
   - type: textarea
     id: restrictions
     attributes:
       label: Restrictions / Modifiers (Optional)
       description: Any additional restrictions on your run (one per line)
       placeholder: |
-        No boons
+        No upgrades
         Base weapons only
     validations:
       required: false
@@ -218,7 +218,7 @@ body:
       options:
         - label: This video shows my own gameplay
           required: true
-        - label: The video is publicly accessible (not private/unlisted)
+        - label: The video is publicly accessible and will remain available (not a temporary VOD)
           required: true
         - label: I understand my run will be reviewed by moderators
           required: true
