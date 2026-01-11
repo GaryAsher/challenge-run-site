@@ -15,7 +15,7 @@ status: "Active"
 # =============================================================================
 # METADATA (Moderators fill these in)
 # =============================================================================
-tags: []
+genres: []
 platforms: []
 release_year: 2024
 
@@ -186,7 +186,7 @@ This is a game page template for Challenge Run Central.
 
 SETUP CHECKLIST:
 - [ ] Fill in game_id and name
-- [ ] Add tags and platforms
+- [ ] Add genres and platforms
 - [ ] Set timing_method
 - [ ] Define categories_data
 - [ ] Define challenges (standard) and community_challenges (game-specific)
