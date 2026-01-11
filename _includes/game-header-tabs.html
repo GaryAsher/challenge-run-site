@@ -5,17 +5,7 @@
 {% assign tabs = game.tabs %}
 
 <!-- =========================================================
-     Tab order:
-     - Overview (always)
-     - Runs (always)
-     - History (main)
-     - Challenges (optional)
-     - Guides (optional)
-     - Resources (optional)
-     - Rules (optional)
-     - Forum (optional placeholder)
-     - Extra 1 (optional placeholder)
-     - Extra 2 (optional placeholder)
+     Tab order: Overview -> Runs -> Rules -> Resources -> History -> Forum
      ========================================================= -->
 
 <!-- =========================================================
@@ -92,7 +82,7 @@
 {% endif %}
 
 <!-- =========================================================
-     Game tabs
+     Game tabs - Order: Overview -> Runs -> Rules -> Resources -> History -> Forum
      ========================================================= -->
 <div class="page-width">
   <div class="game-shell">
@@ -118,6 +108,28 @@
         Runs
       </a>
 
+      <!-- Rules (always) -->
+      <a
+        class="tab {% if include.active == 'rules' %}active{% endif %}"
+        data-tab="rules"
+        href="{{ game.url | relative_url }}rules/"
+        data-href="{{ game.url | relative_url }}rules/"
+      >
+        Rules
+      </a>
+
+      <!-- Resources -->
+      {% if tabs and tabs.resources %}
+        <a
+          class="tab {% if include.active == 'resources' %}active{% endif %}"
+          data-tab="resources"
+          href="{{ game.url | relative_url }}resources/"
+          data-href="{{ game.url | relative_url }}resources/"
+        >
+          Resources
+        </a>
+      {% endif %}
+
       <!-- History -->
       {% if tabs and tabs.history %}
         <a
@@ -130,33 +142,7 @@
         </a>
       {% endif %}
 
-      <!-- Optional tabs -->
-      {% if tabs and tabs.challenges %}
-        <a
-          class="tab {% if include.active == 'challenges' %}active{% endif %}"
-          data-tab="challenges"
-          href="{{ game.url | relative_url }}challenges/"
-          data-href="{{ game.url | relative_url }}challenges/"
-        >
-          Challenges
-        </a>
-      {% endif %}
-
-      {% comment %} Guides tab removed - now under Resources {% endcomment %}
-
-      {% if tabs and tabs.resources %}
-        <a
-          class="tab {% if include.active == 'resources' %}active{% endif %}"
-          data-tab="resources"
-          href="{{ game.url | relative_url }}resources/"
-          data-href="{{ game.url | relative_url }}resources/"
-        >
-          Resources
-        </a>
-      {% endif %}
-
-      {% comment %} Rules tab removed - now under Overview {% endcomment %}
-
+      <!-- Forum -->
       {% if tabs and tabs.forum %}
         <a
           class="tab {% if include.active == 'forum' %}active{% endif %}"
@@ -165,29 +151,6 @@
           data-href="{{ game.url | relative_url }}forum/"
         >
           Forum
-        </a>
-      {% endif %}
-
-      <!-- Future placeholders -->
-      {% if tabs and tabs.extra_1 %}
-        <a
-          class="tab {% if include.active == 'extra-1' %}active{% endif %}"
-          data-tab="extra-1"
-          href="{{ game.url | relative_url }}extra-1/"
-          data-href="{{ game.url | relative_url }}extra-1/"
-        >
-          {{ game.extra_1_label | default: "Extra" }}
-        </a>
-      {% endif %}
-
-      {% if tabs and tabs.extra_2 %}
-        <a
-          class="tab {% if include.active == 'extra-2' %}active{% endif %}"
-          data-tab="extra-2"
-          href="{{ game.url | relative_url }}extra-2/"
-          data-href="{{ game.url | relative_url }}extra-2/"
-        >
-          {{ game.extra_2_label | default: "Extra 2" }}
         </a>
       {% endif %}
 
