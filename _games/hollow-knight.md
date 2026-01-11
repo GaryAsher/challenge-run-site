@@ -47,7 +47,7 @@ character_column:
 challenges_data:
   - slug: hitless
     label: "Hitless"
-    description: "Complete the run without taking any hits. In Hollow Knight, Baldur Shell blocking counts as a hit. Dreamshield blocking also counts as a hit."
+    description: "Complete the run without taking any hits. In Hollow Knight, Baldur Shell blocking counts as a hit."
   - slug: damageless
     label: "Damageless"
     description: "Complete the run without losing any masks (health). Focus healing is allowed."
@@ -69,18 +69,9 @@ community_challenges:
   - slug: low-percent
     label: "Low%"
     description: "Complete the game with the minimum possible percentage. Current record routes use specific item pickups only."
-  - slug: pantheon-hitless
-    label: "Pantheon Hitless"
-    description: "Complete a Pantheon boss gauntlet without taking any damage. P5 Hitless (42 bosses) is considered one of the hardest challenges."
   - slug: radiant-bosses
     label: "Radiant Bosses"
     description: "Defeat bosses on Radiant difficulty in the Hall of Gods. One hit = instant death. All Radiant requires defeating every boss on Radiant."
-  - slug: steel-soul
-    label: "Steel Soul"
-    description: "Complete the game in Steel Soul mode - permadeath where one death ends the entire save file."
-  - slug: steel-heart
-    label: "Steel Heart"
-    description: "Complete Steel Soul mode without taking any damage. Combines permadeath with hitless."
 
 # =============================================================================
 # GLITCH CATEGORIES
