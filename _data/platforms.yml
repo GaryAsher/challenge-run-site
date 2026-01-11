@@ -4,49 +4,49 @@
 # Nintendo
 nintendo-64:
   label: Nintendo 64
-    aliases: 
-      - N64
+  aliases: 
+    - N64
 
 nintendo-gamecube:
   label: Nintendo Gamecube
-    aliases: 
-      - Gamecube
+  aliases: 
+    - Gamecube
 
 nintendo-switch:
   label: Nintendo Switch
-    aliases: 
-      - Switch
+  aliases: 
+    - Switch
 
 nintendo-switch-2:
   label: Nintendo Switch 2
-    aliases: 
-      - Switch 2
+  aliases: 
+    - Switch 2
 
 # Playstation
 playstation:
   label: PlayStation
-    aliases: 
-      - PS1
+  aliases: 
+    - PS1
 
 playstation-2:
   label: PlayStation 2
-    aliases: 
-      - PS2
+  aliases: 
+    - PS2
 
 playstation-3:
   label: PlayStation 3
-    aliases: 
-      - PS3
+  aliases: 
+    - PS3
 
 playstation-4:
   label: PlayStation 4
-    aliases: 
-      - PS4
+  aliases: 
+    - PS4
 
 playstation-5:
   label: PlayStation 5
-    aliases: 
-      - PS5
+  aliases: 
+    - PS5
 
 # Xbox
 xbox:
@@ -64,18 +64,18 @@ xbox-one:
 # PC
 steam:
   label: "PC: Steam"
-    aliases: 
-      - Steam
+  aliases: 
+    - Steam
       
 epic:
   label: "PC: Epic Games Store"
-    aliases: 
-      - Epic Games
+  aliases: 
+    - Epic Games
 
 gog:
   label: "PC: GOG"
-    aliases: 
-      - GOG
+  aliases: 
+    - GOG
       
 pc:
   label: PC (Other)
