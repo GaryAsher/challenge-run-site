@@ -63,7 +63,7 @@ title: Games
       </div>
     </div>
 
-    <!-- Genre filter (was tags) -->
+    <!-- Genre filter -->
     <div class="tag-filter" id="genre-filter">
       <div class="muted filter-label">Filter by genre:</div>
 
@@ -148,7 +148,7 @@ title: Games
         href="{{ g.url | relative_url }}"
         data-name="{{ g.name | downcase }}"
         data-letter="{{ g.name | strip | slice: 0, 1 | upcase }}"
-        data-genres="{{ g.tags | join: ',' | downcase }}"
+        data-genres="{{ g.genres | join: ',' | downcase }}"
         data-platforms="{{ g.platforms | default: empty | join: ',' | downcase }}"
         data-challenges="{{ g.challenges | default: empty | join: ',' | downcase }}"
       >
@@ -173,7 +173,7 @@ const limitSelect = document.getElementById("limit");
 const resetBtn = document.getElementById("reset-all");
 
 // =========================================================
-// DOM: Filter elements - Genre (was tags), Platform, Challenge
+// DOM: Filter elements - Genre (was genres), Platform, Challenge
 // =========================================================
 const genreFilterEl = document.getElementById("genre-filter");
 const genrePickedEl = document.getElementById("genre-picked");
@@ -198,7 +198,7 @@ const activeChallenges = new Set();
 // Data: load label maps from Jekyll data files (safe via jsonify)
 // =========================================================
 const GENRES = [
-{% for pair in site.data.tags %}
+{% for pair in site.data.genres %}
   {
     id: {{ pair[0] | jsonify }},
     label: {{ pair[1].label | default: pair[0] | jsonify }}
