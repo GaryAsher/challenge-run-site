@@ -27,10 +27,7 @@ permalink: /games/hollow-knight/rules/
           <div class="accordion-content">
             <ul>
               <li><strong>Timing Method:</strong> {{ game.timing_method | default: "RTA (Real Time Attack)" }}</li>
-              <li><strong>Video Required:</strong> All submissions must include video proof (YouTube, Twitch Highlight, or Bilibili)</li>
-              <li><strong>Main Menu Required:</strong> Runs must show the main menu at the start to verify no mods or storage glitches</li>
-              <li><strong>No Cheats/Mods:</strong> External tools, cheats, or gameplay-altering mods are not allowed</li>
-              <li><strong>Pausing:</strong> Pausing is generally allowed unless otherwise specified</li>
+              <li><strong>Video Required:</strong> All submissions must include video proof (YouTube or Twitch Highlight)</li>
             </ul>
             {% if game.general_rules %}
               <div class="mt-3">
@@ -69,13 +66,13 @@ permalink: /games/hollow-knight/rules/
                         {% when 'hitless' %}
                           <p>Complete the run without taking any hits. Getting hit by any enemy attack, hazard, or environmental damage fails the challenge.</p>
                         {% when 'damageless' %}
-                          <p>Complete the run without losing any health. Blocking or absorbing damage with shields/abilities may be allowed depending on game-specific rules.</p>
+                          <p>Complete the run without losing any health.</p>
                         {% when 'deathless' %}
-                          <p>Complete the run without dying. Any death (including intentional deaths) fails the challenge.</p>
+                          <p>Complete the run without dying.</p>
                         {% when 'no-hit-no-damage' %}
-                          <p>Complete the run without taking any hits AND without losing any health. The strictest damage-related challenge.</p>
+                          <p>Complete the run without taking any hits AND without losing any health.</p>
                         {% when 'blindfolded' %}
-                          <p>Complete the run without being able to see the screen. Audio cues and muscle memory only.</p>
+                          <p>Complete the run without being able to see the screen.</p>
                         {% else %}
                           <p class="muted">Standard challenge type. See community resources for detailed rules.</p>
                       {% endcase %}
@@ -114,7 +111,7 @@ permalink: /games/hollow-knight/rules/
                     {% else %}
                       {% case cat.slug %}
                         {% when 'any' %}
-                          <p>Complete the game as fast as possible with no restrictions on completion percentage.</p>
+                          <p>Complete the game with no restrictions on completion percentage.</p>
                         {% when 'all-bosses' %}
                           <p>Defeat all bosses in the game before completing the run.</p>
                         {% when 'true-ending' %}
