@@ -1,18 +1,48 @@
 # Platforms data file
 # Used for filtering games by platform availability
 
-# Console
+# Nintendo
+nintendo-64:
+  label: Nintendo 64
+  aliases: N64
+
+nintendo-gamecube:
+  label: Nintendo Gamecube
+  aliases: Gamecube
+
 nintendo-switch:
   label: Nintendo Switch
 
 nintendo-switch-2:
   label: Nintendo Switch 2
 
+
+# Playstation
 playstation:
   label: PlayStation
 
+playstation-2:
+  label: PlayStation 2
+
+playstation-3:
+  label: PlayStation 3
+
+playstation-4:
+  label: PlayStation 4
+
+playstation-5:
+  label: PlayStation 5
+
+# Xbox
 xbox:
   label: Xbox
+  
+xbox-360:
+  label: Xbox 360
+  
+xbox-one:
+  label: Xbox 1
+  aliases: Xbox 1X
 
 # PC
 steam:
