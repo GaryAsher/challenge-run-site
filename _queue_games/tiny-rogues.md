@@ -4,7 +4,7 @@ game_id: tiny-rogues
 reviewers: []
 name: "Tiny Rogues"
 status: "Pending review - submitted by "
-tags:
+genres:
   - Action Roguelike
 cover: /assets/img/games/t/tiny-rogues.jpg
 cover_position: center
