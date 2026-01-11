@@ -826,6 +826,34 @@ button.tag,
   z-index: 10;
 }
 
+/* Advanced filters grid layout */
+.runs-filters--advanced {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: end;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.runs-filters--advanced .runs-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 140px;
+}
+
+.runs-filters--advanced .select.th-caret {
+  background: var(--surface);
+  color: var(--fg);
+}
+
+.runs-filters--advanced .select.th-caret option {
+  background: var(--surface);
+  color: var(--fg);
+}
+
 /* Single row layout for all filters */
 .filters-panel__row {
   display: flex;
