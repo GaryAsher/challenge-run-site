@@ -49,9 +49,6 @@ challenges:
 
 # Game-specific community challenges
 community_challenges:
-  - slug: steel-soul
-    label: "Steel Soul"
-    description: "Complete in Steel Soul mode (permadeath)"
   - slug: low-percent
     label: "Low%"
     description: "Complete with minimum percentage"
@@ -126,19 +123,12 @@ categories_data:
 
 Hollow Knight is a challenging 2D action-adventure game set in the vast, interconnected underground kingdom of Hallownest. The game features tight combat, intricate exploration, and a haunting atmosphere.
 
-The challenge run community for Hollow Knight is one of the most active, with runners attempting everything from hitless full game completions to blindfolded runs.
-
 ## Popular Challenge Categories
 
-### Hitless Runs
+### Hitless/Damageless/Flawless Runs
 - **Any% Hitless**: Complete the game without taking any damage
 - **All Bosses Hitless**: Defeat all bosses without being hit
-- **Pantheon 5 Hitless**: Complete the 42-boss gauntlet without damage
-
-### Special Challenges
-- **Low% Godhome**: Reach the Godhome ending with minimum items (extremely difficult)
-- **Blindfolded**: Complete the game without seeing (audio cues only)
-- **Steel Soul**: Permadeath mode - one death ends the run
+- **Pantheon 5 Hitless (R5)**: Complete the 42-boss gauntlet without damage
 
 ## Resources
 
