@@ -1,4 +1,8 @@
 # 0-9
+2d:
+  label: 2D
+3d:
+  label: 3D
 
 # A
 action:
@@ -9,6 +13,9 @@ action:
 # C
 
 # D
+difficult:
+  label: Difficult
+
 dungeon-crawler:
   label: Dungeon Crawler
 
@@ -23,7 +30,9 @@ hack-and-slash:
   label: Hack and Slash
 
 # I
-
+indie:
+  label: Indie
+  
 # J
 
 # K
