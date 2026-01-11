@@ -10,14 +10,16 @@ status: "Active"
 
 tags:
   - metroidvania
-  - action
   - platformer
+  - difficult
+  - 2d
   - indie
 platforms:
-  - pc
-  - playstation
-  - xbox
+  - steam
   - nintendo-switch
+  - playstation-4
+  - xbox-one
+  - nintendo-switch-2
 
 cover: /assets/img/games/h/hollow-knight.jpg
 cover_position: center
