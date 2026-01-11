@@ -1,4 +1,4 @@
-name: Promote Approved Runs
+name: Promote Runs
 
 # Run daily at midnight UTC, or manually
 on:
