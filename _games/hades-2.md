@@ -9,7 +9,7 @@ name_aliases:
   - "Hades2"
 status: "Active"
 
-tags:
+genres:
   - action
   - roguelike
   - roguelite
