@@ -6,11 +6,11 @@ This document explains how the repository is organized and where to find things.
 
 | I want to... | Go to... |
 |--------------|----------|
-| Add a new game | Submit via [Google Form](link) or create PR in `_queue_games/` |
+| Add a new game | Submit via [GitHub Issue](../../issues/new?template=game-change-request.yml) or create PR in `_queue_games/` |
 | Submit a run | Use [GitHub Issue](../../issues/new?template=run-submission.yml) |
-| Request a game change | Use [Game Change Request](../../issues/new?template=game-change-request.yml) |
-| Understand the code | Read this document and check `scripts/README.md` |
-| Add myself as a runner | Create PR in `_runners/` |
+| Edit a game | Edit file in `_games/` |
+| Edit a run | Edit file in `_runs/<game>/` |
+| Add a runner profile | Edit file in `_runners/` |
 
 ---
 
@@ -18,195 +18,158 @@ This document explains how the repository is organized and where to find things.
 
 ```
 challenge-run-site/
-├── 📁 _data/                    # Global data files (YAML)
-│   ├── challenges.yml           # Standard challenge type definitions
-│   ├── platforms.yml            # Platform definitions (steam, switch, etc.)
-│   ├── genres.yml                 # Tag/genre definitions
-│   └── games-index.yml          # Auto-generated games index
 │
-├── 📁 _games/                   # Active game definitions
-│   ├── _TEMPLATES/              # Templates for creating games
-│   ├── hades-2.md               # Example: Hades II game file
-│   └── README.md                # How to create/edit game files
+├── _config.yml                # Jekyll configuration
+├── package.json               # Node.js scripts and dependencies
 │
-├── 📁 _queue_games/             # Pending game submissions (awaiting review)
-│   └── *.md                     # Games submitted via form, not yet approved
+├── _data/                     # Site-wide data files
+│   ├── genres.yml             # Genre/tag definitions
+│   ├── platforms.yml          # Platform definitions  
+│   ├── challenges.yml         # Challenge type definitions
+│   ├── codeowners.yml         # Game ownership mapping
+│   └── games-index.yml        # Quick game lookup
 │
-├── 📁 _runners/                 # Runner profiles
-│   ├── _TEMPLATE.md             # Template for runner profiles
-│   └── *.md                     # Individual runner files
+├── _games/                    # Game definitions (Jekyll collection)
+│   ├── hades-2.md
+│   ├── hollow-knight.md
+│   └── _TEMPLATES/            # Templates for new games
 │
-├── 📁 _runs/                    # Submitted runs
-│   ├── _TEMPLATES/              # Run submission template
-│   ├── rejected/                # Rejected runs (kept for record)
-│   └── *.md                     # Approved run files
+├── _runners/                  # Runner profiles (Jekyll collection)
+│   └── *.md
 │
-├── 📁 _queue_runs/              # Pending run submissions
-│   └── *.md                     # Runs awaiting verification
+├── _runs/                     # Approved runs (Jekyll collection)
+│   ├── <game-id>/             # Runs organized by game
+│   │   └── *.md
+│   └── rejected/              # Rejected runs (for records)
 │
-├── 📁 _layouts/                 # Jekyll page layouts
-│   ├── game.html                # Game overview page
-│   ├── game-runs.html           # Game runs listing
-│   └── *.html                   # Other layouts
+├── _queue_games/              # Pending game submissions
+├── _queue_runs/               # Pending run submissions
+│   └── <game-id>/
 │
-├── 📁 _includes/                # Reusable HTML components
-│   ├── header.html              # Site header
-│   ├── footer.html              # Site footer
-│   └── game-header-tabs.html    # Game page navigation tabs
+├── games/                     # Generated game pages (static)
+│   ├── index.html             # Games listing
+│   └── <game-id>/
+│       ├── runs/              # Run listing and categories
+│       ├── history/
+│       ├── resources/
+│       ├── forum/
+│       └── rules/
 │
-├── 📁 assets/                   # Static assets
-│   ├── img/games/               # Game cover images (organized by first letter)
-│   ├── img/runners/             # Runner profile images
-│   ├── js/                      # JavaScript files
-│   └── style.css                # Main stylesheet
+├── runners/                   # Generated runner pages
+│   └── index.html
 │
-├── 📁 games/                    # Generated game pages (DO NOT EDIT MANUALLY)
-│   └── {game-id}/               # Auto-generated from _games/*.md
-│       ├── runs/                # Run category pages
-│       ├── history/             # History page
-│       ├── resources/           # Resources page
-│       └── ...                  # Other tab pages
-│
-├── 📁 scripts/                  # Build and automation scripts
-│   ├── README.md                # Script documentation
-│   ├── generate-game-file.py    # Creates game files from form data
-│   ├── generate-game-pages.js   # Generates game subpages
+├── scripts/                   # Automation scripts
+│   ├── lib/                   # Shared utilities
+│   ├── validate-schema.js     # Schema validation
+│   ├── validate-runs.js       # Run validation
+│   ├── generate-game-pages.js # Game page generation
 │   ├── generate-run-category-pages.js
-│   ├── promote-runs.js          # Moves runs from queue to active
-│   └── validate-*.js            # Validation scripts
+│   ├── generate-codeowners.js
+│   ├── promote-runs.js        # Run promotion
+│   ├── scaffold-game.js       # Manual game creation
+│   └── generate-game-file.py  # Form submission processing
 │
-├── 📁 .github/                  # GitHub configuration
-│   ├── workflows/               # GitHub Actions workflows
-│   │   ├── new-game-submission.yml    # Handles form submissions
-│   │   ├── promote-game.yml           # Moves games to active
-│   │   ├── check-duplicate-game.yml   # Detects duplicate submissions
-│   │   ├── process-run-submission.yml # Handles run submissions
-│   │   └── ...
-│   └── ISSUE_TEMPLATE/          # Issue templates
-│       ├── run-submission.yml   # Submit a run
-│       ├── game-change-request.yml    # Request game changes
-│       └── runner-profile.yml   # Create runner profile
+├── .github/
+│   ├── ISSUE_TEMPLATE/        # Issue templates for submissions
+│   │   ├── run-submission.yml
+│   │   ├── hollow-knight-run-submission.yml
+│   │   ├── game-change-request.yml
+│   │   └── runner-profile.yml
+│   └── workflows/             # GitHub Actions
+│       ├── new-game-submission.yml    # Process game forms
+│       ├── process-run-submission.yml # Process run issues
+│       ├── promote-game.yml           # Promote approved games
+│       ├── promote-approved-runs.yml  # Daily run promotion
+│       ├── validate-schema.yml        # CI validation
+│       └── ...
 │
-└── 📁 .docs/                    # Internal documentation
-    ├── CONTRIBUTING.md          # How to contribute
-    ├── NEW-GAME-FORM-SPEC.md    # Form field specifications
-    └── ...
+├── .docs/                     # Documentation
+│   ├── README.md
+│   ├── REPOSITORY-STRUCTURE.md (this file)
+│   ├── CONTRIBUTING.md
+│   ├── id-and-slug-spec.md
+│   └── ...
+│
+├── _includes/                 # Jekyll partials
+├── _layouts/                  # Jekyll layouts
+└── assets/                    # CSS, JS, images
+    ├── style.css
+    ├── js/
+    └── img/
+        └── games/             # Game cover images
+            └── <first-letter>/
 ```
 
 ---
 
 ## Key Concepts
 
-### Game Lifecycle
+### Collections (Jekyll)
+
+Jekyll collections are folders prefixed with `_`. Each `.md` file becomes a page:
+
+| Collection | Output Path | Purpose |
+|------------|-------------|---------|
+| `_games` | `/games/<game_id>/` | Main game pages |
+| `_runners` | `/runners/<runner_id>/` | Runner profiles |
+| `_runs` | N/A (data only) | Run records |
+
+### Queue System
+
+New submissions go to queue folders first:
 
 ```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│  Google Form    │────▶│  _queue_games/  │────▶│    _games/      │
-│  Submission     │     │  (PR Created)   │     │  (Active)       │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-                              │                        │
-                              ▼                        ▼
-                        Moderator Review         generate-game-pages.js
-                        Add genres/platforms       Creates games/{id}/
-                        Upload cover image
+_queue_games/   →  Review  →  _games/
+_queue_runs/    →  Review  →  _runs/
 ```
 
-### Run Lifecycle
+### Generated vs Source Files
 
-```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│  Issue Form     │────▶│  _queue_runs/   │────▶│    _runs/       │
-│  Submission     │     │  (Pending)      │     │  (Verified)     │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-                              │
-                              ▼
-                        Moderator Verification
-                        Check video proof
-                        Validate time
-```
+| Type | Location | Edited By |
+|------|----------|-----------|
+| Source | `_games/*.md`, `_runs/**/*.md` | Humans |
+| Generated | `games/*/`, `CODEOWNERS` | Scripts |
+
+**Never edit generated files directly!** Edit the source and regenerate.
 
 ---
 
-## Data Files Explained
-
-### `_data/challenges.yml`
-Defines **site-wide** challenge types that can be used by any game:
-```yaml
-hitless:
-  label: Hitless
-  aliases:
-    - No-Hit
-    - No Hit
-```
-
-### `_games/{game-id}.md`
-Defines a game with its categories, challenges, and configuration. See `_games/_TEMPLATES/` for the full schema.
-
-Key fields:
-- `challenges`: List of standard challenge slugs (from challenges.yml)
-- `community_challenges`: Game-specific challenges defined inline
-- `categories_data`: Category structure with optional subcategories
-- `version_tracking` / `dlc_tracking`: Optional version/DLC filtering
-
-### `_runs/{filename}.md`
-Individual run submissions with:
-- Runner, game, category, challenge type
-- Time, video proof, date
-- Optional: version, DLC, character/weapon
-
----
-
-## Scripts
-
-All scripts are in `scripts/` with their own README.
-
-| Script | Purpose |
-|--------|---------|
-| `generate-game-file.py` | Creates game markdown from form submission |
-| `generate-game-pages.js` | Creates `games/{id}/` page structure |
-| `generate-run-category-pages.js` | Creates run listing pages per category |
-| `validate-schema.js` | Validates game file structure |
-| `validate-runs.js` | Validates run submissions |
-| `promote-runs.js` | Moves verified runs from queue |
-
----
-
-## GitHub Workflows
+## Workflows Summary
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `new-game-submission.yml` | Form webhook | Creates PR with new game |
-| `promote-game.yml` | PR merge | Moves game to `_games/`, generates pages |
-| `check-duplicate-game.yml` | PR open | Warns if game already exists |
-| `process-run-submission.yml` | Issue labeled | Creates run file from issue |
-| `promote-approved-runs.yml` | Issue closed | Moves verified runs to `_runs/` |
+| `validate-schema.yml` | PR | Validates all YAML |
+| `new-game-submission.yml` | Form dispatch | Creates game from form |
+| `process-run-submission.yml` | Issue events | Handles run submissions |
+| `promote-game.yml` | PR merged | Moves game to `_games/` |
+| `promote-approved-runs.yml` | Daily | Moves runs to `_runs/` |
 
 ---
 
-## Making Changes
+## npm Scripts
 
-### Adding a Standard Challenge Type
-1. Edit `_data/challenges.yml`
-2. Add the new challenge with label and aliases
-3. Games can now reference it in their `challenges` list
+```bash
+# The standard flow:
+npm run validate      # 1. Check everything is valid
+npm run generate      # 2. Generate all pages
+npm run promote:runs  # 3. Promote approved runs
 
-### Adding a Game-Specific Challenge
-Edit the game's markdown file and add to `community_challenges`:
-```yaml
-community_challenges:
-  - slug: my-challenge
-    label: "My Challenge"
-    description: "What this challenge requires"
+# Individual commands:
+npm run validate:schema
+npm run validate:runs
+npm run generate:game-pages
+npm run generate:run-categories
+npm run generate:codeowners
+npm run promote:runs:dry  # Preview without changes
 ```
 
-### Updating a Game's Categories
-1. Create a [Game Change Request](../../issues/new?template=game-change-request.yml)
-2. Or edit `_games/{game-id}.md` directly and submit PR
-
 ---
 
-## Need Help?
+## File Naming Conventions
 
-- **Discord**: [Join our server](link)
-- **Issues**: [Open an issue](../../issues)
-- **Contributing**: See `.docs/CONTRIBUTING.md`
+| Type | Format | Example |
+|------|--------|---------|
+| Game ID | `lowercase-with-hyphens` | `hollow-knight` |
+| Runner ID | `lowercase-with-hyphens` | `my-pet-cactus` |
+| Run file | `YYYY-MM-DD__<game>__<runner>__<category>__NN.md` | `2025-01-10__hollow-knight__runner1__any__01.md` |
+| Category slug | `lowercase-with-hyphens` or `parent/child` | `any`, `pantheons/pantheon-5` |
