@@ -14,7 +14,8 @@
     "generate:game-pages": "node scripts/generate-game-pages.js",
     "generate:run-categories": "node scripts/generate-run-category-pages.js",
     "generate:codeowners": "node scripts/generate-codeowners.js",
-
+    "generate:run-form": "node scripts/generate-run-form.js",
+    
     "promote:runs": "node scripts/promote-runs.js",
     "promote:runs:dry": "node scripts/promote-runs.js --dry-run",
 
