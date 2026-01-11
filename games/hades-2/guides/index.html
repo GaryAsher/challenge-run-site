@@ -17,7 +17,15 @@ permalink: /games/hades-2/guides/
 
       <h1>Guides</h1>
 
-      {% assign guides = site.guides | where: "game_id", page.game_id | sort: "title" %}
+      {% comment %}
+      Check if guides collection exists before trying to filter/sort it.
+      This prevents "Cannot sort a null object" errors.
+      {% endcomment %}
+      {% if site.guides %}
+        {% assign guides = site.guides | where: "game_id", page.game_id | sort: "title" %}
+      {% else %}
+        {% assign guides = nil %}
+      {% endif %}
 
       {% if guides and guides.size > 0 %}
         <div class="grid">
