@@ -21,7 +21,30 @@ layout: default
       {% endif %}
 
       <!-- Standard Challenges Accordion -->
-      {% if page.challenges and page.challenges.size > 0 %}
+      {% if page.challenges_data and page.challenges_data.size > 0 %}
+      <div class="card card--compact mt-4">
+        <h2 class="mb-2">Standard Challenge Types</h2>
+        <p class="muted mb-3">Challenge types tracked for this game:</p>
+        <div class="accordion">
+          {% for ch in page.challenges_data %}
+            <details class="accordion-item">
+              <summary class="accordion-header">
+                <span class="accordion-title">{{ ch.label }}</span>
+                <span class="accordion-icon">▼</span>
+              </summary>
+              <div class="accordion-content">
+                {% if ch.description %}
+                  <p>{{ ch.description }}</p>
+                {% else %}
+                  <p class="muted">See Rules tab for detailed definition.</p>
+                {% endif %}
+              </div>
+            </details>
+          {% endfor %}
+        </div>
+      </div>
+      {% elsif page.challenges and page.challenges.size > 0 %}
+      <!-- Fallback to old format if challenges_data not present -->
       <div class="card card--compact mt-4">
         <h2 class="mb-2">Standard Challenge Types</h2>
         <p class="muted mb-3">Challenge types tracked for this game:</p>
@@ -37,20 +60,7 @@ layout: default
                 {% if ch_meta.description %}
                   <p>{{ ch_meta.description }}</p>
                 {% else %}
-                  {% case ch_id %}
-                    {% when 'hitless' %}
-                      <p>Complete the run without taking any hits from enemies or hazards.</p>
-                    {% when 'damageless' %}
-                      <p>Complete the run without losing any health.</p>
-                    {% when 'deathless' %}
-                      <p>Complete the run without dying.</p>
-                    {% when 'no-hit-no-damage' %}
-                      <p>Complete the run without taking any hits AND without losing any health.</p>
-                    {% when 'blindfolded' %}
-                      <p>Complete the run without being able to see the screen.</p>
-                    {% else %}
-                      <p class="muted">See Rules tab for detailed definition.</p>
-                  {% endcase %}
+                  <p class="muted">See Rules tab for detailed definition.</p>
                 {% endif %}
               </div>
             </details>
@@ -77,9 +87,6 @@ layout: default
               {% else %}
                 <p class="muted">No description available.</p>
               {% endif %}
-              {% if cc.rules %}
-                <p class="mt-2"><strong>Rules:</strong> {{ cc.rules }}</p>
-              {% endif %}
             </div>
           </details>
           {% endfor %}
@@ -88,7 +95,33 @@ layout: default
       {% endif %}
 
       <!-- Optional Restrictions Accordion -->
-      {% if page.restrictions and page.restrictions.size > 0 %}
+      {% if page.restrictions_data and page.restrictions_data.size > 0 %}
+      <div class="card card--compact mt-4">
+        <h2 class="mb-2">Optional Restrictions</h2>
+        <p class="muted mb-3">Additional restrictions runners can apply:</p>
+        <div class="accordion">
+          {% for res in page.restrictions_data %}
+          <details class="accordion-item">
+            <summary class="accordion-header">
+              <span class="accordion-title">{{ res.label }}</span>
+              <span class="accordion-icon">▼</span>
+            </summary>
+            <div class="accordion-content">
+              {% if res.description %}
+                <p>{{ res.description }}</p>
+              {% else %}
+                <p class="muted">Can be combined with any category.</p>
+              {% endif %}
+              {% if res.incompatible_with and res.incompatible_with.size > 0 %}
+                <p class="mt-2 muted"><em>⚠️ Cannot be combined with: {{ res.incompatible_with | join: ", " }}</em></p>
+              {% endif %}
+            </div>
+          </details>
+          {% endfor %}
+        </div>
+      </div>
+      {% elsif page.restrictions and page.restrictions.size > 0 %}
+      <!-- Fallback to old format -->
       <div class="card card--compact mt-4">
         <h2 class="mb-2">Optional Restrictions</h2>
         <p class="muted mb-3">Additional restrictions runners can apply:</p>
@@ -100,7 +133,7 @@ layout: default
               <span class="accordion-icon">▼</span>
             </summary>
             <div class="accordion-content">
-              <p class="muted">This restriction can be combined with any category or challenge type.</p>
+              <p class="muted">Can be combined with any category.</p>
             </div>
           </details>
           {% endfor %}
