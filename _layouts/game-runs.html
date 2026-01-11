@@ -19,8 +19,6 @@ layout: default
 
 <!-- =========================================================
      Category maps (supports children)
-     - category_pairs: ["slug||Label"] for parents + full child slugs
-     - child_pairs: ["parent/child||Child Label"] for active parent context
      ========================================================= -->
 {% assign category_pairs = "" | split: "" %}
 {% assign child_pairs = "" | split: "" %}
@@ -73,7 +71,7 @@ layout: default
 {% endif %}
 
 <!-- =========================================================
-     Pull runs from the _runs collection, then clean + sort
+     Pull runs from the _runs collection
      ========================================================= -->
 {% assign cleaned = "" | split: "" %}
 {% for r in site.runs %}
@@ -86,8 +84,7 @@ layout: default
 {% assign runs = cleaned_for_game | sort: "date_completed" | reverse %}
 
 <!-- =========================================================
-     If no authored categories_data exists, derive TOP-LEVEL categories
-     (children are only supported via categories_data)
+     If no authored categories_data exists, derive categories
      ========================================================= -->
 {% if category_pairs.size == 0 %}
   {% assign slugs = cleaned_for_game | map: "category_slug" | compact | uniq | sort %}
@@ -108,9 +105,7 @@ layout: default
 {% endif %}
 
 <!-- =========================================================
-     Label resolution helpers
-     - Exact match first
-     - Then prefix fallback to closest known label (parent or child)
+     Label resolution
      ========================================================= -->
 {% assign closest_label = "" %}
 {% assign closest_slug = "" %}
@@ -153,7 +148,6 @@ layout: default
   {% endif %}
 {% endif %}
 
-<!-- Resolve active label(s) -->
 {% if active_cat_slug != "" %}
   {% if is_child_page %}
     {% assign active_cat_label = child_label | default: closest_label | default: active_cat_slug | strip %}
@@ -168,9 +162,7 @@ layout: default
 <div class="page-width">
   <div class="game-shell">
 
-    <!-- =========================================================
-         Category breadcrumb card (only on category pages)
-         ========================================================= -->
+    <!-- Category breadcrumb card -->
     {% if active_cat_slug != "" %}
       <div class="card card--compact" style="margin-bottom: 1rem;">
         <p class="muted" style="margin: 0;">
@@ -180,9 +172,7 @@ layout: default
           {% assign cur = "" %}
           {% for seg in parts %}
             {% assign seg_clean = seg | strip %}
-            {% if seg_clean == "" %}
-              {% continue %}
-            {% endif %}
+            {% if seg_clean == "" %}{% continue %}{% endif %}
 
             {% if cur == "" %}
               {% assign cur = seg_clean %}
@@ -217,10 +207,7 @@ layout: default
       </div>
     {% endif %}
 
-    <!-- =========================================================
-         Browse by category - Always show parent categories
-         Shows TOP-LEVEL categories (parents) with selected state
-         ========================================================= -->
+    <!-- Browse by category -->
     {% if game and game.categories_data and game.categories_data.size > 0 %}
       <div class="card card--compact" style="margin-bottom: 1rem;">
         <h2 style="margin: 0 0 0.5rem 0;">Browse by category</h2>
@@ -233,7 +220,6 @@ layout: default
               {% if active_cat_slug == s %}
                 {% assign is_selected = true %}
               {% elsif active_cat_slug contains s %}
-                <!-- Check if active slug starts with this parent -->
                 {% assign check_prefix = s | append: "/" %}
                 {% assign check_len = check_prefix | size %}
                 {% assign active_head = active_cat_slug | slice: 0, check_len %}
@@ -250,11 +236,8 @@ layout: default
           {% endfor %}
         </div>
 
-        <!-- Subcategory chips - shown below parent categories -->
         {% if child_pairs and child_pairs.size > 0 %}
-          <p class="muted" style="margin: 1rem 0 0.5rem 0;">
-            Pick a subcategory:
-          </p>
+          <p class="muted" style="margin: 1rem 0 0.5rem 0;">Pick a subcategory:</p>
           <div class="tag-picked">
             {% for p in child_pairs %}
               {% assign parts = p | split: "||" %}
@@ -274,50 +257,45 @@ layout: default
     {% endif %}
 
     <!-- =========================================================
-         Filter runs for category pages (Mode A):
-         - parent pages include children via prefix match
-         - child pages include deeper nesting via prefix match
+         Filter runs for category pages
          ========================================================= -->
     {% if active_cat_slug != "" %}
-      {% assign prefix = active_cat_slug | append: "/" %}
-      {% assign prefix_len = prefix | size %}
-
+      {% assign prefix_check = active_cat_slug | append: "/" %}
       {% assign filtered = "" | split: "" %}
       {% for r in runs %}
-        {% assign rslug = r.category_slug | default: "" | strip %}
-
-        {% if rslug == active_cat_slug %}
+        {% assign rs = r.category_slug | default: "" | strip %}
+        {% if rs == active_cat_slug %}
           {% assign filtered = filtered | push: r %}
         {% else %}
-          {% if rslug != "" %}
-            {% assign head = rslug | slice: 0, prefix_len %}
-            {% if head == prefix %}
+          {% assign rs_len = rs | size %}
+          {% assign prefix_len = prefix_check | size %}
+          {% if rs_len >= prefix_len %}
+            {% assign rs_head = rs | slice: 0, prefix_len %}
+            {% if rs_head == prefix_check %}
               {% assign filtered = filtered | push: r %}
             {% endif %}
           {% endif %}
         {% endif %}
       {% endfor %}
-
       {% assign runs = filtered %}
     {% endif %}
 
-    {% if runs and runs.size > 0 %}
-
+    <!-- =========================================================
+         Runs header with Submit button (ALWAYS VISIBLE)
+         ========================================================= -->
+    <section class="tab-panel active" data-panel="runs">
       <div class="runs-header">
         {% if active_cat_slug != "" and active_cat_label != "" %}
-          <p class="muted mt-0 mb-0">
-            Showing runs in: <strong>{{ active_cat_label }}</strong>
-          </p>
+          <p class="muted mt-0 mb-0">Showing runs in: <strong>{{ active_cat_label }}</strong></p>
         {% else %}
           <p class="muted mt-0 mb-0">Browse all submitted runs</p>
         {% endif %}
 
-        {% if page.game_id == "hades-2" %}
-        <a href="{{ runs_base | relative_url }}../submit/" class="btn btn--primary btn--submit">+ Submit a Run</a>
-        {% endif %}
+        <!-- Submit button - Always visible for all games -->
+        <a href="{{ game_base | relative_url }}submit/" class="btn btn--primary btn--submit">+ Submit a Run</a>
       </div>
 
-      <!-- Character column config - needed for filter and table -->
+      <!-- Character column config -->
       {% assign show_character = false %}
       {% assign character_label = "Character" %}
       {% if game.character_column and game.character_column.enabled %}
@@ -328,7 +306,7 @@ layout: default
       {% endif %}
 
       <div class="card card--compact">
-        <!-- Search row (always visible) -->
+        <!-- Search row -->
         <div class="runs-filters runs-filters--main">
           <div class="runs-filter runs-filter--search">
             <span class="muted filter-label-text">Search</span>
@@ -344,332 +322,381 @@ layout: default
           </div>
 
           <div class="runs-filter">
-            <button
-              class="btn btn--filter-toggle"
-              id="filter-toggle"
-              type="button"
-              aria-expanded="false"
-              aria-controls="advanced-filters"
-            >
-              <span class="filter-toggle__text">Advanced Search</span>
-              <span class="filter-toggle__icon">▾</span>
+            <button class="btn btn--filter-toggle" id="filter-toggle" type="button" aria-expanded="false" aria-controls="advanced-filters">
+              <span class="filter-toggle__icon">▼</span>
+              <span class="filter-toggle__text">Advanced Filters</span>
             </button>
           </div>
         </div>
 
-        <!-- Collapsible Advanced Search panel - type-ahead filters like games page -->
-        <div class="filters-panel" id="advanced-filters" hidden>
-          <div class="filters-grid filters-grid--runs">
-            {% if show_character %}
-            <div class="tag-filter" id="character-filter">
-              <div class="muted filter-label">Filter by {{ character_label | downcase }}:</div>
-              <div class="tag-picker">
-                <div class="tag-picked" id="character-picked"></div>
-                <div class="filter-wrap">
-                  <input
-                    id="character-search"
-                    class="tag-search"
-                    type="text"
-                    placeholder="Type a {{ character_label | downcase }}..."
-                    autocomplete="off"
-                    inputmode="search"
-                    enterkeyhint="done"
-                    aria-label="Filter by {{ character_label }}"
-                  />
-                </div>
-                <div class="tag-suggestions" id="character-suggestions" hidden></div>
-              </div>
-            </div>
-            {% endif %}
-
-            <div class="tag-filter" id="challenge-filter">
-              <div class="muted filter-label">Filter by challenge:</div>
-              <div class="tag-picker">
-                <div class="tag-picked" id="challenge-picked"></div>
-                <div class="filter-wrap">
-                  <input
-                    id="challenge-search"
-                    class="tag-search"
-                    type="text"
-                    placeholder="Type a challenge..."
-                    autocomplete="off"
-                    inputmode="search"
-                    enterkeyhint="done"
-                    aria-label="Filter by challenge"
-                  />
-                </div>
-                <div class="tag-suggestions" id="challenge-suggestions" hidden></div>
-              </div>
-            </div>
-
-            <div class="tag-filter" id="restrictions-filter">
-              <div class="muted filter-label">Filter by restrictions:</div>
-              <div class="tag-picker">
-                <div class="tag-picked" id="restrictions-picked"></div>
-                <div class="filter-wrap">
-                  <input
-                    id="restrictions-search"
-                    class="tag-search"
-                    type="text"
-                    placeholder="Type a restriction..."
-                    autocomplete="off"
-                    inputmode="search"
-                    enterkeyhint="done"
-                    aria-label="Filter by restrictions"
-                  />
-                </div>
-                <div class="tag-suggestions" id="restrictions-suggestions" hidden></div>
-              </div>
-            </div>
-
-            {% if game.glitches_data and game.glitches_data.size > 0 %}
-            <div class="tag-filter" id="glitch-filter">
-              <div class="muted filter-label">Filter by glitches:</div>
-              <div class="tag-picker">
-                <div class="tag-picked" id="glitch-picked"></div>
-                <div class="filter-wrap">
-                  <input
-                    id="glitch-search"
-                    class="tag-search"
-                    type="text"
-                    placeholder="Type a glitch category..."
-                    autocomplete="off"
-                    inputmode="search"
-                    enterkeyhint="done"
-                    aria-label="Filter by glitches"
-                  />
-                </div>
-                <div class="tag-suggestions" id="glitch-suggestions" hidden></div>
-              </div>
-            </div>
-            {% endif %}
-          </div>
-        </div>
-
-        <!-- Results bar: Show / Status / Reset -->
-        <div class="results-bar results-bar--runs">
-          <div class="results-bar__left">
-            <span class="muted filter-label-text">Show</span>
-            <select id="limit" class="select">
-              <option value="10" selected>10</option>
-              <option value="25">25</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-              <option value="250">250</option>
-              <option value="0">All</option>
+        <!-- Advanced filters -->
+        <div class="runs-filters runs-filters--advanced" id="advanced-filters" hidden>
+          {% if show_character %}
+          <div class="runs-filter">
+            <span class="muted filter-label-text">{{ character_label }}</span>
+            <select id="f-character" class="select filter th-caret" autocomplete="off">
+              <option value="">All</option>
             </select>
           </div>
-          <div class="results-bar__center">
-            <p class="muted" id="status"></p>
+          {% endif %}
+
+          <div class="runs-filter">
+            <span class="muted filter-label-text">Challenge</span>
+            <select id="f-challenge" class="select filter th-caret" autocomplete="off">
+              <option value="">All</option>
+            </select>
           </div>
-          <div class="results-bar__right">
-            <button type="button" class="btn btn--reset" id="reset-all" hidden>Reset Filters</button>
+
+          <div class="runs-filter">
+            <span class="muted filter-label-text">Restrictions</span>
+            <select id="f-restrictions" class="select filter th-caret" autocomplete="off">
+              <option value="">All</option>
+            </select>
           </div>
+
+          {% if game.glitches_data and game.glitches_data.size > 0 %}
+          <div class="runs-filter">
+            <span class="muted filter-label-text">Glitch Category</span>
+            <select id="f-glitch" class="select filter th-caret" autocomplete="off">
+              <option value="">All</option>
+              {% for gl in game.glitches_data %}
+                <option value="{{ gl.slug }}">{{ gl.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          {% endif %}
         </div>
+
+        <!-- Active filters display -->
+        <div class="active-filters" id="active-filters"></div>
       </div>
 
-      <div class="table-wrap" id="runs-list" data-runs-base="{{ runs_base | relative_url }}">
-        <table class="runs-table" id="runs-table" {% if show_character %}data-has-character="true"{% endif %} {% if game.glitches_data and game.glitches_data.size > 0 %}data-has-glitch="true"{% endif %}>
-          <thead>
-            <tr>
-              <th>Runner</th>
-              {% if show_character %}
-              <th>{{ character_label }}</th>
-              {% endif %}
-              <th>Challenge</th>
-              <th>Restrictions</th>
-              {% if game.glitches_data and game.glitches_data.size > 0 %}
-              <th>Glitches Used</th>
-              {% endif %}
+      <!-- Runs table -->
+      {% if runs and runs.size > 0 %}
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Runner</th>
+                {% if show_character %}<th>{{ character_label }}</th>{% endif %}
+                <th>Challenge</th>
+                <th>Restrictions</th>
+                {% if game.glitches_data and game.glitches_data.size > 0 %}<th>Glitches Used</th>{% endif %}
+                <th class="th-filter th-time">
+                  <div class="th-title"><span>Time{% if game.timing_method %} ({{ game.timing_method }}){% endif %}</span></div>
+                  <div class="th-time-sort" aria-label="Sort by Time">
+                    <button class="th-sort" id="th-time-asc" type="button" title="Sort fastest first">↑</button>
+                    <button class="th-sort" id="th-time-desc" type="button" title="Sort slowest first">↓</button>
+                  </div>
+                </th>
+                <th class="th-filter th-date">
+                  <div class="th-title"><span>Date Accomplished</span></div>
+                  <div class="th-date-sort" aria-label="Sort by Date">
+                    <button class="th-sort" id="th-sort-asc" type="button" title="Sort oldest to newest">↑</button>
+                    <button class="th-sort" id="th-sort-desc" type="button" title="Sort newest to oldest">↓</button>
+                  </div>
+                </th>
+                <th>Video</th>
+              </tr>
+            </thead>
+            <tbody id="runs-body">
+              {% for r in runs %}
+                {% assign meta = site.data.challenges[r.challenge_id] %}
+                {% assign challenge_label = r.challenge_id %}
+                {% assign challenge_aliases = "" %}
+                {% if meta and meta.label %}{% assign challenge_label = meta.label %}{% endif %}
+                {% if meta and meta.aliases %}{% assign challenge_aliases = meta.aliases | join: '||' %}{% endif %}
 
-              <th class="th-filter th-time">
-                <div class="th-title">
-                  <span>Time{% if game.timing_method %} ({{ game.timing_method }}){% endif %}</span>
-                </div>
+                {% assign runner_label = r.runner | default: r.runner_id | default: "—" | replace: "_", " " %}
 
-                <div class="th-time-sort" aria-label="Sort by Time">
-                  <button class="th-sort" id="th-time-asc" type="button" title="Sort fastest first">↑</button>
-                  <button class="th-sort" id="th-time-desc" type="button" title="Sort slowest first">↓</button>
-                </div>
-              </th>
-
-              <th class="th-filter th-date">
-                <div class="th-title">
-                  <span>Date Accomplished</span>
-                </div>
-
-                <div class="th-date-sort" aria-label="Sort by Date">
-                  <button class="th-sort" id="th-sort-asc" type="button" title="Sort oldest to newest">↑</button>
-                  <button class="th-sort" id="th-sort-desc" type="button" title="Sort newest to oldest">↓</button>
-                </div>
-              </th>
-
-              <th>Video</th>
-            </tr>
-          </thead>
-
-          <tbody id="runs-body">
-            {% for r in runs %}
-              {% assign meta = site.data.challenges[r.challenge_id] %}
-              {% assign challenge_label = r.challenge_id %}
-              {% assign challenge_aliases = "" %}
-              {% if meta and meta.label %}
-                {% assign challenge_label = meta.label %}
-              {% endif %}
-              {% if meta and meta.aliases %}
-                {% assign challenge_aliases = meta.aliases | join: '||' %}
-              {% endif %}
-
-              {% assign runner_label = r.runner | default: r.runner_id | default: "—" | replace: "_", " " %}
-
-              {% assign cat_label = r.category | default: "" | strip %}
-              {% if cat_label == "" %}
-                {% assign s = r.category_slug | default: "" | strip %}
-                {% if s != "" %}
-                  {% for p in category_pairs %}
-                    {% assign parts = p | split: "||" %}
-                    {% if parts[0] == s %}
-                      {% assign cat_label = parts[1] | default: s | strip %}
-                      {% break %}
-                    {% endif %}
-                  {% endfor %}
-                  {% if cat_label == "" %}
-                    {% assign cat_label = s %}
-                  {% endif %}
-                {% endif %}
-              {% endif %}
-              {% if cat_label == "" %}
-                {% assign cat_label = "—" %}
-              {% endif %}
-
-              {% assign r_texts = "" | split: "" %}
-              {% if r.restrictions and r.restrictions != empty %}
-                {% if r.restrictions.first %}
-                  {% assign r_texts = r.restrictions %}
-                {% elsif r.restrictions != "[]" and r.restrictions != "" %}
-                  {% assign r_texts = r.restrictions | split: "," %}
-                {% endif %}
-              {% endif %}
-
-              {% assign r_clean = "" | split: "" %}
-              {% for rr in r_texts %}
-                {% assign t = rr | strip %}
-                {% if t != "" and t != "[]" %}
-                  {% assign r_clean = r_clean | push: t %}
-                {% endif %}
-              {% endfor %}
-              {% assign r_texts = r_clean | uniq %}
-
-              {% assign video_url = r.video_link | default: r.video %}
-
-              <tr
-                class="run-row"
-                data-runner="{{ r.runner_id | default: r.runner | default: '' | escape }}"
-                data-runner-name="{{ runner_label | default: '' | escape }}"
-                data-category="{{ cat_label | default: '' | escape }}"
-                data-category-slug="{{ r.category_slug | default: '' | escape }}"
-                data-challenge-id="{{ r.challenge_id | default: '' | escape }}"
-                data-challenge-label="{{ challenge_label | default: '' | escape }}"
-                data-challenge-aliases="{{ challenge_aliases | escape }}"
-                data-character="{{ r.character | default: '' | escape }}"
-                data-restrictions="{{ r_texts | join: '||' | escape }}"
-                data-glitch="{{ r.glitch_id | default: '' | escape }}"
-                data-date="{{ r.date_completed | default: '' | escape }}"
-                data-time="{{ r.time_primary | default: r.time | default: '' | escape }}"
-              >
-                <td>
-                  {% if r.runner_id %}
-                    <a href="{{ '/runners/' | relative_url }}{{ r.runner_id }}/">{{ runner_label }}</a>
-                  {% else %}
-                    {{ runner_label }}
-                  {% endif %}
-                </td>
-
-                {% if show_character %}
-                <td>{{ r.character | default: "—" }}</td>
-                {% endif %}
-
-                <td>
-                  {% assign ch = challenge_label | default: "" | strip %}
-                  {% if ch != "" and ch != "—" %}
-                    <div class="cell-tags">
-                      <span class="tag">{{ ch }}</span>
-                    </div>
-                  {% else %}
-                    —
-                  {% endif %}
-                </td>
-
-                <td>
-                  {% if r_texts and r_texts.size > 0 %}
-                    <div class="cell-tags">
-                      {% for rr in r_texts %}
-                        <span class="tag">{{ rr }}</span>
-                      {% endfor %}
-                    </div>
-                  {% else %}
-                    —
-                  {% endif %}
-                </td>
-
-                {% if game.glitches_data and game.glitches_data.size > 0 %}
-                <td>
-                  {% assign glitch_label = r.glitch_id | default: "" %}
-                  {% if glitch_label != "" %}
-                    {% for gl in game.glitches_data %}
-                      {% if gl.slug == r.glitch_id %}
-                        {% assign glitch_label = gl.label %}
-                      {% endif %}
-                      {% if gl.children %}
-                        {% for child in gl.children %}
-                          {% if child.slug == r.glitch_id %}
-                            {% assign glitch_label = child.label %}
-                          {% endif %}
-                        {% endfor %}
+                {% assign cat_label = r.category | default: "" | strip %}
+                {% if cat_label == "" %}
+                  {% assign s = r.category_slug | default: "" | strip %}
+                  {% if s != "" %}
+                    {% for p in category_pairs %}
+                      {% assign parts = p | split: "||" %}
+                      {% if parts[0] == s %}
+                        {% assign cat_label = parts[1] | default: s | strip %}
+                        {% break %}
                       {% endif %}
                     {% endfor %}
-                    <span class="tag">{{ glitch_label }}</span>
-                  {% else %}
-                    —
+                    {% if cat_label == "" %}{% assign cat_label = s %}{% endif %}
                   {% endif %}
-                </td>
+                {% endif %}
+                {% if cat_label == "" %}{% assign cat_label = "—" %}{% endif %}
+
+                {% assign r_texts = "" | split: "" %}
+                {% if r.restrictions and r.restrictions != empty %}
+                  {% if r.restrictions.first %}
+                    {% assign r_texts = r.restrictions %}
+                  {% elsif r.restrictions != "[]" and r.restrictions != "" %}
+                    {% assign r_texts = r.restrictions | split: "," %}
+                  {% endif %}
                 {% endif %}
 
-                <td>{{ r.time_primary | default: r.time | default: "—" }}</td>
-                <td>{{ r.date_completed | default: "—" }}</td>
+                {% assign r_clean = "" | split: "" %}
+                {% for rr in r_texts %}
+                  {% assign t = rr | strip %}
+                  {% if t != "" and t != "[]" %}{% assign r_clean = r_clean | push: t %}{% endif %}
+                {% endfor %}
+                {% assign r_texts = r_clean | uniq %}
 
-                <td>
-                  {% if video_url %}
-                    {% assign video_source = "Link" %}
-                    {% if video_url contains "youtube.com" or video_url contains "youtu.be" %}
-                      {% assign video_source = "YouTube" %}
-                    {% elsif video_url contains "twitch.tv" %}
-                      {% assign video_source = "Twitch" %}
-                    {% elsif video_url contains "bilibili.com" %}
-                      {% assign video_source = "Bilibili" %}
-                    {% elsif video_url contains "vimeo.com" %}
-                      {% assign video_source = "Vimeo" %}
+                {% assign video_url = r.video_link | default: r.video %}
+
+                <tr class="run-row"
+                    data-runner="{{ r.runner_id | default: r.runner | default: '' | escape }}"
+                    data-runner-name="{{ runner_label | default: '' | escape }}"
+                    data-category="{{ cat_label | default: '' | escape }}"
+                    data-category-slug="{{ r.category_slug | default: '' | escape }}"
+                    data-challenge-id="{{ r.challenge_id | default: '' | escape }}"
+                    data-challenge-label="{{ challenge_label | default: '' | escape }}"
+                    data-challenge-aliases="{{ challenge_aliases | escape }}"
+                    data-character="{{ r.character | default: '' | escape }}"
+                    data-restrictions="{{ r_texts | join: '||' | escape }}"
+                    data-glitch="{{ r.glitch_id | default: '' | escape }}"
+                    data-date="{{ r.date_completed | default: '' | escape }}"
+                    data-time="{{ r.time_primary | default: r.time | default: '' | escape }}">
+                  <td>
+                    {% if r.runner_id %}
+                      <a href="{{ '/runners/' | relative_url }}{{ r.runner_id }}/">{{ runner_label }}</a>
+                    {% else %}
+                      {{ runner_label }}
                     {% endif %}
-                    <a class="video-link" href="{{ video_url }}" target="_blank" rel="noopener">{{ video_source }}</a>
-                  {% else %}
-                    —
+                  </td>
+                  {% if show_character %}<td>{{ r.character | default: "—" }}</td>{% endif %}
+                  <td>
+                    {% assign ch = challenge_label | default: "" | strip %}
+                    {% if ch != "" and ch != "—" %}
+                      <div class="cell-tags"><span class="tag">{{ ch }}</span></div>
+                    {% else %}—{% endif %}
+                  </td>
+                  <td>
+                    {% if r_texts and r_texts.size > 0 %}
+                      <div class="cell-tags">{% for rr in r_texts %}<span class="tag">{{ rr }}</span>{% endfor %}</div>
+                    {% else %}—{% endif %}
+                  </td>
+                  {% if game.glitches_data and game.glitches_data.size > 0 %}
+                  <td>
+                    {% assign glitch_label = r.glitch_id | default: "" %}
+                    {% if glitch_label != "" %}
+                      {% for gl in game.glitches_data %}
+                        {% if gl.slug == r.glitch_id %}{% assign glitch_label = gl.label %}{% endif %}
+                        {% if gl.children %}
+                          {% for child in gl.children %}
+                            {% if child.slug == r.glitch_id %}{% assign glitch_label = child.label %}{% endif %}
+                          {% endfor %}
+                        {% endif %}
+                      {% endfor %}
+                      <span class="tag">{{ glitch_label }}</span>
+                    {% else %}—{% endif %}
+                  </td>
                   {% endif %}
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+                  <td>{{ r.time_primary | default: r.time | default: "—" }}</td>
+                  <td>{{ r.date_completed | default: "—" }}</td>
+                  <td>
+                    {% if video_url %}
+                      {% assign video_source = "Link" %}
+                      {% if video_url contains "youtube.com" or video_url contains "youtu.be" %}{% assign video_source = "YouTube" %}
+                      {% elsif video_url contains "twitch.tv" %}{% assign video_source = "Twitch" %}
+                      {% elsif video_url contains "bilibili.com" %}{% assign video_source = "Bilibili" %}
+                      {% elsif video_url contains "vimeo.com" %}{% assign video_source = "Vimeo" %}{% endif %}
+                      <a class="video-link" href="{{ video_url }}" target="_blank" rel="noopener">{{ video_source }}</a>
+                    {% else %}—{% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="card">
+          {% if active_cat_slug != "" %}
+            <p class="muted">No runs recorded yet for this category.</p>
+          {% else %}
+            <p class="muted">No runs recorded yet.</p>
+          {% endif %}
+        </div>
+      {% endif %}
 
-    {% else %}
-      <div class="card">
-        {% if active_cat_slug != "" %}
-          <p class="muted">No runs recorded yet for this category.</p>
-        {% else %}
-          <p class="muted">No runs recorded yet.</p>
-        {% endif %}
-      </div>
-    {% endif %}
-
+    </section>
   </div>
 </div>
+
+<!-- Runs filter JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const qInput = document.getElementById('q');
+  const filterToggle = document.getElementById('filter-toggle');
+  const advancedFilters = document.getElementById('advanced-filters');
+  const activeFiltersDiv = document.getElementById('active-filters');
+  const runsBody = document.getElementById('runs-body');
+  const rows = runsBody ? Array.from(runsBody.querySelectorAll('.run-row')) : [];
+
+  // Filter dropdowns
+  const fChallenge = document.getElementById('f-challenge');
+  const fRestrictions = document.getElementById('f-restrictions');
+  const fGlitch = document.getElementById('f-glitch');
+  const fCharacter = document.getElementById('f-character');
+
+  // Sort buttons
+  const sortDateAsc = document.getElementById('th-sort-asc');
+  const sortDateDesc = document.getElementById('th-sort-desc');
+  const sortTimeAsc = document.getElementById('th-time-asc');
+  const sortTimeDesc = document.getElementById('th-time-desc');
+
+  // Populate filter dropdowns from actual data
+  function populateFilters() {
+    const challenges = new Set();
+    const restrictions = new Set();
+    const characters = new Set();
+
+    rows.forEach(row => {
+      const ch = row.dataset.challengeLabel;
+      if (ch) challenges.add(ch);
+
+      const res = row.dataset.restrictions;
+      if (res) res.split('||').forEach(r => { if (r.trim()) restrictions.add(r.trim()); });
+
+      const char = row.dataset.character;
+      if (char) characters.add(char);
+    });
+
+    if (fChallenge) {
+      [...challenges].sort().forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        fChallenge.appendChild(opt);
+      });
+    }
+
+    if (fRestrictions) {
+      [...restrictions].sort().forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r;
+        opt.textContent = r;
+        fRestrictions.appendChild(opt);
+      });
+    }
+
+    if (fCharacter) {
+      [...characters].sort().forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        fCharacter.appendChild(opt);
+      });
+    }
+  }
+
+  // Toggle advanced filters
+  if (filterToggle && advancedFilters) {
+    filterToggle.addEventListener('click', function() {
+      const isHidden = advancedFilters.hidden;
+      advancedFilters.hidden = !isHidden;
+      filterToggle.setAttribute('aria-expanded', isHidden);
+      filterToggle.classList.toggle('is-active', isHidden);
+    });
+  }
+
+  // Filter logic
+  function filterRows() {
+    const q = qInput ? qInput.value.toLowerCase().trim() : '';
+    const challenge = fChallenge ? fChallenge.value : '';
+    const restriction = fRestrictions ? fRestrictions.value : '';
+    const glitch = fGlitch ? fGlitch.value : '';
+    const character = fCharacter ? fCharacter.value : '';
+
+    rows.forEach(row => {
+      let show = true;
+
+      // Text search
+      if (q) {
+        const searchable = [
+          row.dataset.runnerName,
+          row.dataset.challengeLabel,
+          row.dataset.challengeAliases,
+          row.dataset.restrictions,
+          row.dataset.character
+        ].join(' ').toLowerCase();
+        if (!searchable.includes(q)) show = false;
+      }
+
+      // Challenge filter
+      if (show && challenge && row.dataset.challengeLabel !== challenge) show = false;
+
+      // Restriction filter
+      if (show && restriction) {
+        const rowRes = row.dataset.restrictions || '';
+        if (!rowRes.split('||').includes(restriction)) show = false;
+      }
+
+      // Glitch filter
+      if (show && glitch && row.dataset.glitch !== glitch) show = false;
+
+      // Character filter
+      if (show && character && row.dataset.character !== character) show = false;
+
+      row.style.display = show ? '' : 'none';
+    });
+
+    updateActiveFilters();
+  }
+
+  function updateActiveFilters() {
+    if (!activeFiltersDiv) return;
+    const tags = [];
+
+    if (fChallenge && fChallenge.value) tags.push({ label: fChallenge.value, clear: () => { fChallenge.value = ''; filterRows(); } });
+    if (fRestrictions && fRestrictions.value) tags.push({ label: fRestrictions.value, clear: () => { fRestrictions.value = ''; filterRows(); } });
+    if (fGlitch && fGlitch.value) tags.push({ label: fGlitch.options[fGlitch.selectedIndex].text, clear: () => { fGlitch.value = ''; filterRows(); } });
+    if (fCharacter && fCharacter.value) tags.push({ label: fCharacter.value, clear: () => { fCharacter.value = ''; filterRows(); } });
+
+    activeFiltersDiv.innerHTML = tags.map((t, i) => 
+      `<span class="tag" data-idx="${i}">${t.label} <button type="button" class="tag-remove">&times;</button></span>`
+    ).join('');
+
+    activeFiltersDiv.querySelectorAll('.tag-remove').forEach((btn, i) => {
+      btn.addEventListener('click', () => tags[i].clear());
+    });
+  }
+
+  // Sorting
+  function parseTime(t) {
+    if (!t || t === '—') return Infinity;
+    const parts = t.split(':').map(Number);
+    if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    if (parts.length === 2) return parts[0] * 60 + parts[1];
+    return parseFloat(t) || Infinity;
+  }
+
+  function sortRows(key, asc) {
+    const sorted = [...rows].sort((a, b) => {
+      let va, vb;
+      if (key === 'time') {
+        va = parseTime(a.dataset.time);
+        vb = parseTime(b.dataset.time);
+      } else {
+        va = a.dataset.date || '';
+        vb = b.dataset.date || '';
+      }
+      return asc ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
+    });
+    sorted.forEach(r => runsBody.appendChild(r));
+  }
+
+  // Event listeners
+  if (qInput) qInput.addEventListener('input', filterRows);
+  if (fChallenge) fChallenge.addEventListener('change', filterRows);
+  if (fRestrictions) fRestrictions.addEventListener('change', filterRows);
+  if (fGlitch) fGlitch.addEventListener('change', filterRows);
+  if (fCharacter) fCharacter.addEventListener('change', filterRows);
+
+  if (sortDateAsc) sortDateAsc.addEventListener('click', () => sortRows('date', true));
+  if (sortDateDesc) sortDateDesc.addEventListener('click', () => sortRows('date', false));
+  if (sortTimeAsc) sortTimeAsc.addEventListener('click', () => sortRows('time', true));
+  if (sortTimeDesc) sortTimeDesc.addEventListener('click', () => sortRows('time', false));
+
+  populateFilters();
+});
+</script>
