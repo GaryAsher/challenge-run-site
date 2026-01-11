@@ -9,7 +9,7 @@
  *
  * Checks:
  *   - Windows-unsafe characters in filenames/folders (currently: < and >)
- *   - _data/tags.yml and _data/challenges.yml load and have sane shapes
+ *   - _data/genres.yml and _data/challenges.yml load and have sane shapes
  *   - _games/*.md: required fields + tag/challenge references exist (with alias resolution)
  *   - _games/*.md: categories_data (parents + optional children) validated
  *   - _runners/*.md: required fields + referenced games exist
@@ -168,19 +168,19 @@ function validateWindowsUnsafeNames() {
 }
 
 function validateDataFiles() {
-  const tagsPath = path.join(ROOT, '_data', 'tags.yml');
+  const genresPath = path.join(ROOT, '_data', 'genres.yml');
   const challengesPath = path.join(ROOT, '_data', 'challenges.yml');
 
-  if (!isFile(tagsPath)) die('Missing _data/tags.yml');
+  if (!isFile(genresPath)) die('Missing _data/genres.yml');
   if (!isFile(challengesPath)) die('Missing _data/challenges.yml');
 
-  const tags = loadYamlFile(tagsPath, readText);
+  const genres = loadYamlFile(genresPath, readText);
   const challenges = loadYamlFile(challengesPath, readText);
 
-  const tagsRel = rel(tagsPath, ROOT);
+  const genresRel = rel(genresPath, ROOT);
   const challengesRel = rel(challengesPath, ROOT);
 
-  const tagResolver = buildResolver('tag', tags, tagsRel);
+  const tagResolver = buildResolver('tag', genres, genresRel);
   const challengeResolver = buildResolver('challenge', challenges, challengesRel);
 
   return { tagResolver, challengeResolver };
@@ -362,11 +362,11 @@ function validateGames({ tagResolver, challengeResolver }) {
     if (gameIds.has(fm.game_id)) die(`${fileRel}: duplicate game_id ${fm.game_id}`);
     gameIds.add(fm.game_id);
 
-    if (fm.tags != null) {
-      mustArrayOfStrings(fileRel, 'tags', fm.tags);
-      for (const t of fm.tags) {
+    if (fm.genres != null) {
+      mustArrayOfStrings(fileRel, 'genres', fm.genres);
+      for (const t of fm.genres) {
         const r = tagResolver.resolve(t);
-        if (!r) die(`${fileRel}: unknown tag in tags: ${t}`);
+        if (!r) die(`${fileRel}: unknown tag in genres: ${t}`);
         if (r.source !== 'id' && r.canonical !== t) {
           warn(`${fileRel}: tag "${t}" should be "${r.canonical}" (canonical id)`);
         }
