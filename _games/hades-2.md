@@ -39,24 +39,68 @@ character_column:
   enabled: true
   label: "Weapon / Aspect"
 
-challenges:
-  - hitless
-  - damageless
-  - no-hit-no-damage
+# =============================================================================
+# STANDARD CHALLENGE TYPES
+# Game-specific descriptions - SINGLE SOURCE OF TRUTH for Hades II
+# =============================================================================
+challenges_data:
+  - slug: hitless
+    label: "Hitless"
+    description: " - Do not become stunned by any effect (represented by a star orbiting around Melinoë’s head). - Do not trigger damage nullifiers such as Dodge, Daze, The Lovers, or any similar effects that convert an enemy hit into zero damage. You may select boons with these effects so long as the dodge / miss effect does not activate."
+  - slug: damageless
+    label: "Damageless"
+    description: "- Do not lose any Health or Armor. - Chaos' Atrophic curse is NOT considered a hit or damage.
+"
+  - slug: no-hit-no-damage
+    label: "No-Hit / No-Damage"
+    description: "Do not lose any health. Do not trigger any Dodge or Deflect abilities. Do not block any attacks."
 
+# =============================================================================
+# COMMUNITY CHALLENGES
+# Game-specific challenges created by the Hades II community
+# =============================================================================
+
+# =============================================================================
+# GLITCH CATEGORIES
+# Defines what glitches/exploits are allowed
+# =============================================================================
 glitches_data:
   - slug: unrestricted
     label: "Unrestricted"
+    description: "All glitches and exploits are allowed."
   - slug: nmg
     label: "No Major Glitches"
+    description: "Major glitches that skip significant content are banned. Minor movement optimizations allowed."
   - slug: glitchless
     label: "Glitchless"
+    description: "No glitches of any kind."
 
-restrictions: []
+# =============================================================================
+# OPTIONAL RESTRICTIONS
+# Additional restrictions runners can apply
+# =============================================================================
+restrictions_data:
+  - slug: one-god-only
+    label: "One God Only"
+    description: "Only utilize boons from one god. You may pick up a boon from a god so long as you do not benefit it in any way."
+- slug: boonless
+    label: "Boonless"
+    description: "Do not utilize any boons from any god. You may pick up a boon from a god so long as you do not benefit it in any way."
+  - slug: arcanaless
+    label: "Arcanaless"
+    description: "Complete a run with no Arcana Cards selected or Vow of Void(4) selected in the Oath of the Unseen. Additionally, do not pick up Arcana Cards in any way."
+  - slug: no-hexes
+    label: "No Hexes"
+    description: "Complete a run without activating any hexes from Selene. You may pick a hex so long as you do not benefit it in any way."
 
+# =============================================================================
+# RUN CATEGORIES
+# Main speedrun/challenge categories
+# =============================================================================
 categories_data:
   - slug: chaos-trials
     label: "Chaos Trials"
+    description: "Complete one of the 15 Chaos Trials."
     children:
       - slug: trial-of-origin
         label: "Trial of Origin"
@@ -90,10 +134,16 @@ categories_data:
         label: "Trial of Destiny"
   - slug: underworld-any
     label: "Underworld Any%"
+    description: "Complete the Underworld route with any amount of Fear."
   - slug: surface-any
     label: "Surface Any%"
+    description: "Complete the Surface route with any amount of Fear."
   - slug: underworld-vor4
     label: "Underworld VoR4"
+    description: "Complete the Underworld route with Vow of Rivals(4) selected in the Oath of the Unseen."
   - slug: surface-vor4
     label: "Surface VoR4"
+    description: "Complete the Surface route with Vow of Rivals(4) selected in the Oath of the Unseen."
 ---
+
+Hades II is an action roguelike from Supergiant Games, the sequel to the award-winning Hades. Play as Melinoë, Princess of the Underworld, as she battles through the realms to defeat the Titan of Time.
