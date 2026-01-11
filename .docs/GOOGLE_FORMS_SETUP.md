@@ -98,7 +98,6 @@ Timing Method options:
 - IGT (In-Game Time)
 - RTA (Real Time Attack)
 - LRT (Loadless Real Time)
-- Other
 
 #### Section 3: Your Information
 | Question | Type | Required |
