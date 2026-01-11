@@ -170,6 +170,6 @@ npm run promote:runs:dry  # Preview without changes
 | Type | Format | Example |
 |------|--------|---------|
 | Game ID | `lowercase-with-hyphens` | `hollow-knight` |
-| Runner ID | `lowercase-with-hyphens` | `my-pet-cactus` |
+| Runner ID | `lowercase-with-hyphens` | `gary-asher` |
 | Run file | `YYYY-MM-DD__<game>__<runner>__<category>__NN.md` | `2025-01-10__hollow-knight__runner1__any__01.md` |
 | Category slug | `lowercase-with-hyphens` or `parent/child` | `any`, `pantheons/pantheon-5` |
