@@ -6,12 +6,12 @@
     "build:css": "npx clean-css-cli assets/style.css -o assets/style.min.css",
     "build:js": "npx terser assets/js/main.js -o assets/js/main.min.js -c -m && npx terser assets/js/utils.js -o assets/js/utils.min.js -c -m",
 
-    "check:all": "npm run check:games-index && npm run check:run-categories && npm run check:codeowners",
+    "check:all": "npm run check:game-pages && npm run check:run-category-pages && npm run check:codeowners",
     "check:codeowners": "node scripts/generate-codeowners.js --check",
     "check:game-pages": "node scripts/generate-game-pages.js --check",
     "check:run-category-pages": "node scripts/generate-run-category-pages.js --check",
 
-    "generate:all": "npm run generate:game-pages && npm run generate:run-categories && npm run generate:codeowners",
+    "generate:all": "npm run generate:game-pages && npm run generate:run-category-pages && npm run generate:codeowners",
     "generate:codeowners": "node scripts/generate-codeowners.js",
     "generate:game-pages": "node scripts/generate-game-pages.js",
     "generate:run-category-pages": "node scripts/generate-run-category-pages.js",
