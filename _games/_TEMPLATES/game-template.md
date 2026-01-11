@@ -7,7 +7,7 @@ name: "__GAME_NAME__"
 name_aliases: []
 status: "__STATUS__"
 
-tags: []
+genres: []
 platforms: []
 
 cover: /assets/img/games/__FIRST_LETTER__/__GAME_ID__.jpg
