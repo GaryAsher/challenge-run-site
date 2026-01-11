@@ -47,10 +47,10 @@ character_column:
 challenges_data:
   - slug: hitless
     label: "Hitless"
-    description: "Complete the run without taking any hits. In Hollow Knight, Baldur Shell blocking counts as a hit."
+    description: "Complete the run without taking any hits. In Hollow Knight, Baldur Shell blocking and activating Carefree Melody counts as a hit."
   - slug: damageless
     label: "Damageless"
-    description: "Complete the run without losing any masks (health). Focus healing is allowed."
+    description: "Complete the run without losing any masks."
   - slug: deathless
     label: "Deathless"
     description: "Complete the run without dying. Shade must not be created at any point."
@@ -66,9 +66,6 @@ challenges_data:
 # Game-specific challenges created by the Hollow Knight community
 # =============================================================================
 community_challenges:
-  - slug: low-percent
-    label: "Low%"
-    description: "Complete the game with the minimum possible percentage. Current record routes use specific item pickups only."
   - slug: radiant-bosses
     label: "Radiant Bosses"
     description: "Defeat bosses on Radiant difficulty in the Hall of Gods. One hit = instant death. All Radiant requires defeating every boss on Radiant."
@@ -130,23 +127,19 @@ glitches_data:
 restrictions_data:
   - slug: no-charms
     label: "No Charms"
-    description: "Complete the run without equipping any charms. Charm notches may still be collected."
+    description: "Complete a run without equipping any charms. Charms and charm notches may still be collected."
   - slug: no-nail-upgrades
     label: "No Nail Upgrades"
-    description: "Complete the run without upgrading the nail. Base nail damage only."
+    description: "Complete a run without upgrading the nail. Base nail damage only."
   - slug: no-spells
     label: "No Spells"
     description: "Complete the run without using Vengeful Spirit, Desolate Dive, or Howling Wraiths (or their upgrades)."
-    incompatible_with:
-      - "all-skills"
   - slug: base-nail-only
     label: "Base Nail Only"
     description: "No nail upgrades, no spells, no charms. Pure base nail combat only."
-    incompatible_with:
-      - "all-skills"
   - slug: no-monarch-wings
     label: "No Monarch Wings"
-    description: "Complete the run without obtaining the double jump ability."
+    description: "Complete a run without obtaining Monarch Wings."
     incompatible_with:
       - "all-skills"
       - "112-apb"
@@ -159,31 +152,22 @@ restrictions_data:
 categories_data:
   - slug: any
     label: "Any%"
-    description: "Complete the game as fast as possible. Any ending is acceptable. Most common ending is Hollow Knight fight."
-  - slug: all-bosses
-    label: "All Bosses"
-    description: "Defeat all bosses in the game before completing. Includes dream bosses and Godmaster content."
-  - slug: true-ending
-    label: "True Ending"
-    description: "Achieve the 'Dream No More' ending by collecting the Void Heart and using the Dream Nail on the Hollow Knight."
-  - slug: 112-apb
-    label: "112% APB"
-    description: "Achieve 112% completion and defeat All Pantheon Bosses. The ultimate completion category."
-  - slug: 107-ab
-    label: "107% AB"
-    description: "Achieve 107% completion with All Bosses defeated."
-  - slug: 106-te
-    label: "106% TE"
-    description: "Achieve 106% completion with True Ending."
-  - slug: low-percent
-    label: "Low%"
-    description: "Complete the game with minimum percentage. Requires precise routing and advanced movement."
+    description: "Complete the game and achieve any ending."
   - slug: all-skills
     label: "All Skills"
     description: "Obtain all movement abilities and spells before completing the game."
-  - slug: godhome-ending
-    label: "Godhome Ending"
-    description: "Achieve the Embrace the Void or Delicate Flower endings from Godmaster DLC."
+  - slug: true-ending
+    label: "True Ending"
+    description: "Achieve the 'Dream No More' ending by collecting the Void Heart and using the Dream Nail on the Hollow Knight."
+  - slug: 107-ab
+    label: "107% AB"
+    description: "Achieve 107%, defeat all bosses that appear in both the Hall of Gods and the overworld, and finish the game by defeating The Radiance"
+  - slug: 112-apb
+    label: "112% APB"
+    description: "Achieve 112% completion and defeat All Pantheon Bosses within their respective pantheons, including Grey Prince Zote (in both Pantheon 3 and Pantheon 5) and Absolute Radiance."
+  - slug: low-percent
+    label: "Low%"
+    description: "Complete the game with minimum percentage (11%)."
   - slug: pantheons
     label: "Pantheons"
     description: "Complete Pantheon boss gauntlets from the Godmaster DLC."
@@ -207,9 +191,6 @@ categories_data:
     label: "Boss Rush"
     description: "Hall of Gods challenges - defeat bosses under specific conditions."
     children:
-      - slug: all-radiant
-        label: "All Radiant"
-        description: "Defeat every boss on Radiant difficulty (one hit = death)."
       - slug: hall-of-gods
         label: "Hall of Gods"
         description: "Complete Hall of Gods challenges."
