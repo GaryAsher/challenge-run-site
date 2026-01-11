@@ -8,7 +8,7 @@ name_aliases:
   - "HK"
 status: "Active"
 
-tags:
+genres:
   - metroidvania
   - platformer
   - difficult
