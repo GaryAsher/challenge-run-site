@@ -280,42 +280,184 @@ permalink: /games/${gameId}/rules/
 ---
 
 {% assign game = site.games | where: "game_id", page.game_id | first %}
-{% include game-header-tabs.html game=game active="overview" %}
+{% include game-header-tabs.html game=game active="rules" %}
 
 <div class="page-width">
   <div class="game-shell">
     <section class="tab-panel active">
-      <p class="muted mb-3">
-        <a href="{{ game.url | relative_url }}">← Overview</a>
-      </p>
 
       <h1>Rules & Definitions</h1>
-      <p class="muted mb-4">Category definitions and challenge rules for {{ game.name }}.</p>
+      <p class="muted mb-4">Official rules, category definitions, and challenge guidelines for {{ game.name }}.</p>
 
+      <!-- General Rules -->
+      <div class="rules-section">
+        <details class="accordion-item accordion-item--section" open>
+          <summary class="accordion-header accordion-header--section">
+            <span class="accordion-title">📋 General Rules</span>
+            <span class="accordion-icon">▼</span>
+          </summary>
+          <div class="accordion-content">
+            <ul>
+              <li><strong>Timing Method:</strong> {{ game.timing_method | default: "RTA (Real Time Attack)" }}</li>
+              <li><strong>Video Required:</strong> All submissions must include video proof</li>
+              <li><strong>No Cheats/Mods:</strong> External tools, cheats, or gameplay-altering mods are not allowed</li>
+            </ul>
+          </div>
+        </details>
+      </div>
+
+      <!-- Standard Challenge Types -->
       {% if game.challenges and game.challenges.size > 0 %}
-      <div class="card">
-        <h2>Challenge Definitions</h2>
-        <div class="tag-picked">
-          {% for ch_id in game.challenges %}
-            {% assign ch_meta = site.data.challenges[ch_id] %}
-            <span class="tag-chip">{{ ch_meta.label | default: ch_id }}</span>
-          {% endfor %}
-        </div>
-        <p class="muted mt-3">Detailed definitions coming soon.</p>
+      <div class="rules-section mt-4">
+        <details class="accordion-item accordion-item--section">
+          <summary class="accordion-header accordion-header--section">
+            <span class="accordion-title">🎯 Standard Challenge Types</span>
+            <span class="accordion-icon">▼</span>
+          </summary>
+          <div class="accordion-content">
+            <p class="muted mb-3">Standard challenge types tracked for {{ game.name }}:</p>
+            <div class="accordion">
+              {% for ch_id in game.challenges %}
+                {% assign ch_meta = site.data.challenges[ch_id] %}
+                <details class="accordion-item">
+                  <summary class="accordion-header">
+                    <span class="accordion-title">{{ ch_meta.label | default: ch_id }}</span>
+                    <span class="accordion-icon">▼</span>
+                  </summary>
+                  <div class="accordion-content">
+                    {% if ch_meta.description %}
+                      <p>{{ ch_meta.description }}</p>
+                    {% else %}
+                      <p class="muted">See community resources for detailed rules.</p>
+                    {% endif %}
+                  </div>
+                </details>
+              {% endfor %}
+            </div>
+          </div>
+        </details>
       </div>
       {% endif %}
 
+      <!-- Run Categories -->
       {% if game.categories_data and game.categories_data.size > 0 %}
-      <div class="card mt-4">
-        <h2>Category Rules</h2>
-        <div class="tag-picked">
-          {% for cat in game.categories_data %}
-            <span class="tag-chip">{{ cat.label }}</span>
-          {% endfor %}
-        </div>
-        <p class="muted mt-3">Category-specific rules coming soon.</p>
+      <div class="rules-section mt-4">
+        <details class="accordion-item accordion-item--section">
+          <summary class="accordion-header accordion-header--section">
+            <span class="accordion-title">🏃 Run Categories</span>
+            <span class="accordion-icon">▼</span>
+          </summary>
+          <div class="accordion-content">
+            <p class="muted mb-3">Speedrun categories available for {{ game.name }}:</p>
+            <div class="accordion">
+              {% for cat in game.categories_data %}
+                <details class="accordion-item">
+                  <summary class="accordion-header">
+                    <span class="accordion-title">{{ cat.label }}</span>
+                    <span class="accordion-icon">▼</span>
+                  </summary>
+                  <div class="accordion-content">
+                    {% if cat.description %}
+                      <p>{{ cat.description }}</p>
+                    {% else %}
+                      <p class="muted">See community resources for detailed rules.</p>
+                    {% endif %}
+                    {% if cat.children and cat.children.size > 0 %}
+                      <div class="mt-3">
+                        <strong>Subcategories:</strong>
+                        <ul class="mt-2">
+                          {% for child in cat.children %}
+                            <li>{{ child.label }}</li>
+                          {% endfor %}
+                        </ul>
+                      </div>
+                    {% endif %}
+                  </div>
+                </details>
+              {% endfor %}
+            </div>
+          </div>
+        </details>
       </div>
       {% endif %}
+
+      <!-- Community Challenges -->
+      {% if game.community_challenges and game.community_challenges.size > 0 %}
+      <div class="rules-section mt-4">
+        <details class="accordion-item accordion-item--section">
+          <summary class="accordion-header accordion-header--section">
+            <span class="accordion-title">🌟 Community Challenges</span>
+            <span class="accordion-icon">▼</span>
+          </summary>
+          <div class="accordion-content">
+            <p class="muted mb-3">Game-specific challenges from the {{ game.name }} community:</p>
+            <div class="accordion">
+              {% for cc in game.community_challenges %}
+                <details class="accordion-item">
+                  <summary class="accordion-header">
+                    <span class="accordion-title">{{ cc.label }}</span>
+                    <span class="accordion-icon">▼</span>
+                  </summary>
+                  <div class="accordion-content">
+                    {% if cc.description %}
+                      <p>{{ cc.description }}</p>
+                    {% else %}
+                      <p class="muted">See resources for detailed rules.</p>
+                    {% endif %}
+                  </div>
+                </details>
+              {% endfor %}
+            </div>
+          </div>
+        </details>
+      </div>
+      {% endif %}
+
+      <!-- Glitch Categories -->
+      {% if game.glitches_data and game.glitches_data.size > 0 %}
+      <div class="rules-section mt-4">
+        <details class="accordion-item accordion-item--section">
+          <summary class="accordion-header accordion-header--section">
+            <span class="accordion-title">🔧 Glitch Categories</span>
+            <span class="accordion-icon">▼</span>
+          </summary>
+          <div class="accordion-content">
+            <p class="muted mb-3">Glitch rule categories for {{ game.name }} runs:</p>
+            <div class="accordion">
+              {% for glitch in game.glitches_data %}
+                <details class="accordion-item">
+                  <summary class="accordion-header">
+                    <span class="accordion-title">{{ glitch.label }}</span>
+                    <span class="accordion-icon">▼</span>
+                  </summary>
+                  <div class="accordion-content">
+                    {% if glitch.description %}
+                      <p>{{ glitch.description }}</p>
+                    {% endif %}
+                    {% if glitch.allowed and glitch.allowed.size > 0 %}
+                      <p class="mt-2">
+                        <span class="rules-label rules-list--allowed">✓ Allowed:</span>
+                        {{ glitch.allowed | join: ", " }}
+                      </p>
+                    {% endif %}
+                    {% if glitch.banned and glitch.banned.size > 0 %}
+                      <p class="mt-2">
+                        <span class="rules-label rules-list--banned">✗ Banned:</span>
+                        {{ glitch.banned | join: ", " }}
+                      </p>
+                    {% endif %}
+                    {% if glitch.notes %}
+                      <p class="mt-2 muted"><em>{{ glitch.notes }}</em></p>
+                    {% endif %}
+                  </div>
+                </details>
+              {% endfor %}
+            </div>
+          </div>
+        </details>
+      </div>
+      {% endif %}
+
     </section>
   </div>
 </div>
