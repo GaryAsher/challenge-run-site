@@ -2411,7 +2411,6 @@ a.resource-card:hover {
 /* ==========================================================================
    ACCORDION, COMMUNITY CHALLENGES & TAB STYLES
    ========================================================================== */
-
 /* =========================================================
    Active Tab - Theme Color Highlight
    ========================================================= */
@@ -2621,4 +2620,314 @@ a.resource-card:hover {
 
 .rules-list--banned {
   color: var(--danger, #ef4444);
+}
+
+/* ==========================================================================
+   ACCORDION, RULE BUILDER & TAB STYLES
+   ========================================================================== */
+/* =========================================================
+   Active Tab - Theme Color Highlight
+   ========================================================= */
+.runner-tabs .tab.active {
+  background: var(--bg);
+  color: var(--accent);
+  opacity: 1;
+  border-color: var(--border);
+  border-bottom-color: var(--bg);
+  box-shadow: inset 0 2px 0 var(--accent);
+}
+
+.runner-tabs .tab.active:hover {
+  color: var(--accent);
+}
+
+/* =========================================================
+   Accordion Base Styles
+   ========================================================= */
+.accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.accordion-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface, var(--bg));
+  overflow: hidden;
+}
+
+.accordion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--fg);
+  background: var(--bg-soft, var(--panel));
+  list-style: none;
+  transition: background 0.15s ease;
+}
+
+.accordion-header::-webkit-details-marker {
+  display: none;
+}
+
+.accordion-header:hover {
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg-soft, var(--panel)));
+}
+
+.accordion-title {
+  flex: 1;
+}
+
+.accordion-icon {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+}
+
+.accordion-item[open] .accordion-icon {
+  transform: rotate(180deg);
+}
+
+.accordion-content {
+  padding: 1rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  background: var(--bg);
+}
+
+.accordion-content p {
+  margin: 0;
+}
+
+.accordion-content p + p {
+  margin-top: 0.5rem;
+}
+
+.accordion-content ul {
+  margin: 0.5rem 0 0 0;
+  padding-left: 1.25rem;
+}
+
+.accordion-content li {
+  margin-bottom: 0.25rem;
+}
+
+/* =========================================================
+   Section-Level Accordions (Rules page headers)
+   ========================================================= */
+.rules-section {
+  margin-bottom: 0;
+}
+
+.accordion-item--section {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface, var(--panel));
+}
+
+.accordion-header--section {
+  padding: 1rem 1.25rem;
+  font-size: 1.1rem;
+  background: var(--panel);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.accordion-item--section[open] .accordion-header--section {
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.accordion-item--section:not([open]) .accordion-header--section {
+  border-radius: var(--radius);
+}
+
+.accordion-item--section > .accordion-content {
+  padding: 1.25rem;
+  background: var(--bg);
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
+.accordion-item--section .accordion {
+  margin-top: 0;
+}
+
+.accordion-item--section .accordion-item {
+  background: var(--bg-soft, var(--surface));
+}
+
+/* =========================================================
+   Rules Page Specific Styles
+   ========================================================= */
+.rules-label {
+  font-weight: 600;
+  margin-right: 0.5rem;
+}
+
+.rules-list--allowed {
+  color: var(--success, #22c55e);
+}
+
+.rules-list--banned {
+  color: var(--danger, #ef4444);
+}
+
+/* =========================================================
+   Rule Builder
+   ========================================================= */
+.rule-builder {
+  border: 2px solid var(--accent);
+  background: var(--panel);
+}
+
+.rule-builder__selections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.rule-builder__group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rule-builder__label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--fg);
+}
+
+.rule-builder__select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.rule-builder__select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--focus-2);
+}
+
+.rule-builder__checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.rule-builder__checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.rule-builder__checkbox:hover {
+  border-color: var(--accent);
+}
+
+.rule-builder__checkbox:has(input:checked) {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border-color: var(--accent);
+}
+
+.rule-builder__checkbox input {
+  margin: 0;
+  cursor: pointer;
+}
+
+.rule-builder__output {
+  padding: 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.rule-builder__result {
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.rb-section {
+  padding: 0.25rem 0;
+}
+
+.rb-detail {
+  margin: 0.25rem 0 0 1rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.rb-list {
+  margin: 0.25rem 0 0 1.5rem;
+  padding: 0;
+}
+
+.rb-list li {
+  margin-bottom: 0.2rem;
+}
+
+.rule-builder__validation {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: color-mix(in srgb, var(--danger, #ef4444) 15%, transparent);
+  border: 1px solid var(--danger, #ef4444);
+  border-radius: var(--radius-sm);
+}
+
+.rule-builder__warning {
+  margin: 0;
+  color: var(--danger, #ef4444);
+  font-size: 0.9rem;
+}
+
+/* =========================================================
+   Tag Chip Variants
+   ========================================================= */
+.tag-chip--accent {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+
+.tag-chip--accent:hover {
+  background: var(--accent);
+  filter: brightness(1.1);
+}
+
+.tag-chip--sub {
+  font-size: calc(var(--pill-font-size) * 0.9);
+  opacity: 0.85;
+  padding-left: 0.5rem;
+}
+
+.tag-chip--sub::before {
+  content: "↳ ";
+  opacity: 0.5;
+  margin-right: 0.1rem;
+}
+
+.tag-chip--outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--fg);
+}
+
+.tag-chip--outline:hover {
+  background: var(--bg-soft);
 }
