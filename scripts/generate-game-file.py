@@ -260,8 +260,8 @@ def main():
     lines.append('')
 
     # Metadata   
-    lines.append('# TODO: Add tags (genres)')
-    lines.append('tags: []')
+    lines.append('# TODO: Add genres')
+    lines.append('genres: []')
     
     if platforms:
         lines.append('platforms:')
