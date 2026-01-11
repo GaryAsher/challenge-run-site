@@ -82,7 +82,7 @@ restrictions_data:
   - slug: one-god-only
     label: "One God Only"
     description: "Only utilize boons from one god. You may pick up a boon from a god so long as you do not benefit it in any way."
-- slug: boonless
+  - slug: boonless
     label: "Boonless"
     description: "Do not utilize any boons from any god. You may pick up a boon from a god so long as you do not benefit it in any way."
   - slug: arcanaless
