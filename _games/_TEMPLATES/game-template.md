@@ -1,42 +1,34 @@
 ---
 layout: game
-game_id: __GAME_ID__
+game_id: GAME_ID_HERE
 reviewers: []
 
-name: "__GAME_NAME__"
+name: "GAME NAME HERE"
 name_aliases: []
-status: "__STATUS__"
+status: "Pending review"
 
 genres: []
 platforms: []
 
-cover: /assets/img/games/__FIRST_LETTER__/__GAME_ID__.jpg
+cover: /assets/img/games/FIRST_LETTER/GAME_ID_HERE.jpg
 cover_position: center
 
-timing_method: RTA
+timing_method: "RTA"
 
 tabs:
   overview: true
   runs: true
-  history: false
-  resources: false
-  forum: false
-  extra_1: false
-  extra_2: false
+  history: true
+  resources: true
+  forum: true
 
 character_column:
   enabled: false
-  label: "Character"
 
 challenges: []
-
-glitches_data:
-  - slug: unrestricted
-    label: "Unrestricted"
-  - slug: glitchless
-    label: "Glitchless"
-
-restrictions: []
-
+community_challenges: []
+glitches_data: []
 categories_data: []
 ---
+
+Game description goes here.
