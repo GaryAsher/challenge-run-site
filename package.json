@@ -8,12 +8,12 @@
 
     "check:all": "npm run check:games-index && npm run check:run-categories && npm run check:codeowners",
     "check:codeowners": "node scripts/generate-codeowners.js --check",
-    "check:game-pages": "node scripts/generate-games-index.js --check",
+    "check:game-pages": "node scripts/generate-game-pages.js --check",
     "check:run-category-pages": "node scripts/generate-run-category-pages.js --check",
 
     "generate:all": "npm run generate:game-pages && npm run generate:run-categories && npm run generate:codeowners",
     "generate:codeowners": "node scripts/generate-codeowners.js",
-    "generate:game-pages": "node scripts/generate-games-index.js",
+    "generate:game-pages": "node scripts/generate-game-pages.js",
     "generate:run-category-pages": "node scripts/generate-run-category-pages.js",
 
     "promote:runs": "node scripts/promote-runs.js",
