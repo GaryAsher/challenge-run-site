@@ -1,0 +1,552 @@
+name: Process New Game Issue
+
+# Triggered when a new-game issue is labeled or a moderator comments
+on:
+  issues:
+    types: [labeled]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  # ============================================================
+  # HANDLE LABEL-BASED DECISIONS
+  # ============================================================
+  handle-label:
+    if: |
+      github.event_name == 'issues' &&
+      contains(github.event.issue.labels.*.name, 'new-game') &&
+      (
+        github.event.label.name == 'approved' ||
+        github.event.label.name == 'rejected'
+      )
+    runs-on: ubuntu-latest
+    steps:
+      - name: Request Confirmation
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const label = context.payload.label.name;
+            const issue = context.payload.issue;
+            
+            let message = '';
+            
+            if (label === 'approved') {
+              message = `## ⚠️ Confirm Approval
+              
+            You are about to **approve** this new game submission.
+
+            This will:
+            - Create a game file in \`_queue_games/\`
+            - Open a PR for review and cover image addition
+            
+            **To confirm:** Comment \`/confirm\`
+            **To cancel:** Comment \`/cancel\` or remove the \`approved\` label`;
+            } else if (label === 'rejected') {
+              message = `## ⚠️ Confirm Rejection
+            
+            You are about to **reject** this game submission.
+            
+            **To confirm with reason:** Comment \`/confirm [reason]\`
+            **To cancel:** Comment \`/cancel\` or remove the \`rejected\` label
+            
+            Example: \`/confirm Game already exists under different name\``;
+            }
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body: message
+            });
+            
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              labels: ['awaiting-confirmation']
+            });
+
+  # ============================================================
+  # HANDLE COMMAND COMMENTS
+  # ============================================================
+  handle-command:
+    if: |
+      github.event_name == 'issue_comment' &&
+      contains(github.event.issue.labels.*.name, 'new-game') &&
+      (
+        startsWith(github.event.comment.body, '/approve') ||
+        startsWith(github.event.comment.body, '/reject') ||
+        startsWith(github.event.comment.body, '/confirm') ||
+        startsWith(github.event.comment.body, '/cancel')
+      )
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Permissions
+        id: check-perms
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: permission } = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              username: context.payload.comment.user.login
+            });
+            
+            const allowed = ['admin', 'write', 'maintain'].includes(permission.permission);
+            
+            if (!allowed) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.issue.number,
+                body: '❌ You do not have permission to use moderator commands.'
+              });
+            }
+            
+            core.setOutput('allowed', allowed);
+
+      - name: Parse Command
+        if: steps.check-perms.outputs.allowed == 'true'
+        id: parse-command
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = context.payload.comment.body.trim();
+            const issue = context.payload.issue;
+            const labels = issue.labels.map(l => l.name);
+            
+            const match = comment.match(/^\/(\w+)\s*(.*)?$/);
+            if (!match) {
+              core.setOutput('valid', false);
+              return;
+            }
+            
+            const command = match[1].toLowerCase();
+            const argument = (match[2] || '').trim();
+            
+            let action = '';
+            let reason = '';
+            
+            if (command === 'approve') {
+              action = 'add-approved-label';
+            } else if (command === 'reject') {
+              action = 'add-rejected-label';
+              reason = argument;
+            } else if (command === 'confirm') {
+              if (labels.includes('approved') && labels.includes('awaiting-confirmation')) {
+                action = 'process-approval';
+              } else if (labels.includes('rejected') && labels.includes('awaiting-confirmation')) {
+                action = 'process-rejection';
+                reason = argument;
+              } else {
+                action = 'nothing-to-confirm';
+              }
+            } else if (command === 'cancel') {
+              action = 'cancel';
+            }
+            
+            core.setOutput('valid', true);
+            core.setOutput('action', action);
+            core.setOutput('reason', reason);
+
+      - name: Add Approved Label
+        if: steps.parse-command.outputs.action == 'add-approved-label'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              labels: ['approved']
+            });
+
+      - name: Add Rejected Label
+        if: steps.parse-command.outputs.action == 'add-rejected-label'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              labels: ['rejected']
+            });
+
+      - name: Cancel Action
+        if: steps.parse-command.outputs.action == 'cancel'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labelsToRemove = ['approved', 'rejected', 'awaiting-confirmation'];
+            
+            for (const label of labelsToRemove) {
+              try {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.payload.issue.number,
+                  name: label
+                });
+              } catch (e) {}
+            }
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: '✅ Action cancelled.'
+            });
+
+      # ============================================================
+      # PROCESS APPROVAL - CREATE GAME FILE
+      # ============================================================
+      - name: Checkout
+        if: steps.parse-command.outputs.action == 'process-approval'
+        uses: actions/checkout@v4
+
+      - name: Create Game File
+        if: steps.parse-command.outputs.action == 'process-approval'
+        id: create-game
+        uses: actions/github-script@v7
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        with:
+          script: |
+            const fs = require('fs');
+            const body = process.env.ISSUE_BODY;
+            
+            // Parse form fields
+            function parseField(label) {
+              const regex = new RegExp(`### ${label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\n\\n([^\\n]+)`, 'i');
+              const match = body.match(regex);
+              let value = match ? match[1].trim() : '';
+              if (value === '_No response_' || value === 'None') value = '';
+              return value;
+            }
+            
+            function parseTextarea(label) {
+              const regex = new RegExp(`### ${label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\n\\n([\\s\\S]*?)(?=\\n###|$)`, 'i');
+              const match = body.match(regex);
+              let value = match ? match[1].trim() : '';
+              if (value === '_No response_') value = '';
+              return value;
+            }
+            
+            function parseCheckboxes(label) {
+              const regex = new RegExp(`### ${label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\n\\n([\\s\\S]*?)(?=\\n###|$)`, 'i');
+              const match = body.match(regex);
+              if (!match) return [];
+              
+              const checked = [];
+              const lines = match[1].split('\n');
+              for (const line of lines) {
+                if (line.includes('[X]') || line.includes('[x]')) {
+                  const labelMatch = line.match(/\[x\]\s*(.+)/i);
+                  if (labelMatch) checked.push(labelMatch[1].trim());
+                }
+              }
+              return checked;
+            }
+            
+            // Extract fields
+            const gameName = parseField('Game Name');
+            const gameId = parseField('Game ID \\(URL Slug\\)');
+            const aliases = parseField('Alternate Names / Abbreviations');
+            const genres = parseField('Genres / Tags');
+            const platforms = parseCheckboxes('Platforms');
+            const categories = parseTextarea('Speedrun Categories');
+            const standardChallenges = parseCheckboxes('Standard Challenge Types');
+            const communityChallenges = parseTextarea('Game-Specific Community Challenges');
+            const glitchCategories = parseCheckboxes('Glitch Categories');
+            const timingMethod = parseField('Primary Timing Method');
+            const characterColumn = parseField('Does this game need a Character/Class column\\?');
+            const characterOptions = parseField('Character/Class Options');
+            const resources = parseTextarea('Community Resources');
+            const notes = parseTextarea('Additional Notes');
+            
+            if (!gameName || !gameId) {
+              core.setFailed('Missing required fields: game name or ID');
+              return;
+            }
+            
+            // Build YAML content
+            let content = `---
+            layout: game
+            game_id: ${gameId}
+            reviewers: []
+            
+            name: "${gameName}"`.replace(/^            /gm, '');
+            
+            // Aliases
+            if (aliases) {
+              const aliasList = aliases.split(',').map(a => a.trim()).filter(Boolean);
+              if (aliasList.length > 0) {
+                content += `\nname_aliases:`;
+                for (const a of aliasList) {
+                  content += `\n  - "${a}"`;
+                }
+              }
+            }
+            
+            content += `\nstatus: "Pending review"`;
+            
+            // Genres
+            if (genres) {
+              const genreList = genres.split(',').map(g => g.trim().toLowerCase().replace(/\s+/g, '-')).filter(Boolean);
+              content += `\n\ngenres:`;
+              for (const g of genreList) {
+                content += `\n  - ${g}`;
+              }
+            } else {
+              content += `\n\ngenres: []`;
+            }
+            
+            // Platforms
+            if (platforms.length > 0) {
+              content += `\n\nplatforms:`;
+              const platformMap = {
+                'PC (Steam)': 'steam',
+                'PC (Epic Games Store)': 'epic',
+                'PC (GOG)': 'gog',
+                'PC (Other)': 'pc',
+                'PlayStation 4': 'playstation-4',
+                'PlayStation 5': 'playstation-5',
+                'Xbox One': 'xbox-one',
+                'Xbox Series X/S': 'xbox-series',
+                'Nintendo Switch': 'nintendo-switch',
+                'Mobile (iOS/Android)': 'mobile',
+              };
+              for (const p of platforms) {
+                const slug = platformMap[p] || p.toLowerCase().replace(/\s+/g, '-');
+                if (slug !== 'other-(specify-in-notes)') {
+                  content += `\n  - ${slug}`;
+                }
+              }
+            } else {
+              content += `\n\nplatforms: []`;
+            }
+            
+            // Cover image placeholder
+            const firstLetter = gameId.charAt(0).toLowerCase();
+            content += `\n\ncover: /assets/img/games/${firstLetter}/${gameId}.jpg`;
+            content += `\ncover_position: center`;
+            
+            // Timing
+            const timingMap = {
+              'RTA (Real Time Attack)': 'RTA',
+              'LRT (Load Removed Time)': 'LRT',
+              'IGT (In-Game Time)': 'IGT',
+            };
+            content += `\n\ntiming_method: "${timingMap[timingMethod] || 'RTA'}"`;
+            
+            // Tabs
+            content += `\n
+            tabs:
+              overview: true
+              runs: true
+              history: true
+              resources: true
+              forum: true`.replace(/^            /gm, '');
+            
+            // Character column
+            if (characterColumn && characterColumn !== 'No') {
+              const labelMatch = characterColumn.match(/Yes - (.+)/);
+              const label = labelMatch ? labelMatch[1] : 'Character';
+              content += `\n
+            character_column:
+              enabled: true
+              label: "${label}"`.replace(/^            /gm, '');
+              
+              if (characterOptions) {
+                content += `\n  options:`;
+                const opts = characterOptions.split(',').map(o => o.trim()).filter(Boolean);
+                for (const o of opts) {
+                  content += `\n    - "${o}"`;
+                }
+              }
+            } else {
+              content += `\n
+            character_column:
+              enabled: false`.replace(/^            /gm, '');
+            }
+            
+            // Standard challenges
+            const challengeMap = {
+              'Hitless (no damage taken)': 'hitless',
+              'Damageless (no health lost)': 'damageless',
+              'Deathless (no deaths)': 'deathless',
+              'No Hit No Damage (combined)': 'no-hit-no-damage',
+              'Blindfolded': 'blindfolded',
+            };
+            if (standardChallenges.length > 0) {
+              content += `\n\nchallenges:`;
+              for (const c of standardChallenges) {
+                const slug = challengeMap[c] || c.toLowerCase().replace(/\s+/g, '-');
+                content += `\n  - ${slug}`;
+              }
+            } else {
+              content += `\n\nchallenges: []`;
+            }
+            
+            // Community challenges
+            if (communityChallenges) {
+              const lines = communityChallenges.split('\n').filter(l => l.trim());
+              if (lines.length > 0) {
+                content += `\n\ncommunity_challenges:`;
+                for (const line of lines) {
+                  const parts = line.split(' - ').map(p => p.trim());
+                  if (parts.length >= 2) {
+                    content += `\n  - slug: ${parts[0]}`;
+                    content += `\n    label: "${parts[1]}"`;
+                    if (parts[2]) {
+                      content += `\n    description: "${parts[2]}"`;
+                    }
+                  }
+                }
+              }
+            }
+            
+            // Glitch categories
+            const glitchMap = {
+              'Unrestricted (any glitches allowed)': 'unrestricted',
+              'No Major Glitches (NMG)': 'nmg',
+              'Glitchless': 'glitchless',
+            };
+            if (glitchCategories.length > 0) {
+              content += `\n\nglitches_data:`;
+              for (const g of glitchCategories) {
+                const slug = glitchMap[g];
+                if (slug) {
+                  const labels = { unrestricted: 'Unrestricted', nmg: 'No Major Glitches (NMG)', glitchless: 'Glitchless' };
+                  content += `\n  - slug: ${slug}`;
+                  content += `\n    label: "${labels[slug]}"`;
+                }
+              }
+            }
+            
+            // Categories
+            if (categories) {
+              const lines = categories.split('\n').filter(l => l.trim());
+              if (lines.length > 0) {
+                content += `\n\ncategories_data:`;
+                for (const line of lines) {
+                  const parts = line.split(' - ').map(p => p.trim());
+                  if (parts.length >= 2) {
+                    content += `\n  - slug: ${parts[0]}`;
+                    content += `\n    label: "${parts[1]}"`;
+                  }
+                }
+              }
+            }
+            
+            content += `\n---\n`;
+            
+            // Add notes as content
+            if (notes) {
+              content += `\n${notes}\n`;
+            }
+            
+            if (resources) {
+              content += `\n## Resources\n\n${resources}\n`;
+            }
+            
+            // Write file
+            const filePath = `_queue_games/${gameId}.md`;
+            fs.writeFileSync(filePath, content);
+            
+            core.setOutput('file_path', filePath);
+            core.setOutput('game_id', gameId);
+            core.setOutput('game_name', gameName);
+
+      - name: Create Pull Request
+        if: steps.parse-command.outputs.action == 'process-approval'
+        uses: peter-evans/create-pull-request@v5
+        id: create-pr
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: |
+            Add game: ${{ steps.create-game.outputs.game_name }}
+            
+            Closes #${{ github.event.issue.number }}
+          title: "[New Game] ${{ steps.create-game.outputs.game_name }}"
+          body: |
+            ## New Game Submission
+            
+            **Game:** ${{ steps.create-game.outputs.game_name }}
+            **ID:** `${{ steps.create-game.outputs.game_id }}`
+            **File:** `${{ steps.create-game.outputs.file_path }}`
+            
+            ### Before Merging
+            
+            - [ ] Review game file for accuracy
+            - [ ] Add cover image to `assets/img/games/`
+            - [ ] Verify categories and challenges are correct
+            
+            ---
+            
+            Closes #${{ github.event.issue.number }}
+          branch: "new-game/${{ steps.create-game.outputs.game_id }}"
+          labels: |
+            new-game
+            auto-generated
+
+      - name: Comment Success
+        if: steps.parse-command.outputs.action == 'process-approval'
+        uses: actions/github-script@v7
+        env:
+          PR_URL: ${{ steps.create-pr.outputs.pull-request-url }}
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: `## ✅ Game Approved!\n\nA pull request has been created: ${process.env.PR_URL}\n\nThe PR needs a cover image before merging. Once ready, merge the PR to add the game to the queue.`
+            });
+            
+            await github.rest.issues.removeLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              name: 'awaiting-confirmation'
+            }).catch(() => {});
+            
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              labels: ['pr-created']
+            });
+
+      # ============================================================
+      # PROCESS REJECTION
+      # ============================================================
+      - name: Process Rejection
+        if: steps.parse-command.outputs.action == 'process-rejection'
+        uses: actions/github-script@v7
+        env:
+          REASON: ${{ steps.parse-command.outputs.reason }}
+        with:
+          script: |
+            const reason = process.env.REASON || 'No reason provided';
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: `## ❌ Game Rejected\n\n**Reason:** ${reason}\n\nIf you believe this was in error, please open a new submission.`
+            });
+            
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              state: 'closed',
+              state_reason: 'not_planned'
+            });
