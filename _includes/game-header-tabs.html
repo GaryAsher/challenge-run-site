@@ -48,10 +48,10 @@
               <p class="muted">{{ game.status }}</p>
             {% endif %}
 
-            {% if game.tags and game.tags.size > 0 %}
-              <div class="game-tags">
-                {% for tag in game.tags %}
-                  {% assign meta = site.data.tags[tag] %}
+            {% if game.genres and game.genres.size > 0 %}
+              <div class="game-genres">
+                {% for tag in game.genres %}
+                  {% assign meta = site.data.genres[tag] %}
                   <span class="tag">{{ meta.label | default: tag }}</span>
                 {% endfor %}
               </div>
@@ -79,10 +79,10 @@
         <p class="muted">{{ game.status }}</p>
       {% endif %}
 
-      {% if game.tags and game.tags.size > 0 %}
-        <div class="game-tags">
-          {% for tag in game.tags %}
-            {% assign meta = site.data.tags[tag] %}
+      {% if game.genres and game.genres.size > 0 %}
+        <div class="game-genres">
+          {% for tag in game.genres %}
+            {% assign meta = site.data.genres[tag] %}
             <span class="tag">{{ meta.label | default: tag }}</span>
           {% endfor %}
         </div>
