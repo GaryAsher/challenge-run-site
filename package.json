@@ -11,10 +11,10 @@
     "check:games-index": "node scripts/generate-games-index.js --check",
     "check:run-categories": "node scripts/generate-run-category-pages.js --check",
 
-    "generate:all": "npm run generate:games-index && npm run generate:run-categories && npm run generate:codeowners",
-    "generate:categories": "npm run generate:run-categories",
+    "generate:all": "npm run generate:game-pages && npm run generate:run-categories && npm run generate:codeowners",
+    "generate:game-pages": "npm run generate:game-pages",
     "generate:codeowners": "node scripts/generate-codeowners.js",
-    "generate:games-index": "node scripts/generate-games-index.js",
+    "generate:games-index": "node scripts/generate-run-category-pages.js",
     "generate:run-categories": "node scripts/generate-run-category-pages.js",
 
     "promote:runs": "node scripts/promote-runs.js",
