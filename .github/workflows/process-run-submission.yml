@@ -45,48 +45,48 @@ jobs:
             You are about to **approve** this run submission.
 
             This will:
+            - Validate the video link
             - Create a run file in \`_queue_runs/\`
             - Create a runner profile if it doesn't exist
             - Open a PR for final validation
             
             **To confirm:** Comment \`/confirm\`
             **To cancel:** Comment \`/cancel\` or remove the \`approved\` label`;
-                        } else if (label === 'rejected') {
-                          message = `## ⚠️ Confirm Rejection
+            } else if (label === 'rejected') {
+              message = `## ⚠️ Confirm Rejection
             
             You are about to **reject** this run submission.
             
             This will:
-            - Create a rejected run file in \`_runs/rejected/\`
             - Close this issue
             
             **To confirm with reason:** Comment \`/confirm [reason]\`
             **To cancel:** Comment \`/cancel\` or remove the \`rejected\` label
             
             Example: \`/confirm Video is private and cannot be verified\``;
-                        } else if (label === 'needs-community-review') {
-                          message = `## 🔍 Flagged for Community Review
+            } else if (label === 'needs-community-review') {
+              message = `## 🔍 Flagged for Community Review
             
             This run has been flagged for additional review by the game's community moderators.
             
             **To confirm:** Comment \`/confirm\`
             **To cancel:** Comment \`/cancel\` or remove the label`;
-                        }
-                        
-                        await github.rest.issues.createComment({
-                          owner: context.repo.owner,
-                          repo: context.repo.repo,
-                          issue_number: issue.number,
-                          body: message
-                        });
-                        
-                        // Add awaiting-confirmation label
-                        await github.rest.issues.addLabels({
-                          owner: context.repo.owner,
-                          repo: context.repo.repo,
-                          issue_number: issue.number,
-                          labels: ['awaiting-confirmation']
-                        });
+            }
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body: message
+            });
+            
+            // Add awaiting-confirmation label
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              labels: ['awaiting-confirmation']
+            });
 
   # ============================================================
   # HANDLE COMMAND COMMENTS
@@ -154,17 +154,13 @@ jobs:
             let reason = '';
             
             if (command === 'approve') {
-              // Direct approve - add label to trigger confirmation
               action = 'add-approved-label';
             } else if (command === 'reject') {
-              // Direct reject - add label to trigger confirmation
               action = 'add-rejected-label';
               reason = argument;
             } else if (command === 'review') {
-              // Flag for community review
               action = 'add-review-label';
             } else if (command === 'confirm') {
-              // Confirm pending action
               if (labels.includes('approved') && labels.includes('awaiting-confirmation')) {
                 action = 'process-approval';
               } else if (labels.includes('rejected') && labels.includes('awaiting-confirmation')) {
@@ -228,8 +224,6 @@ jobs:
         with:
           script: |
             const issue = context.payload.issue;
-            
-            // Remove decision labels
             const labelsToRemove = ['approved', 'rejected', 'needs-community-review', 'awaiting-confirmation'];
             
             for (const label of labelsToRemove) {
@@ -240,9 +234,7 @@ jobs:
                   issue_number: issue.number,
                   name: label
                 });
-              } catch (e) {
-                // Label might not exist, ignore
-              }
+              } catch (e) {}
             }
             
             await github.rest.issues.createComment({
@@ -252,7 +244,6 @@ jobs:
               body: '✅ Action cancelled. Issue returned to pending review.'
             });
             
-            // Re-add pending-review label
             await github.rest.issues.addLabels({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -273,24 +264,181 @@ jobs:
             });
 
       # ============================================================
-      # PROCESS APPROVAL
+      # PROCESS APPROVAL - STEP 1: VALIDATE VIDEO LINK
+      # ============================================================
+      - name: Validate Video Link
+        if: steps.parse-command.outputs.action == 'process-approval'
+        id: validate-video
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const body = issue.body || '';
+            
+            // Extract video link from issue body
+            const videoMatch = body.match(/### Video Link\s*\n\s*([^\n]+)/i) ||
+                               body.match(/(https?:\/\/(?:www\.)?(?:youtube\.com|youtu\.be|twitch\.tv|clips\.twitch\.tv|bilibili\.com|b23\.tv)[^\s\n]+)/i);
+            
+            if (!videoMatch) {
+              core.setOutput('valid', 'false');
+              core.setOutput('error', 'Could not find video link in submission');
+              return;
+            }
+            
+            const videoUrl = videoMatch[1].trim();
+            console.log(`Validating video URL: ${videoUrl}`);
+            
+            // Validation patterns
+            const VALID_PATTERNS = {
+              youtube: [
+                /^https?:\/\/(www\.)?youtube\.com\/watch\?v=[\w-]+/i,
+                /^https?:\/\/youtu\.be\/[\w-]+/i,
+                /^https?:\/\/(www\.)?youtube\.com\/live\/[\w-]+/i,
+              ],
+              twitch_clip: [
+                /^https?:\/\/clips\.twitch\.tv\/[\w-]+/i,
+                /^https?:\/\/(www\.)?twitch\.tv\/\w+\/clip\/[\w-]+/i,
+              ],
+              twitch_video: [
+                /^https?:\/\/(www\.)?twitch\.tv\/videos\/\d+/i,
+              ],
+              bilibili: [
+                /^https?:\/\/(www\.)?bilibili\.com\/video\/[\w]+/i,
+                /^https?:\/\/b23\.tv\/[\w]+/i,
+              ],
+            };
+            
+            // Rejected patterns - live streams
+            const REJECTED_PATTERNS = [
+              /^https?:\/\/(www\.)?twitch\.tv\/\w+\/?$/i,
+            ];
+            
+            // Check rejected first
+            for (const pattern of REJECTED_PATTERNS) {
+              if (pattern.test(videoUrl)) {
+                core.setOutput('valid', 'false');
+                core.setOutput('error', `**Invalid video link:** Live streams are not accepted.\n\nPlease provide a recorded video:\n- YouTube\n- Twitch Highlight or Clip\n- Bilibili\n\nProvided: \`${videoUrl}\``);
+                return;
+              }
+            }
+            
+            let source = null;
+            let warning = '';
+            
+            // Check YouTube
+            for (const pattern of VALID_PATTERNS.youtube) {
+              if (pattern.test(videoUrl)) { source = 'youtube'; break; }
+            }
+            
+            // Check Twitch clips
+            if (!source) {
+              for (const pattern of VALID_PATTERNS.twitch_clip) {
+                if (pattern.test(videoUrl)) { source = 'twitch_clip'; break; }
+              }
+            }
+            
+            // Check Twitch videos (VOD or highlight - warn)
+            if (!source) {
+              for (const pattern of VALID_PATTERNS.twitch_video) {
+                if (pattern.test(videoUrl)) {
+                  source = 'twitch_video';
+                  warning = '⚠️ **Twitch VOD Warning**: Regular Twitch VODs expire after ~60 days. Please ensure this is a **Highlight** (permanent) rather than a regular VOD. If your video expires, your run record may be affected.';
+                  break;
+                }
+              }
+            }
+            
+            // Check Bilibili
+            if (!source) {
+              for (const pattern of VALID_PATTERNS.bilibili) {
+                if (pattern.test(videoUrl)) { source = 'bilibili'; break; }
+              }
+            }
+            
+            if (!source) {
+              core.setOutput('valid', 'false');
+              core.setOutput('error', `**Invalid video link.** Accepted sources:\n- YouTube (youtube.com, youtu.be)\n- Twitch Highlights or Clips (clips.twitch.tv, twitch.tv/videos/)\n- Bilibili (bilibili.com, b23.tv)\n\nProvided: \`${videoUrl}\``);
+              return;
+            }
+            
+            core.setOutput('valid', 'true');
+            core.setOutput('source', source);
+            core.setOutput('warning', warning);
+            core.setOutput('video_url', videoUrl);
+            console.log(`Video validated: source=${source}`);
+
+      - name: Reject Invalid Video
+        if: steps.parse-command.outputs.action == 'process-approval' && steps.validate-video.outputs.valid == 'false'
+        uses: actions/github-script@v7
+        env:
+          ERROR_MSG: ${{ steps.validate-video.outputs.error }}
+        with:
+          script: |
+            const error = process.env.ERROR_MSG;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: `## ❌ Video Link Validation Failed\n\n${error}\n\n---\nPlease update your submission with a valid video link. A moderator can then re-approve.`
+            });
+            
+            // Remove labels
+            await github.rest.issues.removeLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              name: 'awaiting-confirmation'
+            }).catch(() => {});
+            
+            await github.rest.issues.removeLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              name: 'approved'
+            }).catch(() => {});
+            
+            // Add needs-revision label
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              labels: ['needs-revision']
+            });
+
+      - name: Warn About Twitch VOD
+        if: steps.parse-command.outputs.action == 'process-approval' && steps.validate-video.outputs.valid == 'true' && steps.validate-video.outputs.warning != ''
+        uses: actions/github-script@v7
+        env:
+          WARNING_MSG: ${{ steps.validate-video.outputs.warning }}
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: process.env.WARNING_MSG
+            });
+
+      # ============================================================
+      # PROCESS APPROVAL - STEP 2: CREATE RUN FILE
       # ============================================================
       - name: Checkout
-        if: steps.parse-command.outputs.action == 'process-approval'
+        if: steps.parse-command.outputs.action == 'process-approval' && steps.validate-video.outputs.valid == 'true'
         uses: actions/checkout@v4
 
       - name: Setup Node.js
-        if: steps.parse-command.outputs.action == 'process-approval'
+        if: steps.parse-command.outputs.action == 'process-approval' && steps.validate-video.outputs.valid == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
       - name: Install Dependencies
-        if: steps.parse-command.outputs.action == 'process-approval'
+        if: steps.parse-command.outputs.action == 'process-approval' && steps.validate-video.outputs.valid == 'true'
         run: npm ci
 
       - name: Create Run File
-        if: steps.parse-command.outputs.action == 'process-approval'
+        if: steps.parse-command.outputs.action == 'process-approval' && steps.validate-video.outputs.valid == 'true'
         id: create-run
         uses: actions/github-script@v7
         env:
@@ -306,11 +454,9 @@ jobs:
             
             // Parse GitHub Issue form fields
             function parseField(fieldLabel) {
-              // GitHub forms create: ### Field Label\n\nvalue\n
               const regex = new RegExp(`### ${fieldLabel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\n\\n([^\\n]+)`, 'i');
               const match = body.match(regex);
               let value = match ? match[1].trim() : '';
-              // Handle "None" or "_No response_" as empty
               if (value === '_No response_' || value === 'None' || value === 'null') {
                 value = '';
               }
@@ -327,36 +473,51 @@ jobs:
               return value;
             }
             
-            // Extract all fields
+            // Extract all fields - supports multiple form formats
             let gameId = parseField('Game');
             const gameOther = parseField('Game \\(if not listed\\)');
             if (gameId === 'OTHER (specify below)' && gameOther) {
               gameId = gameOther;
             }
+            // Handle Hollow Knight specific form
+            if (!gameId || gameId === '') {
+              gameId = 'hollow-knight'; // Default for HK-specific form
+            }
             
-            const runner = parseField('Runner Name \\(Display\\)');
+            const runner = parseField('Runner Name \\(Display\\)') || parseField('Runner Name');
             const runnerId = parseField('Runner ID');
-            const contact = parseField('Contact \\(Optional\\)');
+            const contact = parseField('Contact \\(Optional\\)') || parseField('Discord / Contact \\(Optional\\)');
             
-            let categorySlug = parseField('Category');
-            const categoryOther = parseField('Category \\(if not listed\\)');
+            let categorySlug = parseField('Category') || parseField('Category Slug');
+            const categoryOther = parseField('Category \\(if OTHER\\)') || parseField('Category \\(if not listed\\)');
             if (categorySlug === 'OTHER (specify below)' && categoryOther) {
               categorySlug = categoryOther;
             }
             const categoryLabel = parseField('Category Display Name');
             
             let challengeId = parseField('Challenge Type');
-            const challengeOther = parseField('Challenge Type \\(if not listed\\)');
+            const challengeOther = parseField('Challenge Type \\(if OTHER\\)') || parseField('Challenge Type \\(if not listed\\)');
             if (challengeId === 'OTHER (specify below)' && challengeOther) {
               challengeId = challengeOther;
             }
             
+            // Glitch category (optional)
+            const glitchCategory = parseField('Glitch Category');
+            
             const videoLink = parseField('Video Link');
             const dateCompleted = parseField('Date Completed');
-            const timePrimary = parseField('Run Time \\(Optional\\)');
-            const timingMethod = parseField('Timing Method');
-            const restrictions = parseTextarea('Restrictions / Modifiers \\(Optional\\)');
-            const notes = parseTextarea('Additional Notes \\(Optional\\)');
+            
+            // Time fields - support both generic and HK-specific
+            const timePrimary = parseField('Run Time') || parseField('Run Time \\(Optional\\)') || parseField('Time \\(LRT - Load Removed\\)');
+            const timeRTA = parseField('Time \\(RTA - Real Time\\)');
+            const timingMethod = parseField('Timing Method') || (timePrimary && timePrimary.includes('LRT') ? 'LRT' : '');
+            
+            // Platform and patch (HK specific)
+            const platform = parseField('Platform');
+            const patchVersion = parseField('Game Patch Version');
+            
+            const restrictions = parseTextarea('Restrictions / Modifiers \\(Optional\\)') || parseTextarea('Additional Restrictions \\(Optional\\)');
+            const notes = parseTextarea('Additional Notes \\(Optional\\)') || parseTextarea('Additional Notes');
             
             // Validate required fields
             const missing = [];
@@ -377,7 +538,6 @@ jobs:
             // Generate filename
             const today = new Date().toISOString().slice(0, 10);
             
-            // Find next available NN
             const queueDir = `_queue_runs/${gameId}`;
             let nn = 1;
             if (fs.existsSync(queueDir)) {
@@ -392,7 +552,6 @@ jobs:
             }
             const nnStr = String(nn).padStart(2, '0');
             
-            // Sanitize category slug for filename (replace / with -)
             const categorySlugForFilename = categorySlug.replace(/\//g, '-');
             const filename = `${today}__${gameId}__${runnerId}__${categorySlugForFilename}__${nnStr}.md`;
             const filePath = `${queueDir}/${filename}`;
@@ -412,11 +571,27 @@ jobs:
             verified: false
             verified_by: ""`.replace(/^            /gm, '');
             
+            if (glitchCategory && glitchCategory !== '""' && glitchCategory !== '') {
+              content += `\nglitch_category: ${glitchCategory}`;
+            }
+            
             if (timePrimary) {
               content += `\ntime_primary: ${timePrimary}`;
-              if (timingMethod && timingMethod !== '""') {
+              if (timingMethod && timingMethod !== '""' && timingMethod !== '') {
                 content += `\ntiming_method_primary: ${timingMethod}`;
               }
+            }
+            
+            if (timeRTA) {
+              content += `\ntime_rta: ${timeRTA}`;
+            }
+            
+            if (platform && platform !== '""' && platform !== '') {
+              content += `\nplatform: "${platform}"`;
+            }
+            
+            if (patchVersion && patchVersion !== '""' && patchVersion !== '') {
+              content += `\npatch_version: "${patchVersion}"`;
             }
             
             if (restrictions) {
@@ -470,7 +645,7 @@ jobs:
             core.setOutput('category', categoryLabel);
 
       - name: Create Pull Request
-        if: steps.parse-command.outputs.action == 'process-approval'
+        if: steps.parse-command.outputs.action == 'process-approval' && steps.validate-video.outputs.valid == 'true'
         uses: peter-evans/create-pull-request@v5
         id: create-pr
         with:
@@ -503,11 +678,10 @@ jobs:
             auto-generated
 
       - name: Comment Success
-        if: steps.parse-command.outputs.action == 'process-approval'
+        if: steps.parse-command.outputs.action == 'process-approval' && steps.validate-video.outputs.valid == 'true'
         uses: actions/github-script@v7
         env:
           PR_URL: ${{ steps.create-pr.outputs.pull-request-url }}
-          PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
         with:
           script: |
             const prUrl = process.env.PR_URL;
@@ -516,36 +690,30 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.payload.issue.number,
-              body: `## ✅ Run Approved!
-
-              A pull request has been created: ${prUrl}
-              
-              The PR will run validation checks automatically. Once checks pass, merge the PR to complete the submission.
-              
-              This issue will be closed when the PR is merged.`
-                          });
-                          
-                          // Update labels
-                          await github.rest.issues.removeLabel({
-                            owner: context.repo.owner,
-                            repo: context.repo.repo,
-                            issue_number: context.payload.issue.number,
-                            name: 'awaiting-confirmation'
-                          }).catch(() => {});
-                          
-                          await github.rest.issues.removeLabel({
-                            owner: context.repo.owner,
-                            repo: context.repo.repo,
-                            issue_number: context.payload.issue.number,
-                            name: 'pending-review'
-                          }).catch(() => {});
-                          
-                          await github.rest.issues.addLabels({
-                            owner: context.repo.owner,
-                            repo: context.repo.repo,
-                            issue_number: context.payload.issue.number,
-                            labels: ['pr-created']
-                          });
+              body: `## ✅ Run Approved!\n\nA pull request has been created: ${prUrl}\n\nThe PR will run validation checks automatically. Once checks pass, merge the PR to complete the submission.\n\nThis issue will be closed when the PR is merged.`
+            });
+            
+            // Update labels
+            await github.rest.issues.removeLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              name: 'awaiting-confirmation'
+            }).catch(() => {});
+            
+            await github.rest.issues.removeLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              name: 'pending-review'
+            }).catch(() => {});
+            
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              labels: ['pr-created']
+            });
 
       # ============================================================
       # PROCESS REJECTION
@@ -564,36 +732,30 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issue.number,
-              body: `## ❌ Run Rejected
-
-              **Reason:** ${reason}
-              
-              If you believe this was in error, please open a new submission with the issues addressed.`
-                          });
-                          
-                          // Update labels
-                          await github.rest.issues.removeLabel({
-                            owner: context.repo.owner,
-                            repo: context.repo.repo,
-                            issue_number: issue.number,
-                            name: 'awaiting-confirmation'
-                          }).catch(() => {});
-                          
-                          await github.rest.issues.removeLabel({
-                            owner: context.repo.owner,
-                            repo: context.repo.repo,
-                            issue_number: issue.number,
-                            name: 'pending-review'
-                          }).catch(() => {});
-                          
-                          // Close issue
-                          await github.rest.issues.update({
-                            owner: context.repo.owner,
-                            repo: context.repo.repo,
-                            issue_number: issue.number,
-                            state: 'closed',
-                            state_reason: 'not_planned'
-                          });
+              body: `## ❌ Run Rejected\n\n**Reason:** ${reason}\n\nIf you believe this was in error, please open a new submission with the issues addressed.`
+            });
+            
+            await github.rest.issues.removeLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              name: 'awaiting-confirmation'
+            }).catch(() => {});
+            
+            await github.rest.issues.removeLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              name: 'pending-review'
+            }).catch(() => {});
+            
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              state: 'closed',
+              state_reason: 'not_planned'
+            });
 
       # ============================================================
       # PROCESS COMMUNITY REVIEW
@@ -609,26 +771,19 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issue.number,
-              body: `## 🔍 Flagged for Community Review
-
-              This run has been flagged for additional review by community moderators.
-              
-              A community moderator will review this submission and make a final decision.
-              
-              **Community moderators:** Use \`/approve\` or \`/reject [reason]\` when review is complete.`
-                          });
-                          
-                          // Update labels
-                          await github.rest.issues.removeLabel({
-                            owner: context.repo.owner,
-                            repo: context.repo.repo,
-                            issue_number: issue.number,
-                            name: 'awaiting-confirmation'
-                          }).catch(() => {});
-                          
-                          await github.rest.issues.removeLabel({
-                            owner: context.repo.owner,
-                            repo: context.repo.repo,
-                            issue_number: issue.number,
-                            name: 'pending-review'
-                          }).catch(() => {});
+              body: `## 🔍 Flagged for Community Review\n\nThis run has been flagged for additional review by community moderators.\n\nA community moderator will review this submission and make a final decision.\n\n**Community moderators:** Use \`/approve\` or \`/reject [reason]\` when review is complete.`
+            });
+            
+            await github.rest.issues.removeLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              name: 'awaiting-confirmation'
+            }).catch(() => {});
+            
+            await github.rest.issues.removeLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              name: 'pending-review'
+            }).catch(() => {});
