@@ -39,6 +39,23 @@ permalink: /games/hollow-knight/rules/
             </select>
           </div>
 
+          <!-- Glitch Rules Dropdown -->
+          <div class="rule-builder__group">
+            <label class="rule-builder__label">Glitch Rules</label>
+            <select class="rule-builder__select" id="rb-glitch">
+              <option value="" data-description="" data-allowed="" data-banned="">-- Select Glitch Category --</option>
+              {% for glitch in game.glitches_data %}
+                <option value="{{ glitch.slug }}" 
+                        data-description="{{ glitch.description | escape }}"
+                        data-allowed="{{ glitch.allowed | join: '|' | escape }}"
+                        data-banned="{{ glitch.banned | join: '|' | escape }}"
+                        data-notes="{{ glitch.notes | escape }}">
+                  {{ glitch.label }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
           <!-- Challenge Type Dropdown (Multi-select) -->
           <div class="rule-builder__group">
             <label class="rule-builder__label">Challenge Type(s)</label>
@@ -60,23 +77,6 @@ permalink: /games/hollow-knight/rules/
             <div class="rule-builder__selected-challenges" id="rb-selected-challenges">
               <!-- Selected challenges will appear here as removable tags -->
             </div>
-          </div>
-
-          <!-- Glitch Rules Dropdown -->
-          <div class="rule-builder__group">
-            <label class="rule-builder__label">Glitch Rules</label>
-            <select class="rule-builder__select" id="rb-glitch">
-              <option value="" data-description="" data-allowed="" data-banned="">-- Select Glitch Category --</option>
-              {% for glitch in game.glitches_data %}
-                <option value="{{ glitch.slug }}" 
-                        data-description="{{ glitch.description | escape }}"
-                        data-allowed="{{ glitch.allowed | join: '|' | escape }}"
-                        data-banned="{{ glitch.banned | join: '|' | escape }}"
-                        data-notes="{{ glitch.notes | escape }}">
-                  {{ glitch.label }}
-                </option>
-              {% endfor %}
-            </select>
           </div>
 
           <!-- Restrictions Dropdown (Multi-select style) -->
@@ -142,7 +142,7 @@ permalink: /games/hollow-knight/rules/
       </div>
 
       <!-- =========================================================
-           Run Categories
+           Run Categories (1st in the pair)
            ========================================================= -->
       {% if game.categories_data and game.categories_data.size > 0 %}
       <div class="rules-section mt-4">
@@ -180,36 +180,7 @@ permalink: /games/hollow-knight/rules/
       {% endif %}
 
       <!-- =========================================================
-           Community Challenges
-           ========================================================= -->
-      {% if game.community_challenges and game.community_challenges.size > 0 %}
-      <div class="rules-section mt-4">
-        <details class="accordion-item accordion-item--section">
-          <summary class="accordion-header accordion-header--section">
-            <span class="accordion-title">🌟 Community Challenges</span>
-            <span class="accordion-icon">▼</span>
-          </summary>
-          <div class="accordion-content">
-            <div class="accordion">
-              {% for cc in game.community_challenges %}
-                <details class="accordion-item">
-                  <summary class="accordion-header">
-                    <span class="accordion-title">{{ cc.label }}</span>
-                    <span class="accordion-icon">▼</span>
-                  </summary>
-                  <div class="accordion-content">
-                    {% if cc.description %}<p>{{ cc.description }}</p>{% else %}<p class="muted">See resources for detailed rules.</p>{% endif %}
-                  </div>
-                </details>
-              {% endfor %}
-            </div>
-          </div>
-        </details>
-      </div>
-      {% endif %}
-
-      <!-- =========================================================
-           Glitch Categories
+           Glitch Categories (2nd in the pair)
            ========================================================= -->
       {% if game.glitches_data and game.glitches_data.size > 0 %}
       <div class="rules-section mt-4">
@@ -245,7 +216,7 @@ permalink: /games/hollow-knight/rules/
       {% endif %}
 
       <!-- =========================================================
-           Standard Challenge Types
+           Standard Challenge Types (3rd - next pair)
            ========================================================= -->
       {% if game.challenges_data and game.challenges_data.size > 0 %}
       <div class="rules-section mt-4">
@@ -274,7 +245,7 @@ permalink: /games/hollow-knight/rules/
       {% endif %}
 
       <!-- =========================================================
-           Optional Restrictions
+           Optional Restrictions (4th - next pair)
            ========================================================= -->
       {% if game.restrictions_data and game.restrictions_data.size > 0 %}
       <div class="rules-section mt-4">
@@ -296,6 +267,35 @@ permalink: /games/hollow-knight/rules/
                     {% if res.incompatible_with and res.incompatible_with.size > 0 %}
                       <p class="mt-2 muted"><em>⚠️ Cannot be combined with: {{ res.incompatible_with | join: ", " }}</em></p>
                     {% endif %}
+                  </div>
+                </details>
+              {% endfor %}
+            </div>
+          </div>
+        </details>
+      </div>
+      {% endif %}
+
+      <!-- =========================================================
+           Community Challenges (at the end)
+           ========================================================= -->
+      {% if game.community_challenges and game.community_challenges.size > 0 %}
+      <div class="rules-section mt-4">
+        <details class="accordion-item accordion-item--section">
+          <summary class="accordion-header accordion-header--section">
+            <span class="accordion-title">🌟 Community Challenges</span>
+            <span class="accordion-icon">▼</span>
+          </summary>
+          <div class="accordion-content">
+            <div class="accordion">
+              {% for cc in game.community_challenges %}
+                <details class="accordion-item">
+                  <summary class="accordion-header">
+                    <span class="accordion-title">{{ cc.label }}</span>
+                    <span class="accordion-icon">▼</span>
+                  </summary>
+                  <div class="accordion-content">
+                    {% if cc.description %}<p>{{ cc.description }}</p>{% else %}<p class="muted">See resources for detailed rules.</p>{% endif %}
                   </div>
                 </details>
               {% endfor %}
@@ -415,21 +415,6 @@ document.addEventListener('DOMContentLoaded', function() {
       hasContent = true;
     }
 
-    // Challenges (multi-select)
-    if (selectedChallenges.length > 0) {
-      html += '<div class="rb-section mt-2"><strong>🎯 Challenge Type(s):</strong></div>';
-      selectedChallenges.forEach(function(c) {
-        html += '<div class="rb-restriction-item">';
-        html += '<span class="rb-restriction-label">' + c.label + '</span>';
-        if (c.description) {
-          html += '<p class="rb-detail">' + c.description + '</p>';
-        }
-        html += '</div>';
-      });
-      searchParams.set('challenge', selectedChallenges.map(c => c.slug).join(','));
-      hasContent = true;
-    }
-
     // Glitch rules
     if (glitch && glitch.value) {
       html += '<div class="rb-section mt-2"><strong>🔧 Glitch Rules:</strong> ' + glitch.text.trim() + '</div>';
@@ -452,6 +437,21 @@ document.addEventListener('DOMContentLoaded', function() {
         html += '<p class="rb-detail muted"><em>' + glitch.dataset.notes + '</em></p>';
       }
       searchParams.set('glitch', glitch.value);
+      hasContent = true;
+    }
+
+    // Challenges (multi-select)
+    if (selectedChallenges.length > 0) {
+      html += '<div class="rb-section mt-2"><strong>🎯 Challenge Type(s):</strong></div>';
+      selectedChallenges.forEach(function(c) {
+        html += '<div class="rb-restriction-item">';
+        html += '<span class="rb-restriction-label">' + c.label + '</span>';
+        if (c.description) {
+          html += '<p class="rb-detail">' + c.description + '</p>';
+        }
+        html += '</div>';
+      });
+      searchParams.set('challenge', selectedChallenges.map(c => c.slug).join(','));
       hasContent = true;
     }
 
