@@ -157,21 +157,3 @@ categories_data:
 ---
 
 Hollow Knight is a challenging 2D action-adventure game set in the vast, interconnected underground kingdom of Hallownest. The game features tight combat, intricate exploration, and a haunting atmosphere.
-
-## Popular Challenge Categories
-
-### Hitless/Damageless/Flawless Runs
-- **Any% Hitless**: Complete the game without taking any damage
-- **All Bosses Hitless**: Defeat all bosses without being hit
-- **Pantheon 5 Hitless (P5H)**: Complete the 42-boss gauntlet without damage
-
-### Special Challenges
-- **Low% Godhome**: Reach the Godhome ending with minimum items (extremely difficult)
-- **Blindfolded**: Complete the game without seeing (audio cues only)
-- **Steel Soul + Hitless**: Permadeath mode combined with no damage
-
-## Resources
-
-- [Speedrun.com Leaderboard](https://www.speedrun.com/hollowknight)
-- [Team Hitless - Hollow Knight](https://www.teamhitless.com/games/hollow-knight/)
-- [Hollow Knight Speedrunning Wiki](https://hollow-knight-speedrunning.fandom.com/)
