@@ -5,13 +5,14 @@ layout: default
 {% include game-header-tabs.html game=page active="overview" %}
 
 <!-- =========================================================
-     Tab panels
+     Overview Tab - Clean and simple
      ========================================================= -->
 <div class="page-width">
   <div class="game-shell">
 
-    <!-- Overview -->
     <section class="tab-panel active" data-panel="overview">
+      
+      <!-- Game description content from markdown -->
       {% assign stripped_content = content | strip %}
       {% if stripped_content != "" %}
         <div class="card">
@@ -19,43 +20,11 @@ layout: default
         </div>
       {% endif %}
 
-      <!-- Quick Navigation - resource cards -->
-      <h2 class="mt-4 mb-3">Quick Navigation</h2>
-      <div class="resource-cards mb-6">
-        <a href="{{ page.url | relative_url }}runs/" class="resource-card">
-          <div class="resource-card__icon">🏃</div>
-          <div class="resource-card__content">
-            <h3 class="resource-card__title">Runs</h3>
-            <p class="resource-card__desc">Browse and filter submitted runs</p>
-            {% assign runs_count = site.runs | where: "game_id", page.game_id | size %}
-            <span class="resource-card__count">{{ runs_count }} {% if runs_count == 1 %}run{% else %}runs{% endif %}</span>
-          </div>
-        </a>
-
-        <a href="{{ page.url | relative_url }}rules/" class="resource-card">
-          <div class="resource-card__icon">📜</div>
-          <div class="resource-card__content">
-            <h3 class="resource-card__title">Rules</h3>
-            <p class="resource-card__desc">Category definitions and guidelines</p>
-            <span class="resource-card__count">View rules</span>
-          </div>
-        </a>
-
-        <a href="{{ page.url | relative_url }}resources/" class="resource-card">
-          <div class="resource-card__icon">📚</div>
-          <div class="resource-card__content">
-            <h3 class="resource-card__title">Resources</h3>
-            <p class="resource-card__desc">Guides, tools, and community links</p>
-            <span class="resource-card__count">Explore</span>
-          </div>
-        </a>
-      </div>
-
       <!-- Standard Challenges section -->
       {% if page.challenges and page.challenges.size > 0 %}
-      <div class="card card--compact">
+      <div class="card card--compact mt-4">
         <h2 class="mb-2">Standard Challenge Types</h2>
-        <p class="muted mb-3">Challenge types being tracked for this game:</p>
+        <p class="muted mb-3">Challenge types tracked for this game:</p>
         <div class="tag-picked">
           {% for ch_id in page.challenges %}
             {% assign ch_meta = site.data.challenges[ch_id] %}
@@ -65,85 +34,26 @@ layout: default
       </div>
       {% endif %}
 
-      <!-- Community Challenges section -->
+      <!-- Community Challenges Accordion -->
       {% if page.community_challenges and page.community_challenges.size > 0 %}
       <div class="card card--compact mt-4">
         <h2 class="mb-2">Community Challenges</h2>
         <p class="muted mb-3">Game-specific challenges from the {{ page.name }} community:</p>
-        <div class="community-challenges-list">
-          {% for cc in page.community_challenges %}
-            <div class="community-challenge">
-              <span class="tag-chip tag-chip--accent">{{ cc.label }}</span>
-              {% if cc.description %}
-                <span class="community-challenge__desc">{{ cc.description }}</span>
-              {% endif %}
-            </div>
-          {% endfor %}
-        </div>
-      </div>
-      {% endif %}
-
-      <!-- Categories section -->
-      {% if page.categories_data and page.categories_data.size > 0 %}
-      <div class="card card--compact mt-4">
-        <h2 class="mb-2">Run Categories</h2>
-        <div class="tag-picked">
-          {% for cat in page.categories_data %}
-            <span class="tag-chip">{{ cat.label }}</span>
-            {% if cat.children %}
-              {% for child in cat.children %}
-                <span class="tag-chip tag-chip--sub">{{ child.label }}</span>
-              {% endfor %}
-            {% endif %}
-          {% endfor %}
-        </div>
-      </div>
-      {% endif %}
-
-      <!-- Glitch Rules Accordion -->
-      {% if page.glitches_data and page.glitches_data.size > 0 %}
-      <div class="card card--compact mt-4">
-        <h2 class="mb-2">Glitch Categories</h2>
-        <p class="muted mb-3">Click to expand rules for each category:</p>
         <div class="accordion">
-          {% for glitch in page.glitches_data %}
+          {% for cc in page.community_challenges %}
           <details class="accordion-item">
             <summary class="accordion-header">
-              <span class="accordion-title">{{ glitch.label }}</span>
+              <span class="accordion-title">{{ cc.label }}</span>
               <span class="accordion-icon">▼</span>
             </summary>
             <div class="accordion-content">
-              {% if glitch.description %}
-                <p>{{ glitch.description }}</p>
+              {% if cc.description %}
+                <p>{{ cc.description }}</p>
               {% else %}
-                <!-- Default descriptions for common glitch categories -->
-                {% if glitch.slug == "unrestricted" %}
-                  <p>Any glitches or exploits are allowed. No restrictions on techniques used.</p>
-                {% elsif glitch.slug == "nmg" %}
-                  <p>No major glitches that significantly break intended game progression. Minor skips and optimizations are typically allowed.</p>
-                {% elsif glitch.slug == "glitchless" %}
-                  <p>No glitches of any kind. The game must be played as intended by developers.</p>
-                {% else %}
-                  <p class="muted">Rules for this category are defined by the community. Check the Resources tab for detailed documentation.</p>
-                {% endif %}
+                <p class="muted">No description available.</p>
               {% endif %}
-              
-              {% if glitch.allowed and glitch.allowed.size > 0 %}
-                <p class="mt-2">
-                  <span class="rules-label rules-list--allowed">✓ Allowed:</span>
-                  {{ glitch.allowed | join: ", " }}
-                </p>
-              {% endif %}
-              
-              {% if glitch.banned and glitch.banned.size > 0 %}
-                <p class="mt-2">
-                  <span class="rules-label rules-list--banned">✗ Banned:</span>
-                  {{ glitch.banned | join: ", " }}
-                </p>
-              {% endif %}
-              
-              {% if glitch.notes %}
-                <p class="mt-2 muted"><em>{{ glitch.notes }}</em></p>
+              {% if cc.rules %}
+                <p class="mt-2"><strong>Rules:</strong> {{ cc.rules }}</p>
               {% endif %}
             </div>
           </details>
@@ -152,7 +62,7 @@ layout: default
       </div>
       {% endif %}
 
-      <!-- Restrictions section -->
+      <!-- Optional Restrictions -->
       {% if page.restrictions and page.restrictions.size > 0 %}
       <div class="card card--compact mt-4">
         <h2 class="mb-2">Optional Restrictions</h2>
@@ -162,71 +72,6 @@ layout: default
             <span class="tag-chip tag-chip--outline">{{ res }}</span>
           {% endfor %}
         </div>
-      </div>
-      {% endif %}
-
-      <!-- Filter Options section - shows all available filters from actual runs -->
-      {% assign game_runs = site.runs | where: "game_id", page.game_id %}
-         
-      <!-- Collect unique characters/weapons -->
-      {% assign all_characters = "" | split: "" %}
-      {% for r in game_runs %}
-        {% if r.character and r.character != "" and r.character != "—" %}
-          {% assign all_characters = all_characters | push: r.character %}
-        {% endif %}
-      {% endfor %}
-      {% assign unique_characters = all_characters | uniq | sort %}
-
-      <!-- Collect unique restrictions from submitted runs -->
-      {% assign all_restrictions = "" | split: "" %}
-      {% for r in game_runs %}
-        {% if r.restrictions %}
-          {% if r.restrictions.first %}
-            {% for res in r.restrictions %}
-              {% assign res_clean = res | strip %}
-              {% if res_clean != "" and res_clean != "[]" %}
-                {% assign all_restrictions = all_restrictions | push: res_clean %}
-              {% endif %}
-            {% endfor %}
-          {% elsif r.restrictions != "[]" and r.restrictions != "" %}
-            {% assign res_parts = r.restrictions | split: "," %}
-            {% for res in res_parts %}
-              {% assign res_clean = res | strip %}
-              {% if res_clean != "" and res_clean != "[]" %}
-                {% assign all_restrictions = all_restrictions | push: res_clean %}
-              {% endif %}
-            {% endfor %}
-          {% endif %}
-        {% endif %}
-      {% endfor %}
-      {% assign unique_restrictions = all_restrictions | uniq | sort %}
-
-      {% if unique_characters.size > 0 or unique_restrictions.size > 0 %}
-      <div class="card card--compact mt-4">
-        <h2 class="mb-2">Filter Options</h2>
-        <p class="muted mb-3">Available filter values for runs in this game:</p>
-
-        {% if unique_characters.size > 0 %}
-        <div class="filter-options-group">
-          <h3 class="filter-options-label">{{ page.character_column.label | default: "Character" }} ({{ unique_characters.size }})</h3>
-          <div class="tag-picked">
-            {% for char in unique_characters %}
-              <span class="tag-chip">{{ char }}</span>
-            {% endfor %}
-          </div>
-        </div>
-        {% endif %}
-
-        {% if unique_restrictions.size > 0 %}
-        <div class="filter-options-group {% if unique_characters.size > 0 %}mt-3{% endif %}">
-          <h3 class="filter-options-label">Restrictions ({{ unique_restrictions.size }})</h3>
-          <div class="tag-picked">
-            {% for res in unique_restrictions %}
-              <span class="tag-chip">{{ res }}</span>
-            {% endfor %}
-          </div>
-        </div>
-        {% endif %}
       </div>
       {% endif %}
 
