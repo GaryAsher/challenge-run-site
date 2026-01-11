@@ -6,26 +6,24 @@
     "build:css": "npx clean-css-cli assets/style.css -o assets/style.min.css",
     "build:js": "npx terser assets/js/main.js -o assets/js/main.min.js -c -m && npx terser assets/js/utils.js -o assets/js/utils.min.js -c -m",
 
-    "check:all": "npm run check:game-pages && npm run check:run-category-pages && npm run check:codeowners",
-    "check:codeowners": "node scripts/generate-codeowners.js --check",
-    "check:game-pages": "node scripts/generate-game-pages.js --check",
-    "check:run-category-pages": "node scripts/generate-run-category-pages.js --check",
+    "validate": "npm run validate:schema && npm run validate:runs",
+    "validate:schema": "node scripts/validate-schema.js",
+    "validate:runs": "node scripts/validate-runs.js",
 
-    "generate:all": "npm run generate:game-pages && npm run generate:run-category-pages && npm run generate:codeowners",
-    "generate:codeowners": "node scripts/generate-codeowners.js",
+    "generate": "npm run generate:game-pages && npm run generate:run-categories && npm run generate:codeowners",
     "generate:game-pages": "node scripts/generate-game-pages.js",
-    "generate:run-category-pages": "node scripts/generate-run-category-pages.js",
+    "generate:run-categories": "node scripts/generate-run-category-pages.js",
+    "generate:codeowners": "node scripts/generate-codeowners.js",
 
     "promote:runs": "node scripts/promote-runs.js",
     "promote:runs:dry": "node scripts/promote-runs.js --dry-run",
 
-    "sync:git": "git fetch origin && git reset --hard origin/main",
-    "sync:templates": "node scripts/sync-issue-templates.js",
-    "sync:templates:check": "node scripts/sync-issue-templates.js --check",
+    "check": "npm run check:game-pages && npm run check:run-categories && npm run check:codeowners",
+    "check:game-pages": "node scripts/generate-game-pages.js --check",
+    "check:run-categories": "node scripts/generate-run-category-pages.js --check",
+    "check:codeowners": "node scripts/generate-codeowners.js --check",
 
-    "validate:all": "npm run validate:schema && npm run validate:runs",
-    "validate:runs": "node scripts/validate-runs.js",
-    "validate:schema": "node scripts/validate-schema.js"
+    "sync:git": "git fetch origin && git reset --hard origin/main"
   },
   "dependencies": {
     "js-yaml": "^4.1.0"
