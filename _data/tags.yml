@@ -67,9 +67,10 @@ roguelite:
   label: Roguelite
 
 # S
-soulslike:
-  label: Soulslike
-  aliases: ["Souls-like"]
+souls-like:
+  label: Souls-like
+  aliases: 
+    - Soulslike
 
 # T
 
