@@ -245,7 +245,11 @@ permalink: /games/${gameId}/guides/
 
       <h1>Guides</h1>
 
-      {% assign guides = site.guides | where: "game_id", page.game_id | sort: "title" %}
+      {% if site.guides %}
+        {% assign guides = site.guides | where: "game_id", page.game_id | sort: "title" %}
+      {% else %}
+        {% assign guides = nil %}
+      {% endif %}
 
       {% if guides and guides.size > 0 %}
         <div class="grid">
