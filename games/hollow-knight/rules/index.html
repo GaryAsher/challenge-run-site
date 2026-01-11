@@ -39,24 +39,27 @@ permalink: /games/hollow-knight/rules/
             </select>
           </div>
 
-          <!-- Challenge Type Dropdown -->
+          <!-- Challenge Type Dropdown (Multi-select) -->
           <div class="rule-builder__group">
-            <label class="rule-builder__label">Challenge Type</label>
+            <label class="rule-builder__label">Challenge Type(s)</label>
             <select class="rule-builder__select" id="rb-challenge">
-              <option value="" data-description="">-- Select Challenge --</option>
+              <option value="" data-description="">-- Add Challenge --</option>
               <optgroup label="Standard Challenges">
                 {% for ch in game.challenges_data %}
-                  <option value="{{ ch.slug }}" data-description="{{ ch.description | escape }}">{{ ch.label }}</option>
+                  <option value="{{ ch.slug }}" data-label="{{ ch.label }}" data-description="{{ ch.description | escape }}">{{ ch.label }}</option>
                 {% endfor %}
               </optgroup>
               {% if game.community_challenges and game.community_challenges.size > 0 %}
               <optgroup label="Community Challenges">
                 {% for cc in game.community_challenges %}
-                  <option value="{{ cc.slug }}" data-description="{{ cc.description | escape }}">{{ cc.label }}</option>
+                  <option value="{{ cc.slug }}" data-label="{{ cc.label }}" data-description="{{ cc.description | escape }}">{{ cc.label }}</option>
                 {% endfor %}
               </optgroup>
               {% endif %}
             </select>
+            <div class="rule-builder__selected-challenges" id="rb-selected-challenges">
+              <!-- Selected challenges will appear here as removable tags -->
+            </div>
           </div>
 
           <!-- Glitch Rules Dropdown -->
@@ -314,16 +317,35 @@ document.addEventListener('DOMContentLoaded', function() {
   const challengeSelect = document.getElementById('rb-challenge');
   const glitchSelect = document.getElementById('rb-glitch');
   const restrictionSelect = document.getElementById('rb-restriction');
+  const selectedChallengesDiv = document.getElementById('rb-selected-challenges');
   const selectedRestrictionsDiv = document.getElementById('rb-selected-restrictions');
   const resultDiv = document.getElementById('rb-result');
   const validationDiv = document.getElementById('rb-validation');
   const warningText = document.getElementById('rb-warning-text');
   const findRunnersBtn = document.getElementById('rb-find-runners');
 
-  // Track selected restrictions
+  // Track selected items (multi-select)
+  let selectedChallenges = [];
   let selectedRestrictions = [];
 
-  // Handle restriction dropdown - add to list
+  // Handle challenge dropdown - add to list (multi-select)
+  if (challengeSelect) {
+    challengeSelect.addEventListener('change', function() {
+      const option = this.options[this.selectedIndex];
+      if (option.value && !selectedChallenges.find(c => c.slug === option.value)) {
+        selectedChallenges.push({
+          slug: option.value,
+          label: option.dataset.label || option.text.trim(),
+          description: option.dataset.description || ''
+        });
+        this.selectedIndex = 0; // Reset dropdown
+        renderSelectedChallenges();
+        updateRuleBuilder();
+      }
+    });
+  }
+
+  // Handle restriction dropdown - add to list (multi-select)
   if (restrictionSelect) {
     restrictionSelect.addEventListener('change', function() {
       const option = this.options[this.selectedIndex];
@@ -341,6 +363,16 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  function renderSelectedChallenges() {
+    if (!selectedChallengesDiv) return;
+    selectedChallengesDiv.innerHTML = selectedChallenges.map(c => 
+      `<span class="rb-restriction-tag" data-slug="${c.slug}">
+        ${c.label}
+        <button type="button" class="rb-restriction-remove" onclick="removeChallenge('${c.slug}')">&times;</button>
+      </span>`
+    ).join('');
+  }
+
   function renderSelectedRestrictions() {
     if (!selectedRestrictionsDiv) return;
     selectedRestrictionsDiv.innerHTML = selectedRestrictions.map(r => 
@@ -351,7 +383,13 @@ document.addEventListener('DOMContentLoaded', function() {
     ).join('');
   }
 
-  // Make removeRestriction available globally
+  // Global functions for removing items
+  window.removeChallenge = function(slug) {
+    selectedChallenges = selectedChallenges.filter(c => c.slug !== slug);
+    renderSelectedChallenges();
+    updateRuleBuilder();
+  };
+
   window.removeRestriction = function(slug) {
     selectedRestrictions = selectedRestrictions.filter(r => r.slug !== slug);
     renderSelectedRestrictions();
@@ -360,7 +398,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function updateRuleBuilder() {
     const category = categorySelect ? categorySelect.options[categorySelect.selectedIndex] : null;
-    const challenge = challengeSelect ? challengeSelect.options[challengeSelect.selectedIndex] : null;
     const glitch = glitchSelect ? glitchSelect.options[glitchSelect.selectedIndex] : null;
 
     let html = '';
@@ -378,13 +415,18 @@ document.addEventListener('DOMContentLoaded', function() {
       hasContent = true;
     }
 
-    // Challenge
-    if (challenge && challenge.value) {
-      html += '<div class="rb-section mt-2"><strong>🎯 Challenge:</strong> ' + challenge.text.trim() + '</div>';
-      if (challenge.dataset.description) {
-        html += '<p class="rb-detail">' + challenge.dataset.description + '</p>';
-      }
-      searchParams.set('challenge', challenge.value);
+    // Challenges (multi-select)
+    if (selectedChallenges.length > 0) {
+      html += '<div class="rb-section mt-2"><strong>🎯 Challenge Type(s):</strong></div>';
+      selectedChallenges.forEach(function(c) {
+        html += '<div class="rb-restriction-item">';
+        html += '<span class="rb-restriction-label">' + c.label + '</span>';
+        if (c.description) {
+          html += '<p class="rb-detail">' + c.description + '</p>';
+        }
+        html += '</div>';
+      });
+      searchParams.set('challenge', selectedChallenges.map(c => c.slug).join(','));
       hasContent = true;
     }
 
@@ -413,7 +455,7 @@ document.addEventListener('DOMContentLoaded', function() {
       hasContent = true;
     }
 
-    // Restrictions
+    // Restrictions (multi-select)
     if (selectedRestrictions.length > 0) {
       html += '<div class="rb-section mt-2"><strong>⛔ Restrictions:</strong></div>';
       selectedRestrictions.forEach(function(r) {
@@ -466,7 +508,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Add event listeners
   if (categorySelect) categorySelect.addEventListener('change', updateRuleBuilder);
-  if (challengeSelect) challengeSelect.addEventListener('change', updateRuleBuilder);
   if (glitchSelect) glitchSelect.addEventListener('change', updateRuleBuilder);
 });
 </script>
