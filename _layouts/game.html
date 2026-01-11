@@ -104,7 +104,7 @@ layout: default
       {% if page.glitches_data and page.glitches_data.size > 0 %}
       <div class="card card--compact mt-4">
         <h2 class="mb-2">Glitch Categories</h2>
-        <p class="muted mb-3">Click to expand rules for each glitch category:</p>
+        <p class="muted mb-3">Click to expand rules for each category:</p>
         <div class="accordion">
           {% for glitch in page.glitches_data %}
           <details class="accordion-item">
@@ -115,20 +115,35 @@ layout: default
             <div class="accordion-content">
               {% if glitch.description %}
                 <p>{{ glitch.description }}</p>
-              {% elsif glitch.slug == "unrestricted" %}
-                <p>Any glitches or exploits are allowed. No restrictions on techniques used.</p>
-              {% elsif glitch.slug == "nmg" %}
-                <p>No major glitches that significantly break intended game progression. Minor skips and optimizations allowed.</p>
-              {% elsif glitch.slug == "glitchless" %}
-                <p>No glitches of any kind. Game must be played as intended by developers.</p>
               {% else %}
-                <p class="muted">Rules for this category are defined by the community. Check the Resources tab for detailed documentation.</p>
+                <!-- Default descriptions for common glitch categories -->
+                {% if glitch.slug == "unrestricted" %}
+                  <p>Any glitches or exploits are allowed. No restrictions on techniques used.</p>
+                {% elsif glitch.slug == "nmg" %}
+                  <p>No major glitches that significantly break intended game progression. Minor skips and optimizations are typically allowed.</p>
+                {% elsif glitch.slug == "glitchless" %}
+                  <p>No glitches of any kind. The game must be played as intended by developers.</p>
+                {% else %}
+                  <p class="muted">Rules for this category are defined by the community. Check the Resources tab for detailed documentation.</p>
+                {% endif %}
               {% endif %}
-              {% if glitch.allowed %}
-                <p class="mt-2"><strong>Allowed:</strong> {{ glitch.allowed | join: ", " }}</p>
+              
+              {% if glitch.allowed and glitch.allowed.size > 0 %}
+                <p class="mt-2">
+                  <span class="rules-label rules-list--allowed">✓ Allowed:</span>
+                  {{ glitch.allowed | join: ", " }}
+                </p>
               {% endif %}
-              {% if glitch.banned %}
-                <p class="mt-2"><strong>Banned:</strong> {{ glitch.banned | join: ", " }}</p>
+              
+              {% if glitch.banned and glitch.banned.size > 0 %}
+                <p class="mt-2">
+                  <span class="rules-label rules-list--banned">✗ Banned:</span>
+                  {{ glitch.banned | join: ", " }}
+                </p>
+              {% endif %}
+              
+              {% if glitch.notes %}
+                <p class="mt-2 muted"><em>{{ glitch.notes }}</em></p>
               {% endif %}
             </div>
           </details>
@@ -141,7 +156,7 @@ layout: default
       {% if page.restrictions and page.restrictions.size > 0 %}
       <div class="card card--compact mt-4">
         <h2 class="mb-2">Optional Restrictions</h2>
-        <p class="muted mb-3">Additional restrictions runners can apply to their runs:</p>
+        <p class="muted mb-3">Additional restrictions runners can apply:</p>
         <div class="tag-picked">
           {% for res in page.restrictions %}
             <span class="tag-chip tag-chip--outline">{{ res }}</span>
@@ -152,7 +167,7 @@ layout: default
 
       <!-- Filter Options section - shows all available filters from actual runs -->
       {% assign game_runs = site.runs | where: "game_id", page.game_id %}
-
+         
       <!-- Collect unique characters/weapons -->
       {% assign all_characters = "" | split: "" %}
       {% for r in game_runs %}
