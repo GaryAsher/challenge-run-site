@@ -6,42 +6,507 @@ permalink: /games/hades-2/rules/
 ---
 
 {% assign game = site.games | where: "game_id", page.game_id | first %}
-{% include game-header-tabs.html game=game active="overview" %}
+{% include game-header-tabs.html game=game active="rules" %}
 
 <div class="page-width">
   <div class="game-shell">
     <section class="tab-panel active">
-      <p class="muted mb-3">
-        <a href="{{ game.url | relative_url }}">← Overview</a>
-      </p>
 
       <h1>Rules & Definitions</h1>
-      <p class="muted mb-4">Category definitions and challenge rules for {{ game.name }}.</p>
+      <p class="muted mb-4">Official rules, category definitions, and challenge guidelines for {{ game.name }}.</p>
 
-      {% if game.challenges and game.challenges.size > 0 %}
-      <div class="card">
-        <h2>Challenge Definitions</h2>
-        <div class="tag-picked">
-          {% for ch_id in game.challenges %}
-            {% assign ch_meta = site.data.challenges[ch_id] %}
-            <span class="tag-chip">{{ ch_meta.label | default: ch_id }}</span>
-          {% endfor %}
+      <!-- =========================================================
+           Rule Builder - Enhanced Version
+           ========================================================= -->
+      <div class="rule-builder card card--compact mb-4" id="rule-builder">
+        <h2 class="mb-2">📌 Rule Builder</h2>
+        <p class="muted mb-3">Build your ruleset and find runners who have completed similar challenges:</p>
+        
+        <div class="rule-builder__selections">
+          <!-- Category Dropdown -->
+          <div class="rule-builder__group">
+            <label class="rule-builder__label">Category</label>
+            <select class="rule-builder__select" id="rb-category">
+              <option value="" data-description="">-- Select Category --</option>
+              {% for cat in game.categories_data %}
+                <option value="{{ cat.slug }}" data-description="{{ cat.description | escape }}">{{ cat.label }}</option>
+                {% if cat.children %}
+                  {% for child in cat.children %}
+                    <option value="{{ child.slug }}" data-description="{{ child.description | escape }}">  ↳ {{ child.label }}</option>
+                  {% endfor %}
+                {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Glitch Rules Dropdown -->
+          <div class="rule-builder__group">
+            <label class="rule-builder__label">Glitch Rules</label>
+            <select class="rule-builder__select" id="rb-glitch">
+              <option value="" data-description="" data-allowed="" data-banned="">-- Select Glitch Category --</option>
+              {% for glitch in game.glitches_data %}
+                <option value="{{ glitch.slug }}" 
+                        data-description="{{ glitch.description | escape }}"
+                        data-allowed="{{ glitch.allowed | join: '|' | escape }}"
+                        data-banned="{{ glitch.banned | join: '|' | escape }}"
+                        data-notes="{{ glitch.notes | escape }}">
+                  {{ glitch.label }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Challenge Type Dropdown (Multi-select) -->
+          <div class="rule-builder__group">
+            <label class="rule-builder__label">Challenge Type(s)</label>
+            <select class="rule-builder__select" id="rb-challenge">
+              <option value="" data-description="">-- Add Challenge --</option>
+              <optgroup label="Standard Challenges">
+                {% for ch in game.challenges_data %}
+                  <option value="{{ ch.slug }}" data-label="{{ ch.label }}" data-description="{{ ch.description | escape }}">{{ ch.label }}</option>
+                {% endfor %}
+              </optgroup>
+              {% if game.community_challenges and game.community_challenges.size > 0 %}
+              <optgroup label="Community Challenges">
+                {% for cc in game.community_challenges %}
+                  <option value="{{ cc.slug }}" data-label="{{ cc.label }}" data-description="{{ cc.description | escape }}">{{ cc.label }}</option>
+                {% endfor %}
+              </optgroup>
+              {% endif %}
+            </select>
+            <div class="rule-builder__selected-challenges" id="rb-selected-challenges">
+              <!-- Selected challenges will appear here as removable tags -->
+            </div>
+          </div>
+
+          <!-- Restrictions Dropdown (Multi-select style) -->
+          <div class="rule-builder__group">
+            <label class="rule-builder__label">Restrictions</label>
+            <select class="rule-builder__select" id="rb-restriction">
+              <option value="" data-description="" data-incompatible="">-- Add Restriction --</option>
+              {% for res in game.restrictions_data %}
+                <option value="{{ res.slug }}" 
+                        data-label="{{ res.label }}"
+                        data-description="{{ res.description | escape }}"
+                        data-incompatible="{{ res.incompatible_with | join: ',' | escape }}">
+                  {{ res.label }}
+                </option>
+              {% endfor %}
+            </select>
+            <div class="rule-builder__selected-restrictions" id="rb-selected-restrictions">
+              <!-- Selected restrictions will appear here as removable tags -->
+            </div>
+          </div>
         </div>
-        <p class="muted mt-3">Detailed definitions coming soon.</p>
-      </div>
-      {% endif %}
 
+        <!-- Combined Ruleset Output -->
+        <div class="rule-builder__output" id="rb-output">
+          <h3 class="mb-2">Combined Ruleset</h3>
+          <div class="rule-builder__result" id="rb-result">
+            <p class="muted">Select options above to build your ruleset.</p>
+          </div>
+        </div>
+
+        <!-- Validation Warnings -->
+        <div class="rule-builder__validation" id="rb-validation" style="display: none;">
+          <p class="rule-builder__warning">⚠️ <span id="rb-warning-text"></span></p>
+        </div>
+
+        <!-- See Runners Button -->
+        <div class="rule-builder__actions mt-3">
+          <a href="#" class="btn btn--accent" id="rb-find-runners" style="display: none;">
+            🔍 See runners who completed this
+          </a>
+        </div>
+      </div>
+
+      <!-- =========================================================
+           General Rules (open by default)
+           ========================================================= -->
+      <div class="rules-section">
+        <details class="accordion-item accordion-item--section" open>
+          <summary class="accordion-header accordion-header--section">
+            <span class="accordion-title">📋 General Rules</span>
+            <span class="accordion-icon">▼</span>
+          </summary>
+          <div class="accordion-content">
+            <ul>
+              <li><strong>Timing Method:</strong> {{ game.timing_method | default: "RTA (Real Time Attack)" }}</li>
+              <li><strong>Video Required:</strong> All submissions must include video proof (YouTube, Twitch Highlight, or Bilibili)</li>
+              <li><strong>No Cheats/Mods:</strong> External tools, cheats, or gameplay-altering mods are not allowed</li>
+              <li><strong>Pausing:</strong> Pausing is generally allowed unless otherwise specified</li>
+            </ul>
+          </div>
+        </details>
+      </div>
+
+      <!-- =========================================================
+           Run Categories
+           ========================================================= -->
       {% if game.categories_data and game.categories_data.size > 0 %}
-      <div class="card mt-4">
-        <h2>Category Rules</h2>
-        <div class="tag-picked">
-          {% for cat in game.categories_data %}
-            <span class="tag-chip">{{ cat.label }}</span>
-          {% endfor %}
-        </div>
-        <p class="muted mt-3">Category-specific rules coming soon.</p>
+      <div class="rules-section mt-4">
+        <details class="accordion-item accordion-item--section">
+          <summary class="accordion-header accordion-header--section">
+            <span class="accordion-title">🏃 Run Categories</span>
+            <span class="accordion-icon">▼</span>
+          </summary>
+          <div class="accordion-content">
+            <div class="accordion">
+              {% for cat in game.categories_data %}
+                <details class="accordion-item">
+                  <summary class="accordion-header">
+                    <span class="accordion-title">{{ cat.label }}</span>
+                    <span class="accordion-icon">▼</span>
+                  </summary>
+                  <div class="accordion-content">
+                    {% if cat.description %}<p>{{ cat.description }}</p>{% else %}<p class="muted">See resources for detailed rules.</p>{% endif %}
+                    {% if cat.children and cat.children.size > 0 %}
+                      <div class="mt-3"><strong>Subcategories:</strong>
+                        <ul class="mt-2">
+                          {% for child in cat.children %}
+                            <li><strong>{{ child.label }}</strong>{% if child.description %} - {{ child.description }}{% endif %}</li>
+                          {% endfor %}
+                        </ul>
+                      </div>
+                    {% endif %}
+                  </div>
+                </details>
+              {% endfor %}
+            </div>
+          </div>
+        </details>
       </div>
       {% endif %}
+
+      <!-- =========================================================
+           Community Challenges
+           ========================================================= -->
+      {% if game.community_challenges and game.community_challenges.size > 0 %}
+      <div class="rules-section mt-4">
+        <details class="accordion-item accordion-item--section">
+          <summary class="accordion-header accordion-header--section">
+            <span class="accordion-title">🌟 Community Challenges</span>
+            <span class="accordion-icon">▼</span>
+          </summary>
+          <div class="accordion-content">
+            <div class="accordion">
+              {% for cc in game.community_challenges %}
+                <details class="accordion-item">
+                  <summary class="accordion-header">
+                    <span class="accordion-title">{{ cc.label }}</span>
+                    <span class="accordion-icon">▼</span>
+                  </summary>
+                  <div class="accordion-content">
+                    {% if cc.description %}<p>{{ cc.description }}</p>{% else %}<p class="muted">See resources for detailed rules.</p>{% endif %}
+                  </div>
+                </details>
+              {% endfor %}
+            </div>
+          </div>
+        </details>
+      </div>
+      {% endif %}
+      
+      <!-- =========================================================
+           Glitch Categories
+           ========================================================= -->
+      {% if game.glitches_data and game.glitches_data.size > 0 %}
+      <div class="rules-section mt-4">
+        <details class="accordion-item accordion-item--section">
+          <summary class="accordion-header accordion-header--section">
+            <span class="accordion-title">🔧 Glitch Categories</span>
+            <span class="accordion-icon">▼</span>
+          </summary>
+          <div class="accordion-content">
+            <div class="accordion">
+              {% for glitch in game.glitches_data %}
+                <details class="accordion-item">
+                  <summary class="accordion-header">
+                    <span class="accordion-title">{{ glitch.label }}</span>
+                    <span class="accordion-icon">▼</span>
+                  </summary>
+                  <div class="accordion-content">
+                    {% if glitch.description %}<p>{{ glitch.description }}</p>{% endif %}
+                    {% if glitch.allowed and glitch.allowed.size > 0 %}
+                      <p class="mt-2"><span class="rules-label rules-list--allowed">✓ Allowed:</span> {{ glitch.allowed | join: ", " }}</p>
+                    {% endif %}
+                    {% if glitch.banned and glitch.banned.size > 0 %}
+                      <p class="mt-2"><span class="rules-label rules-list--banned">✗ Banned:</span> {{ glitch.banned | join: ", " }}</p>
+                    {% endif %}
+                    {% if glitch.notes %}<p class="mt-2 muted"><em>{{ glitch.notes }}</em></p>{% endif %}
+                  </div>
+                </details>
+              {% endfor %}
+            </div>
+          </div>
+        </details>
+      </div>
+      {% endif %}
+
+      <!-- =========================================================
+           Standard Challenge Types
+           ========================================================= -->
+      {% if game.challenges_data and game.challenges_data.size > 0 %}
+      <div class="rules-section mt-4">
+        <details class="accordion-item accordion-item--section">
+          <summary class="accordion-header accordion-header--section">
+            <span class="accordion-title">🎯 Standard Challenge Types</span>
+            <span class="accordion-icon">▼</span>
+          </summary>
+          <div class="accordion-content">
+            <div class="accordion">
+              {% for ch in game.challenges_data %}
+                <details class="accordion-item">
+                  <summary class="accordion-header">
+                    <span class="accordion-title">{{ ch.label }}</span>
+                    <span class="accordion-icon">▼</span>
+                  </summary>
+                  <div class="accordion-content">
+                    {% if ch.description %}<p>{{ ch.description }}</p>{% else %}<p class="muted">See resources for detailed rules.</p>{% endif %}
+                  </div>
+                </details>
+              {% endfor %}
+            </div>
+          </div>
+        </details>
+      </div>
+      {% endif %}
+
+      <!-- =========================================================
+           Optional Restrictions
+           ========================================================= -->
+      {% if game.restrictions_data and game.restrictions_data.size > 0 %}
+      <div class="rules-section mt-4">
+        <details class="accordion-item accordion-item--section">
+          <summary class="accordion-header accordion-header--section">
+            <span class="accordion-title">⛔ Optional Restrictions</span>
+            <span class="accordion-icon">▼</span>
+          </summary>
+          <div class="accordion-content">
+            <div class="accordion">
+              {% for res in game.restrictions_data %}
+                <details class="accordion-item">
+                  <summary class="accordion-header">
+                    <span class="accordion-title">{{ res.label }}</span>
+                    <span class="accordion-icon">▼</span>
+                  </summary>
+                  <div class="accordion-content">
+                    {% if res.description %}<p>{{ res.description }}</p>{% else %}<p class="muted">Can be combined with any category.</p>{% endif %}
+                    {% if res.incompatible_with and res.incompatible_with.size > 0 %}
+                      <p class="mt-2 muted"><em>⚠️ Cannot be combined with: {{ res.incompatible_with | join: ", " }}</em></p>
+                    {% endif %}
+                  </div>
+                </details>
+              {% endfor %}
+            </div>
+          </div>
+        </details>
+      </div>
+      {% endif %}
+      
     </section>
   </div>
 </div>
+      
+<!-- Rule Builder JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const gameId = '{{ game.game_id }}';
+  const categorySelect = document.getElementById('rb-category');
+  const challengeSelect = document.getElementById('rb-challenge');
+  const glitchSelect = document.getElementById('rb-glitch');
+  const restrictionSelect = document.getElementById('rb-restriction');
+  const selectedChallengesDiv = document.getElementById('rb-selected-challenges');
+  const selectedRestrictionsDiv = document.getElementById('rb-selected-restrictions');
+  const resultDiv = document.getElementById('rb-result');
+  const validationDiv = document.getElementById('rb-validation');
+  const warningText = document.getElementById('rb-warning-text');
+  const findRunnersBtn = document.getElementById('rb-find-runners');
+
+  // Track selected items (multi-select)
+  let selectedChallenges = [];
+  let selectedRestrictions = [];
+
+  // Handle challenge dropdown - add to list (multi-select)
+  if (challengeSelect) {
+    challengeSelect.addEventListener('change', function() {
+      const option = this.options[this.selectedIndex];
+      if (option.value && !selectedChallenges.find(c => c.slug === option.value)) {
+        selectedChallenges.push({
+          slug: option.value,
+          label: option.dataset.label || option.text.trim(),
+          description: option.dataset.description || ''
+        });
+        this.selectedIndex = 0; // Reset dropdown
+        renderSelectedChallenges();
+        updateRuleBuilder();
+      }
+    });
+  }
+
+  // Handle restriction dropdown - add to list (multi-select)
+  if (restrictionSelect) {
+    restrictionSelect.addEventListener('change', function() {
+      const option = this.options[this.selectedIndex];
+      if (option.value && !selectedRestrictions.find(r => r.slug === option.value)) {
+        selectedRestrictions.push({
+          slug: option.value,
+          label: option.dataset.label || option.text,
+          description: option.dataset.description || '',
+          incompatible: option.dataset.incompatible ? option.dataset.incompatible.split(',') : []
+        });
+        this.selectedIndex = 0; // Reset dropdown
+        renderSelectedRestrictions();
+        updateRuleBuilder();
+      }
+    });
+  }
+
+  function renderSelectedChallenges() {
+    if (!selectedChallengesDiv) return;
+    selectedChallengesDiv.innerHTML = selectedChallenges.map(c => 
+      `<span class="rb-restriction-tag" data-slug="${c.slug}">
+        ${c.label}
+        <button type="button" class="rb-restriction-remove" onclick="removeChallenge('${c.slug}')">&times;</button>
+      </span>`
+    ).join('');
+  }
+
+  function renderSelectedRestrictions() {
+    if (!selectedRestrictionsDiv) return;
+    selectedRestrictionsDiv.innerHTML = selectedRestrictions.map(r => 
+      `<span class="rb-restriction-tag" data-slug="${r.slug}">
+        ${r.label}
+        <button type="button" class="rb-restriction-remove" onclick="removeRestriction('${r.slug}')">&times;</button>
+      </span>`
+    ).join('');
+  }
+
+  // Global functions for removing items
+  window.removeChallenge = function(slug) {
+    selectedChallenges = selectedChallenges.filter(c => c.slug !== slug);
+    renderSelectedChallenges();
+    updateRuleBuilder();
+  };
+
+  window.removeRestriction = function(slug) {
+    selectedRestrictions = selectedRestrictions.filter(r => r.slug !== slug);
+    renderSelectedRestrictions();
+    updateRuleBuilder();
+  };
+
+  function updateRuleBuilder() {
+    const category = categorySelect ? categorySelect.options[categorySelect.selectedIndex] : null;
+    const glitch = glitchSelect ? glitchSelect.options[glitchSelect.selectedIndex] : null;
+
+    let html = '';
+    let hasContent = false;
+    let warnings = [];
+    let searchParams = new URLSearchParams();
+
+    // Category
+    if (category && category.value) {
+      html += '<div class="rb-section"><strong>📁 Category:</strong> ' + category.text.trim() + '</div>';
+      if (category.dataset.description) {
+        html += '<p class="rb-detail">' + category.dataset.description + '</p>';
+      }
+      searchParams.set('category', category.value);
+      hasContent = true;
+    }
+
+    // Glitch rules
+    if (glitch && glitch.value) {
+      html += '<div class="rb-section mt-2"><strong>🔧 Glitch Rules:</strong> ' + glitch.text.trim() + '</div>';
+      if (glitch.dataset.description) {
+        html += '<p class="rb-detail">' + glitch.dataset.description + '</p>';
+      }
+      if (glitch.dataset.allowed) {
+        const allowed = glitch.dataset.allowed.split('|').filter(a => a);
+        if (allowed.length > 0) {
+          html += '<p class="rb-detail rules-list--allowed">✓ Allowed: ' + allowed.join(', ') + '</p>';
+        }
+      }
+      if (glitch.dataset.banned) {
+        const banned = glitch.dataset.banned.split('|').filter(b => b);
+        if (banned.length > 0) {
+          html += '<p class="rb-detail rules-list--banned">✗ Banned: ' + banned.join(', ') + '</p>';
+        }
+      }
+      if (glitch.dataset.notes) {
+        html += '<p class="rb-detail muted"><em>' + glitch.dataset.notes + '</em></p>';
+      }
+      searchParams.set('glitch', glitch.value);
+      hasContent = true;
+    }
+
+    // Challenges (multi-select)
+    if (selectedChallenges.length > 0) {
+      html += '<div class="rb-section mt-2"><strong>🎯 Challenge Type(s):</strong></div>';
+      selectedChallenges.forEach(function(c) {
+        html += '<div class="rb-restriction-item">';
+        html += '<span class="rb-restriction-label">' + c.label + '</span>';
+        if (c.description) {
+          html += '<p class="rb-detail">' + c.description + '</p>';
+        }
+        html += '</div>';
+      });
+      searchParams.set('challenge', selectedChallenges.map(c => c.slug).join(','));
+      hasContent = true;
+    }
+
+    // Restrictions (multi-select)
+    if (selectedRestrictions.length > 0) {
+      html += '<div class="rb-section mt-2"><strong>⛔ Restrictions:</strong></div>';
+      selectedRestrictions.forEach(function(r) {
+        html += '<div class="rb-restriction-item">';
+        html += '<span class="rb-restriction-label">' + r.label + '</span>';
+        if (r.description) {
+          html += '<p class="rb-detail">' + r.description + '</p>';
+        }
+        html += '</div>';
+        
+        // Check for incompatibilities
+        if (r.incompatible && r.incompatible.length > 0 && category && category.value) {
+          r.incompatible.forEach(function(ic) {
+            if (category.value === ic || category.value.startsWith(ic + '/')) {
+              warnings.push('"' + r.label + '" is incompatible with "' + category.text.trim() + '"');
+            }
+          });
+        }
+      });
+      searchParams.set('restrictions', selectedRestrictions.map(r => r.slug).join(','));
+      hasContent = true;
+    }
+
+    // Update result display
+    if (resultDiv) {
+      resultDiv.innerHTML = hasContent ? html : '<p class="muted">Select options above to build your ruleset.</p>';
+    }
+
+    // Show/hide warnings
+    if (validationDiv && warningText) {
+      if (warnings.length > 0) {
+        warningText.textContent = warnings.join('. ');
+        validationDiv.style.display = 'block';
+      } else {
+        validationDiv.style.display = 'none';
+      }
+    }
+
+    // Show/hide "Find Runners" button and set URL
+    if (findRunnersBtn) {
+      if (hasContent) {
+        const runsUrl = '/games/' + gameId + '/runs/?' + searchParams.toString();
+        findRunnersBtn.href = runsUrl;
+        findRunnersBtn.style.display = 'inline-block';
+      } else {
+        findRunnersBtn.style.display = 'none';
+      }
+    }
+  }
+
+  // Add event listeners
+  if (categorySelect) categorySelect.addEventListener('change', updateRuleBuilder);
+  if (glitchSelect) glitchSelect.addEventListener('change', updateRuleBuilder);
+});
+</script>
