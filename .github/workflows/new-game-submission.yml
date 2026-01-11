@@ -13,17 +13,12 @@ on:
         description: "Game ID (slug)"
         required: false
         type: string
-      tags:
-        description: "Tags (comma, semicolon, pipe, or newline separated)"
-        required: false
-        default: ""
-        type: string
       categories:
-        description: "Categories (comma, semicolon, pipe, or newline separated)"
+        description: "Categories (newline separated)"
         required: true
         type: string
       challenges:
-        description: "Challenge types (comma, semicolon, pipe, or newline separated)"
+        description: "Challenge types (comma separated)"
         required: true
         type: string
       character_column:
@@ -37,7 +32,7 @@ on:
         default: "Character"
         type: string
       submitter_handle:
-        description: "Submitter Discord name or internet handle"
+        description: "Submitter Discord name"
         required: false
         default: ""
         type: string
@@ -47,7 +42,7 @@ on:
         default: "false"
         type: string
       details:
-        description: "Optional JSON details (advanced). If blank, defaults to {}"
+        description: "JSON details"
         required: false
         default: "{}"
         type: string
@@ -70,10 +65,6 @@ jobs:
           DBG_GAME_ID: ${{ github.event.client_payload.game_id }}
           DBG_CATEGORIES: ${{ github.event.client_payload.categories }}
           DBG_CHALLENGES: ${{ github.event.client_payload.challenges }}
-          DBG_CHAR_COL: ${{ github.event.client_payload.character_column }}
-          DBG_CHAR_LABEL: ${{ github.event.client_payload.character_label }}
-          DBG_SUBMITTER: ${{ github.event.client_payload.submitter_handle }}
-          DBG_CREDIT: ${{ github.event.client_payload.credit_requested }}
           DBG_DETAILS: ${{ github.event.client_payload.details }}
         run: |
           echo "=== INCOMING PAYLOAD DEBUG ==="
@@ -81,10 +72,6 @@ jobs:
           echo "game_id: ${DBG_GAME_ID}"
           echo "categories: ${DBG_CATEGORIES}"
           echo "challenges: ${DBG_CHALLENGES}"
-          echo "character_column: ${DBG_CHAR_COL}"
-          echo "character_label: ${DBG_CHAR_LABEL}"
-          echo "submitter_handle: ${DBG_SUBMITTER}"
-          echo "credit_requested: ${DBG_CREDIT}"
           echo "details length: ${#DBG_DETAILS} chars"
           echo "=== END PAYLOAD DEBUG ==="
 
@@ -145,9 +132,6 @@ jobs:
           CREDIT_REQUESTED=$(echo "${CREDIT_REQUESTED:-false}" | tr '[:upper:]' '[:lower:]')
           case "${CREDIT_REQUESTED}" in true|false) ;; *) CREDIT_REQUESTED="false" ;; esac
           
-          echo "✓ CHAR_ENABLED: ${CHAR_ENABLED}"
-          echo "✓ CHAR_LABEL: ${CHAR_LABEL:-Character}"
-          
           # Prepare output
           mkdir -p _queue_games
           OUT_FILE="_queue_games/${GAME_ID}.md"
@@ -191,10 +175,8 @@ jobs:
                       print('✓ YAML is valid')
                       print(f'  - game_id: {data.get("game_id")}')
                       print(f'  - name: {data.get("name")}')
-                      print(f'  - name_aliases: {data.get("name_aliases", [])}')
-                      print(f'  - challenges: {data.get("challenges", [])}')
-                      print(f'  - restrictions: {data.get("restrictions", [])}')
-                      print(f'  - categories_data count: {len(data.get("categories_data", []))}')
+                      print(f'  - categories: {len(data.get("categories_data", []))}')
+                      print(f'  - platforms: {data.get("platforms", [])}')
                   except yaml.YAMLError as e:
                       print(f'✗ YAML Error: {e}')
                       exit(1)
@@ -214,26 +196,24 @@ jobs:
 
             **Game:** ${{ steps.generate.outputs.game_name }}
             **Game ID:** `${{ steps.generate.outputs.game_id }}`
+            **File:** `_queue_games/${{ steps.generate.outputs.game_id }}.md`
 
-            ### Checklist for Reviewers
-            
-            Before merging, please complete these tasks:
-            
-            - [ ] Game name and ID are correct
-            - [ ] Add tags (genres: action, roguelike, rpg, etc.)
-            - [ ] Add platforms (steam, playstation, xbox, nintendo-switch, etc.)
-            - [ ] Review categories and subcategories
-            - [ ] Review glitch categories (`glitches_data`)
-            - [ ] Review challenge types
-            - [ ] Upload cover image to `assets/img/games/${{ steps.generate.outputs.first_letter }}/`
-            - [ ] Move file from `_queue_games/` to `_games/`
+            ---
 
-            ### File Location
+            ### 📋 Reviewer Checklist
+
+            **Review the submission, then merge to trigger promotion:**
             
-            ```
-            _queue_games/${{ steps.generate.outputs.game_id }}.md
-            ```
+            - [ ] Verify game info looks correct (categories, challenges, glitches)
+            - [ ] Add genre tags if missing
             
+            > **Note:** After merging, the `promote-game` workflow will automatically:
+            > - Move the file to `_games/`
+            > - Generate game pages
+            > - Create a follow-up PR for final review
+            
+            The cover image and any final adjustments can be added in the promotion PR.
+
             ---
             *Submitted via Google Form*
           branch: "new-game/${{ steps.generate.outputs.game_id }}-${{ github.run_id }}"
@@ -242,7 +222,7 @@ jobs:
             new-game
             needs-review
 
-      - name: Notify Discord forum (new game submission PR)
+      - name: Notify Discord forum
         continue-on-error: true
         if: steps.cpr.outputs.pull-request-url != ''
         env:
@@ -252,30 +232,17 @@ jobs:
           GAME_NAME: ${{ steps.generate.outputs.game_name }}
         run: |
           if [ -z "${DISCORD_WEBHOOK_URL:-}" ]; then
-            echo "DISCORD_WEBHOOK_URL not set, skipping Discord notification"
+            echo "DISCORD_WEBHOOK_URL not set, skipping"
             exit 0
           fi
           
-          # Build JSON payload safely
           PAYLOAD=$(python3 << 'EOF'
-          import json
-          import os
-          
-          game_name = os.environ.get("GAME_NAME", "").strip()
-          game_id = os.environ.get("GAME_ID", "").strip()
-          pr_url = os.environ.get("PR_URL", "").strip()
-          pr_list = "https://github.com/GaryAsher/challenge-run-site/pulls"
-          FORUM_TAG_ID = "1459087089021882561"
+          import json, os
           
           data = {
-              "thread_name": f"Game submission: {game_name} ({game_id})",
-              "content": (
-                  "🆕 **New game submission PR**\n"
-                  f"**{game_name}** (`{game_id}`)\n"
-                  f"PR: {pr_url}\n"
-                  f"All submissions: <{pr_list}>"
-              ),
-              "applied_tags": [FORUM_TAG_ID]
+              "thread_name": f"Game submission: {os.environ['GAME_NAME']} ({os.environ['GAME_ID']})",
+              "content": f"🆕 **New game submission**\n**{os.environ['GAME_NAME']}** (`{os.environ['GAME_ID']}`)\nPR: {os.environ['PR_URL']}",
+              "applied_tags": ["1459087089021882561"]
           }
           print(json.dumps(data))
           EOF
@@ -283,7 +250,6 @@ jobs:
           
           curl -sS -X POST "${DISCORD_WEBHOOK_URL}?wait=true" \
             -H "Content-Type: application/json" \
-            -H "User-Agent: GitHubActions-CRC" \
             --data "${PAYLOAD}" \
             --fail-with-body
           
