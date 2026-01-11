@@ -4,7 +4,7 @@
  *
  * Scaffolds a new game file in _games/<game_id>.md from a JSON payload,
  * optionally downloads a cover image into assets/img/games/<letter>/<game_id>.<ext>,
- * optionally appends missing tags/platforms/challenges to _data/*.yml (preserving section headers),
+ * optionally appends missing genres/platforms/challenges to _data/*.yml (preserving section headers),
  * and (by default) runs scripts/generate-codeowners.js to keep CODEOWNERS in sync.
  *
  * Usage:
@@ -14,7 +14,7 @@
  *   --dry-run           Print planned actions, write nothing
  *   --force             Overwrite existing _games/<game_id>.md if it exists
  *   --no-download        Do not download cover image even if cover_url is provided
- *   --no-data            Do not modify _data/tags.yml, _data/platforms.yml, or _data/challenges.yml
+ *   --no-data            Do not modify _data/genres.yml, _data/platforms.yml, or _data/challenges.yml
  *   --no-codeowners      Do not run scripts/generate-codeowners.js
  *
  * JSON format (example - full Hades II style game):
@@ -23,7 +23,7 @@
  *   "name": "Hades II",
  *   "name_aliases": ["Hades 2", "Hades2"],
  *   "status": "Tracking challenge categories, rules, and notable runs.",
- *   "tags": ["action","roguelike","roguelite","hack-and-slash","mythology"],
+ *   "genres": ["action","roguelike","roguelite","hack-and-slash","mythology"],
  *   "platforms": ["steam","epic","nintendo-switch","nintendo-switch-2"],
  *   "timing_method": "IGT",
  *   "tabs": {
@@ -77,7 +77,7 @@ const ROOT = process.cwd();
 
 const GAMES_DIR = path.join(ROOT, "_games");
 const DATA_DIR = path.join(ROOT, "_data");
-const TAGS_YML = path.join(DATA_DIR, "tags.yml");
+const GENRES_YML = path.join(DATA_DIR, "genres.yml");
 const CHALLENGES_YML = path.join(DATA_DIR, "challenges.yml");
 const COVER_BASE_DIR = path.join(ROOT, "assets", "img", "games");
 
@@ -136,7 +136,7 @@ function buildGameFrontMatter(payload, coverRelPathMaybe) {
 
   const reviewers = Array.isArray(payload.reviewers) ? payload.reviewers : [];
   const nameAliases = normalizeArray(payload.name_aliases).filter(Boolean);
-  const tags = normalizeArray(payload.tags).filter(Boolean);
+  const genres = normalizeArray(payload.genres).filter(Boolean);
   const platforms = normalizeArray(payload.platforms).filter(Boolean);
   
   // Default tabs - enable common ones by default
@@ -183,11 +183,11 @@ function buildGameFrontMatter(payload, coverRelPathMaybe) {
 
   if (status) lines.push(`status: ${yamlEscapeScalar(status)}`);
 
-  if (tags.length) {
-    lines.push("tags:");
-    for (const t of tags) lines.push(`${padYamlIndent(1)}- ${yamlEscapeScalar(t)}`);
+  if (genres.length) {
+    lines.push("genres:");
+    for (const t of genres) lines.push(`${padYamlIndent(1)}- ${yamlEscapeScalar(t)}`);
   } else {
-    lines.push("tags: []");
+    lines.push("genres: []");
   }
 
   if (platforms.length) {
@@ -354,9 +354,9 @@ function insertIntoSectionedYaml(original, sectionLetter, entryText) {
 }
 
 function ensureTagExists(tagKey, dryRun) {
-  if (!exists(TAGS_YML)) return;
+  if (!exists(GENRES_YML)) return;
 
-  const original = readText(TAGS_YML);
+  const original = readText(GENRES_YML);
   if (hasKeyInSimpleMapYaml(original, tagKey)) return;
 
   const first = tagKey[0];
@@ -372,10 +372,10 @@ function ensureTagExists(tagKey, dryRun) {
   const updated = insertIntoSectionedYaml(original, section, entry);
 
   if (dryRun) {
-    console.log(`[dry-run] would add tag '${tagKey}' to ${path.relative(ROOT, TAGS_YML)}`);
+    console.log(`[dry-run] would add tag '${tagKey}' to ${path.relative(ROOT, GENRES_YML)}`);
   } else {
-    writeText(TAGS_YML, updated);
-    console.log(`Added tag '${tagKey}' to ${path.relative(ROOT, TAGS_YML)}`);
+    writeText(GENRES_YML, updated);
+    console.log(`Added tag '${tagKey}' to ${path.relative(ROOT, GENRES_YML)}`);
   }
 }
 
@@ -501,7 +501,7 @@ async function main() {
   console.log(`Scaffolding game: ${gameId}`);
   console.log(`- Game file: ${path.relative(ROOT, gameFilePath)}`);
   if (coverRel) console.log(`- Cover: ${coverRel}${coverDest ? " (download)" : ""}`);
-  if (!noData) console.log(`- Data updates: tags.yml, platforms.yml, challenges.yml`);
+  if (!noData) console.log(`- Data updates: genres.yml, platforms.yml, challenges.yml`);
   if (!noCodeowners) console.log(`- Will run: scripts/generate-codeowners.js`);
   if (dryRun) console.log("- Mode: dry-run (no files will be written)");
 
@@ -530,10 +530,10 @@ async function main() {
     }
   }
 
-  // Update _data/tags.yml, _data/platforms.yml, and _data/challenges.yml
+  // Update _data/genres.yml, _data/platforms.yml, and _data/challenges.yml
   if (!noData) {
-    const tags = normalizeArray(payload.tags).filter(Boolean);
-    for (const t of tags) ensureTagExists(String(t).trim(), dryRun);
+    const genres = normalizeArray(payload.genres).filter(Boolean);
+    for (const t of genres) ensureTagExists(String(t).trim(), dryRun);
 
     const platforms = normalizeArray(payload.platforms).filter(Boolean);
     for (const p of platforms) ensurePlatformExists(String(p).trim(), dryRun);
