@@ -142,7 +142,7 @@ permalink: /games/hollow-knight/rules/
       </div>
 
       <!-- =========================================================
-           Run Categories (1st in the pair)
+           Run Categories
            ========================================================= -->
       {% if game.categories_data and game.categories_data.size > 0 %}
       <div class="rules-section mt-4">
@@ -178,9 +178,38 @@ permalink: /games/hollow-knight/rules/
         </details>
       </div>
       {% endif %}
-
+      
       <!-- =========================================================
-           Glitch Categories (2nd in the pair)
+           Community Challenges
+           ========================================================= -->
+      {% if game.community_challenges and game.community_challenges.size > 0 %}
+      <div class="rules-section mt-4">
+        <details class="accordion-item accordion-item--section">
+          <summary class="accordion-header accordion-header--section">
+            <span class="accordion-title">🌟 Community Challenges</span>
+            <span class="accordion-icon">▼</span>
+          </summary>
+          <div class="accordion-content">
+            <div class="accordion">
+              {% for cc in game.community_challenges %}
+                <details class="accordion-item">
+                  <summary class="accordion-header">
+                    <span class="accordion-title">{{ cc.label }}</span>
+                    <span class="accordion-icon">▼</span>
+                  </summary>
+                  <div class="accordion-content">
+                    {% if cc.description %}<p>{{ cc.description }}</p>{% else %}<p class="muted">See resources for detailed rules.</p>{% endif %}
+                  </div>
+                </details>
+              {% endfor %}
+            </div>
+          </div>
+        </details>
+      </div>
+      {% endif %}
+      
+      <!-- =========================================================
+           Glitch Categories
            ========================================================= -->
       {% if game.glitches_data and game.glitches_data.size > 0 %}
       <div class="rules-section mt-4">
@@ -216,7 +245,7 @@ permalink: /games/hollow-knight/rules/
       {% endif %}
 
       <!-- =========================================================
-           Standard Challenge Types (3rd - next pair)
+           Standard Challenge Types
            ========================================================= -->
       {% if game.challenges_data and game.challenges_data.size > 0 %}
       <div class="rules-section mt-4">
@@ -245,7 +274,7 @@ permalink: /games/hollow-knight/rules/
       {% endif %}
 
       <!-- =========================================================
-           Optional Restrictions (4th - next pair)
+           Optional Restrictions
            ========================================================= -->
       {% if game.restrictions_data and game.restrictions_data.size > 0 %}
       <div class="rules-section mt-4">
@@ -267,35 +296,6 @@ permalink: /games/hollow-knight/rules/
                     {% if res.incompatible_with and res.incompatible_with.size > 0 %}
                       <p class="mt-2 muted"><em>⚠️ Cannot be combined with: {{ res.incompatible_with | join: ", " }}</em></p>
                     {% endif %}
-                  </div>
-                </details>
-              {% endfor %}
-            </div>
-          </div>
-        </details>
-      </div>
-      {% endif %}
-
-      <!-- =========================================================
-           Community Challenges (at the end)
-           ========================================================= -->
-      {% if game.community_challenges and game.community_challenges.size > 0 %}
-      <div class="rules-section mt-4">
-        <details class="accordion-item accordion-item--section">
-          <summary class="accordion-header accordion-header--section">
-            <span class="accordion-title">🌟 Community Challenges</span>
-            <span class="accordion-icon">▼</span>
-          </summary>
-          <div class="accordion-content">
-            <div class="accordion">
-              {% for cc in game.community_challenges %}
-                <details class="accordion-item">
-                  <summary class="accordion-header">
-                    <span class="accordion-title">{{ cc.label }}</span>
-                    <span class="accordion-icon">▼</span>
-                  </summary>
-                  <div class="accordion-content">
-                    {% if cc.description %}<p>{{ cc.description }}</p>{% else %}<p class="muted">See resources for detailed rules.</p>{% endif %}
                   </div>
                 </details>
               {% endfor %}
