@@ -7,7 +7,7 @@ name: "Hades II"
 name_aliases:
   - "Hades 2"
   - "Hades2"
-status: "Tracking challenge categories, rules, and notable runs."
+status: "Active"
 
 tags:
   - action
