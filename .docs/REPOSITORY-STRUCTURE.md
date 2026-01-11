@@ -21,7 +21,7 @@ challenge-run-site/
 ├── 📁 _data/                    # Global data files (YAML)
 │   ├── challenges.yml           # Standard challenge type definitions
 │   ├── platforms.yml            # Platform definitions (steam, switch, etc.)
-│   ├── tags.yml                 # Tag/genre definitions
+│   ├── genres.yml                 # Tag/genre definitions
 │   └── games-index.yml          # Auto-generated games index
 │
 ├── 📁 _games/                   # Active game definitions
@@ -107,7 +107,7 @@ challenge-run-site/
                               │                        │
                               ▼                        ▼
                         Moderator Review         generate-game-pages.js
-                        Add tags/platforms       Creates games/{id}/
+                        Add genres/platforms       Creates games/{id}/
                         Upload cover image
 ```
 
