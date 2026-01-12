@@ -20,11 +20,11 @@ permalink: /games/hades-2/rules/
            ========================================================= -->
       <div class="card card--compact mb-4" id="rule-builder-card">
         <div class="rule-builder-header">
+          <span class="muted rule-builder-subtitle">📌 Rule Builder — Build your ruleset and find runners</span>
           <button class="btn btn--filter-toggle" id="rb-toggle" type="button" aria-expanded="false" aria-controls="rule-builder-content">
             <span class="filter-toggle__icon">▼</span>
-            <span class="filter-toggle__text">📌 Rule Builder</span>
+            <span class="filter-toggle__text">Open</span>
           </button>
-          <span class="muted rule-builder-subtitle">Build your ruleset and find runners</span>
         </div>
 
         <div class="rule-builder-content" id="rule-builder-content" hidden>
@@ -282,7 +282,7 @@ permalink: /games/hades-2/rules/
       {% endif %}
 
       <!-- =========================================================
-           Community Challenges (at the end)
+           Community Challenges
            ========================================================= -->
       {% if game.community_challenges and game.community_challenges.size > 0 %}
       <div class="rules-section mt-4">
@@ -598,8 +598,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Build URL params that match the runs page filter format
         const params = new URLSearchParams();
         
-        // The runs page uses labels for filtering, not slugs
-        // We'll pass the selections and let the page handle it via hash
         const filterData = {
           challenges: selectedChallenges.map(c => c.label),
           restrictions: selectedRestrictions.map(r => r.label),
