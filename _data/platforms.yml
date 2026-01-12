@@ -3,110 +3,119 @@
 
 # Nintendo
 nintendo-64:
-  label: Nintendo 64
+  label: "Nintendo 64"
   aliases: 
-    - N64
-    - Nintendo64
+    - "N64"
+    - "Nintendo64"
 
 nintendo-gamecube:
-  label: Nintendo Gamecube
+  label: "Nintendo Gamecube"
   aliases: 
-    - Gamecube
-    - GC
-    - NGC
+    - "Gamecube"
+    - "GC"
+    - "NGC"
 
 nintendo-switch:
-  label: Nintendo Switch
+  label: "Nintendo Switch"
   aliases: 
-    - Switch
-    - NS
+    - "Switch"
+    - "NS"
 
 nintendo-switch-2:
-  label: Nintendo Switch 2
+  label: "Nintendo Switch 2"
   aliases: 
-    - Switch 2
-    - NS2
+    - "Switch 2"
+    - "NS2"
 
 # Playstation
 playstation:
-  label: PlayStation
+  label: "PlayStation"
   aliases: 
-    - PS1
-    - PSX
-    - PS
+    - "PS1"
+    - "PSX"
+    - "PS"
 
 playstation-2:
-  label: PlayStation 2
+  label: "PlayStation 2"
   aliases: 
-    - PS2
+    - "PS2"
 
 playstation-3:
-  label: PlayStation 3
+  label: "PlayStation 3"
   aliases: 
-    - PS3
+    - "PS3"
 
 playstation-4:
-  label: PlayStation 4
+  label: "PlayStation 4"
   aliases: 
-    - PS4
+    - "PS4"
 
 playstation-5:
-  label: PlayStation 5
+  label: "PlayStation 5"
   aliases: 
-    - PS5
+    - "PS5"
 
 # Xbox
 xbox:
-  label: Xbox
-  
-xbox-360:
-  label: Xbox 360
+  label: "Xbox"
   aliases:
-    - 360
-  
+    - "Xbox Original"
+
+xbox-360:
+  label: "Xbox 360"
+  aliases:
+    - "X360"
+
 xbox-one:
-  label: Xbox One
+  label: "Xbox One"
   aliases: 
-    - Xbox 1
-    - XB1
+    - "Xbox 1"
+    - "XB1"
+    - "Xbone"
+
+xbox-series:
+  label: "Xbox Series X|S"
+  aliases:
+    - "Xbox Series X"
+    - "Xbox Series S"
+    - "XSX"
+    - "XSS"
 
 # PC
 steam:
-  label: PC: Steam
+  label: "Steam"
   aliases: 
-    - Steam
-    - PC Steam
-      
+    - "PC Steam"
+
 epic:
-  label: PC: Epic Games Store
+  label: "Epic Games Store"
   aliases: 
-    - Epic Games
-    - Epic
-    - EGS
+    - "Epic Games"
+    - "Epic"
+    - "EGS"
 
 gog:
-  label: PC: GOG
+  label: "GOG"
   aliases: 
-    - GOG
-    - Good Old Games
-      
+    - "Good Old Games"
+
 pc:
-  label: PC (Other)
+  label: "PC (Other)"
   aliases:
-    - Windows
-    - Computer
-    - Desktop
-  
+    - "Windows"
+    - "Computer"
+    - "Desktop"
+
 # Mobile
 ios:
-  label: iOS
+  label: "iOS"
   aliases:
-    - iPhone
-    - iPad
-    - Apple
+    - "iPhone"
+    - "iPad"
+    - "Apple"
 
 android:
-  label: Android
+  label: "Android"
   aliases:
-    - Google Play
-    - Mobile
+    - "Google Play"
+    - "Mobile"
