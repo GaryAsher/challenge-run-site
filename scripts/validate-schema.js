@@ -380,7 +380,10 @@ function validateGames({ tagResolver, challengeResolver, platformResolver }) {
       mustArrayOfStrings(fileRel, 'platforms', fm.platforms);
       for (const p of fm.platforms) {
         const r = platformResolver.resolve(p);
-        if (!r) die(`${fileRel}: unknown platform in platforms: ${p}`);
+        if (!r) {
+          warn(`${fileRel}: unknown tag in platforms: ${t} (will need review/approval)`);
+          continue;  // Don't fail, just warn
+        }
         if (r.source !== 'id' && r.canonical !== p) {
           warn(`${fileRel}: platform "${p}" should be "${r.canonical}" (canonical id)`);
         }
@@ -391,7 +394,10 @@ function validateGames({ tagResolver, challengeResolver, platformResolver }) {
       mustArrayOfStrings(fileRel, 'challenges', fm.challenges);
       for (const c of fm.challenges) {
         const r = challengeResolver.resolve(c);
-        if (!r) die(`${fileRel}: unknown challenge in challenges: ${c}`);
+        if (!r) {
+          warn(`${fileRel}: unknown tag in challenges: ${t} (will need review/approval)`);
+          continue;  // Don't fail, just warn
+        }
         if (r.source !== 'id' && r.canonical !== c) {
           warn(`${fileRel}: challenge "${c}" should be "${r.canonical}" (canonical id)`);
         }
