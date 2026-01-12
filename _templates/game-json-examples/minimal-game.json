@@ -1,0 +1,12 @@
+{
+  "_comment": "Minimal example - only required fields. Defaults will be applied for everything else.",
+  
+  "game_id": "example-game",
+  "name": "Example Game",
+  "tags": ["action"],
+  "platforms": ["steam"],
+  "challenges": ["hitless"],
+  "categories_data": [
+    {"slug": "any-percent", "label": "Any%"}
+  ]
+}
