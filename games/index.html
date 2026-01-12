@@ -210,7 +210,8 @@ const PLATFORMS = [
 {% for pair in site.data.platforms %}
   {
     id: {{ pair[0] | jsonify }},
-    label: {{ pair[1].label | default: pair[0] | jsonify }}
+    label: {{ pair[1].label | default: pair[0] | jsonify }},
+    aliases: {{ pair[1].aliases | default: empty | jsonify }}
   }{% unless forloop.last %},{% endunless %}
 {% endfor %}
 ].sort((a, b) => a.label.localeCompare(b.label));
