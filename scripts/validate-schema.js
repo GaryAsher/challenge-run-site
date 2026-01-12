@@ -168,22 +168,27 @@ function validateWindowsUnsafeNames() {
 }
 
 function validateDataFiles() {
-  const genresPath = path.join(ROOT, '_data', 'genres.yml');
+  const tagsPath = path.join(ROOT, '_data', 'tags.yml');
   const challengesPath = path.join(ROOT, '_data', 'challenges.yml');
+  const platformsPath = path.join(ROOT, '_data', 'platforms.yml');
 
-  if (!isFile(genresPath)) die('Missing _data/genres.yml');
+  if (!isFile(tagsPath)) die('Missing _data/tags.yml');
   if (!isFile(challengesPath)) die('Missing _data/challenges.yml');
+  if (!isFile(platformsPath)) die('Missing _data/platforms.yml');
 
-  const genres = loadYamlFile(genresPath, readText);
-  const challenges = loadYamlFile(challengesPath, readText);
+  const tags = loadYamlFile(tagsPath);
+  const challenges = loadYamlFile(challengesPath);
+  const platforms = loadYamlFile(platformsPath);
 
-  const genresRel = rel(genresPath, ROOT);
-  const challengesRel = rel(challengesPath, ROOT);
+  const tagsRel = rel(tagsPath);
+  const challengesRel = rel(challengesPath);
+  const platformsRel = rel(platformsPath);
 
-  const tagResolver = buildResolver('tag', genres, genresRel);
+  const tagResolver = buildResolver('tag', tags, tagsRel);
   const challengeResolver = buildResolver('challenge', challenges, challengesRel);
+  const platformResolver = buildResolver('platform', platforms, platformsRel);
 
-  return { tagResolver, challengeResolver };
+  return { tagResolver, challengeResolver, platformResolver };
 }
 
 /**
