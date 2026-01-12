@@ -50,13 +50,13 @@ playstation-5:
 
 # Xbox
 xbox:
-  label: Xbox
+  label: "Xbox"
   
 xbox-360:
-  label: Xbox 360
+  label: "Xbox 360"
   
 xbox-one:
-  label: Xbox One
+  label: "Xbox One"
   aliases: 
     - "Xbox 1"
     - "Xbox 1X"
@@ -78,11 +78,11 @@ gog:
     - "GOG"
       
 pc:
-  label: PC (Other)
+  label: "PC (Other)"
   
 # Mobile
 ios:
-  label: iOS
+  label: "iOS"
 
 android:
-  label: Android
+  label: "Android"
