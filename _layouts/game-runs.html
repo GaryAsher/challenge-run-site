@@ -210,7 +210,7 @@ layout: default
     <!-- Browse by category -->
     {% if game and game.categories_data and game.categories_data.size > 0 %}
       <div class="card card--compact" style="margin-bottom: 1rem;">
-        <h2 style="margin: 0 0 0.5rem 0;">Browse by category</h2>
+        <h1 style="margin: 0 0 0.5rem 0;">Browse by category</h1>
         <div class="tag-picked">
           {% for c in game.categories_data %}
             {% assign s = c.slug | default: "" | strip %}
@@ -284,7 +284,6 @@ layout: default
          Runs header with Submit button (ALWAYS VISIBLE)
          ========================================================= -->
     <section class="tab-panel active" data-panel="runs">
-      <h1>Runs</h1>
       <div class="runs-header">
         {% if active_cat_slug != "" and active_cat_label != "" %}
           <p class="muted mt-0 mb-0">Showing runs in: <strong>{{ active_cat_label }}</strong></p>
