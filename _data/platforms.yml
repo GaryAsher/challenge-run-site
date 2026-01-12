@@ -58,24 +58,24 @@ xbox-360:
 xbox-one:
   label: Xbox One
   aliases: 
-    - Xbox 1
-    - Xbox 1X
+    - "Xbox 1"
+    - "Xbox 1X"
 
 # PC
 steam:
   label: "PC: Steam"
   aliases: 
-    - Steam
+    - "Steam"
       
 epic:
   label: "PC: Epic Games Store"
   aliases: 
-    - Epic Games
+    - "Epic Games"
 
 gog:
   label: "PC: GOG"
   aliases: 
-    - GOG
+    - "GOG"
       
 pc:
   label: PC (Other)
