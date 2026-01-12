@@ -1,48 +1,23 @@
 # Documentation
 
-This folder contains guides for working with the Challenge Run Central repository.
+Quick reference for working with Challenge Run Central.
 
-## Quick Reference
+## Quick Links
 
-| I want to... | Read this |
-|--------------|-----------|
-| Understand the repo structure | [REPOSITORY-STRUCTURE.md](REPOSITORY-STRUCTURE.md) |
-| Add/edit a game | [CONTRIBUTING.md](CONTRIBUTING.md) |
-| Understand ID formats | [id-and-slug-spec.md](id-and-slug-spec.md) |
-| Set up Google Forms | [GOOGLE_FORMS_SETUP.md](GOOGLE_FORMS_SETUP.md) |
-| See form field specs | [NEW-GAME-FORM-SPEC.md](NEW-GAME-FORM-SPEC.md) |
-| Understand run queue | [queue-runs.md](queue-runs.md) |
-| See future plans | [REMINDERS.md](REMINDERS.md) |
+| I want to... | Go to... |
+|--------------|----------|
+| Understand the folder structure | [STRUCTURE.md](STRUCTURE.md) |
+| Add or edit content | [CONTRIBUTING.md](CONTRIBUTING.md) |
+| See future plans / TODOs | [REMINDERS.md](REMINDERS.md) |
 
-## Document Index
+## For Developers
 
-### Core Documentation
+The technical specs (ID formats, naming conventions) are in [STRUCTURE.md](STRUCTURE.md).
 
-| Document | Description |
-|----------|-------------|
-| [REPOSITORY-STRUCTURE.md](REPOSITORY-STRUCTURE.md) | Complete repo layout and file purposes |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute content |
-| [id-and-slug-spec.md](id-and-slug-spec.md) | Rules for IDs and slugs |
+## File Index
 
-### Workflow Documentation
-
-| Document | Description |
-|----------|-------------|
-| [queue-runs.md](queue-runs.md) | How the run submission queue works |
-| [GOOGLE_FORMS_SETUP.md](GOOGLE_FORMS_SETUP.md) | Setting up Google Forms integration |
-| [NEW-GAME-FORM-SPEC.md](NEW-GAME-FORM-SPEC.md) | Game submission form field specifications |
-
-### Planning
-
-| Document | Description |
-|----------|-------------|
-| [REMINDERS.md](REMINDERS.md) | Future ideas and planned features |
-
-## Keeping Docs Updated
-
-When making changes to the codebase:
-
-1. Update relevant documentation
-2. Check if field names changed (e.g., `tags` → `genres`)
-3. Update examples to match current format
-4. Add new docs for new features
+| File | Purpose |
+|------|---------|
+| `STRUCTURE.md` | Repository layout, naming rules, ID formats |
+| `CONTRIBUTING.md` | How to add games, runs, and other content |
+| `REMINDERS.md` | Future features and TODOs |
