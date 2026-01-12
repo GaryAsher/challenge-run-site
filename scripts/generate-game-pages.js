@@ -824,6 +824,51 @@ permalink: /games/${gameId}/challenges/
 `;
 }
 
+function submitPage({ gameId, gameName }) {
+  return `---
+layout: default
+title: Submit a ${gameName} Run
+game_id: ${gameId}
+permalink: /games/${gameId}/submit/
+---
+
+{% assign game = site.games | where: "game_id", page.game_id | first %}
+{% include game-header-tabs.html game=game active="submit" %}
+
+<div class="page-width">
+  <div class="game-shell">
+    <section class="tab-panel active">
+      <h1>Submit a Run</h1>
+      <p class="muted mb-4">Submit your {{ game.name }} challenge run for review.</p>
+
+      <div class="card">
+        <h2>Submission Options</h2>
+        
+        <div class="submit-options">
+          <div class="submit-option">
+            <h3>📝 GitHub Issue Form</h3>
+            <p>Submit via GitHub (requires GitHub account)</p>
+            <a href="https://github.com/challenge-run-central/challenge-run-site/issues/new?template=run-submission.yml&game=${gameId}" class="btn btn--primary" target="_blank">
+              Submit via GitHub
+            </a>
+          </div>
+        </div>
+
+        <hr class="my-4">
+
+        <h3>Before You Submit</h3>
+        <ul>
+          <li>Read the <a href="../rules/">Rules</a> for {{ game.name }}</li>
+          <li>Have your video proof ready (YouTube, Twitch VOD, etc.)</li>
+          <li>Know your category and any restrictions used</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+</div>
+`;
+}
+
 // ============================================================
 // File listing
 // ============================================================
@@ -910,6 +955,12 @@ function generateForGameFile(gameMdPath, { check }) {
     const challengesRes = writeFileIfChanged(challengesIndex, challengesPage({ gameId, gameName }), check);
     if (challengesRes.changed) (challengesRes.created ? created : changed).push(challengesIndex);
   }
+
+  // Always create submit page
+  const submitDir = path.join(ROOT, 'games', gameId, 'submit');
+  const submitIndex = path.join(submitDir, 'index.html');
+  const submitRes = writeFileIfChanged(submitIndex, submitPage({ gameId, gameName }), check);
+  if (submitRes.changed) (submitRes.created ? created : changed).push(submitIndex);
 
   return { created, changed, skipped: false, gameId };
 }
