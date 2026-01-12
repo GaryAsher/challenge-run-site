@@ -60,22 +60,24 @@ Run `node scripts/generate-codeowners.js` after editing to update `.github/CODEO
 ### genres.yml
 ```yaml
 action:
-  label: "Action"
+  label: Action
 
 roguelike:
-  label: "Roguelike"
+  label: Roguelike
 ```
 
 ### platforms.yml
 ```yaml
 steam:
-  label: "PC: Steam"
-  aliases: "Steam"
+  label: PC: Steam
+  aliases: 
+    - Steam
 
   
 playstation-5:
-  label: "PlayStation 5"
-  aliases: "PS5"
+  label: PlayStation 5
+  aliases: 
+    - PS5
 ```
 
 ## Validation
