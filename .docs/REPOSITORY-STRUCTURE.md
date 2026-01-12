@@ -1,4 +1,4 @@
-# Challenge Run Central - Repository Structure
+# CRC - Repository Structure
 
 This document explains how the repository is organized and where to find things.
 
