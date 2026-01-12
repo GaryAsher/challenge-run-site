@@ -1,79 +1,45 @@
-## Getting started
+# Contributing
 
-This guide covers the required steps for adding or updating content in this repository.
+How to add and edit content in Challenge Run Central.
 
----
+## Before You Start
 
-## ID and slug rules
-
-Before adding new IDs (game IDs, runner IDs, challenge IDs, restriction IDs, category slugs), read:
-
-    .docs/id-and-slug-spec.md
-
-All scripts and validation are expected to follow that spec.
-If the spec and a script disagree, update the script to match the spec.
-
-
-## Adding a game
-
-Create a new game file in the `_games/` folder.
-
-<!--
-The filename must exactly match the game_id.
-Avoid placeholder characters or angle brackets.
--->
-
-Things to check:
-- filename matches `game_id` (example: `hades-2.md`)
-- `game_id` follows the ID rules in `.docs/id-and-slug-spec.md`
-- `reviewers: []` is present in front matter
+Read [STRUCTURE.md](STRUCTURE.md) for naming rules and folder layout.
 
 ---
 
-## Update generated files
+## Adding a Game
 
-After adding or editing a game file, run:
-
-    node scripts/generate-codeowners.js
-
-This keeps `.github/CODEOWNERS` in sync with the repository data.
-
----
-
-## Commit your changes
-
-Commit:
-- the game file you added or changed
-- `.github/CODEOWNERS`
-
-If these are out of sync, CI will fail.
+1. Create `_games/{game-id}.md` (filename must match `game_id`)
+2. Include required fields: `game_id`, `name`, `reviewers`
+3. Run: `node scripts/generate-codeowners.js`
+4. Commit both the game file and `.github/CODEOWNERS`
 
 ---
 
-## Optional checks before pushing
+## Adding a Run
 
-<!--
-This step is recommended but not required.
-It does not modify any files.
--->
-
-You can run:
-
-    node scripts/validate-schema.js
-
-This checks:
-- ID format for tags and challenges
-- required fields in game files
-- filename and `game_id` consistency
-- presence of `reviewers:`
-- duplicate YAML keys
-
-If something is flagged, fix it before pushing.
+1. Create file in `_runs/` with format: `YYYY-MM-DD__game-id__runner-id__category__NN.md`
+2. Include required fields: `game_id`, `runner_id`, `category_slug`, `date_completed`
 
 ---
 
-## Notes
+## Validation
 
-- `.github/CODEOWNERS` is generated automatically and should not be edited by hand
-- Validation scripts only check structure and do not write files
-- Additional automation may be added later
+Before pushing, run:
+
+```bash
+npm run validate
+```
+
+This checks ID formats, required fields, and file consistency.
+
+---
+
+## Generated Files
+
+These files are auto-generated. Do not edit directly:
+- `.github/CODEOWNERS` → Run `npm run generate:codeowners`
+- `games/` folder → Run `npm run generate:game-pages`
+
+If CI fails saying files are out of sync, run the appropriate generate command.
