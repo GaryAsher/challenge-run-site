@@ -2,15 +2,10 @@
 /**
  * Repo schema validation (read-only).
  *
- * Key feature:
- * - Challenge + tag alias resolution:
- *   Accepts canonical IDs, labels, and aliases (plus common formatting variations),
- *   but warns when non-canonical values are used and suggests the canonical ID.
- *
  * Checks:
  *   - Windows-unsafe characters in filenames/folders (currently: < and >)
  *   - _data/genres.yml and _data/challenges.yml load and have sane shapes
- *   - _games/*.md: required fields + tag/challenge references exist (with alias resolution)
+ *   - _games/*.md: required fields + genres/challenge references exist (with alias resolution)
  *   - _games/*.md: categories_data (parents + optional children) validated
  *   - _runners/*.md: required fields + referenced games exist
  *   - _runs/*.md (excluding _TEMPLATES): required fields + references exist (with alias resolution)
@@ -168,23 +163,23 @@ function validateWindowsUnsafeNames() {
 }
 
 function validateDataFiles() {
-  const tagsPath = path.join(ROOT, '_data', 'tags.yml');
+  const genresPath = path.join(ROOT, '_data', 'genres.yml');
   const challengesPath = path.join(ROOT, '_data', 'challenges.yml');
   const platformsPath = path.join(ROOT, '_data', 'platforms.yml');
 
-  if (!isFile(tagsPath)) die('Missing _data/tags.yml');
+  if (!isFile(genresPath)) die('Missing _data/genres.yml');
   if (!isFile(challengesPath)) die('Missing _data/challenges.yml');
   if (!isFile(platformsPath)) die('Missing _data/platforms.yml');
 
-  const tags = loadYamlFile(tagsPath);
+  const genres = loadYamlFile(genresPath);
   const challenges = loadYamlFile(challengesPath);
   const platforms = loadYamlFile(platformsPath);
 
-  const tagsRel = rel(tagsPath);
+  const genresRel = rel(genresPath);
   const challengesRel = rel(challengesPath);
   const platformsRel = rel(platformsPath);
 
-  const tagResolver = buildResolver('tag', tags, tagsRel);
+  const tagResolver = buildResolver('tag', genres, genresRel);
   const challengeResolver = buildResolver('challenge', challenges, challengesRel);
   const platformResolver = buildResolver('platform', platforms, platformsRel);
 
