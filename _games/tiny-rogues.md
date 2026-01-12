@@ -10,11 +10,11 @@ status: "Active"
 
 # TODO: Add genres
 genres: 
-  - Action 
-  - Roguelike
-  - Bullet Hell
-  - Replay Value
-  - Difficult
+  - action 
+  - roguelike
+  - bullet-hell
+  - replay-value
+  - difficult
 platforms:
   - steam
 
