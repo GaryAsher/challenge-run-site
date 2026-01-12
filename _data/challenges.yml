@@ -63,10 +63,10 @@ minimalist:
 no-hit-no-damage:
   label: No-Hit / No-Damage
   aliases:
-  - No-Hit No-Damage
-  - No Hit No Damage
-  - No Hit - No Damage
-  - NHND
+    - No-Hit No-Damage
+    - No Hit No Damage
+    - No Hit - No Damage
+    - NHND
  
 # O
 
