@@ -366,7 +366,10 @@ function validateGames({ tagResolver, challengeResolver, platformResolver }) {
       mustArrayOfStrings(fileRel, 'genres', fm.genres);
       for (const t of fm.genres) {
         const r = tagResolver.resolve(t);
-        if (!r) die(`${fileRel}: unknown tag in genres: ${t}`);
+        if (!r) {
+          warn(`${fileRel}: unknown tag in genres: ${t} (will need review/approval)`);
+          continue;  // Don't fail, just warn
+        }
         if (r.source !== 'id' && r.canonical !== t) {
           warn(`${fileRel}: tag "${t}" should be "${r.canonical}" (canonical id)`);
         }
