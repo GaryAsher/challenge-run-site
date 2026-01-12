@@ -365,16 +365,27 @@ layout: default
             </select>
           </div>
           {% endif %}
+
+          <div class="runs-filter runs-filter--reset">
+            <button type="button" class="btn btn--outline btn--reset" id="reset-filters">
+              ↺ Reset All
+            </button>
+          </div>
         </div>
 
         <!-- Active filters display -->
         <div class="active-filters" id="active-filters"></div>
       </div>
 
+      <!-- Results status -->
+      <div class="results-status" id="results-status">
+        <span class="results-status__text" id="results-text"></span>
+      </div>
+
       <!-- Runs table -->
       {% if runs and runs.size > 0 %}
         <div class="table-wrap">
-          <table>
+          <table class="runs-table">
             <thead>
               <tr>
                 <th>Runner</th>
@@ -531,18 +542,35 @@ document.addEventListener('DOMContentLoaded', function() {
   const activeFiltersDiv = document.getElementById('active-filters');
   const runsBody = document.getElementById('runs-body');
   const rows = runsBody ? Array.from(runsBody.querySelectorAll('.run-row')) : [];
+  const totalRuns = rows.length;
 
   // Filter dropdowns
   const fChallenge = document.getElementById('f-challenge');
   const fRestrictions = document.getElementById('f-restrictions');
   const fGlitch = document.getElementById('f-glitch');
   const fCharacter = document.getElementById('f-character');
+  const resetBtn = document.getElementById('reset-filters');
+
+  // Results status
+  const resultsText = document.getElementById('results-text');
 
   // Sort buttons
   const sortDateAsc = document.getElementById('th-sort-asc');
   const sortDateDesc = document.getElementById('th-sort-desc');
   const sortTimeAsc = document.getElementById('th-time-asc');
   const sortTimeDesc = document.getElementById('th-time-desc');
+
+  // Track selected items (multi-select style)
+  let selectedChallenges = [];
+  let selectedRestrictions = [];
+  let selectedCharacters = [];
+
+  // Store original options for each dropdown
+  const originalOptions = {
+    challenge: fChallenge ? Array.from(fChallenge.options).map(o => ({ value: o.value, text: o.textContent })) : [],
+    restrictions: fRestrictions ? Array.from(fRestrictions.options).map(o => ({ value: o.value, text: o.textContent })) : [],
+    character: fCharacter ? Array.from(fCharacter.options).map(o => ({ value: o.value, text: o.textContent })) : []
+  };
 
   // Populate filter dropdowns from actual data
   function populateFilters() {
@@ -568,6 +596,7 @@ document.addEventListener('DOMContentLoaded', function() {
         opt.textContent = c;
         fChallenge.appendChild(opt);
       });
+      originalOptions.challenge = Array.from(fChallenge.options).map(o => ({ value: o.value, text: o.textContent }));
     }
 
     if (fRestrictions) {
@@ -577,6 +606,7 @@ document.addEventListener('DOMContentLoaded', function() {
         opt.textContent = r;
         fRestrictions.appendChild(opt);
       });
+      originalOptions.restrictions = Array.from(fRestrictions.options).map(o => ({ value: o.value, text: o.textContent }));
     }
 
     if (fCharacter) {
@@ -586,6 +616,30 @@ document.addEventListener('DOMContentLoaded', function() {
         opt.textContent = c;
         fCharacter.appendChild(opt);
       });
+      originalOptions.character = Array.from(fCharacter.options).map(o => ({ value: o.value, text: o.textContent }));
+    }
+
+    updateResultsStatus();
+  }
+
+  // Update dropdown options (hide selected items)
+  function updateDropdownOptions(select, selectedItems, originalOpts) {
+    if (!select) return;
+    const currentValue = select.value;
+    select.innerHTML = '';
+    originalOpts.forEach(opt => {
+      if (opt.value === '' || !selectedItems.includes(opt.value)) {
+        const option = document.createElement('option');
+        option.value = opt.value;
+        option.textContent = opt.text;
+        select.appendChild(option);
+      }
+    });
+    // Restore selection if still valid
+    if (currentValue && !selectedItems.includes(currentValue)) {
+      select.value = currentValue;
+    } else {
+      select.value = '';
     }
   }
 
@@ -599,13 +653,63 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  // Handle multi-select for Challenge
+  if (fChallenge) {
+    fChallenge.addEventListener('change', function() {
+      if (this.value && !selectedChallenges.includes(this.value)) {
+        selectedChallenges.push(this.value);
+        this.value = '';
+        updateDropdownOptions(fChallenge, selectedChallenges, originalOptions.challenge);
+        filterRows();
+      }
+    });
+  }
+
+  // Handle multi-select for Restrictions
+  if (fRestrictions) {
+    fRestrictions.addEventListener('change', function() {
+      if (this.value && !selectedRestrictions.includes(this.value)) {
+        selectedRestrictions.push(this.value);
+        this.value = '';
+        updateDropdownOptions(fRestrictions, selectedRestrictions, originalOptions.restrictions);
+        filterRows();
+      }
+    });
+  }
+
+  // Handle multi-select for Character
+  if (fCharacter) {
+    fCharacter.addEventListener('change', function() {
+      if (this.value && !selectedCharacters.includes(this.value)) {
+        selectedCharacters.push(this.value);
+        this.value = '';
+        updateDropdownOptions(fCharacter, selectedCharacters, originalOptions.character);
+        filterRows();
+      }
+    });
+  }
+
+  // Reset all filters
+  if (resetBtn) {
+    resetBtn.addEventListener('click', function() {
+      if (qInput) qInput.value = '';
+      selectedChallenges = [];
+      selectedRestrictions = [];
+      selectedCharacters = [];
+      if (fGlitch) fGlitch.value = '';
+      updateDropdownOptions(fChallenge, selectedChallenges, originalOptions.challenge);
+      updateDropdownOptions(fRestrictions, selectedRestrictions, originalOptions.restrictions);
+      updateDropdownOptions(fCharacter, selectedCharacters, originalOptions.character);
+      filterRows();
+    });
+  }
+
   // Filter logic
   function filterRows() {
     const q = qInput ? qInput.value.toLowerCase().trim() : '';
-    const challenge = fChallenge ? fChallenge.value : '';
-    const restriction = fRestrictions ? fRestrictions.value : '';
     const glitch = fGlitch ? fGlitch.value : '';
-    const character = fCharacter ? fCharacter.value : '';
+
+    let visibleCount = 0;
 
     rows.forEach(row => {
       let show = true;
@@ -622,42 +726,101 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!searchable.includes(q)) show = false;
       }
 
-      // Challenge filter
-      if (show && challenge && row.dataset.challengeLabel !== challenge) show = false;
+      // Challenge filter (multi-select - any match)
+      if (show && selectedChallenges.length > 0) {
+        if (!selectedChallenges.includes(row.dataset.challengeLabel)) show = false;
+      }
 
-      // Restriction filter
-      if (show && restriction) {
-        const rowRes = row.dataset.restrictions || '';
-        if (!rowRes.split('||').includes(restriction)) show = false;
+      // Restriction filter (multi-select - must have all selected)
+      if (show && selectedRestrictions.length > 0) {
+        const rowRes = (row.dataset.restrictions || '').split('||');
+        const hasAll = selectedRestrictions.every(r => rowRes.includes(r));
+        if (!hasAll) show = false;
+      }
+
+      // Character filter (multi-select - any match)
+      if (show && selectedCharacters.length > 0) {
+        if (!selectedCharacters.includes(row.dataset.character)) show = false;
       }
 
       // Glitch filter
       if (show && glitch && row.dataset.glitch !== glitch) show = false;
 
-      // Character filter
-      if (show && character && row.dataset.character !== character) show = false;
-
       row.style.display = show ? '' : 'none';
+      if (show) visibleCount++;
     });
 
     updateActiveFilters();
+    updateResultsStatus(visibleCount);
+  }
+
+  function updateResultsStatus(visibleCount) {
+    if (!resultsText) return;
+    const count = visibleCount !== undefined ? visibleCount : totalRuns;
+    if (count === totalRuns) {
+      resultsText.textContent = `Showing all ${totalRuns} runs`;
+    } else {
+      resultsText.textContent = `Found ${count} of ${totalRuns} runs`;
+    }
   }
 
   function updateActiveFilters() {
     if (!activeFiltersDiv) return;
     const tags = [];
 
-    if (fChallenge && fChallenge.value) tags.push({ label: fChallenge.value, clear: () => { fChallenge.value = ''; filterRows(); } });
-    if (fRestrictions && fRestrictions.value) tags.push({ label: fRestrictions.value, clear: () => { fRestrictions.value = ''; filterRows(); } });
-    if (fGlitch && fGlitch.value) tags.push({ label: fGlitch.options[fGlitch.selectedIndex].text, clear: () => { fGlitch.value = ''; filterRows(); } });
-    if (fCharacter && fCharacter.value) tags.push({ label: fCharacter.value, clear: () => { fCharacter.value = ''; filterRows(); } });
+    // Challenge tags
+    selectedChallenges.forEach(c => {
+      tags.push({
+        label: c,
+        clear: () => {
+          selectedChallenges = selectedChallenges.filter(x => x !== c);
+          updateDropdownOptions(fChallenge, selectedChallenges, originalOptions.challenge);
+          filterRows();
+        }
+      });
+    });
+
+    // Restriction tags
+    selectedRestrictions.forEach(r => {
+      tags.push({
+        label: r,
+        clear: () => {
+          selectedRestrictions = selectedRestrictions.filter(x => x !== r);
+          updateDropdownOptions(fRestrictions, selectedRestrictions, originalOptions.restrictions);
+          filterRows();
+        }
+      });
+    });
+
+    // Character tags
+    selectedCharacters.forEach(c => {
+      tags.push({
+        label: c,
+        clear: () => {
+          selectedCharacters = selectedCharacters.filter(x => x !== c);
+          updateDropdownOptions(fCharacter, selectedCharacters, originalOptions.character);
+          filterRows();
+        }
+      });
+    });
+
+    // Glitch tag
+    if (fGlitch && fGlitch.value) {
+      tags.push({
+        label: fGlitch.options[fGlitch.selectedIndex].text,
+        clear: () => { fGlitch.value = ''; filterRows(); }
+      });
+    }
 
     activeFiltersDiv.innerHTML = tags.map((t, i) => 
-      `<span class="tag" data-idx="${i}">${t.label} <button type="button" class="tag-remove">&times;</button></span>`
+      `<span class="tag tag--active" data-idx="${i}">${t.label}<button type="button" class="tag-remove" aria-label="Remove filter">&times;</button></span>`
     ).join('');
 
     activeFiltersDiv.querySelectorAll('.tag-remove').forEach((btn, i) => {
-      btn.addEventListener('click', () => tags[i].clear());
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        tags[i].clear();
+      });
     });
   }
 
@@ -687,10 +850,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Event listeners
   if (qInput) qInput.addEventListener('input', filterRows);
-  if (fChallenge) fChallenge.addEventListener('change', filterRows);
-  if (fRestrictions) fRestrictions.addEventListener('change', filterRows);
   if (fGlitch) fGlitch.addEventListener('change', filterRows);
-  if (fCharacter) fCharacter.addEventListener('change', filterRows);
 
   if (sortDateAsc) sortDateAsc.addEventListener('click', () => sortRows('date', true));
   if (sortDateDesc) sortDateDesc.addEventListener('click', () => sortRows('date', false));
