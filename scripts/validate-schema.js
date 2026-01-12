@@ -179,11 +179,11 @@ function validateDataFiles() {
   const challengesRel = rel(challengesPath);
   const platformsRel = rel(platformsPath);
 
-  const tagResolver = buildResolver('tag', genres, genresRel);
+  const genresResolver = buildResolver('genres', genres, genresRel);
   const challengeResolver = buildResolver('challenge', challenges, challengesRel);
   const platformResolver = buildResolver('platform', platforms, platformsRel);
 
-  return { tagResolver, challengeResolver, platformResolver };
+  return { genresResolver, challengeResolver, platformResolver };
 }
 
 /**
@@ -330,7 +330,7 @@ function buildGameCategoryIndex() {
   return map;
 }
 
-function validateGames({ tagResolver, challengeResolver, platformResolver }) {
+function validateGames({ genresResolver, challengeResolver, platformResolver }) {
   const dir = path.join(ROOT, '_games');
   if (!isDir(dir)) return new Set();
 
@@ -365,13 +365,13 @@ function validateGames({ tagResolver, challengeResolver, platformResolver }) {
     if (fm.genres != null) {
       mustArrayOfStrings(fileRel, 'genres', fm.genres);
       for (const t of fm.genres) {
-        const r = tagResolver.resolve(t);
+        const r = genresResolver.resolve(t);
         if (!r) {
           warn(`${fileRel}: unknown tag in genres: ${t} (will need review/approval)`);
           continue;  // Don't fail, just warn
         }
         if (r.source !== 'id' && r.canonical !== t) {
-          warn(`${fileRel}: tag "${t}" should be "${r.canonical}" (canonical id)`);
+          warn(`${fileRel}: genres "${t}" should be "${r.canonical}" (canonical id)`);
         }
       }
     }
@@ -564,10 +564,10 @@ function validateRuns({ gameIds, runnerIds, challengeResolver, gameCategoryIndex
 function main() {
   validateWindowsUnsafeNames();
 
-  const { tagResolver, challengeResolver, platformResolver } = validateDataFiles();
+  const { genresResolver, challengeResolver, platformResolver } = validateDataFiles();
   const gameCategoryIndex = buildGameCategoryIndex();
 
-  const gameIds = validateGames({ tagResolver, challengeResolver, platformResolver });
+  const gameIds = validateGames({ genresResolver, challengeResolver, platformResolver });
   const runnerIds = validateRunners(gameIds);
 
   validateRuns({ gameIds, runnerIds, challengeResolver, gameCategoryIndex });
