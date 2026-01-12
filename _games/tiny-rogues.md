@@ -33,9 +33,9 @@ character_column:
 
 # Standard challenge types (site-wide definitions)
 challenges:
-  - damageless-no-damage
+  - damageless
   - flawless
-  - hitless-no-hit
+  - hitless
   - no-hit-no-damage
 
 glitches_data:
