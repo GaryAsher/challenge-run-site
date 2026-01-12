@@ -5,6 +5,7 @@
  */
 
 const yaml = require('js-yaml');
+const fs = require('fs');
 
 /**
  * Extract and parse YAML front matter from a file's content
@@ -13,7 +14,7 @@ const yaml = require('js-yaml');
  */
 function parseFrontMatter(fileContent) {
   const lines = fileContent.split(/\r?\n/);
-
+  
   if (lines[0] !== '---') {
     return { data: {}, body: fileContent, hasFrontMatter: false };
   }
@@ -46,7 +47,6 @@ function parseFrontMatter(fileContent) {
 
 /**
  * Extract and parse YAML front matter, returning only the data object
- * Useful for scripts that don't need the body content
  * @param {string} fileContent - Raw file content (markdown with front matter)
  * @returns {object|null} Parsed YAML data or null if no front matter
  */
@@ -107,13 +107,12 @@ function asArray(value) {
 /**
  * Load and parse a YAML file
  * @param {string} filePath - Path to YAML file
- * @param {function} readTextFn - Function to read file content (injected for testability)
  * @returns {object} Parsed YAML content
  */
-function loadYamlFile(filePath, readTextFn) {
+function loadYamlFile(filePath) {
   try {
-    const content = readTextFn(filePath);
-    return yaml.load(content);
+    const content = fs.readFileSync(filePath, 'utf8');
+    return yaml.load(content) || {};
   } catch (err) {
     throw new Error(`YAML parse error in ${filePath}: ${err.message}`);
   }
@@ -127,3 +126,4 @@ module.exports = {
   asArray,
   loadYamlFile,
 };
+  
