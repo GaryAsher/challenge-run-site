@@ -73,14 +73,6 @@ xbox-one:
     - "XB1"
     - "Xbone"
 
-xbox-series:
-  label: "Xbox Series X|S"
-  aliases:
-    - "Xbox Series X"
-    - "Xbox Series S"
-    - "XSX"
-    - "XSS"
-
 # PC
 steam:
   label: "Steam"
