@@ -16,6 +16,7 @@ blindfolded:
 damageless:
   label: Damageless
   aliases: 
+    - NoDamage
     - No-Damage
     - No Damage
   
@@ -43,6 +44,7 @@ hitless:
   label: Hitless
   description: "A hit is when an NPC or dynamic object makes contact with your character's hitbox, causing damage or hard crowd control (Hard CC)."
   aliases:
+    - NoHit
     - No-Hit
     - No Hit
 
@@ -66,6 +68,7 @@ no-hit-no-damage:
     - No-Hit No-Damage
     - No Hit No Damage
     - No Hit - No Damage
+    - nohitnodamage
     - NHND
  
 # O
