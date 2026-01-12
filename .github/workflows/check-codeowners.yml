@@ -1,20 +1,54 @@
-name: check-codeowners.yml
+name: Check and fix CODEOWNERS
 
 on:
   pull_request:
   push:
-    branches: [ main ]
+    branches: [main]
+
+permissions:
+  contents: write
 
 jobs:
-  check:
-    name: check-codeowners.yml
+  check-and-fix:
+    name: Check and fix CODEOWNERS
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: "npm"
 
-      - name: Verify CODEOWNERS matches codeowners.yml
-        run: node scripts/generate-codeowners.js --check
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check CODEOWNERS
+        id: check
+        run: |
+          if node scripts/generate-codeowners.js --check; then
+            echo "status=ok" >> $GITHUB_OUTPUT
+          else
+            echo "status=outdated" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate CODEOWNERS if outdated
+        if: steps.check.outputs.status == 'outdated'
+        run: node scripts/generate-codeowners.js
+
+      - name: Commit CODEOWNERS if changed
+        if: steps.check.outputs.status == 'outdated'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          if [[ -n "$(git status --porcelain .github/CODEOWNERS)" ]]; then
+            git add .github/CODEOWNERS
+            git commit -m "chore: Auto-update CODEOWNERS"
+            git push
+            echo "✅ CODEOWNERS updated and committed"
+          else
+            echo "✅ CODEOWNERS already up to date"
+          fi
