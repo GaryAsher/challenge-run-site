@@ -1,52 +1,52 @@
 # 0-9
 1cc:
-  label: 1CC
+  label: "1CC"
   aliases: 
-    - 1 Credit Clear
+    - "1 Credit Clear"
   
 # A
 
 # B
 blindfolded:
-  label: Blindfolded
+  label: "Blindfolded"
   
 # C
 
 # D
 damageless:
-  label: Damageless
+  label: "Damageless"
   aliases: 
-    - NoDamage
-    - No-Damage
-    - No Damage
+    - "NoDamage"
+    - "No-Damage"
+    - "No Damage"
   
 deathless:
-  label: Deathless
+  label: "Deathless"
   aliases:
-    - No-Death
-    - No Death
+    - "No-Death"
+    - "No Death"
 
 # E
 
 # F
 flawless:
-  label: Flawless
+  label: "Flawless"
   aliases:
-    - Perfect
+    - "Perfect"
   
 # G
 
 # H
 high-score:
-  label: High Score
+  label: "High Score"
 
 hitless:
-  label: Hitless
+  label: "Hitless"
   description: "A hit is when an NPC or dynamic object makes contact with your character's hitbox, causing damage or hard crowd control (Hard CC)."
   aliases:
-    - NoHit
-    - No-Hit
-    - No Hit
+    - "NoHit"
+    - "No-Hit"
+    - "No Hit"
 
 # I
 
@@ -58,18 +58,18 @@ hitless:
 
 # M
 minimalist:
-  label: Minimalist
+  label: "Minimalist"
 
 # N
 
 no-hit-no-damage:
-  label: No-Hit / No-Damage
+  label: "No-Hit / No-Damage"
   aliases:
-    - No-Hit No-Damage
-    - No Hit No Damage
-    - No Hit - No Damage
-    - nohitnodamage
-    - NHND
+    - "No-Hit No-Damage"
+    - "No Hit No Damage"
+    - "No Hit - No Damage"
+    - "nohitnodamage"
+    - "NHND"
  
 # O
 
