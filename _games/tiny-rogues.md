@@ -6,7 +6,7 @@ reviewers: []
 name: "Tiny Rogues"
 name_aliases:
   - "TR"
-status: "Pending review"
+status: "Active"
 
 # TODO: Add genres
 genres: []
