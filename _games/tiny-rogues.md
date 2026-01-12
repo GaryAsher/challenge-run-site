@@ -16,7 +16,7 @@ genres:
   - Replay Value
   - Difficult
 platforms:
-  - pc-steam
+  - steam
 
 cover: /assets/img/games/t/tiny-rogues.jpg
 cover_position: center
