@@ -32,16 +32,19 @@ This folder contains shared data used across the site and by automation scripts.
 
 ### challenges.yml
 ```yaml
-no-hit:
+hitless:
   label: No-Hit
   description: "A hit is when an NPC or dynamic object makes contact with your character's hitbox, causing damage or hard crowd control (Hard CC)."
   aliases:
     - nohit
-    - hitless
+    - no-hit
+    - no hit
 
-pacifist:
-  label: Pacifist
-  description: "Do not kill any enemies"
+1cc:
+  label: 1CC
+  aliases: 
+    - 1 Credit Clear
+    
 ```
 The key (e.g., `no-hit`) is the `challenge_id` used in run files.
 
