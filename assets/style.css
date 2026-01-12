@@ -932,21 +932,21 @@ button.tag,
 
 /* Removable filter tags - click to remove */
 .tag--removable {
-  background: color-mix(in srgb, var(--accent) 20%, transparent);
-  border-color: var(--accent);
-  color: var(--fg);
+  background: var(--panel);
+  border-color: var(--border);
+  color: var(--text-muted);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .tag--removable:hover {
-  background: color-mix(in srgb, var(--danger, #ef4444) 25%, transparent);
-  border-color: var(--danger, #ef4444);
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
+  border-color: var(--accent);
   color: var(--fg);
 }
 
 .tag--removable:focus-visible {
-  outline: 2px solid var(--danger, #ef4444);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
@@ -2914,6 +2914,7 @@ a.resource-card:hover {
 .rule-builder-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
 }
@@ -3101,89 +3102,6 @@ a.resource-card:hover {
 .tag-chip--outline:hover {
   background: var(--bg-soft);
 }
-
-/* ==========================================================================
-   RULE BUILDER ENHANCEMENTS
-   ========================================================================== */
-/* Selected Restrictions Container */
-.rule-builder__selected-restrictions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-  min-height: 1.5rem;
-}
-
-/* Individual Restriction Tag */
-.rb-restriction-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.35rem 0.5rem;
-  background: color-mix(in srgb, var(--accent) 20%, transparent);
-  border: 1px solid var(--accent);
-  border-radius: var(--radius-sm);
-  font-size: 0.85rem;
-  color: var(--fg);
-}
-
-.rb-restriction-remove {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.25rem;
-  height: 1.25rem;
-  padding: 0;
-  margin-left: 0.25rem;
-  border: none;
-  border-radius: 50%;
-  background: var(--text-muted);
-  color: var(--bg);
-  font-size: 0.9rem;
-  line-height: 1;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.rb-restriction-remove:hover {
-  background: var(--danger, #ef4444);
-}
-
-/* Restriction item in result */
-.rb-restriction-item {
-  margin-bottom: 0.5rem;
-  padding-left: 0.5rem;
-  border-left: 2px solid var(--border);
-}
-
-.rb-restriction-label {
-  font-weight: 600;
-}
-
-/* Rule Builder Actions */
-.rule-builder__actions {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.rule-builder__actions .btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-/* Improve optgroup styling */
-.rule-builder__select optgroup {
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-.rule-builder__select option {
-  font-weight: normal;
-  color: var(--fg);
-}
-
 
 /* ==========================================================================
    RULE BUILDER ENHANCEMENTS
