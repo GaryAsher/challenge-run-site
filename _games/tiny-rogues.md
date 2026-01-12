@@ -9,8 +9,8 @@ name_aliases:
 status: "Active"
 
 # TODO: Add genres
-genres: 
-  - action 
+genres:
+  - action
   - roguelike
   - bullet-hell
   - replay-value
