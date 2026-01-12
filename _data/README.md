@@ -28,17 +28,6 @@ This folder contains shared data used across the site and by automation scripts.
 2. Run: `node scripts/generate-codeowners.js`
 3. Commit both files
 
-## Validation
-
-All data files are validated by `scripts/validate-schema.js`:
-```bash
-node scripts/validate-schema.js
-```
-This checks that:
-- Files exist and are valid YAML
-- Required fields are present
-- Games reference valid challenges/genres/platforms
-
 ## File Formats
 
 ### challenges.yml
@@ -87,3 +76,14 @@ steam:
 playstation-5:
   label: "PlayStation 5"
 ```
+
+## Validation
+
+All data files are validated by `scripts/validate-schema.js`:
+```bash
+node scripts/validate-schema.js
+```
+This checks that:
+- Files exist and are valid YAML
+- Required fields are present
+- Games reference valid challenges/genres/platforms
