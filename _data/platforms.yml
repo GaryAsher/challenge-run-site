@@ -3,86 +3,86 @@
 
 # Nintendo
 nintendo-64:
-  label: "Nintendo 64"
+  label: Nintendo 64
   aliases: 
-    - "N64"
+    - N64
 
 nintendo-gamecube:
-  label: "Nintendo Gamecube"
+  label: Nintendo Gamecube
   aliases: 
-    - "Gamecube"
+    - Gamecube
 
 nintendo-switch:
-  label: "Nintendo Switch"
+  label: Nintendo Switch
   aliases: 
-    - "Switch"
+    - Switch
 
 nintendo-switch-2:
-  label: "Nintendo Switch 2"
+  label: Nintendo Switch 2
   aliases: 
-    - "Switch 2"
+    - Switch 2
 
 # Playstation
 playstation:
-  label: "PlayStation"
+  label: PlayStation
   aliases: 
-    - "PS1"
+    - PS1
 
 playstation-2:
-  label: "PlayStation 2"
+  label: PlayStation 2
   aliases: 
-    - "PS2"
+    - PS2
 
 playstation-3:
-  label: "PlayStation 3"
+  label: PlayStation 3
   aliases: 
-    - "PS3"
+    - PS3
 
 playstation-4:
-  label: "PlayStation 4"
+  label: PlayStation 4
   aliases: 
-    - "PS4"
+    - PS4
 
 playstation-5:
-  label: "PlayStation 5"
+  label: PlayStation 5
   aliases: 
-    - "PS5"
+    - PS5
 
 # Xbox
 xbox:
-  label: "Xbox"
+  label: Xbox
   
 xbox-360:
-  label: "Xbox 360"
+  label: Xbox 360
   
 xbox-one:
-  label: "Xbox One"
+  label: Xbox One
   aliases: 
-    - "Xbox 1"
-    - "Xbox 1X"
+    - Xbox 1
+    - Xbox 1X
 
 # PC
 steam:
-  label: "PC: Steam"
+  label: PC: Steam
   aliases: 
-    - "Steam"
+    - Steam
       
 epic:
-  label: "PC: Epic Games Store"
+  label: PC: Epic Games Store
   aliases: 
-    - "Epic Games"
+    - Epic Games
 
 gog:
-  label: "PC: GOG"
+  label: PC: GOG
   aliases: 
-    - "GOG"
+    - GOG
       
 pc:
-  label: "PC (Other)"
+  label: PC (Other)
   
 # Mobile
 ios:
-  label: "iOS"
+  label: iOS
 
 android:
-  label: "Android"
+  label: Android
