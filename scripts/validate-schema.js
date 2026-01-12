@@ -330,7 +330,7 @@ function buildGameCategoryIndex() {
   return map;
 }
 
-function validateGames({ tagResolver, challengeResolver }) {
+function validateGames({ tagResolver, challengeResolver, platformResolver }) {
   const dir = path.join(ROOT, '_games');
   if (!isDir(dir)) return new Set();
 
