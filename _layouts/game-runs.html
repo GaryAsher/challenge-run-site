@@ -284,11 +284,12 @@ layout: default
          Runs header with Submit button (ALWAYS VISIBLE)
          ========================================================= -->
     <section class="tab-panel active" data-panel="runs">
+      <h1>Runs</h1>
       <div class="runs-header">
         {% if active_cat_slug != "" and active_cat_label != "" %}
           <p class="muted mt-0 mb-0">Showing runs in: <strong>{{ active_cat_label }}</strong></p>
         {% else %}
-          <p class="muted mt-0 mb-0">Browse all submitted runs</p>
+          <p class="muted mt-0 mb-0">Browse all submitted runs for {{ game.name }}.</p>
         {% endif %}
 
         <!-- Submit button - Always visible for all games -->
@@ -823,7 +824,6 @@ document.addEventListener('DOMContentLoaded', function() {
           e.preventDefault();
           tags[i].clear();
         }
-      });
       });
     });
   }
