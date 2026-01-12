@@ -10,7 +10,6 @@ This folder contains shared data used across the site and by automation scripts.
 | `codeowners.yml` | Maps games to their maintainers/reviewers | `generate-codeowners.js` → `.github/CODEOWNERS` |
 | `genres.yml` | Valid genre/tag values for games | Schema validation, game scaffolding |
 | `platforms.yml` | Valid platform values (Steam, Switch, etc.) | Schema validation, game filtering, scaffolding |
-| ~~`games-index.yml`~~ | ⚠️ **ORPHANED** - Was meant for game index but generator script doesn't exist | Nothing - safe to delete |
 
 ## File Formats
 
