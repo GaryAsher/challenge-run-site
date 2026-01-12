@@ -9,6 +9,7 @@
     "validate": "npm run validate:schema && npm run validate:runs",
     "validate:schema": "node scripts/validate-schema.js",
     "validate:runs": "node scripts/validate-runs.js",
+    "detect:unknown": "node scripts/detect-unknown-terms.js",
 
     "generate": "npm run generate:game-pages && npm run generate:run-categories && npm run generate:codeowners",
     "generate:game-pages": "node scripts/generate-game-pages.js",
