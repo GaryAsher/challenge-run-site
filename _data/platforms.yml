@@ -3,30 +3,30 @@
 
 # Nintendo
 nintendo-64:
-  label: Nintendo 64
+  label: "Nintendo 64"
   aliases: 
-    - N64
+    - "N64"
 
 nintendo-gamecube:
-  label: Nintendo Gamecube
+  label: "Nintendo Gamecube"
   aliases: 
-    - Gamecube
+    - "Gamecube"
 
 nintendo-switch:
-  label: Nintendo Switch
+  label: "Nintendo Switch"
   aliases: 
-    - Switch
+    - "Switch"
 
 nintendo-switch-2:
-  label: Nintendo Switch 2
+  label: "Nintendo Switch 2"
   aliases: 
-    - Switch 2
+    - "Switch 2"
 
 # Playstation
 playstation:
-  label: PlayStation
+  label: "PlayStation"
   aliases: 
-    - PS1
+    - "PS1"
 
 playstation-2:
   label: PlayStation 2
