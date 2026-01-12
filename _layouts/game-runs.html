@@ -368,7 +368,7 @@ layout: default
 
           <div class="runs-filter runs-filter--reset">
             <button type="button" class="btn btn--outline btn--reset" id="reset-filters">
-              ↺ Reset All
+              Remove all filters
             </button>
           </div>
         </div>
@@ -813,13 +813,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     activeFiltersDiv.innerHTML = tags.map((t, i) => 
-      `<span class="tag tag--active" data-idx="${i}">${t.label}<button type="button" class="tag-remove" aria-label="Remove filter">&times;</button></span>`
+      `<span class="tag tag--removable" data-idx="${i}" role="button" tabindex="0" title="Click to remove">${t.label}</span>`
     ).join('');
 
-    activeFiltersDiv.querySelectorAll('.tag-remove').forEach((btn, i) => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        tags[i].clear();
+    activeFiltersDiv.querySelectorAll('.tag--removable').forEach((tag, i) => {
+      tag.addEventListener('click', () => tags[i].clear());
+      tag.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          tags[i].clear();
+        }
+      });
       });
     });
   }
@@ -857,6 +861,72 @@ document.addEventListener('DOMContentLoaded', function() {
   if (sortTimeAsc) sortTimeAsc.addEventListener('click', () => sortRows('time', true));
   if (sortTimeDesc) sortTimeDesc.addEventListener('click', () => sortRows('time', false));
 
+  // Parse URL hash for filters from Rule Builder
+  function applyFiltersFromHash() {
+    const hash = window.location.hash;
+    if (!hash || !hash.includes('filters=')) return;
+    
+    try {
+      const filtersParam = hash.split('filters=')[1];
+      const filterData = JSON.parse(decodeURIComponent(filtersParam));
+      
+      // Apply challenges
+      if (filterData.challenges && filterData.challenges.length > 0) {
+        filterData.challenges.forEach(label => {
+          if (!selectedChallenges.includes(label)) {
+            selectedChallenges.push(label);
+          }
+        });
+        updateDropdownOptions(fChallenge, selectedChallenges, originalOptions.challenge);
+      }
+      
+      // Apply restrictions
+      if (filterData.restrictions && filterData.restrictions.length > 0) {
+        filterData.restrictions.forEach(label => {
+          if (!selectedRestrictions.includes(label)) {
+            selectedRestrictions.push(label);
+          }
+        });
+        updateDropdownOptions(fRestrictions, selectedRestrictions, originalOptions.restrictions);
+      }
+      
+      // Apply glitch
+      if (filterData.glitch && fGlitch) {
+        fGlitch.value = filterData.glitch;
+      }
+      
+      // Apply character
+      if (filterData.character && filterData.character.length > 0) {
+        filterData.character.forEach(label => {
+          if (!selectedCharacters.includes(label)) {
+            selectedCharacters.push(label);
+          }
+        });
+        updateDropdownOptions(fCharacter, selectedCharacters, originalOptions.character);
+      }
+      
+      // Open advanced filters if we have any
+      if (selectedChallenges.length > 0 || selectedRestrictions.length > 0 || 
+          selectedCharacters.length > 0 || (filterData.glitch && filterData.glitch !== '')) {
+        if (advancedFilters && filterToggle) {
+          advancedFilters.hidden = false;
+          filterToggle.setAttribute('aria-expanded', 'true');
+          filterToggle.classList.add('is-active');
+        }
+      }
+      
+      // Apply filters
+      filterRows();
+      
+      // Clear hash after applying
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+      
+    } catch (e) {
+      console.error('Error parsing filter hash:', e);
+    }
+  }
+
   populateFilters();
+  applyFiltersFromHash();
 });
 </script>
