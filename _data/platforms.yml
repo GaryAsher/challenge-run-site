@@ -31,22 +31,22 @@ playstation:
 playstation-2:
   label: PlayStation 2
   aliases: 
-    - PS2
+    - "PS2"
 
 playstation-3:
   label: PlayStation 3
   aliases: 
-    - PS3
+    - "PS3"
 
 playstation-4:
   label: PlayStation 4
   aliases: 
-    - PS4
+    - "PS4"
 
 playstation-5:
   label: PlayStation 5
   aliases: 
-    - PS5
+    - "PS5"
 
 # Xbox
 xbox:
