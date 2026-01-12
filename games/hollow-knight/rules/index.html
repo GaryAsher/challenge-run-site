@@ -15,9 +15,7 @@ permalink: /games/hollow-knight/rules/
       <h1>Rules & Definitions</h1>
       <p class="muted mb-4">Official rules, category definitions, and challenge guidelines for {{ game.name }}.</p>
 
-      <!-- =========================================================
-           Rule Builder - Collapsible Version
-           ========================================================= -->
+      <!-- Rule Builder - Collapsible Version -->
       <div class="card card--compact mb-4" id="rule-builder-card">
         <div class="rule-builder-header">
           <span class="muted rule-builder-subtitle">📌 Rule Builder — Build your ruleset and find runners</span>
@@ -126,9 +124,7 @@ permalink: /games/hollow-knight/rules/
         </div>
       </div>
 
-      <!-- =========================================================
-           General Rules (open by default)
-           ========================================================= -->
+      <!-- General Rules -->
       <div class="rules-section">
         <details class="accordion-item accordion-item--section" open>
           <summary class="accordion-header accordion-header--section">
@@ -138,18 +134,14 @@ permalink: /games/hollow-knight/rules/
           <div class="accordion-content">
             <ul>
               <li><strong>Timing Method:</strong> {{ game.timing_method | default: "RTA (Real Time Attack)" }}</li>
-              <li><strong>Video Required:</strong> All submissions must include video proof (YouTube, Twitch Highlight, or Bilibili)</li>
-              <li><strong>Main Menu Required:</strong> Runs must show the main menu at the start to verify no mods or storage glitches</li>
-              <li><strong>No Cheats/Mods:</strong> External tools, cheats, or gameplay-altering mods are not allowed</li>
-              <li><strong>Pausing:</strong> Pausing is generally allowed unless otherwise specified</li>
+              <li><strong>Video Required:</strong> All submissions must include video proof</li>
+              <li><strong>No Cheats/Mods:</strong> External tools or gameplay-altering mods are not allowed</li>
             </ul>
           </div>
         </details>
       </div>
 
-      <!-- =========================================================
-           Run Categories
-           ========================================================= -->
+      <!-- Run Categories -->
       {% if game.categories_data and game.categories_data.size > 0 %}
       <div class="rules-section mt-4">
         <details class="accordion-item accordion-item--section">
@@ -166,14 +158,10 @@ permalink: /games/hollow-knight/rules/
                     <span class="accordion-icon">▼</span>
                   </summary>
                   <div class="accordion-content">
-                    {% if cat.description %}<p>{{ cat.description }}</p>{% else %}<p class="muted">See resources for detailed rules.</p>{% endif %}
+                    {% if cat.description %}<p>{{ cat.description }}</p>{% else %}<p class="muted">See resources for rules.</p>{% endif %}
                     {% if cat.children and cat.children.size > 0 %}
                       <div class="mt-3"><strong>Subcategories:</strong>
-                        <ul class="mt-2">
-                          {% for child in cat.children %}
-                            <li><strong>{{ child.label }}</strong>{% if child.description %} - {{ child.description }}{% endif %}</li>
-                          {% endfor %}
-                        </ul>
+                        <ul class="mt-2">{% for child in cat.children %}<li><strong>{{ child.label }}</strong>{% if child.description %} - {{ child.description }}{% endif %}</li>{% endfor %}</ul>
                       </div>
                     {% endif %}
                   </div>
@@ -185,9 +173,7 @@ permalink: /games/hollow-knight/rules/
       </div>
       {% endif %}
 
-      <!-- =========================================================
-           Glitch Categories
-           ========================================================= -->
+      <!-- Glitch Categories -->
       {% if game.glitches_data and game.glitches_data.size > 0 %}
       <div class="rules-section mt-4">
         <details class="accordion-item accordion-item--section">
@@ -205,12 +191,8 @@ permalink: /games/hollow-knight/rules/
                   </summary>
                   <div class="accordion-content">
                     {% if glitch.description %}<p>{{ glitch.description }}</p>{% endif %}
-                    {% if glitch.allowed and glitch.allowed.size > 0 %}
-                      <p class="mt-2"><span class="rules-label rules-list--allowed">✓ Allowed:</span> {{ glitch.allowed | join: ", " }}</p>
-                    {% endif %}
-                    {% if glitch.banned and glitch.banned.size > 0 %}
-                      <p class="mt-2"><span class="rules-label rules-list--banned">✗ Banned:</span> {{ glitch.banned | join: ", " }}</p>
-                    {% endif %}
+                    {% if glitch.allowed and glitch.allowed.size > 0 %}<p class="mt-2"><span class="rules-label rules-list--allowed">✓ Allowed:</span> {{ glitch.allowed | join: ", " }}</p>{% endif %}
+                    {% if glitch.banned and glitch.banned.size > 0 %}<p class="mt-2"><span class="rules-label rules-list--banned">✗ Banned:</span> {{ glitch.banned | join: ", " }}</p>{% endif %}
                     {% if glitch.notes %}<p class="mt-2 muted"><em>{{ glitch.notes }}</em></p>{% endif %}
                   </div>
                 </details>
@@ -221,9 +203,7 @@ permalink: /games/hollow-knight/rules/
       </div>
       {% endif %}
 
-      <!-- =========================================================
-           Standard Challenge Types
-           ========================================================= -->
+      <!-- Standard Challenge Types -->
       {% if game.challenges_data and game.challenges_data.size > 0 %}
       <div class="rules-section mt-4">
         <details class="accordion-item accordion-item--section">
@@ -250,9 +230,7 @@ permalink: /games/hollow-knight/rules/
       </div>
       {% endif %}
 
-      <!-- =========================================================
-           Optional Restrictions
-           ========================================================= -->
+      <!-- Optional Restrictions -->
       {% if game.restrictions_data and game.restrictions_data.size > 0 %}
       <div class="rules-section mt-4">
         <details class="accordion-item accordion-item--section">
@@ -282,9 +260,7 @@ permalink: /games/hollow-knight/rules/
       </div>
       {% endif %}
 
-      <!-- =========================================================
-           Community Challenges (at the end)
-           ========================================================= -->
+      <!-- Community Challenges -->
       {% if game.community_challenges and game.community_challenges.size > 0 %}
       <div class="rules-section mt-4">
         <details class="accordion-item accordion-item--section">
@@ -301,7 +277,7 @@ permalink: /games/hollow-knight/rules/
                     <span class="accordion-icon">▼</span>
                   </summary>
                   <div class="accordion-content">
-                    {% if cc.description %}<p>{{ cc.description }}</p>{% else %}<p class="muted">See resources for detailed rules.</p>{% endif %}
+                    {% if cc.description %}<p>{{ cc.description }}</p>{% else %}<p class="muted">See resources for rules.</p>{% endif %}
                   </div>
                 </details>
               {% endfor %}
@@ -370,6 +346,7 @@ document.addEventListener('DOMContentLoaded', function() {
       rbToggle.setAttribute('aria-expanded', isHidden);
       rbToggle.classList.toggle('is-active', isHidden);
       rbCard.classList.toggle('rule-builder--expanded', isHidden);
+      rbToggle.querySelector('.filter-toggle__text').textContent = isHidden ? 'Close' : 'Open';
     });
   }
 
@@ -377,14 +354,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (categorySelect) {
     categorySelect.addEventListener('change', function() {
       const option = this.options[this.selectedIndex];
-      if (option.value) {
-        selectedCategory = { 
-          slug: option.value, 
-          label: option.dataset.label || option.text.trim() 
-        };
-      } else {
-        selectedCategory = null;
-      }
+      selectedCategory = option.value ? { slug: option.value, label: option.dataset.label || option.text.trim() } : null;
       updateRuleBuilder();
     });
   }
@@ -393,14 +363,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (glitchSelect) {
     glitchSelect.addEventListener('change', function() {
       const option = this.options[this.selectedIndex];
-      if (option.value) {
-        selectedGlitch = { 
-          slug: option.value, 
-          label: option.dataset.label || option.text.trim() 
-        };
-      } else {
-        selectedGlitch = null;
-      }
+      selectedGlitch = option.value ? { slug: option.value, label: option.dataset.label || option.text.trim() } : null;
       updateRuleBuilder();
     });
   }
@@ -410,10 +373,7 @@ document.addEventListener('DOMContentLoaded', function() {
     challengeSelect.addEventListener('change', function() {
       const option = this.options[this.selectedIndex];
       if (option.value && !selectedChallenges.find(c => c.slug === option.value)) {
-        selectedChallenges.push({
-          slug: option.value,
-          label: option.dataset.label || option.text.trim()
-        });
+        selectedChallenges.push({ slug: option.value, label: option.dataset.label || option.text.trim() });
         this.value = '';
         updateChallengeDropdown();
         updateRuleBuilder();
@@ -426,10 +386,7 @@ document.addEventListener('DOMContentLoaded', function() {
     restrictionSelect.addEventListener('change', function() {
       const option = this.options[this.selectedIndex];
       if (option.value && !selectedRestrictions.find(r => r.slug === option.value)) {
-        selectedRestrictions.push({
-          slug: option.value,
-          label: option.dataset.label || option.text.trim()
-        });
+        selectedRestrictions.push({ slug: option.value, label: option.dataset.label || option.text.trim() });
         this.value = '';
         updateRestrictionDropdown();
         updateRuleBuilder();
@@ -455,11 +412,7 @@ document.addEventListener('DOMContentLoaded', function() {
   function updateChallengeDropdown() {
     if (!challengeSelect) return;
     const selectedSlugs = selectedChallenges.map(c => c.slug);
-    
-    // Clear and rebuild
     challengeSelect.innerHTML = '';
-    
-    // Group options by optgroup
     const groups = {};
     originalChallengeOptions.forEach(opt => {
       if (!opt.value || !selectedSlugs.includes(opt.value)) {
@@ -468,8 +421,6 @@ document.addEventListener('DOMContentLoaded', function() {
         groups[groupName].push(opt);
       }
     });
-    
-    // Add default option
     if (groups['_default']) {
       groups['_default'].forEach(opt => {
         const option = document.createElement('option');
@@ -479,8 +430,6 @@ document.addEventListener('DOMContentLoaded', function() {
         challengeSelect.appendChild(option);
       });
     }
-    
-    // Add optgroups
     Object.keys(groups).filter(k => k !== '_default').forEach(groupName => {
       const optgroup = document.createElement('optgroup');
       optgroup.label = groupName;
@@ -491,16 +440,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (opt.label) option.dataset.label = opt.label;
         optgroup.appendChild(option);
       });
-      if (optgroup.children.length > 0) {
-        challengeSelect.appendChild(optgroup);
-      }
+      if (optgroup.children.length > 0) challengeSelect.appendChild(optgroup);
     });
   }
 
   function updateRestrictionDropdown() {
     if (!restrictionSelect) return;
     const selectedSlugs = selectedRestrictions.map(r => r.slug);
-    
     restrictionSelect.innerHTML = '';
     originalRestrictionOptions.forEach(opt => {
       if (!opt.value || !selectedSlugs.includes(opt.value)) {
@@ -540,79 +486,34 @@ document.addEventListener('DOMContentLoaded', function() {
   function updateRuleBuilder() {
     const tags = [];
     let hasContent = false;
-    let warnings = [];
 
-    // Category tag
-    if (selectedCategory) {
-      tags.push({ label: selectedCategory.label, type: 'category', clear: removeCategory });
-      hasContent = true;
-    }
+    if (selectedCategory) { tags.push({ label: selectedCategory.label, clear: removeCategory }); hasContent = true; }
+    if (selectedGlitch) { tags.push({ label: selectedGlitch.label, clear: removeGlitch }); hasContent = true; }
+    selectedChallenges.forEach(c => { tags.push({ label: c.label, clear: () => removeChallenge(c.slug) }); hasContent = true; });
+    selectedRestrictions.forEach(r => { tags.push({ label: r.label, clear: () => removeRestriction(r.slug) }); hasContent = true; });
 
-    // Glitch tag
-    if (selectedGlitch) {
-      tags.push({ label: selectedGlitch.label, type: 'glitch', clear: removeGlitch });
-      hasContent = true;
-    }
-
-    // Challenge tags
-    selectedChallenges.forEach(c => {
-      tags.push({ label: c.label, type: 'challenge', clear: () => removeChallenge(c.slug) });
-      hasContent = true;
-    });
-
-    // Restriction tags
-    selectedRestrictions.forEach(r => {
-      tags.push({ label: r.label, type: 'restriction', clear: () => removeRestriction(r.slug) });
-      hasContent = true;
-    });
-
-    // Render active filters
     if (activeFiltersDiv) {
       activeFiltersDiv.innerHTML = tags.map(t => 
         `<span class="tag tag--removable" role="button" tabindex="0" title="Click to remove">${t.label}</span>`
       ).join('');
-
       activeFiltersDiv.querySelectorAll('.tag--removable').forEach((tag, i) => {
         tag.addEventListener('click', () => tags[i].clear());
-        tag.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            tags[i].clear();
-          }
-        });
+        tag.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tags[i].clear(); } });
       });
     }
 
-    // Show/hide warnings
-    if (validationDiv && warningText) {
-      if (warnings.length > 0) {
-        warningText.textContent = warnings.join('. ');
-        validationDiv.style.display = 'block';
-      } else {
-        validationDiv.style.display = 'none';
-      }
-    }
+    if (validationDiv) validationDiv.style.display = 'none';
 
-    // Build URL and show/hide button
     if (findRunnersBtn) {
       if (hasContent) {
-        // Build URL params that match the runs page filter format
-        const params = new URLSearchParams();
-        
-        // The runs page uses labels for filtering, not slugs
-        // We'll pass the selections and let the page handle it via hash
         const filterData = {
           challenges: selectedChallenges.map(c => c.label),
           restrictions: selectedRestrictions.map(r => r.label),
           glitch: selectedGlitch ? selectedGlitch.slug : '',
           character: ''
         };
-        
-        // Encode as hash for the runs page to parse
         const hashData = encodeURIComponent(JSON.stringify(filterData));
-        const runsUrl = '/games/' + gameId + '/runs/#filters=' + hashData;
-        
-        findRunnersBtn.href = runsUrl;
+        findRunnersBtn.href = '/games/' + gameId + '/runs/#filters=' + hashData;
         findRunnersBtn.style.display = 'inline-block';
       } else {
         findRunnersBtn.style.display = 'none';
@@ -620,7 +521,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // Initialize
   updateChallengeDropdown();
   updateRestrictionDropdown();
 });
