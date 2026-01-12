@@ -4,21 +4,11 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ---
 
-## Before Launch
-
-### Testing Checklist
-- [ ] Test run submissions - Ensure form → YAML → site flow works
-- [ ] Mobile testing - Verify all UI works on phones/tablets
-- [ ] Accessibility audit - Screen reader compatibility for filters
-
----
-
 ## Future Features
 
 ### Forms & Submissions
 - [ ] Run submission form (Google Form → GitHub)
 - [ ] Runner profile submission - Self-service profile creation
-- [ ] Game request form (simple version for users)
 
 ### Site Features
 - [ ] Search page - Global search across all content
@@ -29,6 +19,20 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Discord integration - Webhook for new run notifications
 - [ ] Leaderboards - Per-game, per-challenge rankings
 - [ ] Badges/achievements - Gamification for runners
+
+---
+
+## Areas Needing Work
+
+### Runner Profiles (`_runners/`)
+- [ ] Revisit runner profile structure
+- [ ] Define what fields are needed
+- [ ] Create submission flow for profiles
+- [ ] Consider verification system
+
+### Platform Search
+- [ ] Add aliases to `_data/platforms.yml` for search
+- [ ] Update search to use aliases
 
 ---
 
@@ -51,7 +55,5 @@ This document consolidates all reminders, future ideas, and planned features for
 ---
 
 ## Notes
-
-This file replaces the individual files in `reminders/` folder. Those files contain more detailed drafts and can be referenced when implementing these features.
 
 Last updated: January 2025
