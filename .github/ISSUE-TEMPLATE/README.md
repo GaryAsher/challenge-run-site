@@ -7,8 +7,8 @@ This folder contains GitHub Issue templates that create structured forms for use
 | File | Purpose |
 |------|---------|
 | `config.yml` | GitHub configuration for issue template chooser. Controls which templates appear and adds external links (like Discord). |
-| `run-submission.yml` | **Generic run submission form.** Used when submitting challenge runs for any game. Creates issues with `run-submission` and `pending-review` labels. |
 | `game-change-request.yml` | Form for requesting changes to existing game pages (corrections, new categories, etc.). |
+| `run-submission.yml` | **Generic run submission form.** Used when submitting challenge runs for any game. Creates issues with `run-submission` and `pending-review` labels. |
 | `runner-profile.yml` | Form for creating or updating runner profiles with social links and bio information. |
 
 ## How These Work
