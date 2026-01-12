@@ -560,10 +560,10 @@ function validateRuns({ gameIds, runnerIds, challengeResolver, gameCategoryIndex
 function main() {
   validateWindowsUnsafeNames();
 
-  const { tagResolver, challengeResolver } = validateDataFiles();
+  const { tagResolver, challengeResolver, platformResolver } = validateDataFiles();
   const gameCategoryIndex = buildGameCategoryIndex();
 
-  const gameIds = validateGames({ tagResolver, challengeResolver });
+  const gameIds = validateGames({ tagResolver, challengeResolver, platformResolver });
   const runnerIds = validateRunners(gameIds);
 
   validateRuns({ gameIds, runnerIds, challengeResolver, gameCategoryIndex });
