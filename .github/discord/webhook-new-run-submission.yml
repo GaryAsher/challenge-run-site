@@ -47,7 +47,7 @@ jobs:
       - name: Send Discord notification
         if: steps.parse.outputs.should_notify == 'true'
         env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_WEBHOOK: ${{ secrets.https://discord.com/api/webhooks/1460377740867010763/lqi3pXafRXZ_aO1I502S8qdQPsuBdqFZyFpp2tdT1xD7T_b2CcOV-ZT9VTjqO-szU44I }}
         run: |
           GAME_ID="${{ steps.parse.outputs.game_id }}"
           RUNNER_ID="${{ steps.parse.outputs.runner_id }}"
