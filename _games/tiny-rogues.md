@@ -9,9 +9,14 @@ name_aliases:
 status: "Active"
 
 # TODO: Add genres
-genres: []
+genres: 
+  - Action 
+  - Roguelike
+  - Bullet Hell
+  - Replay Value
+  - Difficult
 platforms:
-  - pc
+  - pc-steam
 
 cover: /assets/img/games/t/tiny-rogues.jpg
 cover_position: center
