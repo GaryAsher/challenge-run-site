@@ -44,7 +44,6 @@ hitless:
     - nohit
     - no-hit
     - no hit
-    
 ```
 The key (e.g., `no-hit`) is the `challenge_id` used in run files.
 
@@ -75,7 +74,6 @@ steam:
   label: PC: Steam
   aliases: 
     - Steam
-
   
 playstation-5:
   label: PlayStation 5
