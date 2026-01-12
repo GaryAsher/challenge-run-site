@@ -1,4 +1,4 @@
-# Challenge Run Central (CRC)
+# Challenge Run Community (CRC)
 
 A community-driven website for tracking and celebrating challenge runs across games.
 
@@ -7,7 +7,6 @@ A community-driven website for tracking and celebrating challenge runs across ga
 | Resource | Description |
 |----------|-------------|
 | [Submit a Run](../../issues/new?template=run-submission.yml) | Submit a challenge run for any game |
-| [Submit Hollow Knight Run](../../issues/new?template=hollow-knight-run-submission.yml) | Hollow Knight specific form |
 | [Submit New Game](../../issues/new?template=new-game-submission.yml) | Submit a new game to CRC |
 | [Request Game Changes](../../issues/new?template=game-change-request.yml) | Request changes to an existing game |
 | [Documentation](.docs/) | Full documentation |
