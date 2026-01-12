@@ -373,6 +373,17 @@ function validateGames({ tagResolver, challengeResolver }) {
       }
     }
 
+    if (fm.platforms != null) {
+      mustArrayOfStrings(fileRel, 'platforms', fm.platforms);
+      for (const p of fm.platforms) {
+        const r = platformResolver.resolve(p);
+        if (!r) die(`${fileRel}: unknown platform in platforms: ${p}`);
+        if (r.source !== 'id' && r.canonical !== p) {
+          warn(`${fileRel}: platform "${p}" should be "${r.canonical}" (canonical id)`);
+        }
+      }
+    }
+
     if (fm.challenges != null) {
       mustArrayOfStrings(fileRel, 'challenges', fm.challenges);
       for (const c of fm.challenges) {
@@ -384,7 +395,7 @@ function validateGames({ tagResolver, challengeResolver }) {
       }
     }
   }
-
+    
   return gameIds;
 }
 
