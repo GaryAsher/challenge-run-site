@@ -68,7 +68,7 @@ xbox-360:
 
 xbox-one:
   label: "Xbox One"
-  aliases: 
+  aliases:
     - "Xbox 1"
     - "XB1"
     - "Xbone"
