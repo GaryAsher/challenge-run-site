@@ -25,6 +25,11 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ## Areas Needing Work
 
+### Promote Games
+- [ ] This section needs to be added or removed. It can only be done AFTER the game is promoted:
+  - Update genre tags and platforms (edit the game file)
+  - Game file: https://github.com/GaryAsher/challenge-run-site/blob/main/_games/tiny-rogues.md
+
 ### Runner Profiles (`_runners/`)
 - [ ] Revisit runner profile structure
 - [ ] Define what fields are needed
