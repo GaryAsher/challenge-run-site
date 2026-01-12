@@ -9,7 +9,9 @@ action:
   label: "Action"
 
 # B
-
+bullet-hell:
+  label: "Bullet Hell"
+  
 # C
 
 # D
@@ -60,6 +62,9 @@ puzzle:
 # Q
 
 # R
+replay-value:
+  label: "Replay Value"
+
 roguelike:
   label: "Roguelike"
   
