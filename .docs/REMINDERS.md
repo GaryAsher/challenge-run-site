@@ -13,12 +13,13 @@ This document consolidates all reminders, future ideas, and planned features for
 ### Site Features
 - [ ] Search page - Global search across all content
 - [ ] RSS feed - For new runs/games
+- [ ] Add Spanish version
 - [ ] Dark/light mode toggle
 
 ### Community Building
 - [ ] Discord integration - Webhook for new run notifications
 - [ ] Leaderboards - Per-game, per-challenge rankings
-- [ ] Badges/achievements - Gamification for runners
+- [ ] Badges/achievements for runners
 
 ---
 
