@@ -36,10 +36,6 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Create submission flow for profiles
 - [ ] Consider verification system
 
-### Platform Search
-- [ ] Add aliases to `_data/platforms.yml` for search
-- [ ] Update search to use aliases
-
 ---
 
 ## Documentation to Complete
