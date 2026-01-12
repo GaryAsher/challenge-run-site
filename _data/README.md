@@ -61,20 +61,21 @@ Run `node scripts/generate-codeowners.js` after editing to update `.github/CODEO
 ```yaml
 action:
   label: "Action"
-  description: "Fast-paced gameplay"
 
 roguelike:
   label: "Roguelike"
-  description: "Permadeath, procedural generation"
 ```
 
 ### platforms.yml
 ```yaml
 steam:
-  label: "Steam"
+  label: "PC: Steam"
+  aliases: "Steam"
+
   
 playstation-5:
   label: "PlayStation 5"
+  aliases: "PS5"
 ```
 
 ## Validation
