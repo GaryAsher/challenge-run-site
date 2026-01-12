@@ -930,13 +930,34 @@ button.tag,
   color: var(--fg);
 }
 
+/* Removable filter tags - click to remove */
+.tag--removable {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  border-color: var(--accent);
+  color: var(--fg);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tag--removable:hover {
+  background: color-mix(in srgb, var(--danger, #ef4444) 25%, transparent);
+  border-color: var(--danger, #ef4444);
+  color: var(--fg);
+}
+
+.tag--removable:focus-visible {
+  outline: 2px solid var(--danger, #ef4444);
+  outline-offset: 2px;
+}
+
+/* Legacy active tag style (keep for backwards compatibility) */
 .active-filters .tag--active {
   background: color-mix(in srgb, var(--accent) 20%, transparent);
   border-color: var(--accent);
   color: var(--fg);
 }
 
-/* Tag remove button */
+/* Tag remove button - kept for other uses */
 .tag-remove {
   display: inline-flex;
   align-items: center;
@@ -972,7 +993,7 @@ button.tag,
   color: var(--text-muted);
 }
 
-/* Reset button */
+/* Reset button - pushed to far right */
 .btn--reset {
   white-space: nowrap;
 }
@@ -980,6 +1001,7 @@ button.tag,
 .runs-filter--reset {
   display: flex;
   align-items: flex-end;
+  margin-left: auto;
 }
 
 @media (max-width: 640px) {
@@ -2873,22 +2895,75 @@ a.resource-card:hover {
 /* =========================================================
    Rule Builder
    ========================================================= */
-.rule-builder {
+/* Collapsed state - minimal styling */
+#rule-builder-card {
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+#rule-builder-card:not(.rule-builder--expanded) {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+/* Expanded state - accent border */
+#rule-builder-card.rule-builder--expanded {
   border: 2px solid var(--accent);
   background: var(--panel);
 }
 
+.rule-builder-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.rule-builder-subtitle {
+  font-size: 0.9rem;
+}
+
+.rule-builder-content {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
 .rule-builder__selections {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .rule-builder__group {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.rule-builder__group--reset {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.rule-builder__selected {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+  min-height: 0;
+}
+
+.rule-builder__active {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.rule-builder__active:empty {
+  display: none;
 }
 
 .rule-builder__label {
