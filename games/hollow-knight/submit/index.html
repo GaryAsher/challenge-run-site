@@ -1,0 +1,107 @@
+---
+layout: default
+title: Submit a Run - Hollow Knight
+---
+
+{% assign game = site.games | where: "game_id", "hollow-knight" | first %}
+{% include game-header-tabs.html game=game active="runs" %}
+
+<div class="page-width">
+  <div class="game-shell">
+    <section class="tab-panel active">
+      <div class="card">
+        <h2 class="mb-2">Submit a Run</h2>
+        <p class="muted mb-4">Submit your Hollow Knight challenge run for review. All submissions are reviewed by moderators before being added to the database.</p>
+
+        <div class="submit-info">
+          <h3>Before You Submit</h3>
+          <ul class="mb-4">
+            <li>Your run must have video evidence (YouTube or Twitch VOD)</li>
+            <li>Include accurate timing information (In-Game Time)</li>
+            <li>Specify your weapon/aspect, challenge type, and any restrictions</li>
+            <li>Submissions are typically reviewed within [PLACEHOLDER_TEXT]</li>
+          </ul>
+
+          <a href="PUT HOLLOW KNIGHT SUBMISSION FORM HERE" target="_blank" rel="noopener" class="btn btn--primary btn--large">
+            Open Submission Form ↗
+          </a>
+          
+          <p class="muted mt-4">
+            <small>The form will open in a new tab. You'll need a Google account to submit.</small>
+          </p>
+        </div>
+
+        <div class="card card--compact mt-6" style="background: var(--panel);">
+          <h3>What We Need</h3>
+          <div class="submit-requirements">
+            <div class="requirement-group">
+              <h4>Runner Info</h4>
+              <ul>
+                <li>Your display name</li>
+                <li>Runner ID (if returning)</li>
+              </ul>
+            </div>
+            <div class="requirement-group">
+              <h4>Run Details</h4>
+              <ul>
+                <li>Category (e.g., All SKills)</li>
+                <li>Challenge type (Hitless, Damageless, etc.)</li>
+                <li>Glitch rules (Unrestricted, NMG, Glitchless)</li>
+                <li>Any restrictions (Nail Only)</li>
+              </ul>
+            </div>
+            <div class="requirement-group">
+              <h4>Timing & Evidence</h4>
+              <ul>
+                <li>Time (LRT format: HH:MM:SS)</li>
+                <li>Date completed</li>
+                <li>Video link (YouTube/Twitch)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<style>
+.btn--large {
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+}
+
+.submit-info {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.submit-info ul {
+  text-align: left;
+  display: inline-block;
+  margin-bottom: 1.5rem;
+}
+
+.submit-requirements {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.requirement-group h4 {
+  margin: 0 0 0.5rem 0;
+  color: var(--accent);
+  font-size: 0.9rem;
+}
+
+.requirement-group ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.requirement-group li {
+  margin-bottom: 0.25rem;
+}
+</style>
