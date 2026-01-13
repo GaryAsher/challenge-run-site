@@ -16,7 +16,19 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 /** Matches time format: HH:MM:SS or HH:MM:SS.mmm */
 const TIME_RE = /^\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?$/;
 
-/** Matches run filename pattern: YYYY-MM-DD__game-id__runner-id__category-slug__NN.md */
+/**
+ * Matches run filename pattern: YYYY-MM-DD__game-id__runner-id__category-slug__NN.md
+ * 
+ * The date in the filename is date_completed (when the run was achieved),
+ * NOT date_submitted (when it was submitted for review).
+ * 
+ * Groups:
+ *   [1] = date (YYYY-MM-DD) - corresponds to date_completed
+ *   [2] = game_id
+ *   [3] = runner_id  
+ *   [4] = category_slug
+ *   [5] = sequence number (NN or NNN)
+ */
 const RUN_FILENAME_RE = /^(\d{4}-\d{2}-\d{2})__([a-z0-9-]+)__([a-z0-9-]+)__([a-z0-9-]+)__([0-9]{2,3})\.md$/;
 
 /** Valid run status values */
