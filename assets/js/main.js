@@ -5,25 +5,16 @@ const CONFIG = {
   MENU_WIDTH: 320,
   MAX_SUGGESTIONS: 250,
   DEBOUNCE_MS: 150,
-  SCROLL_TTL_MS: 10 * 60 * 1000, // 10 minutes
+  SCROLL_TTL_MS: 10 * 60 * 1000,
 };
 
-// =========================================================
-// Client-side pagination for any .list-paged block
-// + Runs table filtering (Search + Header filters + Date sort + Limit)
-//
-// NOTE:
-// Category filtering/navigation has been removed.
-// Categories are browsed via category pages + chips in the layout,
-// and category text remains searchable in the search box.
-// =========================================================
-
 (function () {
+  'use strict';
+
   // =========================================================
-  // Scroll preservation helpers for game tab navigation
+  // Scroll preservation
   // =========================================================
   function getGameRoot(pathname) {
-    // Matches: /games/<game_id>/...  -> returns "/games/<game_id>/"
     const m = String(pathname || '').match(/^\/games\/([^/]+)\//);
     return m ? `/games/${m[1]}/` : null;
   }
@@ -33,25 +24,19 @@ const CONFIG = {
     if (!root) return;
 
     const key = `crc_scroll:${root}`;
-    const payload = {
-      y: window.scrollY || window.pageYOffset || 0,
-      ts: Date.now(),
-    };
+    const payload = { y: window.scrollY || 0, ts: Date.now() };
 
     try {
       sessionStorage.setItem(key, JSON.stringify(payload));
     } catch (err) {
-      // Storage quota exceeded or disabled - non-critical
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        console.warn('Failed to save scroll position:', err.message);
-      }
+      // Storage disabled - non-critical
     }
   }
 
   function restoreGameScroll() {
     if (window.__CRC_SCROLL_RESTORED__) return;
-    window.__CRC_SCROLL_RESTORED__ = true; // Mark as handled
-    
+    window.__CRC_SCROLL_RESTORED__ = true;
+
     const ORIGIN = window.location.origin;
     const gameRoot = getGameRoot(window.location.pathname);
     if (!gameRoot) return;
@@ -61,8 +46,6 @@ const CONFIG = {
 
     const refPath = ref.slice(ORIGIN.length);
     const refRoot = getGameRoot(refPath);
-
-    // Only restore when navigating within the same game
     if (!refRoot || refRoot !== gameRoot) return;
 
     const key = `crc_scroll:${gameRoot}`;
@@ -72,45 +55,28 @@ const CONFIG = {
       if (!raw) return;
 
       const data = JSON.parse(raw);
-      if (!data || typeof data.y !== 'number') return;
+      if (typeof data.y !== 'number') return;
+      if (data.ts && Date.now() - data.ts > CONFIG.SCROLL_TTL_MS) return;
 
-      // Optional TTL: 10 minutes
-      if (typeof data.ts === 'number' && Date.now() - data.ts > CONFIG.SCROLL_TTL_MS) {
-        return;
-      }
-
-      // Wait longer for layout to settle (tables, images, etc.)
-      const scrollY = data.y;
-      function tryScroll() {
-        window.scrollTo(0, scrollY);
-      }
-      
-      // Multiple attempts to handle async content loading
       requestAnimationFrame(() => {
-        tryScroll();
-        setTimeout(tryScroll, 50);
-        setTimeout(tryScroll, 150);
+        requestAnimationFrame(() => window.scrollTo(0, data.y));
       });
     } catch (err) {
-      // Parse error or storage disabled - non-critical
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        console.warn('Failed to restore scroll position:', err.message);
-      }
+      // Parse error - non-critical
     }
   }
 
   // =========================================================
-  // Client-side pagination for any .list-paged block
+  // Client-side pagination
   // =========================================================
   function initPagedList(root) {
     const pageSize = parseInt(root.getAttribute('data-page-size') || '25', 10);
     const items = Array.from(root.querySelectorAll('.list-item'));
+    if (!items.length) return;
 
     const btnPrev = root.querySelector('[data-prev]');
     const btnNext = root.querySelector('[data-next]');
     const statusEl = root.querySelector('[data-status]');
-    const pageLabelEl = root.querySelector('[data-page-label]');
-    const pagesWrap = root.querySelector('[data-pages]');
 
     const paramKey = root.id ? `${root.id}-page` : 'page';
     let currentPage = 1;
@@ -149,42 +115,7 @@ const CONFIG = {
       if (btnPrev) btnPrev.disabled = safePage <= 1;
       if (btnNext) btnNext.disabled = safePage >= totalPages;
 
-      if (pageLabelEl) pageLabelEl.textContent = `Page ${safePage} / ${totalPages}`;
-
-      if (pagesWrap) {
-        pagesWrap.innerHTML = '';
-
-        for (let p = 1; p <= totalPages; p++) {
-          const b = document.createElement('button');
-          b.type = 'button';
-          b.className = 'btn page-btn';
-          b.textContent = String(p);
-
-          if (p === safePage) {
-            b.disabled = true;
-            b.classList.add('is-current');
-            b.setAttribute('aria-current', 'page');
-          }
-
-          b.addEventListener('click', () => {
-            render(p);
-            root.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          });
-
-          pagesWrap.appendChild(b);
-        }
-      }
-
       setPageInUrl(safePage);
-      root.setAttribute('data-page', String(safePage));
-    }
-
-    if (items.length === 0) {
-      if (statusEl) statusEl.textContent = 'No results.';
-      if (btnPrev) btnPrev.disabled = true;
-      if (btnNext) btnNext.disabled = true;
-      if (pagesWrap) pagesWrap.innerHTML = '';
-      return;
     }
 
     if (btnPrev) {
@@ -206,57 +137,32 @@ const CONFIG = {
   }
 
   // =========================================================
-  // Runs table filtering (Search + Header filters + Date sort + Limit)
-  // Category filtering/navigation removed (categories are pages).
+  // Runs table filtering
   // =========================================================
   function initRunsTable() {
     const table = document.getElementById('runs-table');
-    if (!table) return;
+    if (!table) return; // Early exit if not runs page
 
     const q = document.getElementById('q');
     const limitEl = document.getElementById('limit');
     const status = document.getElementById('status');
-    const resetBtn = document.getElementById('reset-all');
-
-    // Filter toggle
-    const filterToggle = document.getElementById('filter-toggle');
-    const advancedFilters = document.getElementById('advanced-filters');
-
-    if (filterToggle && advancedFilters) {
-      filterToggle.addEventListener('click', () => {
-        const isExpanded = filterToggle.getAttribute('aria-expanded') === 'true';
-        filterToggle.setAttribute('aria-expanded', !isExpanded);
-        advancedFilters.hidden = isExpanded;
-        filterToggle.classList.toggle('is-active', !isExpanded);
-      });
-    }
-
     const rows = Array.from(table.querySelectorAll('.run-row'));
     const tbody = table.querySelector('tbody');
+
+    if (!rows.length) return;
+
+    const thMenu = document.getElementById('th-menu');
+    const thMenuQ = document.getElementById('th-menu-q');
+    const thMenuList = document.getElementById('th-menu-list');
+    const thMenuClear = document.getElementById('th-menu-clear');
+    const thMenuClose = document.getElementById('th-menu-close');
 
     const thSortAsc = document.getElementById('th-sort-asc');
     const thSortDesc = document.getElementById('th-sort-desc');
 
-    // Time sort buttons
-    const thTimeAsc = document.getElementById('th-time-asc');
-    const thTimeDesc = document.getElementById('th-time-desc');
-
-    // Type-ahead filter elements (new pattern matching games page)
-    const challengeSearch = document.getElementById('challenge-search');
-    const challengePicked = document.getElementById('challenge-picked');
-    const challengeSuggestions = document.getElementById('challenge-suggestions');
-
-    const restrictionsSearch = document.getElementById('restrictions-search');
-    const restrictionsPicked = document.getElementById('restrictions-picked');
-    const restrictionsSuggestions = document.getElementById('restrictions-suggestions');
-
-    const glitchSearch = document.getElementById('glitch-search');
-    const glitchPicked = document.getElementById('glitch-picked');
-    const glitchSuggestions = document.getElementById('glitch-suggestions');
-
-    const characterSearch = document.getElementById('character-search');
-    const characterPicked = document.getElementById('character-picked');
-    const characterSuggestions = document.getElementById('character-suggestions');
+    const btnCh = document.getElementById('filter-challenge');
+    const btnRes = document.getElementById('filter-restrictions');
+    const activeFiltersWrap = document.getElementById('active-filters');
 
     rows.forEach((r, i) => (r.dataset._i = String(i)));
 
@@ -284,7 +190,7 @@ const CONFIG = {
     function parseRestrictionsRaw(row) {
       return (row.dataset.restrictions || '')
         .split('||')
-        .map(s => (s || '').toString().trim())
+        .map(s => s.trim())
         .filter(Boolean);
     }
 
@@ -292,15 +198,11 @@ const CONFIG = {
       const chIds = [];
       const chLabelById = new Map();
       const restrictionsRaw = [];
-      const glitchIds = [];
-      const characterIds = [];
 
       rows.forEach(row => {
         const chId = norm(row.dataset.challengeId);
         const chLabel = (row.dataset.challengeLabel || '').toString().trim();
         const resRaw = parseRestrictionsRaw(row);
-        const glitchId = norm(row.dataset.glitch);
-        const characterId = (row.dataset.character || '').toString().trim();
 
         if (chId) {
           chIds.push(chId);
@@ -308,8 +210,6 @@ const CONFIG = {
         }
 
         if (resRaw.length) restrictionsRaw.push(...resRaw);
-        if (glitchId) glitchIds.push(glitchId);
-        if (characterId) characterIds.push(characterId);
       });
 
       function toList(values, map) {
@@ -325,168 +225,110 @@ const CONFIG = {
       return {
         challenges: toList(chIds, chLabelById),
         restrictions: toList(restrictionsRaw),
-        glitches: toList(glitchIds),
-        characters: toList(characterIds),
       };
     }
 
     const OPTIONS = buildOptions();
-
     const activeChallenges = new Set();
     const activeRestrictions = new Set();
-    const activeGlitches = new Set();
-    const activeCharacters = new Set();
-
     let dateSortDir = 'desc';
-    let timeSortDir = null; // null = not sorting by time
+    let thActiveCol = null;
+
+    function closeThMenu() {
+      if (!thMenu) return;
+      if (thMenuQ) thMenuQ.value = '';
+      thMenu.hidden = true;
+      thMenu.setAttribute('aria-hidden', 'true');
+      thActiveCol = null;
+    }
+
+    function getSetForCol(col) {
+      if (col === 'challenge') return activeChallenges;
+      if (col === 'restrictions') return activeRestrictions;
+      return null;
+    }
+
+    function getOptionsForCol(col) {
+      if (col === 'challenge') return OPTIONS.challenges;
+      if (col === 'restrictions') return OPTIONS.restrictions;
+      return [];
+    }
 
     function getLabelFor(col, id) {
-      let list;
-      if (col === 'challenge') list = OPTIONS.challenges;
-      else if (col === 'restrictions') list = OPTIONS.restrictions;
-      else if (col === 'glitch') list = OPTIONS.glitches;
-      else if (col === 'character') list = OPTIONS.characters;
-      else list = [];
-      
+      const list = getOptionsForCol(col);
       const hit = list.find(x => x.id === id);
       return hit ? hit.label : id;
     }
 
-    // =========================================================
-    // Type-ahead UI helpers (matching games page pattern)
-    // =========================================================
-    function renderPicked(set, list, pickedEl, { onRemove } = {}) {
-      if (!pickedEl) return;
-      pickedEl.innerHTML = '';
+    function updateTopButtonLabels() {
+      if (btnCh) {
+        const count = activeChallenges.size;
+        btnCh.textContent = count ? `Challenge (${count}) ▾` : 'Challenge ▾';
+        btnCh.setAttribute('aria-expanded', count > 0 ? 'true' : 'false');
+      }
 
-      const entries = Array.from(set);
-      if (!entries.length) return;
-
-      for (const id of entries) {
-        const meta = list.find(x => norm(x.id) === norm(id));
-        const label = meta ? meta.label : id;
-
-        const chip = document.createElement('button');
-        chip.type = 'button';
-        chip.className = 'tag-chip';
-        chip.textContent = label + ' ×';
-
-        chip.addEventListener('click', () => {
-          set.delete(norm(id));
-          if (onRemove) onRemove();
-        });
-
-        pickedEl.appendChild(chip);
+      if (btnRes) {
+        const count = activeRestrictions.size;
+        btnRes.textContent = count ? `Restrictions (${count}) ▾` : 'Restrictions ▾';
+        btnRes.setAttribute('aria-expanded', count > 0 ? 'true' : 'false');
       }
     }
 
-    function renderSuggestions(qRaw, set, list, sugEl, { onPick } = {}) {
-      if (!sugEl) return;
-      const q = norm(qRaw);
-      sugEl.innerHTML = '';
+    function renderActiveFilterChips() {
+      if (!activeFiltersWrap) return;
 
-      const available = list.filter(x => !set.has(norm(x.id)));
-      const filtered = q
-        ? available.filter(x => norm(x.label).includes(q) || norm(x.id).includes(q))
-        : available;
+      activeFiltersWrap.innerHTML = '';
+      const chips = [];
 
-      const show = filtered.slice(0, 30);
-
-      if (!show.length) {
-        const empty = document.createElement('div');
-        empty.className = 'tag-suggestion is-empty';
-        empty.textContent = available.length ? 'No matches.' : 'All selected.';
-        sugEl.appendChild(empty);
-        sugEl.hidden = false;
-        return;
-      }
-
-      show.forEach(x => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'tag-suggestion';
-        btn.textContent = x.label;
-
-        btn.addEventListener('click', () => {
-          set.add(norm(x.id));
-          if (onPick) onPick();
-        });
-
-        sugEl.appendChild(btn);
+      activeChallenges.forEach(id => {
+        chips.push({ kind: 'challenge', id, label: getLabelFor('challenge', id) });
       });
 
-      sugEl.hidden = false;
-    }
-
-    function setupTypeAheadFilter(searchEl, pickedEl, sugEl, set, list) {
-      if (!searchEl) return;
-
-      function updateUI() {
-        renderPicked(set, list, pickedEl, {
-          onRemove: () => {
-            updateUI();
-            render();
-          }
-        });
-        renderSuggestions(searchEl.value, set, list, sugEl, {
-          onPick: () => {
-            searchEl.value = '';
-            updateUI();
-            render();
-          }
-        });
-      }
-
-      searchEl.addEventListener('focus', updateUI);
-      searchEl.addEventListener('input', updateUI);
-
-      // Close suggestions when clicking outside
-      document.addEventListener('click', e => {
-        if (!sugEl) return;
-        const picker = searchEl.closest('.tag-picker');
-        if (picker && !picker.contains(e.target)) {
-          sugEl.hidden = true;
-        }
+      activeRestrictions.forEach(id => {
+        chips.push({ kind: 'restrictions', id, label: getLabelFor('restrictions', id) });
       });
 
-      // Initial render of picked items
-      renderPicked(set, list, pickedEl, {
-        onRemove: () => {
-          renderPicked(set, list, pickedEl, { onRemove: () => { updateUI(); render(); } });
+      if (!chips.length) return;
+
+      chips.forEach(c => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'tag';
+        b.textContent = c.label + ' ×';
+        b.setAttribute('aria-label', `Remove filter: ${c.label}`);
+        b.addEventListener('click', () => {
+          const set = c.kind === 'challenge' ? activeChallenges : activeRestrictions;
+          set.delete(c.id);
           render();
-        }
+        });
+        activeFiltersWrap.appendChild(b);
       });
+
+      const clearAll = document.createElement('button');
+      clearAll.type = 'button';
+      clearAll.className = 'btn';
+      clearAll.textContent = 'Clear All';
+      clearAll.addEventListener('click', () => {
+        activeChallenges.clear();
+        activeRestrictions.clear();
+        render();
+      });
+      activeFiltersWrap.appendChild(clearAll);
     }
 
     function matchesAllRestrictions(rowResListNorm) {
       if (!activeRestrictions.size) return true;
-      const need = Array.from(activeRestrictions);
-      return need.every(x => rowResListNorm.includes(x));
-    }
-
-    function matchesGlitch(rowGlitch) {
-      if (!activeGlitches.size) return true;
-      return activeGlitches.has(norm(rowGlitch));
-    }
-
-    function matchesCharacter(rowCharacter) {
-      if (!activeCharacters.size) return true;
-      return activeCharacters.has(norm(rowCharacter));
+      return Array.from(activeRestrictions).every(x => rowResListNorm.includes(x));
     }
 
     function passesFilters(row) {
       const needle = norm(q && q.value);
-
       const ch = norm(row.dataset.challengeId);
       const resRaw = parseRestrictionsRaw(row);
       const resNorm = resRaw.map(norm);
-      const glitch = row.dataset.glitch || '';
-      const character = row.dataset.character || '';
 
       if (activeChallenges.size && !activeChallenges.has(ch)) return false;
       if (!matchesAllRestrictions(resNorm)) return false;
-      if (!matchesGlitch(glitch)) return false;
-      if (!matchesCharacter(character)) return false;
 
       if (needle) {
         const hay =
@@ -496,9 +338,7 @@ const CONFIG = {
           ' ' +
           norm(row.dataset.challengeLabel) +
           ' ' +
-          norm(resRaw.join(' ')) +
-          ' ' +
-          norm(glitch);
+          norm(resRaw.join(' '));
 
         if (!hay.includes(needle)) return false;
       }
@@ -507,8 +347,6 @@ const CONFIG = {
     }
 
     function sortRowsByDate(list) {
-      const dir = dateSortDir;
-
       return list.sort((a, b) => {
         const aDate = parseDateToNumber(a.dataset.date);
         const bDate = parseDateToNumber(b.dataset.date);
@@ -516,115 +354,29 @@ const CONFIG = {
         const aBad = !Number.isFinite(aDate);
         const bBad = !Number.isFinite(bDate);
 
-        if (aBad && bBad) {
-          return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
-        }
+        if (aBad && bBad) return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
         if (aBad) return 1;
         if (bBad) return -1;
+        if (aDate === bDate) return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
 
-        if (aDate === bDate) {
-          return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
-        }
-
-        return dir === 'asc' ? aDate - bDate : bDate - aDate;
-      });
-    }
-
-    function parseTimeToSeconds(s) {
-      const v = (s || '').trim();
-      if (!v || v === '—') return NaN;
-
-      const parts = v.split(':');
-      if (parts.length === 3) {
-        // HH:MM:SS
-        return parseFloat(parts[0]) * 3600 + parseFloat(parts[1]) * 60 + parseFloat(parts[2]);
-      } else if (parts.length === 2) {
-        // MM:SS
-        return parseFloat(parts[0]) * 60 + parseFloat(parts[1]);
-      }
-      return NaN;
-    }
-
-    function sortRowsByTime(list) {
-      const dir = timeSortDir;
-
-      return list.sort((a, b) => {
-        const aTime = parseTimeToSeconds(a.dataset.time);
-        const bTime = parseTimeToSeconds(b.dataset.time);
-
-        const aBad = !Number.isFinite(aTime);
-        const bBad = !Number.isFinite(bTime);
-
-        if (aBad && bBad) {
-          return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
-        }
-        if (aBad) return 1;
-        if (bBad) return -1;
-
-        if (aTime === bTime) {
-          return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
-        }
-
-        return dir === 'asc' ? aTime - bTime : bTime - aTime;
+        return dateSortDir === 'asc' ? aDate - bDate : bDate - aDate;
       });
     }
 
     function updateDateSortButtons() {
       if (thSortAsc) {
-        thSortAsc.classList.toggle('is-active', dateSortDir === 'asc');
+        thSortAsc.disabled = dateSortDir === 'asc';
         thSortAsc.setAttribute('aria-pressed', dateSortDir === 'asc' ? 'true' : 'false');
       }
       if (thSortDesc) {
-        thSortDesc.classList.toggle('is-active', dateSortDir === 'desc');
+        thSortDesc.disabled = dateSortDir === 'desc';
         thSortDesc.setAttribute('aria-pressed', dateSortDir === 'desc' ? 'true' : 'false');
-      }
-    }
-
-    function updateTimeSortButtons() {
-      if (thTimeAsc) {
-        thTimeAsc.classList.toggle('is-active', timeSortDir === 'asc');
-        thTimeAsc.setAttribute('aria-pressed', timeSortDir === 'asc' ? 'true' : 'false');
-      }
-      if (thTimeDesc) {
-        thTimeDesc.classList.toggle('is-active', timeSortDir === 'desc');
-        thTimeDesc.setAttribute('aria-pressed', timeSortDir === 'desc' ? 'true' : 'false');
       }
     }
 
     function render() {
       let filtered = rows.filter(passesFilters);
-      
-      // Sort by primary sort (time if active, then date as secondary)
-      if (timeSortDir) {
-        // Primary: time, Secondary: date
-        filtered = filtered.sort((a, b) => {
-          const aTime = parseTimeToSeconds(a.dataset.time);
-          const bTime = parseTimeToSeconds(b.dataset.time);
-          const aDate = parseDateToNumber(a.dataset.date);
-          const bDate = parseDateToNumber(b.dataset.date);
-
-          const aTimeBad = !Number.isFinite(aTime);
-          const bTimeBad = !Number.isFinite(bTime);
-
-          // If both have valid times, sort by time
-          if (!aTimeBad && !bTimeBad && aTime !== bTime) {
-            return timeSortDir === 'asc' ? aTime - bTime : bTime - aTime;
-          }
-
-          // If times are equal or one is missing, use date as tiebreaker
-          const aDateBad = !Number.isFinite(aDate);
-          const bDateBad = !Number.isFinite(bDate);
-
-          if (!aDateBad && !bDateBad && aDate !== bDate) {
-            return dateSortDir === 'asc' ? aDate - bDate : bDate - aDate;
-          }
-
-          // Fallback to original order
-          return (parseInt(a.dataset._i, 10) || 0) - (parseInt(b.dataset._i, 10) || 0);
-        });
-      } else {
-        filtered = sortRowsByDate(filtered);
-      }
+      filtered = sortRowsByDate(filtered);
 
       if (tbody) filtered.forEach(r => tbody.appendChild(r));
 
@@ -635,32 +387,156 @@ const CONFIG = {
 
       if (lim === 0) {
         filtered.forEach(r => (r.style.display = ''));
-        if (status) status.textContent = 'Showing ' + total + ' matching runs.';
+        if (status) status.textContent = `Showing ${total} matching runs.`;
+      } else {
+        filtered.forEach((r, idx) => {
+          r.style.display = idx < lim ? '' : 'none';
+        });
+        if (status) {
+          status.textContent = `Showing ${Math.min(lim, total)} of ${total} matching runs.`;
+        }
+      }
+
+      updateTopButtonLabels();
+      renderActiveFilterChips();
+    }
+
+    let debounceTimer;
+    function renderThMenuListDebounced() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => renderThMenuList(), CONFIG.DEBOUNCE_MS);
+    }
+
+    function renderThMenuList() {
+      if (!thMenuList || !thMenuQ || !thActiveCol) return;
+
+      const qv = norm(thMenuQ.value);
+      const list = getOptionsForCol(thActiveCol);
+      const set = getSetForCol(thActiveCol);
+
+      thMenuList.innerHTML = '';
+
+      const available = set ? list.filter(x => !set.has(x.id)) : list;
+      const filtered = available.filter(x => {
+        if (!qv) return true;
+        return norm(x.label).includes(qv) || norm(x.id).includes(qv);
+      });
+
+      if (!filtered.length) {
+        const empty = document.createElement('div');
+        empty.className = 'th-menu__empty muted';
+        empty.textContent = available.length ? 'No matches.' : 'All options selected.';
+        thMenuList.appendChild(empty);
         return;
       }
 
-      filtered.forEach((r, idx) => {
-        r.style.display = idx < lim ? '' : 'none';
-      });
+      filtered.slice(0, CONFIG.MAX_SUGGESTIONS).forEach(x => {
+        const lab = document.createElement('label');
+        lab.className = 'th-menu__item';
 
-      if (status) {
-        status.textContent = 'Showing ' + Math.min(lim, total) + ' of ' + total + ' matching runs.';
-      }
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = false;
+        cb.setAttribute('aria-label', `Select ${x.label}`);
+
+        cb.addEventListener('change', () => {
+          if (!set) return;
+          if (cb.checked) set.add(x.id);
+          else set.delete(x.id);
+          render();
+          renderThMenuList();
+        });
+
+        const txt = document.createElement('span');
+        txt.textContent = x.label;
+
+        lab.appendChild(cb);
+        lab.appendChild(txt);
+        thMenuList.appendChild(lab);
+      });
     }
 
-    // =========================================================
-    // Setup type-ahead filters for Advanced Search
-    // =========================================================
-    setupTypeAheadFilter(challengeSearch, challengePicked, challengeSuggestions, activeChallenges, OPTIONS.challenges);
-    setupTypeAheadFilter(restrictionsSearch, restrictionsPicked, restrictionsSuggestions, activeRestrictions, OPTIONS.restrictions);
-    setupTypeAheadFilter(glitchSearch, glitchPicked, glitchSuggestions, activeGlitches, OPTIONS.glitches);
-    setupTypeAheadFilter(characterSearch, characterPicked, characterSuggestions, activeCharacters, OPTIONS.characters);
+    function openThMenuFor(col, anchorEl) {
+      if (!thMenu) return;
+
+      thActiveCol = col;
+      thMenu.hidden = false;
+      thMenu.setAttribute('aria-hidden', 'false');
+
+      const r = anchorEl.getBoundingClientRect();
+      thMenu.style.left = Math.max(12, r.left) + 'px';
+      thMenu.style.top = r.bottom + 8 + 'px';
+
+      if (thMenuQ) thMenuQ.value = '';
+      renderThMenuList();
+
+      requestAnimationFrame(() => {
+        if (!thMenuQ || thMenu.hidden) return;
+        thMenuQ.focus();
+      });
+    }
+
+    const runsRoot = table.closest('.game-shell') || table.closest('.page-width') || document;
+
+    runsRoot.querySelectorAll('[data-filter-btn]').forEach(btn => {
+      const col = btn.getAttribute('data-filter-btn');
+      if (col !== 'challenge' && col !== 'restrictions') return;
+
+      btn.setAttribute('aria-haspopup', 'true');
+      btn.setAttribute('aria-expanded', 'false');
+
+      btn.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (thMenu && !thMenu.hidden && thActiveCol === col) {
+          closeThMenu();
+          return;
+        }
+
+        openThMenuFor(col, btn);
+      });
+    });
+
+    if (thMenuQ) thMenuQ.addEventListener('input', renderThMenuListDebounced);
+
+    if (thMenuClear) {
+      thMenuClear.addEventListener('click', () => {
+        const set = getSetForCol(thActiveCol);
+        if (set) {
+          set.clear();
+          render();
+          renderThMenuList();
+        }
+      });
+    }
+
+    if (thMenuClose) thMenuClose.addEventListener('click', closeThMenu);
+
+    document.addEventListener('pointerdown', e => {
+      if (!thMenu || thMenu.hidden) return;
+      if (thMenu.contains(e.target)) return;
+      const isCaret = e.target && e.target.closest && e.target.closest('[data-filter-btn]');
+      if (!isCaret) closeThMenu();
+    }, true);
+
+    window.addEventListener('resize', () => {
+      if (thMenu && !thMenu.hidden) closeThMenu();
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && thMenu && !thMenu.hidden) {
+        e.preventDefault();
+        closeThMenu();
+        if (thActiveCol === 'challenge' && btnCh) btnCh.focus();
+        if (thActiveCol === 'restrictions' && btnRes) btnRes.focus();
+      }
+    });
 
     if (thSortAsc) {
       thSortAsc.addEventListener('click', () => {
         dateSortDir = 'asc';
         updateDateSortButtons();
-        updateTimeSortButtons();
         render();
       });
     }
@@ -669,113 +545,25 @@ const CONFIG = {
       thSortDesc.addEventListener('click', () => {
         dateSortDir = 'desc';
         updateDateSortButtons();
-        updateTimeSortButtons();
         render();
       });
     }
-
-    // Time sort buttons
-    if (thTimeAsc) {
-      thTimeAsc.addEventListener('click', () => {
-        // Toggle: if already asc, turn off time sort
-        timeSortDir = timeSortDir === 'asc' ? null : 'asc';
-        updateDateSortButtons();
-        updateTimeSortButtons();
-        render();
-      });
-    }
-
-    if (thTimeDesc) {
-      thTimeDesc.addEventListener('click', () => {
-        // Toggle: if already desc, turn off time sort
-        timeSortDir = timeSortDir === 'desc' ? null : 'desc';
-        updateDateSortButtons();
-        updateTimeSortButtons();
-        render();
-      });
-    }
-
-    // Reset button functionality
-    function updateResetButton() {
-      const hasFilters = (q && q.value.trim()) ||
-                         activeChallenges.size > 0 ||
-                         activeRestrictions.size > 0 ||
-                         activeGlitches.size > 0 ||
-                         activeCharacters.size > 0;
-      if (resetBtn) resetBtn.hidden = !hasFilters;
-    }
-
-    function refreshAllTypeAheadUIs() {
-      // Re-render picked chips for all filters
-      renderPicked(activeChallenges, OPTIONS.challenges, challengePicked, {
-        onRemove: () => { refreshAllTypeAheadUIs(); render(); }
-      });
-      renderPicked(activeRestrictions, OPTIONS.restrictions, restrictionsPicked, {
-        onRemove: () => { refreshAllTypeAheadUIs(); render(); }
-      });
-      renderPicked(activeGlitches, OPTIONS.glitches, glitchPicked, {
-        onRemove: () => { refreshAllTypeAheadUIs(); render(); }
-      });
-      renderPicked(activeCharacters, OPTIONS.characters, characterPicked, {
-        onRemove: () => { refreshAllTypeAheadUIs(); render(); }
-      });
-      
-      // Clear search inputs
-      if (challengeSearch) challengeSearch.value = '';
-      if (restrictionsSearch) restrictionsSearch.value = '';
-      if (glitchSearch) glitchSearch.value = '';
-      if (characterSearch) characterSearch.value = '';
-      
-      // Hide suggestions
-      if (challengeSuggestions) challengeSuggestions.hidden = true;
-      if (restrictionsSuggestions) restrictionsSuggestions.hidden = true;
-      if (glitchSuggestions) glitchSuggestions.hidden = true;
-      if (characterSuggestions) characterSuggestions.hidden = true;
-    }
-
-    function resetAllFilters() {
-      if (q) q.value = '';
-      activeChallenges.clear();
-      activeRestrictions.clear();
-      activeGlitches.clear();
-      activeCharacters.clear();
-      dateSortDir = 'desc';
-      timeSortDir = null;
-      
-      updateDateSortButtons();
-      updateTimeSortButtons();
-      refreshAllTypeAheadUIs();
-      render();
-    }
-
-    if (resetBtn) {
-      resetBtn.addEventListener('click', resetAllFilters);
-    }
-
-    // Wrap render to update reset button
-    const origRender = render;
-    render = function() {
-      origRender();
-      updateResetButton();
-    };
 
     if (q) q.addEventListener('input', render);
     if (limitEl) limitEl.addEventListener('change', render);
 
     updateDateSortButtons();
-    updateTimeSortButtons();
+    updateTopButtonLabels();
     render();
   }
 
   // =========================================================
-  // Game navigation helper
-  // Saves scroll before navigating to any page within the same game
+  // Game navigation
   // =========================================================
   function initGameTabsNav() {
     const gameRoot = getGameRoot(window.location.pathname);
     if (!gameRoot) return;
 
-    // Update aria-current on tabs
     document.querySelectorAll('.tab[data-href]').forEach(tab => {
       if (tab.getAttribute('data-href') === window.location.pathname) {
         tab.setAttribute('aria-current', 'page');
@@ -789,17 +577,16 @@ const CONFIG = {
       const tab = e.target && e.target.closest ? e.target.closest('.tab[data-href]') : null;
       if (tab) {
         const dataHref = tab.getAttribute('data-href');
-        if (!dataHref) return;
-
-        e.preventDefault();
-        saveGameScroll();
-        window.location.href = dataHref;
+        if (dataHref) {
+          e.preventDefault();
+          saveGameScroll();
+          window.location.href = dataHref;
+        }
         return;
       }
 
       const a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
       if (!a) return;
-
       if (a.target && a.target !== '_self') return;
 
       let url;
@@ -813,7 +600,6 @@ const CONFIG = {
 
       const destRoot = getGameRoot(url.pathname);
       if (!destRoot || destRoot !== gameRoot) return;
-
       if (url.pathname === window.location.pathname && url.hash) return;
 
       saveGameScroll();
@@ -825,7 +611,6 @@ const CONFIG = {
   // =========================================================
   function initKeyboardShortcuts() {
     document.addEventListener('keydown', e => {
-      // "/" to focus search (like GitHub)
       if (e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) {
         e.preventDefault();
         const searchInput = document.getElementById('q');
@@ -837,10 +622,19 @@ const CONFIG = {
     });
   }
 
+  // =========================================================
+  // Initialize everything
+  // =========================================================
   document.addEventListener('DOMContentLoaded', () => {
     restoreGameScroll();
-    document.querySelectorAll('.list-paged').forEach(initPagedList);
-    initRunsTable();
+    
+    // Only init features if their elements exist
+    const pagedLists = document.querySelectorAll('.list-paged');
+    if (pagedLists.length) {
+      pagedLists.forEach(initPagedList);
+    }
+    
+    initRunsTable(); // Has its own early exit
     initGameTabsNav();
     initKeyboardShortcuts();
   });
