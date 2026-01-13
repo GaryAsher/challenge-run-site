@@ -45,6 +45,13 @@ function ensureDir(dir) {
   }
 }
 
+/**
+ * Check if either index.html or index.md exists
+ */
+function indexExists(dir) {
+  return isFile(path.join(dir, 'index.html')) || isFile(path.join(dir, 'index.md'));
+}
+
 function writeIfNotExists(filePath, content, checkOnly = false) {
   if (isFile(filePath)) {
     return false; // Already exists
@@ -58,6 +65,27 @@ function writeIfNotExists(filePath, content, checkOnly = false) {
   ensureDir(path.dirname(filePath));
   fs.writeFileSync(filePath, content, 'utf8');
   console.log(`Created: ${path.relative(ROOT, filePath)}`);
+  return true;
+}
+
+/**
+ * Check for index page (either .html or .md), create .html if missing
+ */
+function ensureIndexPage(dir, template, checkOnly = false) {
+  if (indexExists(dir)) {
+    return false; // Already exists
+  }
+  
+  const indexPath = path.join(dir, 'index.html');
+  
+  if (checkOnly) {
+    console.log(`MISSING: ${path.relative(ROOT, indexPath)}`);
+    return true; // Would need to create
+  }
+  
+  ensureDir(dir);
+  fs.writeFileSync(indexPath, template, 'utf8');
+  console.log(`Created: ${path.relative(ROOT, indexPath)}`);
   return true;
 }
 
@@ -116,18 +144,6 @@ category_slug: ""
 `;
 }
 
-function generateRunsIndexMd(gameId, gameName) {
-  return `---
-layout: game-runs
-title: "${gameName} - Runs"
-game_id: ${gameId}
-category_slug: ""
----
-
-Browse all challenge runs for ${gameName}. Use the filters to narrow down by category, challenge type, or restrictions.
-`;
-}
-
 function generateCategoryPageTemplate(gameId, gameName, categorySlug, categoryLabel) {
   return `---
 layout: game-runs
@@ -167,25 +183,18 @@ function generateGamePages(gameId, checkOnly = false) {
   
   for (const section of subPages) {
     const sectionDir = path.join(gameDir, section);
-    const indexPath = path.join(sectionDir, 'index.html');
     const template = generateSubPageTemplate(gameId, section, gameName);
     
-    if (writeIfNotExists(indexPath, template, checkOnly)) {
+    if (ensureIndexPage(sectionDir, template, checkOnly)) {
       missingCount++;
     }
   }
 
-  // Runs index pages (both .html and .md for flexibility)
+  // Runs index page
   const runsDir = path.join(gameDir, 'runs');
-  const runsIndexHtml = path.join(runsDir, 'index.html');
-  const runsIndexMd = path.join(runsDir, 'index.md');
+  const runsTemplate = generateRunsIndexTemplate(gameId, gameName);
   
-  if (writeIfNotExists(runsIndexHtml, generateRunsIndexTemplate(gameId, gameName), checkOnly)) {
-    missingCount++;
-  }
-  
-  // Also create index.md if it doesn't exist
-  if (writeIfNotExists(runsIndexMd, generateRunsIndexMd(gameId, gameName), checkOnly)) {
+  if (ensureIndexPage(runsDir, runsTemplate, checkOnly)) {
     missingCount++;
   }
 
@@ -198,10 +207,9 @@ function generateGamePages(gameId, checkOnly = false) {
       if (slug) {
         // Parent category page
         const catDir = path.join(runsDir, slug);
-        const catIndex = path.join(catDir, 'index.html');
         const catTemplate = generateCategoryPageTemplate(gameId, gameName, slug, label);
         
-        if (writeIfNotExists(catIndex, catTemplate, checkOnly)) {
+        if (ensureIndexPage(catDir, catTemplate, checkOnly)) {
           missingCount++;
         }
 
@@ -214,10 +222,9 @@ function generateGamePages(gameId, checkOnly = false) {
             if (childSlug) {
               const fullSlug = `${slug}/${childSlug}`;
               const childDir = path.join(catDir, childSlug);
-              const childIndex = path.join(childDir, 'index.html');
               const childTemplate = generateCategoryPageTemplate(gameId, gameName, fullSlug, childLabel);
               
-              if (writeIfNotExists(childIndex, childTemplate, checkOnly)) {
+              if (ensureIndexPage(childDir, childTemplate, checkOnly)) {
                 missingCount++;
               }
             }
