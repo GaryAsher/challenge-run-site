@@ -6,9 +6,10 @@
     "sync:git": "git fetch origin && git reset --hard origin/main",
     
     "//": "=== VALIDATION (Run before committing) ===",
-    "validate": "npm run validate:schema && npm run validate:runs",
+    "validate": "npm run validate:schema && npm run validate:runs && npm run validate:terms",
     "validate:schema": "node scripts/validate-schema.js",
     "validate:runs": "node scripts/validate-runs.js",
+    "validate:terms": "node scripts/check-banned-terms.js",
     "test-all": "node scripts/test-all.js",
 
     "//": "=== DIAGNOSTICS ===",
