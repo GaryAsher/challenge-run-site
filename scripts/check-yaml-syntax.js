@@ -22,29 +22,12 @@ files.forEach(file => {
   try {
     const content = fs.readFileSync(filePath, 'utf8');
     yaml.load(content);
-    console.log(`✅ ${file} - Valid YAML`);
+    console.log(`✅ ${file}`);
   } catch (err) {
-    console.error(`❌ ${file} - YAML Error:`);
+    console.error(`❌ ${file}`);
     console.error(`   Line ${err.mark ? err.mark.line + 1 : '?'}: ${err.message}`);
-    
-    if (err.mark) {
-      const content = fs.readFileSync(filePath, 'utf8');
-      const lines = content.split('\n');
-      const lineNum = err.mark.line;
-      const start = Math.max(0, lineNum - 2);
-      const end = Math.min(lines.length, lineNum + 3);
-      
-      console.error('\n   Context:');
-      for (let i = start; i < end; i++) {
-        const marker = i === lineNum ? ' >' : '  ';
-        console.error(`   ${marker} ${i + 1}: ${lines[i]}`);
-      }
-    }
-    
     hasErrors = true;
   }
 });
 
-if (hasErrors) {
-  process.exit(1);
-}
+if (hasErrors) process.exit(1);
