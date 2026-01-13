@@ -1,0 +1,224 @@
+#!/usr/bin/env node
+/**
+ * Check for banned terms in user-submitted content.
+ * 
+ * Scans:
+ *   - _queue_games/*.md
+ *   - _queue_runs/**\/*.md
+ * 
+ * Configuration: _data/banned-terms.yml
+ * 
+ * Exit codes:
+ *   0 = No banned terms found
+ *   1 = Banned terms detected (blocks CI)
+ */
+
+const fs = require('fs');
+const path = require('path');
+const yaml = require('js-yaml');
+
+const ROOT = process.cwd();
+
+// ============================================================
+// Load configuration
+// ============================================================
+function loadBannedTerms() {
+  const configPath = path.join(ROOT, '_data', 'banned-terms.yml');
+  
+  if (!fs.existsSync(configPath)) {
+    console.log('No banned-terms.yml found, skipping check');
+    return null;
+  }
+  
+  try {
+    const content = fs.readFileSync(configPath, 'utf8');
+    return yaml.load(content);
+  } catch (err) {
+    console.error(`Error loading banned-terms.yml: ${err.message}`);
+    return null;
+  }
+}
+
+// ============================================================
+// File collection
+// ============================================================
+function getFilesToCheck() {
+  const files = [];
+  
+  // Check _queue_games/
+  const queueGamesDir = path.join(ROOT, '_queue_games');
+  if (fs.existsSync(queueGamesDir)) {
+    const queueGames = fs.readdirSync(queueGamesDir)
+      .filter(f => f.endsWith('.md') && f !== '.gitkeep')
+      .map(f => path.join(queueGamesDir, f));
+    files.push(...queueGames);
+  }
+  
+  // Check _queue_runs/ (recursive)
+  const queueRunsDir = path.join(ROOT, '_queue_runs');
+  if (fs.existsSync(queueRunsDir)) {
+    const walkDir = (dir) => {
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          walkDir(fullPath);
+        } else if (entry.name.endsWith('.md') && entry.name !== '.gitkeep') {
+          files.push(fullPath);
+        }
+      }
+    };
+    walkDir(queueRunsDir);
+  }
+  
+  return files;
+}
+
+// ============================================================
+// Term matching
+// ============================================================
+function buildTermMatcher(config) {
+  const terms = new Set();
+  const patterns = [];
+  const exceptions = new Set();
+  
+  // Collect all simple terms
+  if (config.slurs) {
+    config.slurs.forEach(t => terms.add(t.toLowerCase()));
+  }
+  if (config.spam) {
+    config.spam.forEach(t => terms.add(t.toLowerCase()));
+  }
+  if (config.malicious) {
+    config.malicious.forEach(t => terms.add(t.toLowerCase()));
+  }
+  
+  // Build email pattern matchers
+  if (config.contact_patterns) {
+    config.contact_patterns.forEach(t => terms.add(t.toLowerCase()));
+  }
+  
+  // Common regex patterns for personal info
+  patterns.push({
+    name: 'phone-number',
+    regex: /\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b/g
+  });
+  
+  // Load exceptions
+  if (config.exceptions) {
+    config.exceptions.forEach(e => exceptions.add(e.toLowerCase()));
+  }
+  
+  return { terms, patterns, exceptions };
+}
+
+function checkContent(content, matcher) {
+  const lowerContent = content.toLowerCase();
+  const found = [];
+  
+  // Check simple terms
+  for (const term of matcher.terms) {
+    // Skip placeholder terms
+    if (term.includes('placeholder')) continue;
+    
+    // Skip if term is in exceptions
+    let isException = false;
+    for (const exc of matcher.exceptions) {
+      if (term.includes(exc) || exc.includes(term)) {
+        isException = true;
+        break;
+      }
+    }
+    if (isException) continue;
+    
+    if (lowerContent.includes(term)) {
+      found.push({ type: 'term', value: term });
+    }
+  }
+  
+  // Check regex patterns
+  for (const pattern of matcher.patterns) {
+    const matches = content.match(pattern.regex);
+    if (matches && matches.length > 0) {
+      // Don't flag dates that look like phone numbers
+      const nonDateMatches = matches.filter(m => {
+        // Filter out date-like patterns (YYYY-MM-DD)
+        return !/^\d{4}[-]\d{2}[-]\d{2}$/.test(m);
+      });
+      
+      if (nonDateMatches.length > 0) {
+        found.push({ 
+          type: 'pattern', 
+          name: pattern.name, 
+          values: nonDateMatches 
+        });
+      }
+    }
+  }
+  
+  return found;
+}
+
+// ============================================================
+// Main
+// ============================================================
+function main() {
+  const config = loadBannedTerms();
+  
+  if (!config) {
+    console.log('✓ Banned terms check skipped (no config)');
+    return;
+  }
+  
+  const files = getFilesToCheck();
+  
+  if (files.length === 0) {
+    console.log('✓ No queued files to check');
+    return;
+  }
+  
+  const matcher = buildTermMatcher(config);
+  let hasViolations = false;
+  const violations = [];
+  
+  for (const filePath of files) {
+    const relPath = path.relative(ROOT, filePath);
+    
+    try {
+      const content = fs.readFileSync(filePath, 'utf8');
+      const found = checkContent(content, matcher);
+      
+      if (found.length > 0) {
+        hasViolations = true;
+        violations.push({
+          file: relPath,
+          issues: found
+        });
+      }
+    } catch (err) {
+      console.error(`Error reading ${relPath}: ${err.message}`);
+    }
+  }
+  
+  if (hasViolations) {
+    console.error('\n❌ Banned terms detected:\n');
+    
+    for (const v of violations) {
+      console.error(`  ${v.file}:`);
+      for (const issue of v.issues) {
+        if (issue.type === 'term') {
+          console.error(`    - Banned term: "${issue.value}"`);
+        } else if (issue.type === 'pattern') {
+          console.error(`    - ${issue.name}: ${issue.values.join(', ')}`);
+        }
+      }
+    }
+    
+    console.error('\n');
+    process.exit(1);
+  }
+  
+  console.log(`✓ Checked ${files.length} file(s) - no banned terms found`);
+}
+
+main();
