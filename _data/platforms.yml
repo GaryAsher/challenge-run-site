@@ -80,8 +80,8 @@ pc-steam:
     - "Steam"
     - "PC Steam"
 
-pc-epic-games-store:
-  label: "PC: Epic Games Store"
+pc-epic-games:
+  label: "PC: Epic Games"
   aliases: 
     - "Epic Games"
     - "Epic"
