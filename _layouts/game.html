@@ -95,6 +95,49 @@ layout: default
       </div>
       {% endif %}
 
+      <!-- Glitch Categories Accordion -->
+      <!-- Only show if glitches_relevant is not explicitly false AND glitches_data exists -->
+      {% unless page.glitches_relevant == false %}
+        {% if page.glitches_data and page.glitches_data.size > 0 %}
+        <div class="card card--compact mt-4">
+          <h2 class="mb-2">Glitch Categories</h2>
+          <p class="muted mb-3">Rules for glitches and exploits in runs:</p>
+          <div class="accordion">
+            {% for gl in page.glitches_data %}
+            <details class="accordion-item">
+              <summary class="accordion-header">
+                <span class="accordion-title">{{ gl.label }}</span>
+                <span class="accordion-icon">▼</span>
+              </summary>
+              <div class="accordion-content">
+                {% if gl.description %}
+                  <p>{{ gl.description }}</p>
+                {% else %}
+                  <p class="muted">See Rules tab for detailed definition.</p>
+                {% endif %}
+                {% if gl.allowed and gl.allowed.size > 0 %}
+                  <p class="mt-2"><strong>Allowed:</strong> {{ gl.allowed | join: ", " }}</p>
+                {% endif %}
+                {% if gl.banned and gl.banned.size > 0 %}
+                  <p class="mt-2"><strong>Banned:</strong> {{ gl.banned | join: ", " }}</p>
+                {% endif %}
+                {% if gl.notes %}
+                  <p class="mt-2 muted"><em>{{ gl.notes }}</em></p>
+                {% endif %}
+              </div>
+            </details>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      {% else %}
+        <!-- Glitches not relevant for this game - show notice -->
+        <div class="card card--compact mt-4">
+          <h2 class="mb-2">Glitch Categories</h2>
+          <p class="muted">This game does not distinguish between glitch categories. All runs are accepted regardless of glitch usage.</p>
+        </div>
+      {% endunless %}
+
       <!-- Optional Restrictions Accordion -->
       {% if page.restrictions_data and page.restrictions_data.size > 0 %}
       <div class="card card--compact mt-4">
