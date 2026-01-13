@@ -3,8 +3,7 @@ name: Lighthouse CI
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
+  # Don't run on PRs to save time
 
 permissions:
   contents: read
@@ -28,9 +27,7 @@ jobs:
           node-version: '20'
 
       - name: Install Jekyll dependencies
-        run: |
-          gem install bundler
-          bundle install
+        run: bundle install
 
       - name: Build Jekyll site
         run: bundle exec jekyll build
@@ -38,7 +35,7 @@ jobs:
           JEKYLL_ENV: production
 
       - name: Run Lighthouse CI
-        continue-on-error: true
+        continue-on-error: true  # Don't block on failures
         uses: treosh/lighthouse-ci-action@v12
         with:
           configPath: './.lighthouserc.json'
