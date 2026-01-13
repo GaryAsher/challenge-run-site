@@ -5,7 +5,7 @@ reviewers: []
 
 name: "Celeste"
 name_aliases: []
-status: "Pending review"
+status: "Active"
 
 # TODO: Add genres
 genres: []

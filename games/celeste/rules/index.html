@@ -1,0 +1,17 @@
+---
+layout: default
+title: "Celeste - Rules"
+game_id: celeste
+---
+
+{% assign game = site.games | where: "game_id", "celeste" | first %}
+{% include game-header-tabs.html game=game active="rules" %}
+
+<div class="page-width">
+  <div class="game-shell">
+    <div class="card">
+      <h1>Rules</h1>
+      <p class="muted">Official rules and category definitions.</p>
+    </div>
+  </div>
+</div>
