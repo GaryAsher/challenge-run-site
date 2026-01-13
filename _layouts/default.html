@@ -24,11 +24,7 @@
   {% endif %}
   
   <!-- CSS -->
-  {% if jekyll.environment == "production" %}
-    <link rel="stylesheet" href="{{ '/assets/css/style.min.css' | relative_url }}">
-  {% else %}
-    <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
-  {% endif %}
+  <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}">
   
   <!-- Preload critical assets -->
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
@@ -43,10 +39,6 @@
   {% include footer.html %}
   
   <!-- JS -->
-  {% if jekyll.environment == "production" %}
-    <script src="{{ '/assets/js/main.min.js' | relative_url }}" defer></script>
-  {% else %}
-    <script src="{{ '/assets/js/main.js' | relative_url }}" defer></script>
-  {% endif %}
+  <script src="{{ '/assets/js/main.js' | relative_url }}" defer></script>
 </body>
 </html>
