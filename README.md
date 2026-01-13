@@ -65,4 +65,3 @@ See [.docs/REPOSITORY-STRUCTURE.md](.docs/REPOSITORY-STRUCTURE.md) for full deta
 ## License
 
 This repository is not open source. Forking or reuse without explicit permission is not permitted.
-# test
