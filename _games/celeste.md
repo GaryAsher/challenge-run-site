@@ -58,8 +58,10 @@ glitches_data:
 restrictions: []
 
 categories_data:
-  - slug: any-100
-    label: "Any%, 100%"
+  - slug: any
+    label: "Any%"
+  - slug: 100
+    label: "100%"
 ---
 
 Game submitted via form. Awaiting review.
