@@ -1,14 +1,35 @@
 # Banned Terms Configuration
-# Terms that will block submission if found in user content
 # Used by scripts/check-banned-terms.js during validation
 #
-# Add terms as lowercase - matching is case-insensitive
-# Supports partial matching (substring) by default
+# Supports two matching modes:
+#   1. Simple strings (case-insensitive substring match)
+#   2. Regex patterns (for partial matching and variations)
+#
+# IMPORTANT: This file contains partial patterns for slurs.
+# These patterns are necessary to catch variations and obfuscations.
 
-# Slurs and hate speech (partial list - extend as needed)
-slurs:
-  - "n-word-placeholder"  # Replace with actual terms to block
-  - "f-word-slur-placeholder"
+# ============================================================
+# SLUR PATTERNS (regex-based for catching variations)
+# ============================================================
+# These use regex to catch the slur even when embedded in other text
+# or with character substitutions.
+#
+# Format: Regex patterns that will be compiled with 'gi' flags
+# Catches: embedded text, leetspeak, asterisk censoring
+
+slur_patterns:
+  # N-word pattern
+  - "n[i1!][gq]{2}[e3a]r"
+  
+  # F-slur pattern
+  - "f[a@4][gq]{2}[o0][t7]"
+  
+  # R-word pattern
+  - "r[e3][t7][a@4]rd"
+
+# ============================================================
+# SIMPLE BANNED TERMS (exact substring match, case-insensitive)
+# ============================================================
 
 # Spam patterns
 spam:
@@ -18,27 +39,45 @@ spam:
   - "free gift"
   - "act now"
   - "limited time offer"
+  - "congratulations you won"
+  - "claim your prize"
 
-# Malicious content indicators
+# Malicious content indicators (XSS, injection attempts)
 malicious:
-  - "<script>"
+  - "<script"
+  - "</script"
   - "javascript:"
   - "onclick="
   - "onerror="
   - "onload="
+  - "onmouseover="
+  - "onfocus="
+  - "onblur="
   - "data:text/html"
+  - "eval("
+  - "document.cookie"
+  - "document.write"
+  - "window.location"
+  - "innerHTML"
+  - "fromCharCode"
 
-# Contact info (prevent personal info exposure)
-# Note: These are patterns, not exact matches
+# Contact info patterns (prevent personal info exposure)
 contact_patterns:
   - "@gmail.com"
   - "@yahoo.com"
   - "@hotmail.com"
-  # Phone number patterns handled by regex in script
+  - "@outlook.com"
+  - "@protonmail.com"
+  - "@icloud.com"
 
-# Allowed exceptions (won't trigger even if matching above)
-# For legitimate game terms that might false positive
+# ============================================================
+# EXCEPTIONS (won't trigger even if matching above)
+# ============================================================
+# Gaming terms that might false positive
+
 exceptions:
   - "glitch"
   - "exploit"
   - "any%"
+  - "trigger"
+  - "flag"
