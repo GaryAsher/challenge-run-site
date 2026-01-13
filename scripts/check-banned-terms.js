@@ -8,6 +8,10 @@
  * 
  * Configuration: _data/banned-terms.yml
  * 
+ * Supports:
+ *   - Simple substring matching (case-insensitive)
+ *   - Regex patterns for slurs (catches variations and embedded text)
+ * 
  * Exit codes:
  *   0 = No banned terms found
  *   1 = Banned terms detected (blocks CI)
@@ -79,29 +83,43 @@ function getFilesToCheck() {
 // ============================================================
 function buildTermMatcher(config) {
   const terms = new Set();
-  const patterns = [];
+  const regexPatterns = [];
   const exceptions = new Set();
   
-  // Collect all simple terms
-  if (config.slurs) {
-    config.slurs.forEach(t => terms.add(t.toLowerCase()));
-  }
+  // Collect simple string terms
   if (config.spam) {
     config.spam.forEach(t => terms.add(t.toLowerCase()));
   }
   if (config.malicious) {
     config.malicious.forEach(t => terms.add(t.toLowerCase()));
   }
-  
-  // Build email pattern matchers
   if (config.contact_patterns) {
     config.contact_patterns.forEach(t => terms.add(t.toLowerCase()));
   }
   
-  // Common regex patterns for personal info
-  patterns.push({
+  // Build regex patterns for slurs
+  // These catch variations like embedded text, leetspeak, asterisks
+  if (config.slur_patterns) {
+    for (const pattern of config.slur_patterns) {
+      try {
+        // Compile as case-insensitive, global regex
+        const regex = new RegExp(pattern, 'gi');
+        regexPatterns.push({
+          name: 'slur',
+          regex: regex,
+          pattern: pattern
+        });
+      } catch (err) {
+        console.warn(`Invalid regex pattern "${pattern}": ${err.message}`);
+      }
+    }
+  }
+  
+  // Add phone number detection
+  regexPatterns.push({
     name: 'phone-number',
-    regex: /\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b/g
+    regex: /\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b/g,
+    pattern: 'phone'
   });
   
   // Load exceptions
@@ -109,18 +127,15 @@ function buildTermMatcher(config) {
     config.exceptions.forEach(e => exceptions.add(e.toLowerCase()));
   }
   
-  return { terms, patterns, exceptions };
+  return { terms, regexPatterns, exceptions };
 }
 
 function checkContent(content, matcher) {
   const lowerContent = content.toLowerCase();
   const found = [];
   
-  // Check simple terms
+  // Check simple string terms
   for (const term of matcher.terms) {
-    // Skip placeholder terms
-    if (term.includes('placeholder')) continue;
-    
     // Skip if term is in exceptions
     let isException = false;
     for (const exc of matcher.exceptions) {
@@ -136,21 +151,34 @@ function checkContent(content, matcher) {
     }
   }
   
-  // Check regex patterns
-  for (const pattern of matcher.patterns) {
+  // Check regex patterns (for slurs and other patterns)
+  for (const pattern of matcher.regexPatterns) {
+    // Reset regex lastIndex for global patterns
+    pattern.regex.lastIndex = 0;
+    
     const matches = content.match(pattern.regex);
     if (matches && matches.length > 0) {
-      // Don't flag dates that look like phone numbers
-      const nonDateMatches = matches.filter(m => {
-        // Filter out date-like patterns (YYYY-MM-DD)
-        return !/^\d{4}[-]\d{2}[-]\d{2}$/.test(m);
-      });
-      
-      if (nonDateMatches.length > 0) {
+      // For phone numbers, filter out dates
+      if (pattern.name === 'phone-number') {
+        const nonDateMatches = matches.filter(m => {
+          // Filter out date-like patterns (YYYY-MM-DD)
+          return !/^\d{4}[-]\d{2}[-]\d{2}$/.test(m);
+        });
+        
+        if (nonDateMatches.length > 0) {
+          found.push({ 
+            type: 'pattern', 
+            name: pattern.name, 
+            values: nonDateMatches 
+          });
+        }
+      } else {
+        // For slurs and other patterns, report immediately
+        // Don't show the actual match in output (privacy/decency)
         found.push({ 
-          type: 'pattern', 
-          name: pattern.name, 
-          values: nonDateMatches 
+          type: 'slur-pattern', 
+          name: 'prohibited content detected',
+          count: matches.length
         });
       }
     }
@@ -201,7 +229,7 @@ function main() {
   }
   
   if (hasViolations) {
-    console.error('\n❌ Banned terms detected:\n');
+    console.error('\n❌ Banned content detected:\n');
     
     for (const v of violations) {
       console.error(`  ${v.file}:`);
@@ -210,6 +238,9 @@ function main() {
           console.error(`    - Banned term: "${issue.value}"`);
         } else if (issue.type === 'pattern') {
           console.error(`    - ${issue.name}: ${issue.values.join(', ')}`);
+        } else if (issue.type === 'slur-pattern') {
+          // Don't echo the actual slur back
+          console.error(`    - ⚠️ Prohibited content detected (${issue.count} occurrence${issue.count > 1 ? 's' : ''})`);
         }
       }
     }
