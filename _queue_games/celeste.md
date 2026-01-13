@@ -9,8 +9,8 @@ status: "Pending review"
 
 # TODO: Add genres
 genres:
-  - Precision Platformer
-  -Difficult
+  - Precision-Platformer
+  - Difficult
   - Great Soundtrack
   - Indie
   - 2D
