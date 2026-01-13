@@ -15,7 +15,7 @@ genres:
   - 2d
   - indie
 platforms:
-  - steam
+  - pc-steam
   - nintendo-switch
   - playstation-4
   - xbox-one

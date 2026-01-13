@@ -16,8 +16,8 @@ genres:
   - hack-and-slash
   - mythology
 platforms:
-  - steam
-  - epic
+  - pc-steam
+  - pc-epic-games-store
   - nintendo-switch
   - nintendo-switch-2
 

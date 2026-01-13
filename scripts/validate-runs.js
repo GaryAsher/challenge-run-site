@@ -4,6 +4,9 @@
  *
  * This script validates runs before they are promoted to _runs/.
  * It is read-only and does not modify any files.
+ * 
+ * Filename format: YYYY-MM-DD__game-id__runner-id__category-slug__NN.md
+ * The date in the filename is date_completed (when run was achieved).
  */
 
 const path = require('path');
@@ -66,7 +69,7 @@ function validateOne(filePath) {
 
   const fn = parseRunFilename(path.basename(filePath));
   if (!fn) {
-    fail(fileRel, 'Bad filename. Expected: YYYY-MM-DD__game-id__runner-id__category-slug__NN.md');
+    fail(fileRel, 'Bad filename. Expected: YYYY-MM-DD__game-id__runner-id__category-slug__NN.md (date = date_completed)');
   }
 
   // Enforce folder routing: _queue_runs/<game_id>/...
@@ -92,7 +95,6 @@ function validateOne(filePath) {
     'challenge_id',
     'runner',
     'category',
-    'date_submitted',
     'date_completed',
     'status',
   ];
@@ -135,7 +137,7 @@ function validateOne(filePath) {
     fail(fileRel, `status must be one of: pending, approved, rejected. Got: ${data.status}`);
   }
 
-  // Dates - handle js-yaml Date parsing
+  // date_completed - handle js-yaml Date parsing
   const dateCompleted = data.date_completed instanceof Date
     ? data.date_completed.toISOString().slice(0, 10)
     : String(data.date_completed).trim();
@@ -144,22 +146,20 @@ function validateOne(filePath) {
     fail(fileRel, `date_completed must be YYYY-MM-DD. Got: ${data.date_completed}`);
   }
 
-  // Filename date validation
-  if (!DATE_RE.test(String(fn.dateSubmitted))) {
-    fail(fileRel, `filename date must be YYYY-MM-DD. Got: ${fn.dateSubmitted}`);
+  // Filename date must match date_completed
+  if (dateCompleted !== fn.dateCompleted) {
+    fail(fileRel, `date_completed must match filename date (filename=${fn.dateCompleted}, frontmatter=${dateCompleted})`);
   }
 
-  // date_submitted must be valid and match filename date
-  const dateSubmitted = data.date_submitted instanceof Date
-    ? data.date_submitted.toISOString().slice(0, 10)
-    : String(data.date_submitted).trim();
+  // date_submitted is optional but must be valid if present
+  if (data.date_submitted !== undefined && data.date_submitted !== null) {
+    const dateSubmitted = data.date_submitted instanceof Date
+      ? data.date_submitted.toISOString().slice(0, 10)
+      : String(data.date_submitted).trim();
 
-  if (!DATE_RE.test(dateSubmitted)) {
-    fail(fileRel, `date_submitted must be YYYY-MM-DD. Got: ${data.date_submitted}`);
-  }
-
-  if (dateSubmitted !== fn.dateSubmitted) {
-    fail(fileRel, `date_submitted must match filename date (filename=${fn.dateSubmitted}, frontmatter=${dateSubmitted})`);
+    if (dateSubmitted && !DATE_RE.test(dateSubmitted)) {
+      fail(fileRel, `date_submitted must be YYYY-MM-DD if provided. Got: ${data.date_submitted}`);
+    }
   }
 
   // Approved expectations

@@ -47,6 +47,9 @@ const ROOT = process.cwd();
 // Error helpers
 // ============================================================
 function die(msg) {
+  console.error('\n❌ Validation Error:\n');
+  console.error(msg);
+  console.error('\n💡 Tip: Run `node scripts/diagnose-game.js <game-id>` for detailed info\n');
   throw new Error(msg);
 }
 
@@ -179,11 +182,11 @@ function validateDataFiles() {
   const challengesRel = rel(challengesPath);
   const platformsRel = rel(platformsPath);
 
-  const tagResolver = buildResolver('tag', genres, genresRel);
+  const genresResolver = buildResolver('genres', genres, genresRel);
   const challengeResolver = buildResolver('challenge', challenges, challengesRel);
   const platformResolver = buildResolver('platform', platforms, platformsRel);
 
-  return { tagResolver, challengeResolver, platformResolver };
+  return { genresResolver, challengeResolver, platformResolver };
 }
 
 /**
@@ -330,7 +333,7 @@ function buildGameCategoryIndex() {
   return map;
 }
 
-function validateGames({ tagResolver, challengeResolver, platformResolver }) {
+function validateGames({ genresResolver, challengeResolver, platformResolver }) {
   const dir = path.join(ROOT, '_games');
   if (!isDir(dir)) return new Set();
 
@@ -362,27 +365,29 @@ function validateGames({ tagResolver, challengeResolver, platformResolver }) {
     if (gameIds.has(fm.game_id)) die(`${fileRel}: duplicate game_id ${fm.game_id}`);
     gameIds.add(fm.game_id);
 
+    // Validate genres
     if (fm.genres != null) {
       mustArrayOfStrings(fileRel, 'genres', fm.genres);
       for (const t of fm.genres) {
-        const r = tagResolver.resolve(t);
+        const r = genresResolver.resolve(t);
         if (!r) {
           warn(`${fileRel}: unknown tag in genres: ${t} (will need review/approval)`);
-          continue;  // Don't fail, just warn
+          continue;
         }
         if (r.source !== 'id' && r.canonical !== t) {
-          warn(`${fileRel}: tag "${t}" should be "${r.canonical}" (canonical id)`);
+          warn(`${fileRel}: genres "${t}" should be "${r.canonical}" (canonical id)`);
         }
       }
     }
 
+    // Validate platforms (FIXED: was using 't' instead of 'p')
     if (fm.platforms != null) {
       mustArrayOfStrings(fileRel, 'platforms', fm.platforms);
       for (const p of fm.platforms) {
         const r = platformResolver.resolve(p);
         if (!r) {
-          warn(`${fileRel}: unknown tag in platforms: ${t} (will need review/approval)`);
-          continue;  // Don't fail, just warn
+          warn(`${fileRel}: unknown platform in platforms: ${p} (will need review/approval)`);
+          continue;
         }
         if (r.source !== 'id' && r.canonical !== p) {
           warn(`${fileRel}: platform "${p}" should be "${r.canonical}" (canonical id)`);
@@ -390,16 +395,80 @@ function validateGames({ tagResolver, challengeResolver, platformResolver }) {
       }
     }
 
+    // Validate challenges (FIXED: was using 't' instead of 'c')
     if (fm.challenges != null) {
       mustArrayOfStrings(fileRel, 'challenges', fm.challenges);
       for (const c of fm.challenges) {
         const r = challengeResolver.resolve(c);
         if (!r) {
-          warn(`${fileRel}: unknown tag in challenges: ${t} (will need review/approval)`);
-          continue;  // Don't fail, just warn
+          warn(`${fileRel}: unknown challenge in challenges: ${c} (will need review/approval)`);
+          continue;
         }
         if (r.source !== 'id' && r.canonical !== c) {
           warn(`${fileRel}: challenge "${c}" should be "${r.canonical}" (canonical id)`);
+        }
+      }
+    }
+
+    // Validate glitches_data (optional)
+    if (fm.glitches_data != null) {
+      if (!Array.isArray(fm.glitches_data)) {
+        die(`${fileRel}: glitches_data must be a YAML list`);
+      }
+      for (const [idx, glitch] of fm.glitches_data.entries()) {
+        if (!glitch || typeof glitch !== 'object' || Array.isArray(glitch)) {
+          die(`${fileRel}: glitches_data[${idx}] must be an object`);
+        }
+        if (typeof glitch.slug !== 'string' || !glitch.slug.trim()) {
+          die(`${fileRel}: glitches_data[${idx}].slug is required`);
+        }
+        if (!ID_RE.test(glitch.slug)) {
+          die(`${fileRel}: glitches_data[${idx}].slug must be kebab-case`);
+        }
+        if (glitch.label != null && (typeof glitch.label !== 'string' || !glitch.label.trim())) {
+          die(`${fileRel}: glitches_data[${idx}].label must be a non-empty string if provided`);
+        }
+      }
+    }
+
+    // Validate restrictions (optional array)
+    if (fm.restrictions != null) {
+      if (!Array.isArray(fm.restrictions)) {
+        die(`${fileRel}: restrictions must be a YAML list`);
+      }
+      for (const r of fm.restrictions) {
+        if (typeof r !== 'string' || !r.trim()) {
+          die(`${fileRel}: restrictions must contain only non-empty strings`);
+        }
+      }
+    }
+
+    // Validate character_column (optional)
+    if (fm.character_column != null) {
+      if (typeof fm.character_column !== 'object' || Array.isArray(fm.character_column)) {
+        die(`${fileRel}: character_column must be an object`);
+      }
+      if (fm.character_column.enabled != null && typeof fm.character_column.enabled !== 'boolean') {
+        die(`${fileRel}: character_column.enabled must be a boolean`);
+      }
+      if (fm.character_column.label != null && (typeof fm.character_column.label !== 'string' || !fm.character_column.label.trim())) {
+        die(`${fileRel}: character_column.label must be a non-empty string`);
+      }
+    }
+
+    // Validate timing_method (optional)
+    if (fm.timing_method != null && (typeof fm.timing_method !== 'string' || !fm.timing_method.trim())) {
+      die(`${fileRel}: timing_method must be a non-empty string if provided`);
+    }
+
+    // Validate name_aliases (optional)
+    if (fm.name_aliases != null) {
+      if (!Array.isArray(fm.name_aliases)) {
+        die(`${fileRel}: name_aliases must be a YAML list`);
+      }
+      for (const alias of fm.name_aliases) {
+        if (typeof alias !== 'string' || !alias.trim()) {
+          die(`${fileRel}: name_aliases must contain only non-empty strings`);
         }
       }
     }
@@ -564,10 +633,10 @@ function validateRuns({ gameIds, runnerIds, challengeResolver, gameCategoryIndex
 function main() {
   validateWindowsUnsafeNames();
 
-  const { tagResolver, challengeResolver, platformResolver } = validateDataFiles();
+  const { genresResolver, challengeResolver, platformResolver } = validateDataFiles();
   const gameCategoryIndex = buildGameCategoryIndex();
 
-  const gameIds = validateGames({ tagResolver, challengeResolver, platformResolver });
+  const gameIds = validateGames({ genresResolver, challengeResolver, platformResolver });
   const runnerIds = validateRunners(gameIds);
 
   validateRuns({ gameIds, runnerIds, challengeResolver, gameCategoryIndex });

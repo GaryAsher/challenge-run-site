@@ -1,6 +1,6 @@
 # GitHub Actions Workflows
 
-This folder contains automated workflows that run on various GitHub events.
+This folder contains automated workflows for the Challenge Run site.
 
 ## Workflow Overview
 
@@ -8,55 +8,86 @@ This folder contains automated workflows that run on various GitHub events.
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `process-run-submission.yml` | Issue labeled/commented | Processes run submission issues. When `approved` label is added, creates PR to add run to `_runs/`. |
-| `process-new-game-issue.yml` | Issue labeled/commented | Processes new game requests. Handles approval flow and game file creation. |
-| `new-game-submission.yml` | `repository_dispatch` | Receives game submissions from external forms (Google Forms). Creates structured game files. |
+| `new-game-submission.yml` | `repository_dispatch` from Google Forms | Creates game files in `_queue_games/` from form submissions |
 
 ### Promotion (Queue → Live)
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `promote-game.yml` | PR merged to `_queue_games/` | Moves approved games from queue to live. Generates game pages and updates CODEOWNERS. |
-| `promote-runs.yml` | Daily cron (midnight) or manual | Batch-promotes approved runs from `_queue_runs/` to `_runs/`. |
+| `promote-game.yml` | PR merged to `_queue_games/` | Moves approved games from queue to live, generates pages |
+| `promote-runs.yml` | Daily cron (midnight UTC) or manual | Batch-promotes approved runs from `_queue_runs/` to `_runs/` |
 
-### Validation
-
-| Workflow | Trigger | Purpose |
-|----------|---------|---------|
-| `validate-schema.yml` | PR/push to main | Validates YAML structure of game files, data files, and run files. |
-| `validate-queue-runs.yml` | PR/push to main | Validates run files in queue have correct format and required fields. |
-| `validate-generated-run-pages.yml` | PR to `_runs/` or scripts | Ensures generated category pages are up-to-date. |
-| `check-codeowners.yml` | PR/push to main | Ensures `.github/CODEOWNERS` matches `_data/codeowners.yml`. |
-| `check-duplicate-game.yml` | PR to `_queue_games/` | Prevents duplicate game submissions. |
-
-### Generation
+### Validation & CI
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `generate-run-categories.yml` | Push to `_runs/` or manual | Regenerates run category pages (e.g., `/games/hades-2/runs/surface-any/`). |
+| `ci.yml` | PR/push to main | Validates YAML, schema, runs; builds Jekyll site |
+| `check-duplicate-game.yml` | PR to `_queue_games/` | Warns if game already exists |
+
+### Quality Checks
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| `lighthouse.yml` | Push to main | Runs Lighthouse accessibility/performance tests |
+| `generate-run-categories.yml` | Push to `_runs/` or manual | Regenerates run category pages |
 
 ### Utilities
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `create-package-lock.yml` | Manual only | Updates `package-lock.json` when dependencies change. |
-| `lighthouse.yml` | PR/push to main | Runs Lighthouse performance tests on the site. |
+| `create-package-lock.yml` | Manual only | Updates `package-lock.json` |
+| `validate-generated-run-pages.yml` | PR to `_runs/` or scripts | Ensures category pages are current |
 
-## Common Patterns
+## Flow Diagrams
 
-### Label-Based Processing
-Many workflows trigger on `issues: [labeled]` and check for specific labels:
-- `run-submission` + `approved` → Process run
-- `run-submission` + `rejected` → Close with explanation
-- `new-game` + `approved` → Create game files
+### Game Submission Flow
 
-### Script Dependencies
+```
+Google Form
+    │
+    ▼
+Apps Script ─────► repository_dispatch
+    │
+    ▼
+new-game-submission.yml
+    │
+    ▼
+_queue_games/{game}.md ─────► PR created
+    │
+    ▼ (PR merged)
+promote-game.yml
+    │
+    ├──► _games/{game}.md
+    └──► games/{game}/* (pages)
+```
+
+### Run Submission Flow
+
+```
+Google Form
+    │
+    ▼
+Apps Script ─────► Creates file in _queue_runs/
+    │
+    ▼ (Daily cron)
+promote-runs.yml
+    │
+    ▼
+_runs/{game}/{run}.md
+```
+
+## Script Dependencies
+
 Workflows call scripts from `/scripts/`:
-- `generate-codeowners.js` - CODEOWNERS generation
-- `generate-game-pages.js` - Game page scaffolding
-- `generate-run-category-pages.js` - Category page generation
-- `validate-schema.js` - YAML validation
-- `validate-runs.js` - Run file validation
+
+| Script | Purpose |
+|--------|---------|
+| `validate-schema.js` | YAML/schema validation |
+| `validate-runs.js` | Run file validation |
+| `generate-codeowners.js` | CODEOWNERS generation |
+| `generate-game-pages.js` | Game page scaffolding |
+| `generate-run-category-pages.js` | Category page generation |
+| `promote-runs.js` | Moves approved runs to live |
 
 ## Debugging
 
@@ -65,8 +96,10 @@ Check the "Actions" tab on GitHub to see workflow runs. Each run shows:
 - Job steps and their output
 - Success/failure status
 
-For local testing, most validation scripts can be run directly:
+For local testing:
 ```bash
-node scripts/validate-schema.js
-node scripts/validate-runs.js
+npm run validate        # Run all validation
+npm run validate:schema # Schema only
+npm run validate:runs   # Queue runs only
+npm run check:all       # Check generated files
 ```

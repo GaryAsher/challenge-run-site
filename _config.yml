@@ -19,7 +19,24 @@ defaults:
     values:
       layout: null
       verified: false
+  - scope:
+      path: ""
+      type: games
+    values:
+      layout: game
+
 exclude:
   - _queue_runs
+  - _queue_games
+  - _templates
   - scripts
   - node_modules
+  - package.json
+  - package-lock.json
+  - Gemfile
+  - Gemfile.lock
+  - .lighthouserc.json
+  - README.md
+  - LICENSE
+  - .docs
+  - .github

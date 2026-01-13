@@ -1,9 +1,28 @@
+# Jekyll
+_site/
+.jekyll-cache/
+.jekyll-metadata
+
 # Node
 node_modules/
 npm-debug.log*
 
-# OS junk
-.DS_Store
+# Logs
+*.log
 
-# Temp / scripts output
-scripts/.tmp/
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build artifacts
+assets/css/*.min.css
+assets/js/*.min.js
+
+# Lighthouse
+.lighthouseci/
