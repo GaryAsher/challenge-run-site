@@ -1,0 +1,44 @@
+# Banned Terms Configuration
+# Terms that will block submission if found in user content
+# Used by scripts/check-banned-terms.js during validation
+#
+# Add terms as lowercase - matching is case-insensitive
+# Supports partial matching (substring) by default
+
+# Slurs and hate speech (partial list - extend as needed)
+slurs:
+  - "n-word-placeholder"  # Replace with actual terms to block
+  - "f-word-slur-placeholder"
+
+# Spam patterns
+spam:
+  - "buy now"
+  - "click here"
+  - "make money fast"
+  - "free gift"
+  - "act now"
+  - "limited time offer"
+
+# Malicious content indicators
+malicious:
+  - "<script>"
+  - "javascript:"
+  - "onclick="
+  - "onerror="
+  - "onload="
+  - "data:text/html"
+
+# Contact info (prevent personal info exposure)
+# Note: These are patterns, not exact matches
+contact_patterns:
+  - "@gmail.com"
+  - "@yahoo.com"
+  - "@hotmail.com"
+  # Phone number patterns handled by regex in script
+
+# Allowed exceptions (won't trigger even if matching above)
+# For legitimate game terms that might false positive
+exceptions:
+  - "glitch"
+  - "exploit"
+  - "any%"
