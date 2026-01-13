@@ -11,7 +11,7 @@ status: "Active"
 genres: []
 platforms:
   - pc-steam
-  - epic-games
+  - pc-epic-games
   - nintendo-switch
   - playstation-4
   - xbox-one
