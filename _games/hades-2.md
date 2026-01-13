@@ -17,7 +17,7 @@ genres:
   - mythology
 platforms:
   - pc-steam
-  - pc-epic-games-store
+  - pc-epic-games
   - nintendo-switch
   - nintendo-switch-2
 
