@@ -74,24 +74,24 @@ xbox-one:
     - "Xbone"
 
 # PC
-steam:
-  label: "Steam"
+pc-steam:
+  label: "PC: Steam"
   aliases: 
-    - "PC Steam"
+    - "Steam"
 
-epic:
-  label: "Epic Games Store"
+pc-epic-games-store:
+  label: "PC: Epic Games Store"
   aliases: 
     - "Epic Games"
     - "Epic"
     - "EGS"
 
-gog:
+pc-gog:
   label: "GOG"
   aliases: 
     - "Good Old Games"
 
-pc:
+pc-other:
   label: "PC (Other)"
   aliases:
     - "Windows"
