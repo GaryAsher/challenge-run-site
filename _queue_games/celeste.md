@@ -8,7 +8,12 @@ name_aliases: []
 status: "Pending review"
 
 # TODO: Add genres
-genres: []
+genres:
+  - Precision Platformer
+  -Difficult
+  - Great Soundtrack
+  - Indie
+  - 2D
 platforms:
   - pc-steam
   - epic-games
