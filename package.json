@@ -10,6 +10,10 @@
     "validate:schema": "node scripts/validate-schema.js",
     "validate:runs": "node scripts/validate-runs.js",
     "detect:unknown": "node scripts/detect-unknown-terms.js",
+
+    "//": "=== DIAGNOSTICS ===",
+    "diagnose:game": "node scripts/diagnose-game.js",
+    "check:yaml": "node scripts/check-yaml-syntax.js",
     
     "//": "=== GENERATION (Run after adding/editing games) ===",
     "generate": "npm run generate:codeowners && npm run generate:run-categories",
