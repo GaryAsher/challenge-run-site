@@ -2,6 +2,13 @@
 <html lang="en" data-theme="">
 <head>
   <meta charset="UTF-8" />
+  {% if page.description %}
+    <meta name="description" content="{{ page.description }}">
+  {% else %}
+    <meta name="description" content="Challenge Run Community - Track and showcase gaming challenge runs">
+  {% endif %}
+  
+  <title>{{ page.title | default: site.title }}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% if page.title %}{{ page.title }} | {% endif %}{{ site.title }}</title>
 
