@@ -47,6 +47,9 @@ const ROOT = process.cwd();
 // Error helpers
 // ============================================================
 function die(msg) {
+  console.error('\n❌ Validation Error:\n');
+  console.error(msg);
+  console.error('\n💡 Tip: Run `node scripts/diagnose-game.js <game-id>` for detailed info\n');
   throw new Error(msg);
 }
 
