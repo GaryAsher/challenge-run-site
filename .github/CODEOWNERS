@@ -18,6 +18,10 @@
 /_runs/rejected/*/ @GaryAsher
 
 # Per-game ownership (strict routing)
+/_queue_runs/celeste/ @GaryAsher
+/_runs/celeste/ @GaryAsher
+/_runs/rejected/celeste/ @GaryAsher
+
 /_queue_runs/hades-2/ @GaryAsher
 /_runs/hades-2/ @GaryAsher
 /_runs/rejected/hades-2/ @GaryAsher
