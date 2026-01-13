@@ -16,10 +16,10 @@
     "check:yaml": "node scripts/check-yaml-syntax.js",
     
     "//": "=== GENERATION (Run after adding/editing games) ===",
-    "generate": "npm run generate:codeowners && npm run generate:run-categories && npm run generate:game-pages",
+    "generate": "npm run generate:codeowners && npm run generate:run-categories && npm run generate:game-page",
     "generate:codeowners": "node scripts/generate-codeowners.js",
     "generate:run-categories": "node scripts/generate-run-category-pages.js",
-    "generate:game-pages": "node scripts/generate-game-pages.js",
+    "generate:game-page": "node scripts/generate-game-page.js",
     
     "//": "=== CHECKS (CI validation - read-only) ===",
     "check:all": "npm run check:run-categories && npm run check:codeowners && npm run check:game-pages",
