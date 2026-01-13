@@ -1,0 +1,295 @@
+#!/usr/bin/env node
+/**
+ * scripts/generate-game-pages.js
+ *
+ * Generates the sub-pages for a game:
+ * - forum/index.html
+ * - guides/index.html
+ * - history/index.html
+ * - resources/index.html
+ * - rules/index.html
+ * - submit/index.html
+ * - runs/index.html (and category sub-pages)
+ *
+ * Usage:
+ *   node scripts/generate-game-pages.js                    # All games
+ *   node scripts/generate-game-pages.js --game hades-2     # Specific game
+ *   node scripts/generate-game-pages.js --check            # Verify pages exist (no writes)
+ */
+
+const fs = require('fs');
+const path = require('path');
+
+// Import shared utilities
+const {
+  parseFrontMatter,
+  isDir,
+  isFile,
+  readText,
+} = require('./lib');
+
+const ROOT = process.cwd();
+const GAMES_DIR = path.join(ROOT, '_games');
+const OUTPUT_DIR = path.join(ROOT, 'games');
+
+// ============================================================
+// Helpers
+// ============================================================
+function capitalize(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function ensureDir(dir) {
+  if (!isDir(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+}
+
+function writeIfNotExists(filePath, content, checkOnly = false) {
+  if (isFile(filePath)) {
+    return false; // Already exists
+  }
+  
+  if (checkOnly) {
+    console.log(`MISSING: ${path.relative(ROOT, filePath)}`);
+    return true; // Would need to create
+  }
+  
+  ensureDir(path.dirname(filePath));
+  fs.writeFileSync(filePath, content, 'utf8');
+  console.log(`Created: ${path.relative(ROOT, filePath)}`);
+  return true;
+}
+
+// ============================================================
+// Template Generators
+// ============================================================
+function generateSubPageTemplate(gameId, section, gameName) {
+  const titles = {
+    forum: 'Forum',
+    guides: 'Guides',
+    history: 'History',
+    resources: 'Resources',
+    rules: 'Rules',
+    submit: 'Submit Run'
+  };
+
+  const descriptions = {
+    forum: 'Community discussions and announcements.',
+    guides: 'Strategy guides and tutorials.',
+    history: 'Historical records and milestones.',
+    resources: 'Useful tools, mods, and external resources.',
+    rules: 'Official rules and category definitions.',
+    submit: 'Submit your challenge run for review.'
+  };
+
+  const title = titles[section] || capitalize(section);
+  const description = descriptions[section] || '';
+
+  return `---
+layout: default
+title: "${gameName} - ${title}"
+game_id: ${gameId}
+---
+
+{% assign game = site.games | where: "game_id", "${gameId}" | first %}
+{% include game-header-tabs.html game=game active="${section}" %}
+
+<div class="page-width">
+  <div class="game-shell">
+    <div class="card">
+      <h1>${title}</h1>
+      <p class="muted">${description}</p>
+    </div>
+  </div>
+</div>
+`;
+}
+
+function generateRunsIndexTemplate(gameId, gameName) {
+  return `---
+layout: game-runs
+title: "${gameName} - Runs"
+game_id: ${gameId}
+category_slug: ""
+---
+`;
+}
+
+function generateRunsIndexMd(gameId, gameName) {
+  return `---
+layout: game-runs
+title: "${gameName} - Runs"
+game_id: ${gameId}
+category_slug: ""
+---
+
+Browse all challenge runs for ${gameName}. Use the filters to narrow down by category, challenge type, or restrictions.
+`;
+}
+
+function generateCategoryPageTemplate(gameId, gameName, categorySlug, categoryLabel) {
+  return `---
+layout: game-runs
+title: "${gameName} - ${categoryLabel}"
+game_id: ${gameId}
+category_slug: "${categorySlug}"
+---
+`;
+}
+
+// ============================================================
+// Main Generation Logic
+// ============================================================
+function generateGamePages(gameId, checkOnly = false) {
+  const gameFile = path.join(GAMES_DIR, `${gameId}.md`);
+  
+  if (!isFile(gameFile)) {
+    console.error(`Game file not found: ${gameFile}`);
+    return false;
+  }
+
+  const content = readText(gameFile);
+  const { data: fm, hasFrontMatter } = parseFrontMatter(content);
+
+  if (!hasFrontMatter) {
+    console.error(`No front matter in: ${gameFile}`);
+    return false;
+  }
+
+  const gameName = fm.name || gameId;
+  const gameDir = path.join(OUTPUT_DIR, gameId);
+  
+  let missingCount = 0;
+
+  // Standard sub-pages
+  const subPages = ['forum', 'guides', 'history', 'resources', 'rules', 'submit'];
+  
+  for (const section of subPages) {
+    const sectionDir = path.join(gameDir, section);
+    const indexPath = path.join(sectionDir, 'index.html');
+    const template = generateSubPageTemplate(gameId, section, gameName);
+    
+    if (writeIfNotExists(indexPath, template, checkOnly)) {
+      missingCount++;
+    }
+  }
+
+  // Runs index pages (both .html and .md for flexibility)
+  const runsDir = path.join(gameDir, 'runs');
+  const runsIndexHtml = path.join(runsDir, 'index.html');
+  const runsIndexMd = path.join(runsDir, 'index.md');
+  
+  if (writeIfNotExists(runsIndexHtml, generateRunsIndexTemplate(gameId, gameName), checkOnly)) {
+    missingCount++;
+  }
+  
+  // Also create index.md if it doesn't exist
+  if (writeIfNotExists(runsIndexMd, generateRunsIndexMd(gameId, gameName), checkOnly)) {
+    missingCount++;
+  }
+
+  // Generate category pages from categories_data
+  if (fm.categories_data && Array.isArray(fm.categories_data)) {
+    for (const cat of fm.categories_data) {
+      const slug = cat.slug;
+      const label = cat.label || slug;
+      
+      if (slug) {
+        // Parent category page
+        const catDir = path.join(runsDir, slug);
+        const catIndex = path.join(catDir, 'index.html');
+        const catTemplate = generateCategoryPageTemplate(gameId, gameName, slug, label);
+        
+        if (writeIfNotExists(catIndex, catTemplate, checkOnly)) {
+          missingCount++;
+        }
+
+        // Child categories
+        if (cat.children && Array.isArray(cat.children)) {
+          for (const child of cat.children) {
+            const childSlug = child.slug;
+            const childLabel = child.label || childSlug;
+            
+            if (childSlug) {
+              const fullSlug = `${slug}/${childSlug}`;
+              const childDir = path.join(catDir, childSlug);
+              const childIndex = path.join(childDir, 'index.html');
+              const childTemplate = generateCategoryPageTemplate(gameId, gameName, fullSlug, childLabel);
+              
+              if (writeIfNotExists(childIndex, childTemplate, checkOnly)) {
+                missingCount++;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (checkOnly && missingCount > 0) {
+    console.log(`\n${gameId}: ${missingCount} missing page(s)`);
+  } else if (!checkOnly) {
+    console.log(`${gameId}: Done.`);
+  }
+
+  return missingCount === 0;
+}
+
+// ============================================================
+// CLI
+// ============================================================
+function main() {
+  const args = process.argv.slice(2);
+  let targetGame = null;
+  let checkOnly = false;
+
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--game' && args[i + 1]) {
+      targetGame = args[i + 1];
+      i++;
+    } else if (args[i] === '--check') {
+      checkOnly = true;
+    }
+  }
+
+  if (targetGame) {
+    // Generate for specific game
+    const success = generateGamePages(targetGame, checkOnly);
+    if (checkOnly && !success) {
+      process.exit(1);
+    }
+  } else {
+    // Generate for all games
+    if (!isDir(GAMES_DIR)) {
+      console.error(`Games directory not found: ${GAMES_DIR}`);
+      process.exit(1);
+    }
+
+    const gameFiles = fs.readdirSync(GAMES_DIR)
+      .filter(f => f.endsWith('.md') && f.toLowerCase() !== 'readme.md');
+
+    if (gameFiles.length === 0) {
+      console.log('No game files found.');
+      return;
+    }
+
+    let allSuccess = true;
+    for (const file of gameFiles) {
+      const gameId = file.replace('.md', '');
+      const success = generateGamePages(gameId, checkOnly);
+      if (!success) allSuccess = false;
+    }
+
+    if (checkOnly && !allSuccess) {
+      console.log('\nRun without --check to create missing pages.');
+      process.exit(1);
+    }
+  }
+
+  if (!checkOnly) {
+    console.log('\nAll game pages generated successfully.');
+  }
+}
+
+main();
