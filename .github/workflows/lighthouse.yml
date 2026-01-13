@@ -3,7 +3,7 @@ name: Lighthouse CI
 on:
   push:
     branches: [main]
-  # Don't run on PRs to save time
+  workflow_dispatch:  # Allow manual runs
 
 permissions:
   contents: read
@@ -26,8 +26,8 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Jekyll dependencies
-        run: bundle install
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli@0.13.x
 
       - name: Build Jekyll site
         run: bundle exec jekyll build
@@ -35,9 +35,6 @@ jobs:
           JEKYLL_ENV: production
 
       - name: Run Lighthouse CI
-        continue-on-error: true  # Don't block on failures
-        uses: treosh/lighthouse-ci-action@v12
-        with:
-          configPath: './.lighthouserc.json'
-          uploadArtifacts: true
-          temporaryPublicStorage: true
+        run: lhci autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
