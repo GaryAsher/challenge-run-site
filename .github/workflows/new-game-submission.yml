@@ -1,8 +1,5 @@
 name: Process New Game Submission
 
-# Triggered by Google Forms -> Apps Script -> repository_dispatch
-# This is the ONLY game submission flow (GitHub Issues removed)
-
 on:
   repository_dispatch:
     types: [new-game-submission]
@@ -50,6 +47,10 @@ on:
         default: "{}"
         type: string
 
+concurrency:
+  group: new-game-submission
+  cancel-in-progress: false
+
 permissions:
   contents: write
   pull-requests: write
@@ -69,23 +70,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Debug - Show incoming payload
-        if: github.event_name == 'repository_dispatch'
-        env:
-          DBG_GAME_NAME: ${{ github.event.client_payload.game_name }}
-          DBG_GAME_ID: ${{ github.event.client_payload.game_id }}
-          DBG_CATEGORIES: ${{ github.event.client_payload.categories }}
-          DBG_CHALLENGES: ${{ github.event.client_payload.challenges }}
-          DBG_DETAILS: ${{ github.event.client_payload.details }}
-        run: |
-          echo "=== INCOMING PAYLOAD DEBUG ==="
-          echo "game_name: ${DBG_GAME_NAME}"
-          echo "game_id: ${DBG_GAME_ID}"
-          echo "categories: ${DBG_CATEGORIES}"
-          echo "challenges: ${DBG_CHALLENGES}"
-          echo "details length: ${#DBG_DETAILS} chars"
-          echo "=== END PAYLOAD DEBUG ==="
-
       - name: Generate queued game file
         id: generate
         env:
@@ -101,27 +85,21 @@ jobs:
         run: |
           set -euo pipefail
           
-          echo "=== VALIDATION ==="
-          
           if [ -z "${GAME_NAME:-}" ]; then 
             echo "::error::GAME_NAME is empty"
             exit 1
           fi
-          echo "✓ GAME_NAME: ${GAME_NAME}"
           
           if [ -z "${CATEGORIES:-}" ]; then 
             echo "::error::CATEGORIES is empty"
             exit 1
           fi
-          echo "✓ CATEGORIES present"
           
           if [ -z "${CHALLENGES:-}" ]; then 
             echo "::error::CHALLENGES is empty"
             exit 1
           fi
-          echo "✓ CHALLENGES present"
           
-          # Generate game ID if not provided
           if [ -z "${GAME_ID_INPUT:-}" ]; then
             GAME_ID=$(echo "${GAME_NAME}" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//')
           else
@@ -132,66 +110,31 @@ jobs:
             echo "::error::GAME_ID resolved to empty"
             exit 1
           fi
-          echo "✓ GAME_ID: ${GAME_ID}"
           
           FIRST_LETTER=$(echo "${GAME_ID}" | cut -c1)
           
-          # Normalize booleans
           CHAR_ENABLED=$(echo "${CHAR_ENABLED:-false}" | tr '[:upper:]' '[:lower:]')
           case "${CHAR_ENABLED}" in true|false) ;; *) CHAR_ENABLED="false" ;; esac
           
           CREDIT_REQUESTED=$(echo "${CREDIT_REQUESTED:-false}" | tr '[:upper:]' '[:lower:]')
           case "${CREDIT_REQUESTED}" in true|false) ;; *) CREDIT_REQUESTED="false" ;; esac
           
-          # Prepare output
           mkdir -p _queue_games
           OUT_FILE="_queue_games/${GAME_ID}.md"
           
-          # Handle empty/null details
           if [ -z "${DETAILS_IN:-}" ] || [ "${DETAILS_IN:-}" = "null" ]; then
             DETAILS_IN="{}"
           fi
           
-          echo "=== GENERATING GAME FILE ==="
-          
-          # Export for Python script
           export GAME_NAME GAME_ID FIRST_LETTER CATEGORIES CHALLENGES
           export CHAR_ENABLED CHAR_LABEL SUBMITTER CREDIT_REQUESTED
           export DETAILS_IN OUT_FILE
           
-          # Run the Python generator script
           python3 scripts/generate-game-file.py
           
-          # Output for next steps
           echo "game_id=${GAME_ID}" >> "$GITHUB_OUTPUT"
           echo "game_name=${GAME_NAME}" >> "$GITHUB_OUTPUT"
           echo "first_letter=${FIRST_LETTER}" >> "$GITHUB_OUTPUT"
-
-      - name: Verify generated file
-        run: |
-          echo "=== GENERATED FILE CONTENTS ==="
-          cat "_queue_games/${{ steps.generate.outputs.game_id }}.md"
-          echo ""
-          echo "=== YAML VALIDATION ==="
-          python3 << 'EOF'
-          import yaml
-          game_id = "${{ steps.generate.outputs.game_id }}"
-          with open(f'_queue_games/{game_id}.md', 'r') as f:
-              content = f.read()
-              parts = content.split('---')
-              if len(parts) >= 3:
-                  front_matter = parts[1]
-                  try:
-                      data = yaml.safe_load(front_matter)
-                      print('✓ YAML is valid')
-                      print(f'  - game_id: {data.get("game_id")}')
-                      print(f'  - name: {data.get("name")}')
-                      print(f'  - categories: {len(data.get("categories_data", []))}')
-                      print(f'  - platforms: {data.get("platforms", [])}')
-                  except yaml.YAMLError as e:
-                      print(f'✗ YAML Error: {e}')
-                      exit(1)
-          EOF
 
       - name: Create Pull Request
         id: cpr
@@ -213,17 +156,10 @@ jobs:
 
             ### 📋 Reviewer Checklist
 
-            **Review the submission, then merge to trigger promotion:**
-            
-            - [ ] Verify game info looks correct (categories, challenges, glitches)
+            - [ ] Verify game info looks correct
             - [ ] Add genre tags if missing
             
-            > **Note:** After merging, the `promote-game` workflow will automatically:
-            > - Move the file to `_games/`
-            > - Generate game pages
-            > - Create a follow-up PR for final review
-            
-            The cover image and any final adjustments can be added in the promotion PR.
+            **Merge this PR to promote the game automatically.**
 
             ---
             *Submitted via Google Form*
@@ -232,36 +168,3 @@ jobs:
           labels: |
             new-game
             needs-review
-
-      - name: Notify Discord forum
-        continue-on-error: true
-        if: steps.cpr.outputs.pull-request-url != ''
-        env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          PR_URL: ${{ steps.cpr.outputs.pull-request-url }}
-          GAME_ID: ${{ steps.generate.outputs.game_id }}
-          GAME_NAME: ${{ steps.generate.outputs.game_name }}
-        run: |
-          if [ -z "${DISCORD_WEBHOOK_URL:-}" ]; then
-            echo "DISCORD_WEBHOOK_URL not set, skipping"
-            exit 0
-          fi
-          
-          PAYLOAD=$(python3 << 'EOF'
-          import json, os
-          
-          data = {
-              "thread_name": f"Game submission: {os.environ['GAME_NAME']} ({os.environ['GAME_ID']})",
-              "content": f"🆕 **New game submission**\n**{os.environ['GAME_NAME']}** (`{os.environ['GAME_ID']}`)\nPR: {os.environ['PR_URL']}",
-              "applied_tags": ["1459087089021882561"]
-          }
-          print(json.dumps(data))
-          EOF
-          )
-          
-          curl -sS -X POST "${DISCORD_WEBHOOK_URL}?wait=true" \
-            -H "Content-Type: application/json" \
-            --data "${PAYLOAD}" \
-            --fail-with-body
-          
-          echo "✓ Discord notification sent"
