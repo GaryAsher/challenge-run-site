@@ -9,6 +9,7 @@
     "validate": "npm run validate:schema && npm run validate:runs",
     "validate:schema": "node scripts/validate-schema.js",
     "validate:runs": "node scripts/validate-runs.js",
+    "test-all": "node scripts/test-all.js",
     "detect:unknown": "node scripts/detect-unknown-terms.js",
 
     "//": "=== DIAGNOSTICS ===",
