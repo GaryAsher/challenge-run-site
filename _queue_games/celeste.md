@@ -10,7 +10,11 @@ status: "Pending review"
 # TODO: Add genres
 genres: []
 platforms:
-  - pc-steam-epic-games-nintendo-switch-playstation-4-xbox-one
+  - pc-steam
+  - epic-games
+  - nintendo-switch
+  - playstation-4
+  - xbox-one
 
 cover: /assets/img/games/c/celeste.jpg
 cover_position: center
