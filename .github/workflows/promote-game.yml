@@ -15,6 +15,11 @@ on:
         required: true
         type: string
 
+# Prevent concurrent promotions
+concurrency:
+  group: promote-game
+  cancel-in-progress: false
+
 permissions:
   contents: write
   pull-requests: write
@@ -45,21 +50,15 @@ jobs:
         id: identify
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            # Manual trigger - use input
             GAME_ID="${{ inputs.game_id }}"
           else
-            # PR trigger - find changed files in _queue_games
             GAME_ID=""
-            
-            # Get list of files changed in the PR
             CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.merge_commit_sha }} 2>/dev/null || echo "")
             
             echo "Changed files: ${CHANGED_FILES}"
             
-            # Find .md files in _queue_games
             for file in ${CHANGED_FILES}; do
               if [[ "$file" == _queue_games/*.md ]] && [[ "$file" != *".gitkeep"* ]]; then
-                # Extract game_id from filename
                 FILENAME=$(basename "$file" .md)
                 GAME_ID="${FILENAME}"
                 echo "Found queued game: ${GAME_ID}"
@@ -92,7 +91,6 @@ jobs:
 
       - name: Promote game file
         if: steps.check.outputs.exists == 'true'
-        id: promote
         env:
           GAME_ID: ${{ steps.identify.outputs.game_id }}
         run: |
@@ -106,7 +104,6 @@ jobs:
           echo "Moving ${SOURCE} -> ${DEST}"
           mv "${SOURCE}" "${DEST}"
           
-          # Update status in the file (remove "Pending review" prefix)
           sed -i 's/status: "Pending review - submitted by/status: "Submitted by/g' "${DEST}"
           sed -i 's/status: "Pending review"/status: "Active"/g' "${DEST}"
           
@@ -127,7 +124,7 @@ jobs:
           GAME_ID: ${{ steps.identify.outputs.game_id }}
         run: |
           echo "Generating run category pages for ${GAME_ID}..."
-          node scripts/generate-run-category-pages.js --game "${GAME_ID}" || echo "Note: generate-run-category-pages.js may need the game to have runs first"
+          node scripts/generate-run-category-pages.js --game "${GAME_ID}" || true
           echo "✓ Run category pages generated (if applicable)"
 
       - name: Regenerate CODEOWNERS
@@ -154,19 +151,17 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Stage all changes
           git add -A
           
-          # Commit
-          git commit -m "feat: Promote game ${GAME_ID} to active games
+          # Use [skip ci] to prevent CI from running again
+          git commit -m "feat: Promote game ${GAME_ID} [skip ci]
 
           - Moved _queue_games/${GAME_ID}.md → _games/${GAME_ID}.md
           - Generated game pages in games/${GAME_ID}/
           - Updated CODEOWNERS
           
-          Remember to add cover image to assets/img/games/${{ steps.letter.outputs.first_letter }}/${GAME_ID}.jpg"
+          Add cover image to: assets/img/games/${{ steps.letter.outputs.first_letter }}/${GAME_ID}.jpg"
           
-          # Push directly to main
           git push origin main
           
           echo "✓ Changes pushed to main"
