@@ -78,6 +78,7 @@ pc-steam:
   label: "PC: Steam"
   aliases: 
     - "Steam"
+    - "PC Steam"
 
 pc-epic-games-store:
   label: "PC: Epic Games Store"
@@ -87,8 +88,9 @@ pc-epic-games-store:
     - "EGS"
 
 pc-gog:
-  label: "GOG"
+  label: "PC: GOG"
   aliases: 
+    - "GOG"
     - "Good Old Games"
 
 pc-other:
