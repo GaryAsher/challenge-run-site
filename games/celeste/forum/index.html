@@ -1,0 +1,17 @@
+---
+layout: default
+title: "Celeste - Forum"
+game_id: celeste
+---
+
+{% assign game = site.games | where: "game_id", "celeste" | first %}
+{% include game-header-tabs.html game=game active="forum" %}
+
+<div class="page-width">
+  <div class="game-shell">
+    <div class="card">
+      <h1>Forum</h1>
+      <p class="muted">Community discussions and announcements.</p>
+    </div>
+  </div>
+</div>

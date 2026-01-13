@@ -1,0 +1,17 @@
+---
+layout: default
+title: "Celeste - History"
+game_id: celeste
+---
+
+{% assign game = site.games | where: "game_id", "celeste" | first %}
+{% include game-header-tabs.html game=game active="history" %}
+
+<div class="page-width">
+  <div class="game-shell">
+    <div class="card">
+      <h1>History</h1>
+      <p class="muted">Historical records and milestones.</p>
+    </div>
+  </div>
+</div>
