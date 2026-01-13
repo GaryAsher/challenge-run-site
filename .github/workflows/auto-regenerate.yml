@@ -1,0 +1,74 @@
+name: Auto-Regenerate Pages
+
+# Trigger when source data files change on main
+on:
+  push:
+    branches: [main]
+    paths:
+      - '_games/*.md'
+      - '_data/*.yml'
+      - '_runners/*.md'
+
+# Prevent concurrent runs
+concurrency:
+  group: auto-regenerate
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    name: Regenerate Pages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Regenerate all pages
+        run: |
+          echo "Regenerating CODEOWNERS..."
+          node scripts/generate-codeowners.js
+          
+          echo "Regenerating game pages..."
+          node scripts/generate-game-pages.js
+          
+          echo "Regenerating run category pages..."
+          node scripts/generate-run-category-pages.js
+          
+          echo "✓ All pages regenerated"
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git add -A
+            git commit -m "chore: Auto-regenerate pages [skip ci]"
+            git push
+            echo "✓ Changes committed and pushed"
+          else
+            echo "✓ No changes needed"
+          fi
+
+      - name: Summary
+        run: |
+          echo "## Auto-Regenerate Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [[ -n "$(git log -1 --pretty=%B | grep 'Auto-regenerate')" ]]; then
+            echo "✅ Pages were regenerated and committed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ All pages were already up to date" >> $GITHUB_STEP_SUMMARY
+          fi
