@@ -187,15 +187,19 @@ function mustExist(fileRel, field, value) {
 
 /**
  * Parse a run filename and extract components
+ * 
+ * Filename format: YYYY-MM-DD__game-id__runner-id__category-slug__NN.md
+ * The date in the filename represents date_completed (when run was achieved).
+ * 
  * @param {string} filename - Filename to parse (basename only)
- * @returns {{dateSubmitted: string, game_id: string, runner_id: string, category_slug: string, nn: string}|null}
+ * @returns {{dateCompleted: string, game_id: string, runner_id: string, category_slug: string, nn: string}|null}
  */
 function parseRunFilename(filename) {
   const m = RUN_FILENAME_RE.exec(filename);
   if (!m) return null;
 
   return {
-    dateSubmitted: m[1],
+    dateCompleted: m[1],  // The date in filename is date_completed
     game_id: m[2],
     runner_id: m[3],
     category_slug: m[4],
