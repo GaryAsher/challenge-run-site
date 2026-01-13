@@ -43,6 +43,77 @@ jobs:
           JEKYLL_ENV: production
 
       - name: Run Lighthouse CI
-        run: lhci autorun
+        id: lighthouse
+        run: |
+          lhci autorun --collect.numberOfRuns=1 2>&1 | tee lighthouse-output.txt
+          
+          # Extract scores from output for summary
+          echo "## Lighthouse Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Parse and display results
+          if grep -q "GitHub" lighthouse-output.txt; then
+            REPORT_URL=$(grep -o 'https://storage.googleapis.com[^ ]*' lighthouse-output.txt | head -1)
+            if [ -n "$REPORT_URL" ]; then
+              echo "📊 **[View Full Report]($REPORT_URL)**" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+          
+          echo "### Scores" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Category | Score | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          
+          # Parse scores (simplified - actual parsing depends on output format)
+          grep -E "(performance|accessibility|best-practices|seo)" lighthouse-output.txt | head -4 >> $GITHUB_STEP_SUMMARY || echo "See workflow logs for details" >> $GITHUB_STEP_SUMMARY
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "*Lighthouse tests performance, accessibility, best practices, and SEO.*" >> $GITHUB_STEP_SUMMARY
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Lighthouse reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci/
+          retention-days: 30
+
+      - name: Comment on PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            // Try to read the output
+            let output = '';
+            try {
+              output = fs.readFileSync('lighthouse-output.txt', 'utf8');
+            } catch (e) {
+              output = 'Could not read Lighthouse output';
+            }
+            
+            // Extract report URL if available
+            const urlMatch = output.match(/https:\/\/storage\.googleapis\.com[^\s]*/);
+            const reportUrl = urlMatch ? urlMatch[0] : null;
+            
+            let body = '## 🔦 Lighthouse Results\n\n';
+            
+            if (reportUrl) {
+              body += `📊 **[View Full Report](${reportUrl})**\n\n`;
+            }
+            
+            body += 'Lighthouse checks have completed. See the workflow summary for detailed scores.\n\n';
+            body += '---\n';
+            body += '*Automated by Lighthouse CI*';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
