@@ -108,7 +108,7 @@ title: Home
 
 <!-- Quick Links -->
 <div class="resource-cards" style="margin-top: 1.5rem;">
-  <a href="{{ '/games/' | relative_url }}" class="resource-card">
+  <a href="{{ '/games/' | relative_url }}" class="resource-card card-lift--sm">
     <div class="resource-card__icon">🎮</div>
     <div class="resource-card__content">
       <h2 class="resource-card__title">Games</h2>
@@ -117,7 +117,7 @@ title: Home
     </div>
   </a>
 
-  <a href="{{ '/runners/' | relative_url }}" class="resource-card">
+  <a href="{{ '/runners/' | relative_url }}" class="resource-card card-lift--sm">
     <div class="resource-card__icon">🏆</div>
     <div class="resource-card__content">
       <h2 class="resource-card__title">Runners</h2>
@@ -126,7 +126,7 @@ title: Home
     </div>
   </a>
 
-  <a href="{{ '/rules/' | relative_url }}" class="resource-card">
+  <a href="{{ '/rules/' | relative_url }}" class="resource-card card-lift--sm">
     <div class="resource-card__icon">📜</div>
     <div class="resource-card__content">
       <h2 class="resource-card__title">Rules</h2>
@@ -135,7 +135,7 @@ title: Home
     </div>
   </a>
 
-  <a href="{{ '/glossary/' | relative_url }}" class="resource-card">
+  <a href="{{ '/glossary/' | relative_url }}" class="resource-card card-lift--sm">
     <div class="resource-card__icon">📖</div>
     <div class="resource-card__content">
       <h2 class="resource-card__title">Glossary</h2>
@@ -151,7 +151,7 @@ title: Home
   {% if site.teams.size > 0 %}
     <div class="teams-grid">
       {% for team in site.teams limit:4 %}
-        <a href="{{ team.url | relative_url }}" class="team-card">
+        <a href="{{ team.url | relative_url }}" class="team-card card-lift--sm">
           {% if team.logo %}
             <img src="{{ team.logo | relative_url }}" alt="{{ team.name }}" class="team-card__logo">
           {% else %}
