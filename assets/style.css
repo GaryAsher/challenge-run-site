@@ -3829,3 +3829,115 @@ a.resource-card:hover {
 .news-item__text a:hover {
   color: var(--accent);
 }
+
+/* ============================================================
+   Rule Builder Enhancements
+   ============================================================ */
+/* Highlight animation for first visit */
+@keyframes ruleBuilderPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(59, 195, 110, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(59, 195, 110, 0.4);
+  }
+}
+
+.rule-builder-highlight--animate {
+  animation: ruleBuilderPulse 1s ease-in-out 3;
+  border-color: var(--accent) !important;
+}
+
+/* Rules Summary Panel */
+.rule-builder__summary {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: var(--panel);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.rule-builder__summary-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem 0;
+  color: var(--fg);
+}
+
+.rule-builder__rules-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rule-builder__rules-list li {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+  line-height: 1.5;
+}
+
+.rule-builder__rules-list li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.rule-builder__rules-list li:first-child {
+  padding-top: 0;
+}
+
+.rule-builder__rules-list .muted {
+  font-size: 0.9em;
+  display: block;
+  margin-top: 0.25rem;
+}
+
+/* Text colors for allowed/banned */
+.text-success {
+  color: #3BC36E;
+}
+
+.text-danger {
+  color: #EF4444;
+}
+
+/* Actions container - right aligned with spacing */
+.rule-builder__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+/* Credits list styling */
+.credits-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.credits-list li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.credits-list li:last-child {
+  border-bottom: none;
+}
+
+/* Ensure descriptions with line breaks render properly */
+.accordion-content p {
+  white-space: pre-line;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 600px) {
+  .rule-builder__actions {
+    justify-content: center;
+  }
+  
+  .rule-builder__summary {
+    padding: 0.75rem;
+  }
+}
+
