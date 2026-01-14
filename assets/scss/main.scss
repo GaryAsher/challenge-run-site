@@ -1,0 +1,45 @@
+// ============================================================
+// Challenge Run Community - Main Stylesheet
+// ============================================================
+// This file imports all partial stylesheets in the correct order.
+// Compile with: sass assets/scss/main.scss assets/style.css
+// ============================================================
+
+// 1. Variables and Themes
+@import 'variables';
+@import 'themes';
+
+// 2. Base and Reset
+@import 'base';
+
+// 3. Layout
+@import 'layout';
+
+// 4. Components - Core UI elements
+@import 'components/header';
+@import 'components/footer';
+@import 'components/buttons';
+@import 'components/cards';
+@import 'components/forms';
+@import 'components/tags';
+@import 'components/accordions';
+@import 'components/tables';
+
+// 5. Components - Filters and Navigation
+@import 'components/az-nav';
+@import 'components/filters';
+@import 'components/tag-picker';
+
+// 6. Page-specific styles
+@import 'pages/home';
+@import 'pages/games';
+@import 'pages/runners';
+@import 'pages/runs';
+@import 'pages/rules';
+@import 'pages/teams';
+@import 'pages/news';
+@import 'pages/search';
+@import 'pages/submit';
+
+// 7. Utilities
+@import 'utilities';
