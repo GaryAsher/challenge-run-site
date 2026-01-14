@@ -43,6 +43,19 @@ featured_runs:
 - [ ] Search page - Global search across all content
 - [ ] Add Spanish version
 - [ ] Dark/light mode toggle
+- [ ] Add a "Back to Top" button for long pages
+- [ ] Add keyboard navigation for filter dropdowns (arrow keys)
+- [ ] Add "Copy Link" button for sharing specific filtered views
+- [ ] Show total run count badges on game cards
+
+### Performance Optimizations
+- [ ] Consider lazy-loading game cards on the games index page
+- [ ] Image optimization - convert game covers to WebP format
+- [ ] Consider prefetching game pages on hover
+
+### UX Improvements
+- [ ] Loading state indicator/symbol for JavaScript-driven filtering
+- [ ] Run file naming convention - revisit when building runner submission process
 
 ### Community Building
 - [ ] Discord webhook for new run notifications
