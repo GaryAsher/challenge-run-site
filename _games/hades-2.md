@@ -58,6 +58,10 @@ challenges_data:
 # COMMUNITY CHALLENGES
 # Game-specific challenges created by the Hades II community
 # =============================================================================
+community-challenges:
+  - slug: one-god-only
+    label: "One God Only"
+    description: "Only utilize boons from one god. You may pick up a boon from a god so long as you do not benefit it in any way."
 
 # =============================================================================
 # GLITCH CATEGORIES
@@ -79,9 +83,6 @@ glitches_data:
 # Additional restrictions runners can apply
 # =============================================================================
 restrictions_data:
-  - slug: one-god-only
-    label: "One God Only"
-    description: "Only utilize boons from one god. You may pick up a boon from a god so long as you do not benefit it in any way."
   - slug: boonless
     label: "Boonless"
     description: "Do not utilize any boons from any god. You may pick up a boon from a god so long as you do not benefit it in any way."
