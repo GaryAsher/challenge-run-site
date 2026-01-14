@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Welcome to Challenge Run Community"
-date: 2025-01-13
+date: 2026-01-12
 categories: [announcement]
 featured: true
 ---
