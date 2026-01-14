@@ -3340,4 +3340,49 @@ a.resource-card:hover {
   border: none;
   border-top: 1px solid var(--border);
   margin: 0.5rem 0;
+   
+}
+/* ============================================================
+   RECENT RUNS LIST (Homepage)
+   ============================================================ */
+.recent-runs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.recent-run-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.recent-run-item:last-child {
+  border-bottom: none;
+}
+
+.recent-run-item__game {
+  font-weight: 500;
+  flex: 1;
+}
+
+.recent-run-item__runner {
+  font-size: 0.875rem;
+}
+
+.recent-run-item__date {
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+/* News item links */
+.news-item__text a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.news-item__text a:hover {
+  color: var(--accent);
 }
