@@ -15,6 +15,9 @@ blindfolded:
 # D
 damageless:
   label: "Damageless"
+    description: |
+      • Damage is any loss of your character’s current health, regardless of the source.
+      • Changes to maximum health are not damage, even if they also change current health or later restore.
   aliases: 
     - "NoDamage"
     - "No-Damage"
