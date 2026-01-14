@@ -13,6 +13,9 @@ collections:
   runners:
     output: true
     permalink: /runners/:name/
+  teams:
+    output: true
+    permalink: /teams/:name/
   runs:
     output: false
 
@@ -34,6 +37,11 @@ defaults:
       type: games
     values:
       layout: game
+  - scope:
+      path: ""
+      type: teams
+    values:
+      layout: team
 
 exclude:
   - _queue_runs
