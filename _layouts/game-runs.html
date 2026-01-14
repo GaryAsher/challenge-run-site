@@ -467,27 +467,27 @@ layout: default
                     data-glitch="{{ r.glitch_id | default: '' | escape }}"
                     data-date="{{ r.date_completed | default: '' | escape }}"
                     data-time="{{ r.time_primary | default: r.time | default: '' | escape }}">
-                  <td>
+                  <td data-label="Runner">
                     {% if r.runner_id %}
                       <a href="{{ '/runners/' | relative_url }}{{ r.runner_id }}/">{{ runner_label }}</a>
                     {% else %}
                       {{ runner_label }}
                     {% endif %}
                   </td>
-                  {% if show_character %}<td>{{ r.character | default: "—" }}</td>{% endif %}
-                  <td>
+                  {% if show_character %}<td data-label="{{ character_label }}">{{ r.character | default: "—" }}</td>{% endif %}
+                  <td data-label="Challenge">
                     {% assign ch = challenge_label | default: "" | strip %}
                     {% if ch != "" and ch != "—" %}
                       <div class="cell-tags"><span class="tag">{{ ch }}</span></div>
                     {% else %}—{% endif %}
                   </td>
-                  <td>
+                  <td data-label="Restrictions">
                     {% if r_texts and r_texts.size > 0 %}
                       <div class="cell-tags">{% for rr in r_texts %}<span class="tag">{{ rr }}</span>{% endfor %}</div>
                     {% else %}—{% endif %}
                   </td>
                   {% if game.glitches_data and game.glitches_data.size > 0 %}
-                  <td>
+                  <td data-label="Glitches">
                     {% assign glitch_label = r.glitch_id | default: "" %}
                     {% if glitch_label != "" %}
                       {% for gl in game.glitches_data %}
@@ -502,9 +502,9 @@ layout: default
                     {% else %}—{% endif %}
                   </td>
                   {% endif %}
-                  <td>{{ r.time_primary | default: r.time | default: "—" }}</td>
-                  <td>{{ r.date_completed | default: "—" }}</td>
-                  <td>
+                  <td data-label="Time">{{ r.time_primary | default: r.time | default: "—" }}</td>
+                  <td data-label="Date">{{ r.date_completed | default: "—" }}</td>
+                  <td data-label="Video">
                     {% if video_url %}
                       {% assign video_source = "Link" %}
                       {% if video_url contains "youtube.com" or video_url contains "youtu.be" %}{% assign video_source = "YouTube" %}
