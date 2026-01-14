@@ -51,7 +51,7 @@ title: Runners
       {% assign runner_name = r.name | default: r.title | default: "Unknown" %}
       {% assign avatar = r.cover | default: "/assets/img/site/default-runner.png" %}
       <a
-        class="runner-card runner-item"
+        class="runner-card runner-item card-lift"
         href="{{ r.url | relative_url }}"
         data-name="{{ runner_name | downcase }}"
         data-letter="{{ runner_name | strip | slice: 0, 1 | upcase }}"
