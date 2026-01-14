@@ -25,6 +25,8 @@ damageless:
   
 deathless:
   label: "Deathless"
+    description: |
+      • A death is when your character fails in a way that resets progress, typically with a penalty like losing lives, items, or other resources.
   aliases:
     - "No-Death"
     - "No Death"
