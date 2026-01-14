@@ -1,18 +1,17 @@
 ---
 layout: default
-title: Hades II History
+title: "Hades II - History"
 game_id: hades-2
-permalink: /games/hades-2/history/
 ---
 
-{% assign game = site.games | where: "game_id", page.game_id | first %}
+{% assign game = site.games | where: "game_id", "hades-2" | first %}
 {% include game-header-tabs.html game=game active="history" %}
 
 <div class="page-width">
   <div class="game-shell">
-    <section class="tab-panel active">
+    <div class="card">
       <h1>History</h1>
-      <p class="muted">Coming soon.</p>
-    </section>
+      <p class="muted">Historical records and milestones.</p>
+    </div>
   </div>
 </div>

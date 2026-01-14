@@ -1,18 +1,17 @@
 ---
 layout: default
-title: Hades II Forum
+title: "Hades II - Forum"
 game_id: hades-2
-permalink: /games/hades-2/forum/
 ---
 
-{% assign game = site.games | where: "game_id", page.game_id | first %}
+{% assign game = site.games | where: "game_id", "hades-2" | first %}
 {% include game-header-tabs.html game=game active="forum" %}
 
 <div class="page-width">
   <div class="game-shell">
-    <section class="tab-panel active">
+    <div class="card">
       <h1>Forum</h1>
-      <p class="muted">Coming soon.</p>
-    </section>
+      <p class="muted">Community discussions and announcements.</p>
+    </div>
   </div>
 </div>

@@ -1,113 +1,17 @@
 ---
 layout: default
-title: Hollow Knight Resources
+title: "Hollow Knight - Resources"
 game_id: hollow-knight
-permalink: /games/hollow-knight/resources/
 ---
 
-{% assign game = site.games | where: "game_id", page.game_id | first %}
+{% assign game = site.games | where: "game_id", "hollow-knight" | first %}
 {% include game-header-tabs.html game=game active="resources" %}
-
-{% comment %} Count guides for this game {% endcomment %}
-{% assign guides_count = 0 %}
-{% if site.guides %}
-  {% assign game_guides = site.guides | where: "game_id", page.game_id %}
-  {% assign guides_count = game_guides.size %}
-{% endif %}
-
-{% comment %} Count tools and discords - check if resources_data exists {% endcomment %}
-{% assign tools_count = 0 %}
-{% assign discords_count = 0 %}
-{% if game.resources_data %}
-  {% if game.resources_data.tools %}
-    {% assign tools_count = game.resources_data.tools.size %}
-  {% endif %}
-  {% if game.resources_data.discords %}
-    {% assign discords_count = game.resources_data.discords.size %}
-  {% endif %}
-{% endif %}
 
 <div class="page-width">
   <div class="game-shell">
-    <section class="tab-panel active">
+    <div class="card">
       <h1>Resources</h1>
-      <p class="muted mb-6">Find guides, tools, and community links for {{ game.name }}.</p>
-
-      <!-- Resource cards -->
-      <div class="resource-cards">
-        <a href="{{ game.url | relative_url }}guides/" class="resource-card">
-          <div class="resource-card__icon">📖</div>
-          <div class="resource-card__content">
-            <h3 class="resource-card__title">Guides</h3>
-            <p class="resource-card__desc">Tutorials, walkthroughs, and strategy guides</p>
-            <span class="resource-card__count">{{ guides_count }} {% if guides_count == 1 %}guide{% else %}guides{% endif %}</span>
-          </div>
-        </a>
-
-        <div class="resource-card" {% if tools_count == 0 %}style="opacity: 0.6;"{% endif %}>
-          <div class="resource-card__icon">🛠️</div>
-          <div class="resource-card__content">
-            <h3 class="resource-card__title">Tools</h3>
-            <p class="resource-card__desc">Autosplitters, trackers, and utilities</p>
-            <span class="resource-card__count">{{ tools_count }} {% if tools_count == 1 %}tool{% else %}tools{% endif %}</span>
-          </div>
-        </div>
-
-        <div class="resource-card" {% if discords_count == 0 %}style="opacity: 0.6;"{% endif %}>
-          <div class="resource-card__icon">💬</div>
-          <div class="resource-card__content">
-            <h3 class="resource-card__title">Community</h3>
-            <p class="resource-card__desc">Discord servers and community links</p>
-            <span class="resource-card__count">{{ discords_count }} {% if discords_count == 1 %}server{% else %}servers{% endif %}</span>
-          </div>
-        </div>
-
-        <div class="resource-card resource-card--placeholder">
-          <div class="resource-card__icon">❓</div>
-          <div class="resource-card__content">
-            <h3 class="resource-card__title">More Coming Soon</h3>
-            <p class="resource-card__desc">Have ideas? Let us know!</p>
-            <span class="resource-card__count">Placeholder</span>
-          </div>
-        </div>
-      </div>
-
-      {% if tools_count > 0 %}
-      <div class="card mt-6">
-        <h2>Tools</h2>
-        <div class="resource-list">
-          {% for tool in game.resources_data.tools %}
-          <div class="resource-list__item">
-            <a href="{{ tool.url }}" target="_blank" rel="noopener" class="resource-list__link">
-              {{ tool.name }} ↗
-            </a>
-            {% if tool.description %}
-            <p class="muted resource-list__desc">{{ tool.description }}</p>
-            {% endif %}
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-      {% endif %}
-
-      {% if discords_count > 0 %}
-      <div class="card mt-4">
-        <h2>Community</h2>
-        <div class="resource-list">
-          {% for discord in game.resources_data.discords %}
-          <div class="resource-list__item">
-            <a href="{{ discord.url }}" target="_blank" rel="noopener" class="resource-list__link">
-              {{ discord.name }} ↗
-            </a>
-            {% if discord.description %}
-            <p class="muted resource-list__desc">{{ discord.description }}</p>
-            {% endif %}
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-      {% endif %}
-
-    </section>
+      <p class="muted">Useful tools, mods, and external resources.</p>
+    </div>
   </div>
 </div>

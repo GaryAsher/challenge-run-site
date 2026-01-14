@@ -1,42 +1,17 @@
 ---
 layout: default
-title: Hades II Guides
+title: "Hades II - Guides"
 game_id: hades-2
-permalink: /games/hades-2/guides/
 ---
 
-{% assign game = site.games | where: "game_id", page.game_id | first %}
-{% include game-header-tabs.html game=game active="resources" %}
+{% assign game = site.games | where: "game_id", "hades-2" | first %}
+{% include game-header-tabs.html game=game active="guides" %}
 
 <div class="page-width">
   <div class="game-shell">
-    <section class="tab-panel active">
-      <p class="muted mb-3">
-        <a href="{{ game.url | relative_url }}resources/">← Resources</a>
-      </p>
-
+    <div class="card">
       <h1>Guides</h1>
-
-      {% if site.guides %}
-        {% assign guides = site.guides | where: "game_id", page.game_id | sort: "title" %}
-      {% else %}
-        {% assign guides = nil %}
-      {% endif %}
-
-      {% if guides and guides.size > 0 %}
-        <div class="grid">
-          {% for guide in guides %}
-            <a href="{{ guide.url | relative_url }}" class="card">
-              <h3>{{ guide.title }}</h3>
-              {% if guide.description %}
-                <p class="muted">{{ guide.description }}</p>
-              {% endif %}
-            </a>
-          {% endfor %}
-        </div>
-      {% else %}
-        <p class="muted">No guides have been added yet.</p>
-      {% endif %}
-    </section>
+      <p class="muted">Strategy guides and tutorials.</p>
+    </div>
   </div>
 </div>
