@@ -183,100 +183,53 @@ layout: default
             {% assign crumb_label = "" %}
             {% if category_pairs and category_pairs.size > 0 %}
               {% for p in category_pairs %}
-                {% assign kv = p | split: "||" %}
-                {% assign s = kv[0] | strip %}
-                {% if s == cur %}
-                  {% assign crumb_label = kv[1] | default: cur | strip %}
+                {% assign pp = p | split: "||" %}
+                {% if pp[0] == cur %}
+                  {% assign crumb_label = pp[1] | default: cur | strip %}
                   {% break %}
                 {% endif %}
               {% endfor %}
             {% endif %}
-            {% if crumb_label == "" %}
-              {% assign crumb_label = seg_clean %}
-            {% endif %}
+            {% if crumb_label == "" %}{% assign crumb_label = seg_clean %}{% endif %}
 
-            <span class="muted"> / </span>
-
-            {% if forloop.last %}
-              <span class="muted">{{ crumb_label }}</span>
+            {% if cur == active_cat_slug %}
+              → <strong>{{ crumb_label }}</strong>
             {% else %}
-              <a class="muted" href="{{ runs_base | relative_url }}{{ cur | url_encode }}/">{{ crumb_label }}</a>
+              → <a href="{{ runs_base | append: cur | append: '/' | relative_url }}">{{ crumb_label }}</a>
             {% endif %}
           {% endfor %}
         </p>
       </div>
-    {% endif %}
 
-    <!-- Browse by category -->
-    {% if game and game.categories_data and game.categories_data.size > 0 %}
-      <div class="card card--compact" style="margin-bottom: 1rem;">
-        <h1>Browse by category</h1>
-        <div class="tag-picked">
-          {% for c in game.categories_data %}
-            {% assign s = c.slug | default: "" | strip %}
-            {% assign lbl = c.label | default: s | strip %}
-            {% if s != "" %}
-              {% assign is_selected = false %}
-              {% if active_cat_slug == s %}
-                {% assign is_selected = true %}
-              {% elsif active_cat_slug contains s %}
-                {% assign check_prefix = s | append: "/" %}
-                {% assign check_len = check_prefix | size %}
-                {% assign active_head = active_cat_slug | slice: 0, check_len %}
-                {% if active_head == check_prefix %}
-                  {% assign is_selected = true %}
-                {% endif %}
-              {% endif %}
-              {% if is_selected %}
-                <a class="tag-chip is-active" aria-current="page" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
-              {% else %}
-                <a class="tag-chip" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
-              {% endif %}
-            {% endif %}
-          {% endfor %}
-        </div>
-
-        {% if child_pairs and child_pairs.size > 0 %}
-          <p class="muted" style="margin: 1rem 0 0.5rem 0;">Pick a subcategory:</p>
-          <div class="tag-picked">
-            {% for p in child_pairs %}
-              {% assign parts = p | split: "||" %}
-              {% assign s = parts[0] | strip %}
-              {% assign lbl = parts[1] | default: s | strip %}
-              {% if s != "" %}
-                {% if s == active_cat_slug %}
-                  <a class="tag-chip is-active" aria-current="page" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
-                {% else %}
-                  <a class="tag-chip" href="{{ runs_base | relative_url }}{{ s | url_encode }}/">{{ lbl }}</a>
-                {% endif %}
+      {% if is_child_page and child_pairs.size > 1 %}
+        <div class="card card--compact" style="margin-bottom: 1rem;">
+          <p class="muted" style="margin: 0 0 0.75rem 0;">More in {{ parent_label }}:</p>
+          <div class="category-pills">
+            {% for cp in child_pairs %}
+              {% assign cpp = cp | split: "||" %}
+              {% assign cs = cpp[0] | strip %}
+              {% assign cl = cpp[1] | default: cs | strip %}
+              {% if cs != active_cat_slug %}
+                <a href="{{ runs_base | append: cs | append: '/' | relative_url }}" class="pill-link">{{ cl }}</a>
               {% endif %}
             {% endfor %}
           </div>
-        {% endif %}
-      </div>
-    {% endif %}
+        </div>
+      {% endif %}
 
-    <!-- =========================================================
-         Filter runs for category pages
-         ========================================================= -->
-    {% if active_cat_slug != "" %}
-      {% assign prefix_check = active_cat_slug | append: "/" %}
-      {% assign filtered = "" | split: "" %}
-      {% for r in runs %}
-        {% assign rs = r.category_slug | default: "" | strip %}
-        {% if rs == active_cat_slug %}
-          {% assign filtered = filtered | push: r %}
-        {% else %}
-          {% assign rs_len = rs | size %}
-          {% assign prefix_len = prefix_check | size %}
-          {% if rs_len >= prefix_len %}
-            {% assign rs_head = rs | slice: 0, prefix_len %}
-            {% if rs_head == prefix_check %}
-              {% assign filtered = filtered | push: r %}
-            {% endif %}
+      {% assign filtered = runs | where: "category_slug", active_cat_slug %}
+      {% if filtered.size == 0 %}
+        {% assign prefix = active_cat_slug | append: "/" %}
+        {% assign filtered = "" | split: "" %}
+        {% for r in runs %}
+          {% assign rs = r.category_slug | default: "" | strip %}
+          {% assign prefix_len = prefix | size %}
+          {% assign rs_head = rs | slice: 0, prefix_len %}
+          {% if rs_head == prefix or rs == active_cat_slug %}
+            {% assign filtered = filtered | push: r %}
           {% endif %}
-        {% endif %}
-      {% endfor %}
+        {% endfor %}
+      {% endif %}
       {% assign runs = filtered %}
     {% endif %}
 
@@ -329,10 +282,15 @@ layout: default
           </div>
         </div>
 
-        <!-- Advanced filters -->
+        <!-- =========================================================
+             Advanced filters
+             ORDERING (per spec): Character -> Standard Challenge -> Restrictions -> Glitches Used
+             ========================================================= -->
         <div class="runs-filters runs-filters--advanced" id="advanced-filters" hidden>
+          
+          <!-- 1. Character (if enabled) -->
           {% if show_character %}
-          <div class="runs-filter">
+          <div class="runs-filter" data-filter-order="1">
             <span class="muted filter-label-text">{{ character_label }}</span>
             <select id="f-character" class="select filter th-caret" autocomplete="off">
               <option value="">All</option>
@@ -340,15 +298,17 @@ layout: default
           </div>
           {% endif %}
 
-          <div class="runs-filter">
+          <!-- 2. Standard Challenge -->
+          <div class="runs-filter" data-filter-order="2">
             <span class="muted filter-label-text">Challenge</span>
             <select id="f-challenge" class="select filter th-caret" autocomplete="off">
               <option value="">All</option>
             </select>
           </div>
 
+          <!-- 3. Restrictions -->
           {% if game.restrictions_data and game.restrictions_data.size > 0 %}
-          <div class="runs-filter">
+          <div class="runs-filter" data-filter-order="3">
             <span class="muted filter-label-text">Restrictions</span>
             <select id="f-restrictions" class="select filter th-caret" autocomplete="off">
               <option value="">All</option>
@@ -356,8 +316,9 @@ layout: default
           </div>
           {% endif %}
 
+          <!-- 4. Glitches Used -->
           {% if game.glitches_data and game.glitches_data.size > 0 %}
-          <div class="runs-filter">
+          <div class="runs-filter" data-filter-order="4">
             <span class="muted filter-label-text">Glitch Category</span>
             <select id="f-glitch" class="select filter th-caret" autocomplete="off">
               <option value="">All</option>
