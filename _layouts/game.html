@@ -6,6 +6,13 @@ layout: default
 
 <!-- =========================================================
      Overview Tab - Clean with accordions
+     
+     ORDERING (per spec):
+     1. Game Description (content)
+     2. General Rules (if present)
+     3. Standard Challenge Types
+     4. Optional Restrictions
+     5. Glitch Categories
      ========================================================= -->
 <div class="page-width">
   <div class="game-shell">
@@ -20,9 +27,26 @@ layout: default
         </div>
       {% endif %}
 
-      <!-- Standard Challenges Accordion -->
+      <!-- =========================================================
+           1. General Rules (placeholder - shown if game has general_rules)
+           ========================================================= -->
+      {% if page.general_rules and page.general_rules.size > 0 %}
+      <div class="card card--compact mt-4" data-section-order="1">
+        <h2 class="mb-2">General Rules</h2>
+        <p class="muted mb-3">Core rules that apply to all runs:</p>
+        <ul>
+          {% for rule in page.general_rules %}
+            <li>{{ rule }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <!-- =========================================================
+           2. Standard Challenge Types
+           ========================================================= -->
       {% if page.challenges_data and page.challenges_data.size > 0 %}
-      <div class="card card--compact mt-4">
+      <div class="card card--compact mt-4" data-section-order="2">
         <h2 class="mb-2">Standard Challenge Types</h2>
         <p class="muted mb-3">Challenge types tracked for this game:</p>
         <div class="accordion">
@@ -44,9 +68,8 @@ layout: default
         </div>
       </div>
       {% elsif page.challenges and page.challenges.size > 0 %}
-         
       <!-- Fallback to old format if challenges_data not present -->
-      <div class="card card--compact mt-4">
+      <div class="card card--compact mt-4" data-section-order="2">
         <h2 class="mb-2">Standard Challenge Types</h2>
         <p class="muted mb-3">Challenge types tracked for this game:</p>
         <div class="accordion">
@@ -70,24 +93,48 @@ layout: default
       </div>
       {% endif %}
 
-      <!-- Community Challenges Accordion -->
-      {% if page.community_challenges and page.community_challenges.size > 0 %}
-      <div class="card card--compact mt-4">
-        <h2 class="mb-2">Community Challenges</h2>
-        <p class="muted mb-3">Game-specific challenges from the {{ page.name }} community:</p>
+      <!-- =========================================================
+           3. Optional Restrictions
+           ========================================================= -->
+      {% if page.restrictions_data and page.restrictions_data.size > 0 %}
+      <div class="card card--compact mt-4" data-section-order="3">
+        <h2 class="mb-2">Optional Restrictions</h2>
+        <p class="muted mb-3">Additional restrictions runners can apply:</p>
         <div class="accordion">
-          {% for cc in page.community_challenges %}
+          {% for res in page.restrictions_data %}
           <details class="accordion-item">
             <summary class="accordion-header">
-              <span class="accordion-title">{{ cc.label }}</span>
+              <span class="accordion-title">{{ res.label }}</span>
               <span class="accordion-icon">▼</span>
             </summary>
             <div class="accordion-content">
-              {% if cc.description %}
-                <p>{{ cc.description }}</p>
+              {% if res.description %}
+                <p>{{ res.description }}</p>
               {% else %}
-                <p class="muted">No description available.</p>
+                <p class="muted">Can be combined with any category.</p>
               {% endif %}
+              {% if res.incompatible_with and res.incompatible_with.size > 0 %}
+                <p class="mt-2 muted"><em>⚠️ Cannot be combined with: {{ res.incompatible_with | join: ", " }}</em></p>
+              {% endif %}
+            </div>
+          </details>
+          {% endfor %}
+        </div>
+      </div>
+      {% elsif page.restrictions and page.restrictions.size > 0 %}
+      <!-- Fallback to old format -->
+      <div class="card card--compact mt-4" data-section-order="3">
+        <h2 class="mb-2">Optional Restrictions</h2>
+        <p class="muted mb-3">Additional restrictions runners can apply:</p>
+        <div class="accordion">
+          {% for res in page.restrictions %}
+          <details class="accordion-item">
+            <summary class="accordion-header">
+              <span class="accordion-title">{{ res }}</span>
+              <span class="accordion-icon">▼</span>
+            </summary>
+            <div class="accordion-content">
+              <p class="muted">Can be combined with any category.</p>
             </div>
           </details>
           {% endfor %}
@@ -95,11 +142,12 @@ layout: default
       </div>
       {% endif %}
 
-      <!-- Glitch Categories Accordion -->
-      <!-- Only show if glitches_relevant is not explicitly false AND glitches_data exists -->
+      <!-- =========================================================
+           4. Glitch Categories
+           ========================================================= -->
       {% unless page.glitches_relevant == false %}
         {% if page.glitches_data and page.glitches_data.size > 0 %}
-        <div class="card card--compact mt-4">
+        <div class="card card--compact mt-4" data-section-order="4">
           <h2 class="mb-2">Glitch Categories</h2>
           <p class="muted mb-3">Rules for glitches and exploits in runs:</p>
           <div class="accordion">
@@ -132,59 +180,14 @@ layout: default
         {% endif %}
       {% else %}
         <!-- Glitches not relevant for this game - show notice -->
-        <div class="card card--compact mt-4">
+        <div class="card card--compact mt-4" data-section-order="4">
           <h2 class="mb-2">Glitch Categories</h2>
           <p class="muted">This game does not distinguish between glitch categories. All runs are accepted regardless of glitch usage.</p>
         </div>
       {% endunless %}
 
-      <!-- Optional Restrictions Accordion -->
-      {% if page.restrictions_data and page.restrictions_data.size > 0 %}
-      <div class="card card--compact mt-4">
-        <h2 class="mb-2">Optional Restrictions</h2>
-        <p class="muted mb-3">Additional restrictions runners can apply:</p>
-        <div class="accordion">
-          {% for res in page.restrictions_data %}
-          <details class="accordion-item">
-            <summary class="accordion-header">
-              <span class="accordion-title">{{ res.label }}</span>
-              <span class="accordion-icon">▼</span>
-            </summary>
-            <div class="accordion-content">
-              {% if res.description %}
-                <p>{{ res.description }}</p>
-              {% else %}
-                <p class="muted">Can be combined with any category.</p>
-              {% endif %}
-              {% if res.incompatible_with and res.incompatible_with.size > 0 %}
-                <p class="mt-2 muted"><em>⚠️ Cannot be combined with: {{ res.incompatible_with | join: ", " }}</em></p>
-              {% endif %}
-            </div>
-          </details>
-          {% endfor %}
-        </div>
-      </div>
-      {% elsif page.restrictions and page.restrictions.size > 0 %}
-         
-      <!-- Fallback to old format -->
-      <div class="card card--compact mt-4">
-        <h2 class="mb-2">Optional Restrictions</h2>
-        <p class="muted mb-3">Additional restrictions runners can apply:</p>
-        <div class="accordion">
-          {% for res in page.restrictions %}
-          <details class="accordion-item">
-            <summary class="accordion-header">
-              <span class="accordion-title">{{ res }}</span>
-              <span class="accordion-icon">▼</span>
-            </summary>
-            <div class="accordion-content">
-              <p class="muted">Can be combined with any category.</p>
-            </div>
-          </details>
-          {% endfor %}
-        </div>
-      </div>
-      {% endif %}
+      <!-- Note: Community Challenges are NOT shown on Overview page per spec -->
+      <!-- They appear only on the Rules page -->
 
     </section>
 
