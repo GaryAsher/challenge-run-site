@@ -305,14 +305,23 @@ function renderSuggestions(qRaw, set, list, sugEl, { onPick } = {}) {
     btn.type = "button";
     btn.className = "tag-suggestion";
     btn.textContent = item.label;
-
-    btn.addEventListener("click", () => {
-      set.add(norm(item.id));
-      if (onPick) onPick(item);
-    });
-
+    btn.dataset.id = item.id; // Store ID for delegation
     sugEl.appendChild(btn);
   }
+  
+  // Use event delegation - single listener on parent
+  // Remove old listener first to prevent duplicates
+  sugEl._clickHandler && sugEl.removeEventListener("click", sugEl._clickHandler);
+  sugEl._clickHandler = function(e) {
+    const btn = e.target.closest(".tag-suggestion:not(.is-empty)");
+    if (!btn || !btn.dataset.id) return;
+    set.add(norm(btn.dataset.id));
+    if (onPick) {
+      const item = list.find(x => norm(x.id) === norm(btn.dataset.id));
+      onPick(item);
+    }
+  };
+  sugEl.addEventListener("click", sugEl._clickHandler);
 
   sugEl.hidden = false;
 }
