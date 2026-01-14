@@ -19,7 +19,9 @@ layout: default
 
     <section class="tab-panel active" data-panel="overview">
       
-      <!-- Game description content from markdown -->
+      <!-- =========================================================
+           1. Game Description
+           ========================================================= -->
       {% assign stripped_content = content | strip %}
       {% if stripped_content != "" %}
         <div class="card">
@@ -28,7 +30,7 @@ layout: default
       {% endif %}
 
       <!-- =========================================================
-           1. General Rules (placeholder - shown if game has general_rules)
+           2. General Rules (placeholder - shown if game has general_rules)
            ========================================================= -->
       {% if page.general_rules and page.general_rules.size > 0 %}
       <div class="card card--compact mt-4" data-section-order="1">
@@ -43,7 +45,7 @@ layout: default
       {% endif %}
 
       <!-- =========================================================
-           2. Standard Challenge Types
+           3. Standard Challenge Types
            ========================================================= -->
       {% if page.challenges_data and page.challenges_data.size > 0 %}
       <div class="card card--compact mt-4" data-section-order="2">
@@ -92,7 +94,7 @@ layout: default
       {% endif %}
 
       <!-- =========================================================
-           3. Optional Restrictions
+           4. Optional Restrictions
            ========================================================= -->
       {% if page.restrictions_data and page.restrictions_data.size > 0 %}
       <div class="card card--compact mt-4" data-section-order="3">
@@ -139,7 +141,7 @@ layout: default
       {% endif %}
 
       <!-- =========================================================
-           4. Glitch Categories
+           5. Glitch Categories
            ========================================================= -->
       {% unless page.glitches_relevant == false %}
         {% if page.glitches_data and page.glitches_data.size > 0 %}
