@@ -472,6 +472,39 @@ a:hover {
 }
 
 /* ============================================================
+   Hero Card Lift Effect (shared across all interactive cards)
+   Apply to: game-card, runner-card, team-card, resource-card, etc.
+   ============================================================ */
+.card-lift {
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  border-color: var(--accent);
+}
+
+/* Smaller lift for compact cards */
+.card-lift--sm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .card-lift,
+  .card-lift--sm {
+    transition: border-color 0.15s ease;
+  }
+  .card-lift:hover,
+  .card-lift--sm:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+/* ============================================================
    Buttons
    ============================================================ */
 .btn {
@@ -1374,26 +1407,10 @@ button.tag,
   font-size: 0.85rem;
 }
 
-.game-card {
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
+/* Game card uses shared card-lift effect */
 .game-card:hover .game-card__bg { opacity: 0.6; }
 .game-card:hover { 
   text-decoration: none; 
-  border-color: var(--accent);
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-}
-
-/* Respect reduced motion preference */
-@media (prefers-reduced-motion: reduce) {
-  .game-card {
-    transition: none;
-  }
-  .game-card:hover {
-    transform: none;
-  }
 }
 
 /* Games index: keep filtering by tags, but don't render tag chips inside cards */
@@ -1446,9 +1463,9 @@ button.tag,
   z-index: 2;
 }
 
+/* Runner card uses shared card-lift effect */
 .runner-card:hover { 
   text-decoration: none; 
-  border-color: var(--accent);
 }
 .runner-card:hover .runner-card__bg { opacity: 1; }
 
@@ -2226,11 +2243,10 @@ button.tag,
   border-radius: var(--radius-md);
   text-decoration: none;
   color: inherit;
-  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
+/* Team card uses shared card-lift--sm effect */
 .team-card:hover {
-  border-color: var(--accent);
   background: var(--panel);
   text-decoration: none;
 }
@@ -2241,6 +2257,8 @@ button.tag,
 
 .team-card--placeholder:hover {
   border-color: var(--border);
+  transform: none;
+  box-shadow: none;
   background: var(--surface);
 }
 
@@ -2277,13 +2295,11 @@ button.tag,
   border-radius: var(--radius-md);
   text-decoration: none;
   color: inherit;
-  transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
 }
 
+/* Resource card uses shared card-lift--sm effect */
 a.resource-card:hover {
-  border-color: var(--accent);
   background: var(--panel);
-  transform: translateY(-2px);
   text-decoration: none;
 }
 
@@ -3471,12 +3487,11 @@ a.resource-card:hover {
   border: 1px solid var(--border);
   border-radius: 8px;
   text-decoration: none;
-  transition: border-color 0.2s ease, transform 0.2s ease;
 }
 
+/* Team card uses shared card-lift--sm effect (duplicated for teams page) */
 .team-card:hover {
-  border-color: var(--accent);
-  transform: translateY(-2px);
+  text-decoration: none;
 }
 
 .team-card__logo {
