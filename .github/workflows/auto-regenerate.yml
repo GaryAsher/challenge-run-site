@@ -16,6 +16,7 @@ concurrency:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   regenerate:
@@ -49,26 +50,48 @@ jobs:
           
           echo "✓ All pages regenerated"
 
-      - name: Commit and push if changed
+      - name: Check for changes
+        id: changes
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          
           if [[ -n "$(git status --porcelain)" ]]; then
-            git add -A
-            git commit -m "chore: Auto-regenerate pages [skip ci]"
-            git push
-            echo "✓ Changes committed and pushed"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "✓ Changes detected"
           else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
             echo "✓ No changes needed"
           fi
+
+      - name: Create Pull Request
+        if: steps.changes.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: Auto-regenerate pages"
+          title: "chore: Auto-regenerate pages"
+          body: |
+            This PR was automatically created by the auto-regenerate workflow.
+            
+            **Changes include:**
+            - Regenerated game pages
+            - Regenerated run category pages
+            - Updated CODEOWNERS
+            
+            ---
+            *This is an automated PR. Review and merge when ready.*
+          branch: auto/regenerate-pages
+          delete-branch: true
+          labels: |
+            automated
+            chore
 
       - name: Summary
         run: |
           echo "## Auto-Regenerate Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          if [[ -n "$(git log -1 --pretty=%B | grep 'Auto-regenerate')" ]]; then
-            echo "✅ Pages were regenerated and committed" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ steps.changes.outputs.has_changes }}" == "true" ]]; then
+            echo "✅ Changes detected - Pull Request created" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Please review and merge the PR to apply changes." >> $GITHUB_STEP_SUMMARY
           else
             echo "✅ All pages were already up to date" >> $GITHUB_STEP_SUMMARY
           fi
