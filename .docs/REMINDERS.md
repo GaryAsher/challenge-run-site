@@ -4,43 +4,111 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ---
 
-## Future Features
+## Priority Roadmap
 
 ### Forms & Submissions
 - [ ] Run submission form (Google Form → GitHub)
 - [ ] Runner profile submission - Self-service profile creation
 
+### Enhanced Runner Profiles
+- [ ] Add social links (YouTube, Twitch, Twitter, Discord)
+- [ ] Add bio field
+- [ ] Add featured runs section
+- [ ] Auto-calculate stats (total runs, games played, PBs)
+- [ ] Create runner submission form
+
+**Proposed structure:**
+```yaml
+# _runners/player-name.md
+---
+layout: runner
+runner_id: player-name
+name: "Player Name"
+avatar: /assets/img/runners/p/player-name.png
+socials:
+  youtube: "channel-url"
+  twitch: "channel-url"
+  twitter: "handle"
+  discord: "username#1234"
+bio: "Short bio about the runner"
+featured_runs:
+  - game_id: hades-2
+    category: underworld-any
+    achievement: "First sub-10 minute clear"
+---
+```
+
+## Future Features
+
 ### Site Features
 - [ ] Search page - Global search across all content
-- [ ] RSS feed - For new runs/games
 - [ ] Add Spanish version
 - [ ] Dark/light mode toggle
 
 ### Community Building
-- [ ] Discord integration - Webhook for new run notifications
+- [ ] Discord webhook for new run notifications
 - [ ] Leaderboards - Per-game, per-challenge rankings
-- [ ] Badges/achievements for runners
 
 ---
 
-## Areas Needing Work
+### Later: History Tab
+- [ ] Add history data structure to game files
+- [ ] Create timeline display component
+- [ ] Support entry types: record, rule-change, milestone
 
-### Promote Games
-- [ ] This section needs to be added or removed. It can only be done AFTER the game is promoted:
-  - Update genre tags and platforms (edit the game file)
-  - Game file: https://github.com/GaryAsher/challenge-run-site/blob/main/_games/tiny-rogues.md
+**Proposed structure:**
+```yaml
+# In _games/hades-2.md
+history:
+  - date: 2024-03-01
+    type: record
+    title: "First Deathless Clear"
+    description: "PlayerX achieved the first recorded deathless clear"
+    runner_id: player-x
+    
+  - date: 2024-06-15
+    type: rule-change
+    title: "Mod restrictions updated"
+    description: "Visual-only mods now allowed in Unrestricted category"
+    
+  - date: 2024-09-01
+    type: milestone
+    title: "100 runs submitted"
+    description: "Community milestone reached"
+    
+```
 
-### Runner Profiles (`_runners/`)
-- [ ] Revisit runner profile structure
-- [ ] Define what fields are needed
-- [ ] Create submission flow for profiles
-- [ ] Consider verification system
+### When Needed: Forum Integration
+
+**Option A: GitHub Discussions**
+- Enable Discussions in repo settings
+- Create category for each game
+- Link from game forum pages
+- Free, no maintenance, threaded conversations
+- Could use Giscus to embed discussions directly in pages
+
+**Option B: Discord Integration**
+- Create a Discord server with channels per game
+- Use Discord widgets to embed activity on forum pages
+- Webhook announcements for new games/runs
+- Role-based access for moderators
+- More real-time, community-focused
+
+**Decision needed:** Choose based on community preference and engagement style.
 
 ---
 
-## Documentation to Complete
+### Badges System
+- [ ] Create `_data/badges.yml` with badge definitions
+- [ ] Build badge calculation script
+- [ ] Display badges on runner profiles
+- [ ] Auto-assign badges on run promotion
 
-### Moderator Resources
+---
+
+## Documentation Status
+
+### To Complete
 - [ ] Moderator guide - How to review and process submissions
 - [ ] Fixing mistakes guide - Common errors and how to fix them
 - [ ] Google Form setup guide - Setting up Forms integration
@@ -50,12 +118,9 @@ This document consolidates all reminders, future ideas, and planned features for
 ## Technical Debt
 
 ### Low Priority
-- [ ] Audit CSS for more unused code
-- [ ] JavaScript modularization (main.js is ~600 lines)
+- [ ] Audit CSS for unused code
 - [ ] Consider Jekyll plugins or asset pipeline
 
 ---
 
-## Notes
-
-Last updated: January 2025
+Last updated: 2026/01/13
