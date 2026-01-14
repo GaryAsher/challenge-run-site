@@ -54,30 +54,6 @@ title: Home
       </div>
     </div>
 
-    <!-- Recent Runs Section -->
-    <div class="home-card" style="margin-top: 1rem;">
-      <h2 class="home-card__title">🏃 Recent Runs</h2>
-      <div class="home-card__content">
-        {% assign all_runs = site.runs | where_exp: "r", "r.game_id" | sort: "date_completed" | reverse %}
-        {% if all_runs.size > 0 %}
-          <div class="recent-runs-list">
-            {% for run in all_runs limit:5 %}
-              {% assign game = site.games | where: "game_id", run.game_id | first %}
-              {% assign runner_name = run.runner | default: run.runner_id | replace: "_", " " | replace: "-", " " %}
-              <div class="recent-run-item">
-                <span class="recent-run-item__game">{{ game.name | default: run.game_id }}</span>
-                <span class="recent-run-item__runner muted">{{ runner_name }}</span>
-                <span class="recent-run-item__date muted">{{ run.date_completed | date: "%b %d" }}</span>
-              </div>
-            {% endfor %}
-          </div>
-        {% else %}
-          <p class="muted">No runs submitted yet. Be the first!</p>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-
   <div class="home-sidebar">
     <!-- Community Board Section -->
     <div class="home-card home-card--full-height">
