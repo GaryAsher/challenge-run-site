@@ -42,15 +42,10 @@ character_column:
 # Standard challenge types (site-wide definitions)
 challenges:
   - deathless
+  - blindfolded
 
 # Game-specific community challenges
 community_challenges:
-  - slug: all-red-berries
-    label: "All Red Berries"
-    description: "collect all 175 red berries in the game"
-  - slug: all-hearts
-    label: "All Hearts"
-    description: "collect all 24 hearts in the game"
   - slug: modded-levels
     label: "Modded Levels??"
 
@@ -64,6 +59,12 @@ categories_data:
     label: "Any%"
   - slug: "100"
     label: "100%"
+  - slug: all-red-berries
+    label: "All Red Berries"
+    description: "Collect all 175 red berries in the game"
+  - slug: all-hearts
+    label: "All Hearts"
+    description: "Collect all 24 hearts in the game"
 ---
 
 Game submitted via form. Awaiting review.
