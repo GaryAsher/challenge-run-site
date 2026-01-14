@@ -4,6 +4,7 @@ on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch:  # Manual trigger button
 
 # Cancel in-progress runs when a new run is triggered
 concurrency:
@@ -13,10 +14,12 @@ concurrency:
 permissions:
   contents: write
   pull-requests: write
+  pages: write      # Required for Pages deployment
+  id-token: write   # Required for Pages deployment
 
 jobs:
   # ============================================================
-  # SINGLE VALIDATION JOB - All checks in one place
+  # VALIDATION JOB
   # ============================================================
   validate:
     name: Validate
@@ -28,7 +31,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Need full history for duplicate check
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -39,9 +42,6 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
-      # --------------------------------------------------------
-      # Core validation checks
-      # --------------------------------------------------------
       - name: Check YAML syntax
         run: node scripts/check-yaml-syntax.js
 
@@ -54,26 +54,20 @@ jobs:
       - name: Validate queued runs
         run: npm run validate:runs
 
-      # --------------------------------------------------------
-      # Check what files changed (for conditional checks)
-      # --------------------------------------------------------
       - name: Detect changes
         id: changes
         run: |
-          # For PRs, compare against base branch
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             BASE_SHA="${{ github.event.pull_request.base.sha }}"
             HEAD_SHA="${{ github.event.pull_request.head.sha }}"
             CHANGED_FILES=$(git diff --name-only $BASE_SHA $HEAD_SHA 2>/dev/null || echo "")
           else
-            # For push, compare against previous commit
             CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
           fi
           
           echo "Changed files:"
           echo "$CHANGED_FILES"
           
-          # Check for new game submissions
           NEW_GAME=""
           for file in $CHANGED_FILES; do
             if [[ "$file" == _queue_games/*.md ]] && [[ "$file" != *".gitkeep"* ]]; then
@@ -90,16 +84,12 @@ jobs:
             echo "game_id=" >> "$GITHUB_OUTPUT"
           fi
           
-          # Check for run-related changes
           if echo "$CHANGED_FILES" | grep -qE "^_runs/|^scripts/generate-run-category-pages"; then
             echo "runs_changed=true" >> "$GITHUB_OUTPUT"
           else
             echo "runs_changed=false" >> "$GITHUB_OUTPUT"
           fi
 
-      # --------------------------------------------------------
-      # Duplicate game check (only for new game submissions)
-      # --------------------------------------------------------
       - name: Check for duplicate game
         if: steps.changes.outputs.new_game == 'true'
         id: duplicate
@@ -111,21 +101,10 @@ jobs:
           IS_DUPLICATE="false"
           DUPLICATE_MSG=""
           
-          # Check if exact game_id exists in _games/
           if [ -f "_games/${GAME_ID}.md" ]; then
             IS_DUPLICATE="true"
             DUPLICATE_MSG="Game '${GAME_ID}' already exists in _games/"
             echo "::warning::${DUPLICATE_MSG}"
-          fi
-          
-          # Check if already in queue (different file)
-          QUEUE_FILE="_queue_games/${GAME_ID}.md"
-          if [ -f "${QUEUE_FILE}" ]; then
-            QUEUE_COUNT=$(ls -1 _queue_games/*.md 2>/dev/null | grep -v "${GAME_ID}.md" | wc -l || echo "0")
-            # This would be from another PR - just warn
-            if [ "$QUEUE_COUNT" -gt 0 ]; then
-              echo "::notice::Other games already in queue"
-            fi
           fi
           
           echo "is_duplicate=${IS_DUPLICATE}" >> "$GITHUB_OUTPUT"
@@ -165,26 +144,6 @@ jobs:
               labels: ['potential-duplicate']
             });
 
-      # --------------------------------------------------------
-      # Verify generated pages are up to date
-      # --------------------------------------------------------
-      - name: Check generated run pages
-        if: steps.changes.outputs.runs_changed == 'true'
-        run: |
-          # Generate fresh pages
-          npm run generate:run-categories
-          
-          # Check if anything changed
-          if git status --porcelain | grep -q .; then
-            echo "::warning::Generated pages are out of date"
-            echo "Run: npm run generate:run-categories"
-            echo "Then commit the updated games/**/runs/**/index.html files."
-            git status --porcelain
-            # Don't fail - auto-generate job will fix it
-          else
-            echo "✓ Generated pages are up to date"
-          fi
-
   # ============================================================
   # BUILD JOB
   # ============================================================
@@ -202,17 +161,37 @@ jobs:
           ruby-version: '3.2'
           bundler-cache: true
 
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v4
+
       - name: Build site
-        run: bundle exec jekyll build
+        run: bundle exec jekyll build --baseurl "${{ steps.pages.outputs.base_path }}"
         env:
           JEKYLL_ENV: production
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: site
           path: _site/
-          retention-days: 1
+
+  # ============================================================
+  # DEPLOY JOB (only on push to main)
+  # ============================================================
+  deploy:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
 
   # ============================================================
   # AUTO-GENERATE JOB (PRs only)
