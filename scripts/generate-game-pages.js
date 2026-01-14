@@ -71,21 +71,24 @@ function writeIfNotExists(filePath, content, checkOnly = false) {
 /**
  * Check for index page (either .html or .md), create .html if missing
  */
-function ensureIndexPage(dir, template, checkOnly = false) {
-  if (indexExists(dir)) {
+function ensureIndexPage(dir, template, checkOnly = false, forceOverwrite = false) {
+  if (!forceOverwrite && indexExists(dir)) {
     return false; // Already exists
   }
   
   const indexPath = path.join(dir, 'index.html');
   
   if (checkOnly) {
-    console.log(`MISSING: ${path.relative(ROOT, indexPath)}`);
-    return true; // Would need to create
+    if (!indexExists(dir)) {
+      console.log(`MISSING: ${path.relative(ROOT, indexPath)}`);
+      return true; // Would need to create
+    }
+    return false;
   }
   
   ensureDir(dir);
   fs.writeFileSync(indexPath, template, 'utf8');
-  console.log(`Created: ${path.relative(ROOT, indexPath)}`);
+  console.log(`${forceOverwrite && indexExists(dir) ? 'Overwrote' : 'Created'}: ${path.relative(ROOT, indexPath)}`);
   return true;
 }
 
@@ -113,6 +116,25 @@ function generateSubPageTemplate(gameId, section, gameName) {
 
   const title = titles[section] || capitalize(section);
   const description = descriptions[section] || '';
+
+  // Rules page uses special include with Rule Builder
+  if (section === 'rules') {
+    return `---
+layout: default
+title: "${gameName} - ${title}"
+game_id: ${gameId}
+---
+
+{% assign game = site.games | where: "game_id", "${gameId}" | first %}
+{% include game-header-tabs.html game=game active="${section}" %}
+
+<div class="page-width">
+  <div class="game-shell">
+    {% include game-rules.html game=game %}
+  </div>
+</div>
+`;
+  }
 
   return `---
 layout: default
@@ -157,7 +179,7 @@ category_slug: "${categorySlug}"
 // ============================================================
 // Main Generation Logic
 // ============================================================
-function generateGamePages(gameId, checkOnly = false) {
+function generateGamePages(gameId, checkOnly = false, forceOverwrite = false) {
   const gameFile = path.join(GAMES_DIR, `${gameId}.md`);
   
   if (!isFile(gameFile)) {
@@ -185,7 +207,7 @@ function generateGamePages(gameId, checkOnly = false) {
     const sectionDir = path.join(gameDir, section);
     const template = generateSubPageTemplate(gameId, section, gameName);
     
-    if (ensureIndexPage(sectionDir, template, checkOnly)) {
+    if (ensureIndexPage(sectionDir, template, checkOnly, forceOverwrite)) {
       missingCount++;
     }
   }
@@ -194,7 +216,7 @@ function generateGamePages(gameId, checkOnly = false) {
   const runsDir = path.join(gameDir, 'runs');
   const runsTemplate = generateRunsIndexTemplate(gameId, gameName);
   
-  if (ensureIndexPage(runsDir, runsTemplate, checkOnly)) {
+  if (ensureIndexPage(runsDir, runsTemplate, checkOnly, forceOverwrite)) {
     missingCount++;
   }
 
@@ -209,7 +231,7 @@ function generateGamePages(gameId, checkOnly = false) {
         const catDir = path.join(runsDir, slug);
         const catTemplate = generateCategoryPageTemplate(gameId, gameName, slug, label);
         
-        if (ensureIndexPage(catDir, catTemplate, checkOnly)) {
+        if (ensureIndexPage(catDir, catTemplate, checkOnly, forceOverwrite)) {
           missingCount++;
         }
 
@@ -224,7 +246,7 @@ function generateGamePages(gameId, checkOnly = false) {
               const childDir = path.join(catDir, childSlug);
               const childTemplate = generateCategoryPageTemplate(gameId, gameName, fullSlug, childLabel);
               
-              if (ensureIndexPage(childDir, childTemplate, checkOnly)) {
+              if (ensureIndexPage(childDir, childTemplate, checkOnly, forceOverwrite)) {
                 missingCount++;
               }
             }
@@ -250,6 +272,7 @@ function main() {
   const args = process.argv.slice(2);
   let targetGame = null;
   let checkOnly = false;
+  let forceOverwrite = false;
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--game' && args[i + 1]) {
@@ -257,12 +280,14 @@ function main() {
       i++;
     } else if (args[i] === '--check') {
       checkOnly = true;
+    } else if (args[i] === '--force') {
+      forceOverwrite = true;
     }
   }
 
   if (targetGame) {
     // Generate for specific game
-    const success = generateGamePages(targetGame, checkOnly);
+    const success = generateGamePages(targetGame, checkOnly, forceOverwrite);
     if (checkOnly && !success) {
       process.exit(1);
     }
@@ -284,7 +309,7 @@ function main() {
     let allSuccess = true;
     for (const file of gameFiles) {
       const gameId = file.replace('.md', '');
-      const success = generateGamePages(gameId, checkOnly);
+      const success = generateGamePages(gameId, checkOnly, forceOverwrite);
       if (!success) allSuccess = false;
     }
 
