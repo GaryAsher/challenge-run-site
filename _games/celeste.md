@@ -8,7 +8,12 @@ name_aliases: []
 status: "Active"
 
 # TODO: Add genres
-genres: []
+genres:
+  - precision-platformer
+  - difficult
+  - great-soundtrack
+  - indie
+  - 2d
 platforms:
   - pc-steam
   - pc-epic-games
