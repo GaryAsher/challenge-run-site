@@ -86,7 +86,7 @@ layout: default
           {% for gid in page.games %}
             {% assign g = site.games | where: "game_id", gid | first %}
             {% if g %}
-              <a href="{{ g.url | relative_url }}" class="game-card">
+              <a href="{{ g.url | relative_url }}" class="game-card card-lift">
                 <div class="game-card__bg" data-bg="{{ g.cover | relative_url }}"></div>
                 <div class="game-card__overlay">
                   <div class="game-card__title">{{ g.name }}</div>
@@ -132,7 +132,7 @@ layout: default
             {% assign ch_id = r.challenge_id | default: "" | strip %}
             {% assign ch_label = "" %}
             {% if ch_id != "" %}
-          <!-- First check game-specific challenges_data -->
+              {% comment %} First check game-specific challenges_data {% endcomment %}
               {% assign game_ch = nil %}
               {% if g and g.challenges_data %}
                 {% for gch in g.challenges_data %}
@@ -146,7 +146,7 @@ layout: default
               {% if game_ch %}
                 {% assign ch_label = game_ch.label | default: ch_id %}
               {% else %}
-          <!-- all back to global challenges -->
+                {% comment %} Fall back to global challenges {% endcomment %}
                 {% assign chmeta = site.data.challenges[ch_id] %}
                 {% assign ch_label = chmeta.label | default: ch_id %}
               {% endif %}
