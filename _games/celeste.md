@@ -49,11 +49,8 @@ community_challenges:
   - slug: modded-levels
     label: "Modded Levels??"
 
-glitches_data:
-  - slug: unrestricted
-    label: "Unrestricted"
-  - slug: glitchless
-    label: "Glitchless"
+# Glitches not relevant for this game
+glitches_relevant: false
 
 restrictions: []
 
