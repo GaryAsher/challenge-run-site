@@ -144,7 +144,7 @@ title: Games
     {% assign sorted = site.games | sort: "name" %}
     {% for g in sorted %}
       <a
-        class="game-card game-item"
+        class="game-card game-item card-lift"
         href="{{ g.url | relative_url }}"
         data-name="{{ g.name | downcase }}"
         data-letter="{{ g.name | strip | slice: 0, 1 | upcase }}"
