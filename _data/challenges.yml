@@ -15,9 +15,9 @@ blindfolded:
 # D
 damageless:
   label: "Damageless"
-    description: |
-      • Damage is any loss of your character’s current health, regardless of the source.
-      • Changes to maximum health are not damage, even if they also change current health or later restore.
+  description: |
+    • Damage is any loss of your character’s current health, regardless of the source.
+    • Changes to maximum health are not damage, even if they also change current health or later restore.
   aliases: 
     - "NoDamage"
     - "No-Damage"
@@ -25,8 +25,8 @@ damageless:
   
 deathless:
   label: "Deathless"
-    description: |
-      • A death is when your character fails in a way that resets progress, typically with a penalty like losing lives, items, or other resources.
+  description: |
+    • A death is when your character fails in a way that resets progress, typically with a penalty like losing lives, items, or other resources.
   aliases:
     - "No-Death"
     - "No Death"
