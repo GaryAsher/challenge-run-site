@@ -121,7 +121,7 @@ layout: default
       {% elsif page.restrictions and page.restrictions.size > 0 %}
       <!-- Fallback to old format -->
       <div class="card card--compact mt-4" data-section-order="3">
-        <h2 class="mb-2">Optional Restrictions</h2>
+        <h2 class="mb-2">Optional Restrictions:</h2>
         <div class="accordion">
           {% for res in page.restrictions %}
           <details class="accordion-item">
@@ -176,7 +176,7 @@ layout: default
       {% else %}
         <!-- Glitches not relevant for this game - show notice -->
         <div class="card card--compact mt-4" data-section-order="4">
-          <h2 class="mb-2">Glitch Categories</h2>
+          <h2 class="mb-2">Glitch Categories:</h2>
           <p class="muted">This game does not distinguish between glitch categories.</p>
         </div>
       {% endunless %}
