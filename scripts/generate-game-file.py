@@ -243,10 +243,6 @@ def main():
     lines.append('---')
     lines.append('layout: game')
     lines.append(f'game_id: {game_id}')
-    lines.append('reviewers: []')
-    lines.append('')
-
-    # Name section
     lines.append(f'name: {yaml_quote(game_name)}')
     if aliases:
         lines.append('name_aliases:')
@@ -254,22 +250,6 @@ def main():
             lines.append(f'  - {yaml_quote(alias)}')
     else:
         lines.append('name_aliases: []')
-
-    status_text = f"Pending review - submitted by {submitter}" if submitter else "Pending review"
-    lines.append(f'status: {yaml_quote(status_text)}')
-    lines.append('')
-
-    # Metadata   
-    lines.append('# TODO: Add genres')
-    lines.append('genres: []')
-    
-    if platforms:
-        lines.append('platforms:')
-        for p in platforms:
-            lines.append(f'  - {p}')
-    else:
-        lines.append('# TODO: Add platforms')
-        lines.append('platforms: []')
     lines.append('')
 
     # Cover image
@@ -277,8 +257,23 @@ def main():
     lines.append('cover_position: center')
     lines.append('')
 
-    # Timing
-    lines.append(f'timing_method: {yaml_quote(timing_primary)}')
+    # Status and reviewers
+    status_text = f"Pending review - submitted by {submitter}" if submitter else "Pending review"
+    lines.append(f'status: {yaml_quote(status_text)}')
+    lines.append('reviewers: []')
+    lines.append('')
+
+    # Genres (empty, to be filled by reviewer)
+    lines.append('genres: []')
+    lines.append('')
+    
+    # Platforms
+    if platforms:
+        lines.append('platforms:')
+        for p in platforms:
+            lines.append(f'  - {p}')
+    else:
+        lines.append('platforms: []')
     lines.append('')
 
     # Tabs
@@ -290,52 +285,6 @@ def main():
     lines.append('  forum: true')
     lines.append('  extra_1: false')
     lines.append('  extra_2: false')
-    lines.append('')
-
-    # Character column
-    lines.append('character_column:')
-    lines.append(f'  enabled: {str(char_enabled).lower()}')
-    lines.append(f'  label: {yaml_quote(char_label)}')
-    lines.append('')
-
-    # Standard challenges (from checkboxes)
-    lines.append('# Standard challenge types (site-wide definitions)')
-    lines.append('challenges:')
-    for ch in challenges:
-        lines.append(f'  - {slugify(ch)}')
-    lines.append('')
-
-    # Community challenges (game-specific)
-    if community_challenges:
-        lines.append('# Game-specific community challenges')
-        lines.append('community_challenges:')
-        for cc in community_challenges:
-            lines.append(f'  - slug: {cc["slug"]}')
-            lines.append(f'    label: {yaml_quote(cc["label"])}')
-            if cc['description']:
-                lines.append(f'    description: {yaml_quote(cc["description"])}')
-        lines.append('')
-
-    # Glitch categories
-    lines.append('glitches_data:')
-    if glitch_categories:
-        for slug, label in glitch_categories:
-            lines.append(f'  - slug: {slug}')
-            lines.append(f'    label: {yaml_quote(label)}')
-    else:
-        lines.append('  - slug: unrestricted')
-        lines.append('    label: "Unrestricted"')
-        lines.append('  - slug: glitchless')
-        lines.append('    label: "Glitchless"')
-    lines.append('')
-
-    # Restrictions
-    if restrictions:
-        lines.append('restrictions:')
-        for r in restrictions:
-            lines.append(f'  - {yaml_quote(r)}')
-    else:
-        lines.append('restrictions: []')
     lines.append('')
 
     # Categories data
@@ -350,15 +299,61 @@ def main():
             for child in children_map[cat]:
                 lines.append(f'      - slug: {slugify(child)}')
                 lines.append(f'        label: {yaml_quote(child)}')
+    lines.append('')
 
+    # Community challenges (game-specific)
+    if community_challenges:
+        lines.append('community_challenges:')
+        for cc in community_challenges:
+            lines.append(f'  - slug: {cc["slug"]}')
+            lines.append(f'    label: {yaml_quote(cc["label"])}')
+            if cc['description']:
+                lines.append(f'    description: {yaml_quote(cc["description"])}')
+        lines.append('')
+
+    # Character column
+    lines.append('character_column:')
+    lines.append(f'  enabled: {str(char_enabled).lower()}')
+    lines.append(f'  label: {yaml_quote(char_label)}')
+    lines.append('')
+
+    # Standard challenges (from checkboxes)
+    lines.append('challenges:')
+    if challenges:
+        for ch in challenges:
+            lines.append(f'  - {slugify(ch)}')
+    else:
+        lines.append('  []')
+    lines.append('')
+
+    # Restrictions
+    if restrictions:
+        lines.append('restrictions:')
+        for r in restrictions:
+            lines.append(f'  - {yaml_quote(r)}')
+    else:
+        lines.append('restrictions: []')
+    lines.append('')
+
+    # Glitch categories
+    lines.append('glitches_data:')
+    if glitch_categories:
+        for slug, label in glitch_categories:
+            lines.append(f'  - slug: {slug}')
+            lines.append(f'    label: {yaml_quote(label)}')
+    else:
+        lines.append('  - slug: unrestricted')
+        lines.append('    label: "Unrestricted"')
+        lines.append('  - slug: glitchless')
+        lines.append('    label: "Glitchless"')
+    lines.append('')
+
+    # Timing
+    lines.append(f'timing_method: {yaml_quote(timing_primary)}')
     lines.append('---')
     lines.append('')
 
-    # Body content
-    lines.append('Game submitted via form. Awaiting review.')
-    lines.append('')
-
-    # Reviewer notes
+    # Reviewer notes (hidden in HTML comment, removed on promotion)
     notes = []
     if submitter:
         notes.append(f'Submitted by: {submitter}')
