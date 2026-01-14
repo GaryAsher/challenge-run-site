@@ -1,0 +1,28 @@
+// ============================================================
+// Theme Color Overrides
+// ============================================================
+// Alternate color schemes selectable by users
+
+[data-theme="pink"] {
+  --accent: #E91E8C;
+  --focus: rgba(233, 30, 140, 0.6);
+  --focus-2: rgba(233, 30, 140, 0.35);
+}
+
+[data-theme="blue"] {
+  --accent: #3B82F6;
+  --focus: rgba(59, 130, 246, 0.6);
+  --focus-2: rgba(59, 130, 246, 0.35);
+}
+
+[data-theme="purple"] {
+  --accent: #8B5CF6;
+  --focus: rgba(139, 92, 246, 0.6);
+  --focus-2: rgba(139, 92, 246, 0.35);
+}
+
+[data-theme="red"] {
+  --accent: #EF4444;
+  --focus: rgba(239, 68, 68, 0.6);
+  --focus-2: rgba(239, 68, 68, 0.35);
+}
