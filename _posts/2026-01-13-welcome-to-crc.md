@@ -1,8 +1,9 @@
 ---
 layout: post
 title: "Welcome to Challenge Run Community"
-date: 2026-01-13
+date: 2025-01-13
 categories: [announcement]
+featured: true
 ---
 
 Welcome to the Challenge Run Community! We're building a home for tracking challenge runs, deathless runs, hitless achievements, and other impressive gaming feats.
