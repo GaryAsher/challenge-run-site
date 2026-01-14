@@ -44,6 +44,7 @@ hitless:
   label: "Hitless"
   description: |
     • A hit is when an NPC or dynamic object makes contact with your character's hitbox, causing damage or hard crowd control (Hard CC).
+    • Player-initiated actions that cause damage or movement are NOT hits.
   aliases:
     - "NoHit"
     - "No-Hit"
