@@ -43,7 +43,7 @@ high-score:
 hitless:
   label: "Hitless"
   description: |
-  - "A hit is when an NPC or dynamic object makes contact with your character's hitbox, causing damage or hard crowd control (Hard CC)."
+    - "A hit is when an NPC or dynamic object makes contact with your character's hitbox, causing damage or hard crowd control (Hard CC)."
   aliases:
     - "NoHit"
     - "No-Hit"
