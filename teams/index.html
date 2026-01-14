@@ -1,0 +1,54 @@
+---
+layout: default
+title: Teams
+---
+
+<div class="page-width">
+  <div class="game-shell">
+    <header class="page-header">
+      <h1>Affiliated Teams</h1>
+      <p class="muted">Challenge run teams and communities.</p>
+    </header>
+
+    {% if site.teams.size > 0 %}
+      <div class="teams-grid">
+        {% for team in site.teams %}
+          <a href="{{ team.url | relative_url }}" class="team-card">
+            {% if team.logo %}
+              <img src="{{ team.logo | relative_url }}" alt="{{ team.name }}" class="team-card__logo">
+            {% else %}
+              <div class="team-card__logo team-card__logo--placeholder">{{ team.name | slice: 0 }}</div>
+            {% endif %}
+            <div class="team-card__info">
+              <h2 class="team-card__name">{{ team.name }}</h2>
+              {% if team.tagline %}
+                <p class="team-card__tagline muted">{{ team.tagline }}</p>
+              {% endif %}
+              {% if team.games and team.games.size > 0 %}
+                <p class="team-card__games muted">{{ team.games.size }} game{% if team.games.size != 1 %}s{% endif %}</p>
+              {% endif %}
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="card">
+        <p class="muted">No affiliated teams yet.</p>
+        <p class="mt-3">Message for support page <a href="{{ '/support/' | relative_url }}">Contact us!</a></p>
+      </div>
+    {% endif %}
+
+    <div class="card card--compact mt-6">
+      <h2>Message about asking to join</h2>
+      <p class="muted mb-3">We welcome challenge run teams of all sizes. Benefits include:</p>
+      <ul class="muted">
+        <li>Team page on CRC</li>
+        <li>Featured placement on homepage</li>
+        <li>Cross-promotion opportunities</li>
+      </ul>
+      <p class="mt-3">
+        <a href="{{ '/support/' | relative_url }}" class="btn btn--outline">Get in Touch</a>
+      </p>
+    </div>
+  </div>
+</div>
