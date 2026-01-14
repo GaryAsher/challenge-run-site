@@ -1,5 +1,12 @@
 <!-- =========================================================
      Game Rules Include  
+     
+     FEATURES:
+     - Rule Builder shows rules panel below selections
+     - "Remove all filters" button positioned like Advanced Filters
+     - "See runners" button at bottom right with spacing
+     - Highlight animation on first visit
+     - Credits section support
      ========================================================= -->
 {% assign game = include.game %}
 {% assign game_id = game.game_id %}
@@ -55,7 +62,7 @@
        Rule Builder - Collapsible Version
        ORDERING: Run Categories -> Community Challenges -> Character -> Standard Challenge -> Restrictions -> Glitches
        ========================================================= -->
-  <div class="card card--compact mb-4" id="rule-builder-card">
+  <div class="card card--compact mb-4 rule-builder-highlight" id="rule-builder-card">
     <div class="rule-builder-header">
       <span class="muted rule-builder-subtitle">📌 Rule Builder — Build your ruleset and find runners</span>
       <button class="btn btn--filter-toggle" id="rb-toggle" type="button" aria-expanded="false" aria-controls="rule-builder-content">
@@ -164,7 +171,7 @@
         </div>
         {% endif %}
 
-        <!-- Reset Button -->
+        <!-- Reset Button - positioned like Advanced Filters -->
         <div class="rule-builder__group rule-builder__group--reset">
           <button type="button" class="btn btn--outline btn--reset" id="rb-reset">
             Remove all filters
@@ -172,16 +179,26 @@
         </div>
       </div>
 
-      <!-- Active Selections Display -->
+      <!-- Active Selections Display (tags) -->
       <div class="rule-builder__active" id="rb-active-filters"></div>
+
+      <!-- =========================================================
+           Rules Summary Panel - Shows all selected rules
+           ========================================================= -->
+      <div class="rule-builder__summary" id="rb-summary" style="display: none;">
+        <h3 class="rule-builder__summary-title">📋 Your Ruleset</h3>
+        <div class="rule-builder__summary-content" id="rb-summary-content">
+          <!-- Rules will be populated here by JavaScript -->
+        </div>
+      </div>
 
       <!-- Validation Warnings -->
       <div class="rule-builder__validation" id="rb-validation" style="display: none;">
         <p class="rule-builder__warning">⚠️ <span id="rb-warning-text"></span></p>
       </div>
 
-      <!-- See Runners Button -->
-      <div class="rule-builder__actions mt-3">
+      <!-- See Runners Button - at bottom right with spacing -->
+      <div class="rule-builder__actions" id="rb-actions">
         <a href="#" class="btn btn--accent" id="rb-find-runners" style="display: none;">
           🔍 See runners who completed this
         </a>
@@ -195,19 +212,29 @@
        ORDERING: General Rules -> Run Categories -> Community Challenges -> Character -> Standard Challenges -> Restrictions -> Glitches
        ========================================================= -->
 
-  <!-- 1. General Rules -->
+  <!-- 1. General Rules (always shown) -->
   <div class="rules-section" data-section-order="1">
-    <details class="accordion-item accordion-item--section">
+    <details class="accordion-item accordion-item--section" open>
       <summary class="accordion-header accordion-header--section">
         <span class="accordion-title">📋 General Rules</span>
         <span class="accordion-icon">▼</span>
       </summary>
       <div class="accordion-content">
-        <ul>
-          <li><strong>Timing Method:</strong> {{ game.timing_method | default: "RTA (Real Time Attack)" }}</li>
-          <li><strong>Video Required:</strong> All submissions must include video proof</li>
-          <li><strong>No Cheats/Mods:</strong> External tools or gameplay-altering mods are not allowed</li>
-        </ul>
+        {% if game.general_rules and game.general_rules.size > 0 %}
+          <!-- Game-specific general rules -->
+          <ul>
+            {% for rule in game.general_rules %}
+              <li>{{ rule | markdownify | remove: '<p>' | remove: '</p>' }}</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <!-- Default general rules -->
+          <ul>
+            <li><strong>Timing Method:</strong> {{ game.timing_method | default: "RTA (Real Time Attack)" }}</li>
+            <li><strong>Video Required:</strong> All submissions must include video proof</li>
+            <li><strong>No Cheats/Mods:</strong> External tools or gameplay-altering mods are not allowed</li>
+          </ul>
+        {% endif %}
       </div>
     </details>
   </div>
@@ -411,6 +438,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const restrictionSelect = document.getElementById('rb-restriction');
   const resetBtn = document.getElementById('rb-reset');
   const activeFiltersDiv = document.getElementById('rb-active-filters');
+  const summaryDiv = document.getElementById('rb-summary');
+  const summaryContent = document.getElementById('rb-summary-content');
   const validationDiv = document.getElementById('rb-validation');
   const findRunnersBtn = document.getElementById('rb-find-runners');
 
@@ -429,6 +458,7 @@ document.addEventListener('DOMContentLoaded', function() {
       value: el.value,
       text: el.textContent.trim(),
       label: el.dataset.label,
+      description: el.dataset.description || '',
       optgroup: el.parentElement.tagName === 'OPTGROUP' ? el.parentElement.label : null
     };
   }).filter(Boolean) : [];
@@ -436,8 +466,19 @@ document.addEventListener('DOMContentLoaded', function() {
   const originalRestrictionOptions = restrictionSelect ? Array.from(restrictionSelect.options).map(opt => ({
     value: opt.value,
     text: opt.textContent.trim(),
-    label: opt.dataset.label
+    label: opt.dataset.label,
+    description: opt.dataset.description || ''
   })) : [];
+
+  // Highlight animation on first visit
+  const highlightKey = 'rb-highlighted-' + gameId;
+  if (!sessionStorage.getItem(highlightKey)) {
+    rbCard.classList.add('rule-builder-highlight--animate');
+    sessionStorage.setItem(highlightKey, 'true');
+    setTimeout(() => {
+      rbCard.classList.remove('rule-builder-highlight--animate');
+    }, 3000);
+  }
 
   // Toggle Rule Builder visibility
   if (rbToggle && rbContent) {
@@ -455,7 +496,11 @@ document.addEventListener('DOMContentLoaded', function() {
   if (categorySelect) {
     categorySelect.addEventListener('change', function() {
       const option = this.options[this.selectedIndex];
-      selectedCategory = option.value ? { slug: option.value, label: option.dataset.label || option.text.trim() } : null;
+      selectedCategory = option.value ? { 
+        slug: option.value, 
+        label: option.dataset.label || option.text.trim(),
+        description: option.dataset.description || ''
+      } : null;
       updateRuleBuilder();
     });
   }
@@ -464,7 +509,11 @@ document.addEventListener('DOMContentLoaded', function() {
   if (communitySelect) {
     communitySelect.addEventListener('change', function() {
       const option = this.options[this.selectedIndex];
-      selectedCommunityChallenge = option.value ? { slug: option.value, label: option.dataset.label || option.text.trim() } : null;
+      selectedCommunityChallenge = option.value ? { 
+        slug: option.value, 
+        label: option.dataset.label || option.text.trim(),
+        description: option.dataset.description || ''
+      } : null;
       updateRuleBuilder();
     });
   }
@@ -473,7 +522,11 @@ document.addEventListener('DOMContentLoaded', function() {
   if (characterSelect) {
     characterSelect.addEventListener('change', function() {
       const option = this.options[this.selectedIndex];
-      selectedCharacter = option.value ? { slug: option.value, label: option.dataset.label || option.text.trim() } : null;
+      selectedCharacter = option.value ? { 
+        slug: option.value, 
+        label: option.dataset.label || option.text.trim(),
+        description: option.dataset.description || ''
+      } : null;
       updateRuleBuilder();
     });
   }
@@ -482,7 +535,14 @@ document.addEventListener('DOMContentLoaded', function() {
   if (glitchSelect) {
     glitchSelect.addEventListener('change', function() {
       const option = this.options[this.selectedIndex];
-      selectedGlitch = option.value ? { slug: option.value, label: option.dataset.label || option.text.trim() } : null;
+      selectedGlitch = option.value ? { 
+        slug: option.value, 
+        label: option.dataset.label || option.text.trim(),
+        description: option.dataset.description || '',
+        allowed: option.dataset.allowed ? option.dataset.allowed.split('|') : [],
+        banned: option.dataset.banned ? option.dataset.banned.split('|') : [],
+        notes: option.dataset.notes || ''
+      } : null;
       updateRuleBuilder();
     });
   }
@@ -492,7 +552,11 @@ document.addEventListener('DOMContentLoaded', function() {
     challengeSelect.addEventListener('change', function() {
       const option = this.options[this.selectedIndex];
       if (option.value && !selectedChallenges.find(c => c.slug === option.value)) {
-        selectedChallenges.push({ slug: option.value, label: option.dataset.label || option.text.trim() });
+        selectedChallenges.push({ 
+          slug: option.value, 
+          label: option.dataset.label || option.text.trim(),
+          description: option.dataset.description || ''
+        });
         this.value = '';
         updateChallengeDropdown();
         updateRuleBuilder();
@@ -505,7 +569,11 @@ document.addEventListener('DOMContentLoaded', function() {
     restrictionSelect.addEventListener('change', function() {
       const option = this.options[this.selectedIndex];
       if (option.value && !selectedRestrictions.find(r => r.slug === option.value)) {
-        selectedRestrictions.push({ slug: option.value, label: option.dataset.label || option.text.trim() });
+        selectedRestrictions.push({ 
+          slug: option.value, 
+          label: option.dataset.label || option.text.trim(),
+          description: option.dataset.description || ''
+        });
         this.value = '';
         updateRestrictionDropdown();
         updateRuleBuilder();
@@ -550,6 +618,7 @@ document.addEventListener('DOMContentLoaded', function() {
         option.value = opt.value;
         option.textContent = opt.text;
         if (opt.label) option.dataset.label = opt.label;
+        if (opt.description) option.dataset.description = opt.description;
         challengeSelect.appendChild(option);
       });
     }
@@ -561,6 +630,7 @@ document.addEventListener('DOMContentLoaded', function() {
         option.value = opt.value;
         option.textContent = opt.text;
         if (opt.label) option.dataset.label = opt.label;
+        if (opt.description) option.dataset.description = opt.description;
         optgroup.appendChild(option);
       });
       if (optgroup.children.length > 0) challengeSelect.appendChild(optgroup);
@@ -577,6 +647,7 @@ document.addEventListener('DOMContentLoaded', function() {
         option.value = opt.value;
         option.textContent = opt.text;
         if (opt.label) option.dataset.label = opt.label;
+        if (opt.description) option.dataset.description = opt.description;
         restrictionSelect.appendChild(option);
       }
     });
@@ -630,6 +701,7 @@ document.addEventListener('DOMContentLoaded', function() {
     selectedRestrictions.forEach(r => { tags.push({ label: r.label, clear: () => removeRestriction(r.slug) }); hasContent = true; });
     if (selectedGlitch) { tags.push({ label: selectedGlitch.label, clear: removeGlitch }); hasContent = true; }
 
+    // Update active filters tags
     if (activeFiltersDiv) {
       activeFiltersDiv.innerHTML = tags.map(t => 
         `<span class="tag tag--removable" role="button" tabindex="0" title="Click to remove">${t.label}</span>`
@@ -638,6 +710,64 @@ document.addEventListener('DOMContentLoaded', function() {
         tag.addEventListener('click', () => tags[i].clear());
         tag.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tags[i].clear(); } });
       });
+    }
+
+    // Update rules summary panel
+    if (summaryDiv && summaryContent) {
+      if (hasContent) {
+        let summaryHtml = '<ul class="rule-builder__rules-list">';
+        
+        if (selectedCategory) {
+          summaryHtml += `<li><strong>Category:</strong> ${selectedCategory.label}`;
+          if (selectedCategory.description) summaryHtml += `<br><span class="muted">${selectedCategory.description}</span>`;
+          summaryHtml += '</li>';
+        }
+        
+        if (selectedCommunityChallenge) {
+          summaryHtml += `<li><strong>Community Challenge:</strong> ${selectedCommunityChallenge.label}`;
+          if (selectedCommunityChallenge.description) summaryHtml += `<br><span class="muted">${selectedCommunityChallenge.description}</span>`;
+          summaryHtml += '</li>';
+        }
+        
+        if (selectedCharacter) {
+          summaryHtml += `<li><strong>{{ character_label }}:</strong> ${selectedCharacter.label}`;
+          if (selectedCharacter.description) summaryHtml += `<br><span class="muted">${selectedCharacter.description}</span>`;
+          summaryHtml += '</li>';
+        }
+        
+        selectedChallenges.forEach(ch => {
+          summaryHtml += `<li><strong>Challenge:</strong> ${ch.label}`;
+          if (ch.description) summaryHtml += `<br><span class="muted">${ch.description}</span>`;
+          summaryHtml += '</li>';
+        });
+        
+        selectedRestrictions.forEach(r => {
+          summaryHtml += `<li><strong>Restriction:</strong> ${r.label}`;
+          if (r.description) summaryHtml += `<br><span class="muted">${r.description}</span>`;
+          summaryHtml += '</li>';
+        });
+        
+        if (selectedGlitch) {
+          summaryHtml += `<li><strong>Glitch Rules:</strong> ${selectedGlitch.label}`;
+          if (selectedGlitch.description) summaryHtml += `<br><span class="muted">${selectedGlitch.description}</span>`;
+          if (selectedGlitch.allowed && selectedGlitch.allowed.length > 0 && selectedGlitch.allowed[0]) {
+            summaryHtml += `<br><span class="text-success">✓ Allowed:</span> ${selectedGlitch.allowed.join(', ')}`;
+          }
+          if (selectedGlitch.banned && selectedGlitch.banned.length > 0 && selectedGlitch.banned[0]) {
+            summaryHtml += `<br><span class="text-danger">✗ Banned:</span> ${selectedGlitch.banned.join(', ')}`;
+          }
+          if (selectedGlitch.notes) {
+            summaryHtml += `<br><em class="muted">${selectedGlitch.notes}</em>`;
+          }
+          summaryHtml += '</li>';
+        }
+        
+        summaryHtml += '</ul>';
+        summaryContent.innerHTML = summaryHtml;
+        summaryDiv.style.display = 'block';
+      } else {
+        summaryDiv.style.display = 'none';
+      }
     }
 
     if (validationDiv) validationDiv.style.display = 'none';
