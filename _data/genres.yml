@@ -26,6 +26,8 @@ dungeon-crawler:
 # F
 
 # G
+great-soundtrack:
+  label: "Great Soundtrack"
 
 # H
 hack-and-slash:
@@ -55,6 +57,9 @@ mythology:
 # P
 platformer:
   label: "Platformer"
+
+precision-platformer:
+  label: "Precision Platformer"
   
 puzzle:
   label: "Puzzle"
