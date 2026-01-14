@@ -1,3 +1,6 @@
+{% assign game = include.game %}
+{% assign game_id = game.game_id %}
+
 <!-- =========================================================
      Game Rules Include
   
@@ -7,8 +10,6 @@
      Rule Builder: General Rules -> Run Categories -> Community Challenges -> Character -> Standard Challenge -> Restrictions -> Glitches Used
      Accordions:   General Rules -> Run Categories -> Community Challenges -> Character -> Standard Challenge -> Restrictions -> Glitches Used
      ========================================================= -->
-{% assign game = include.game %}
-{% assign game_id = game.game_id %}
 
 <!-- Determine which data exists -->
 {% assign has_categories = false %}
