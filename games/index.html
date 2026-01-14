@@ -162,354 +162,209 @@ title: Games
   </div>
 </div>
 
+<!-- Load shared filter utilities -->
+<script src="{{ '/assets/js/filter-utils.js' | relative_url }}"></script>
+
 <script>
-// =========================================================
-// DOM: cache everything once for speed + clarity
-// =========================================================
-const items = Array.from(document.querySelectorAll(".game-item"));
-const input = document.getElementById("q");
-const status = document.getElementById("status");
-const limitSelect = document.getElementById("limit");
-const resetBtn = document.getElementById("reset-all");
-
-// =========================================================
-// DOM: Filter elements - Genre (was genres), Platform, Challenge
-// =========================================================
-const genreFilterEl = document.getElementById("genre-filter");
-const genrePickedEl = document.getElementById("genre-picked");
-const genreSearchEl = document.getElementById("genre-search");
-const genreSugEl = document.getElementById("genre-suggestions");
-
-const platformFilterEl = document.getElementById("platform-filter");
-const platformPickedEl = document.getElementById("platform-picked");
-const platformSearchEl = document.getElementById("platform-search");
-const platformSugEl = document.getElementById("platform-suggestions");
-
-const challengeFilterEl = document.getElementById("challenge-filter");
-const challengePickedEl = document.getElementById("challenge-picked");
-const challengeSearchEl = document.getElementById("challenge-search");
-const challengeSugEl = document.getElementById("challenge-suggestions");
-
-const activeGenres = new Set();
-const activePlatforms = new Set();
-const activeChallenges = new Set();
-
-// =========================================================
-// Data: load label maps from Jekyll data files (safe via jsonify)
-// =========================================================
-const GENRES = [
-{% for pair in site.data.genres %}
-  {
-    id: {{ pair[0] | jsonify }},
-    label: {{ pair[1].label | default: pair[0] | jsonify }}
-  }{% unless forloop.last %},{% endunless %}
-{% endfor %}
-].sort((a, b) => a.label.localeCompare(b.label));
-
-const PLATFORMS = [
-{% for pair in site.data.platforms %}
-  {
-    id: {{ pair[0] | jsonify }},
-    label: {{ pair[1].label | default: pair[0] | jsonify }},
-    aliases: {{ pair[1].aliases | default: empty | jsonify }}
-  }{% unless forloop.last %},{% endunless %}
-{% endfor %}
-].sort((a, b) => a.label.localeCompare(b.label));
-
-const CHALLENGES = [
-{% for pair in site.data.challenges %}
-  {
-    id: {{ pair[0] | jsonify }},
-    label: {{ pair[1].label | default: pair[0] | jsonify }},
-    aliases: {{ pair[1].aliases | default: empty | jsonify }}
-  }{% unless forloop.last %},{% endunless %}
-{% endfor %}
-].sort((a, b) => a.label.localeCompare(b.label));
-
-// =========================================================
-// Normalize user input + IDs so matching is consistent
-// =========================================================
-const norm = s => (s || "").trim().toLowerCase();
-
-// Convert roman numerals to arabic for matching
-function expandRomanNumerals(s) {
-  let str = norm(s);
-  const romans = [
-    ['viii', '8'], ['vii', '7'], ['vi', '6'], ['iv', '4'], ['v', '5'],
-    ['iii', '3'], ['ii', '2'], ['i', '1'],
-    ['xiii', '13'], ['xii', '12'], ['xi', '11'], ['x', '10'],
-    ['xiv', '14'], ['xv', '15'], ['xvi', '16']
-  ];
-  romans.forEach(function(pair) {
-    const regex = new RegExp('\\b' + pair[0] + '\\b', 'g');
-    str = str.replace(regex, pair[1]);
-  });
-  return str;
-}
-
-// =========================================================
-// UI helpers: picked chips + suggestions list
-// =========================================================
-function renderPicked(set, list, pickedEl, { onRemove } = {}) {
-  pickedEl.innerHTML = "";
-
-  const entries = Array.from(set);
-  if (!entries.length) return;
-
-  for (const id of entries) {
-    const meta = list.find(x => norm(x.id) === norm(id));
-    const label = meta ? meta.label : id;
-
-    const chip = document.createElement("button");
-    chip.type = "button";
-    chip.className = "tag-chip";
-    chip.textContent = `${label} ×`;
-
-    chip.addEventListener("click", () => {
-      set.delete(norm(id));
-      if (onRemove) onRemove();
-    });
-
-    pickedEl.appendChild(chip);
-  }
-}
-
-function renderSuggestions(qRaw, set, list, sugEl, { onPick } = {}) {
-  const q = norm(qRaw);
-  sugEl.innerHTML = "";
-
-  const available = list.filter(x => !set.has(norm(x.id)));
-  const filtered = q
-    ? available.filter(x => {
-        if (norm(x.label).includes(q) || norm(x.id).includes(q)) return true;
-        if (x.aliases && x.aliases.length) {
-          return x.aliases.some(alias => norm(alias).includes(q));
-        }
-        return false;
-      })
-    : available;
-
-  const show = filtered.slice(0, 30);
-
-  if (!show.length) {
-    const empty = document.createElement("div");
-    empty.className = "tag-suggestion is-empty";
-    empty.textContent = "No matches.";
-    sugEl.appendChild(empty);
-    sugEl.hidden = false;
-    return;
-  }
-
-  for (const item of show) {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "tag-suggestion";
-    btn.textContent = item.label;
-    btn.dataset.id = item.id; // Store ID for delegation
-    sugEl.appendChild(btn);
-  }
+(function() {
+  'use strict';
   
-  // Use event delegation - single listener on parent
-  // Remove old listener first to prevent duplicates
-  sugEl._clickHandler && sugEl.removeEventListener("click", sugEl._clickHandler);
-  sugEl._clickHandler = function(e) {
-    const btn = e.target.closest(".tag-suggestion:not(.is-empty)");
-    if (!btn || !btn.dataset.id) return;
-    set.add(norm(btn.dataset.id));
-    if (onPick) {
-      const item = list.find(x => norm(x.id) === norm(btn.dataset.id));
-      onPick(item);
-    }
-  };
-  sugEl.addEventListener("click", sugEl._clickHandler);
+  // =========================================================
+  // Use shared utilities
+  // =========================================================
+  var F = window.CRCFilters;
+  var norm = F.norm;
+  var expandRomanNumerals = F.expandRomanNumerals;
 
-  sugEl.hidden = false;
-}
+  // =========================================================
+  // DOM: cache everything once for speed + clarity
+  // =========================================================
+  var items = Array.from(document.querySelectorAll('.game-item'));
+  var totalItems = items.length; // Store total count
+  var input = document.getElementById('q');
+  var status = document.getElementById('status');
+  var limitSelect = document.getElementById('limit');
+  var resetBtn = document.getElementById('reset-all');
 
-// =========================================================
-// Reset button visibility
-// =========================================================
-function updateResetButton() {
-  const hasFilters = input.value.trim() ||
+  // =========================================================
+  // DOM: Filter elements - Genre, Platform, Challenge
+  // =========================================================
+  var genreFilterEl = document.getElementById('genre-filter');
+  var genrePickedEl = document.getElementById('genre-picked');
+  var genreSearchEl = document.getElementById('genre-search');
+  var genreSugEl = document.getElementById('genre-suggestions');
+
+  var platformFilterEl = document.getElementById('platform-filter');
+  var platformPickedEl = document.getElementById('platform-picked');
+  var platformSearchEl = document.getElementById('platform-search');
+  var platformSugEl = document.getElementById('platform-suggestions');
+
+  var challengeFilterEl = document.getElementById('challenge-filter');
+  var challengePickedEl = document.getElementById('challenge-picked');
+  var challengeSearchEl = document.getElementById('challenge-search');
+  var challengeSugEl = document.getElementById('challenge-suggestions');
+
+  var activeGenres = new Set();
+  var activePlatforms = new Set();
+  var activeChallenges = new Set();
+
+  // =========================================================
+  // Data: load label maps from Jekyll data files (safe via jsonify)
+  // =========================================================
+  var GENRES = [
+  {% for pair in site.data.genres %}
+    {
+      id: {{ pair[0] | jsonify }},
+      label: {{ pair[1].label | default: pair[0] | jsonify }}
+    }{% unless forloop.last %},{% endunless %}
+  {% endfor %}
+  ].sort(function(a, b) { return a.label.localeCompare(b.label); });
+
+  var PLATFORMS = [
+  {% for pair in site.data.platforms %}
+    {
+      id: {{ pair[0] | jsonify }},
+      label: {{ pair[1].label | default: pair[0] | jsonify }},
+      aliases: {{ pair[1].aliases | default: empty | jsonify }}
+    }{% unless forloop.last %},{% endunless %}
+  {% endfor %}
+  ].sort(function(a, b) { return a.label.localeCompare(b.label); });
+
+  var CHALLENGES = [
+  {% for pair in site.data.challenges %}
+    {
+      id: {{ pair[0] | jsonify }},
+      label: {{ pair[1].label | default: pair[0] | jsonify }},
+      aliases: {{ pair[1].aliases | default: empty | jsonify }}
+    }{% unless forloop.last %},{% endunless %}
+  {% endfor %}
+  ].sort(function(a, b) { return a.label.localeCompare(b.label); });
+
+  // =========================================================
+  // Reset button visibility
+  // =========================================================
+  function updateResetButton() {
+    var hasFilters = input.value.trim() ||
                      activeGenres.size > 0 ||
                      activePlatforms.size > 0 ||
                      activeChallenges.size > 0 ||
                      location.hash;
-  if (resetBtn) resetBtn.hidden = !hasFilters;
-}
-
-function resetAllFilters() {
-  input.value = '';
-  activeGenres.clear();
-  activePlatforms.clear();
-  activeChallenges.clear();
-  
-  // Clear hash
-  history.pushState('', document.title, window.location.pathname + window.location.search);
-  
-  // Re-render picked chips
-  renderPicked(activeGenres, GENRES, genrePickedEl, { onRemove: () => {
-    renderPicked(activeGenres, GENRES, genrePickedEl);
-    applyFilter();
-  }});
-  renderPicked(activePlatforms, PLATFORMS, platformPickedEl, { onRemove: () => {
-    renderPicked(activePlatforms, PLATFORMS, platformPickedEl);
-    applyFilter();
-  }});
-  renderPicked(activeChallenges, CHALLENGES, challengePickedEl, { onRemove: () => {
-    renderPicked(activeChallenges, CHALLENGES, challengePickedEl);
-    applyFilter();
-  }});
-  
-  updateAzActive();
-  applyFilter();
-}
-
-if (resetBtn) {
-  resetBtn.addEventListener('click', resetAllFilters);
-}
-
-// =========================================================
-// Filtering: search + genres + platforms + challenges
-// =========================================================
-function applyFilter() {
-  const q = norm(input.value);
-  const qExpanded = expandRomanNumerals(input.value);
-  const limit = Number(limitSelect.value);
-  const matches = [];
-
-  const rawHash = (location.hash || "").replace("#", "").toUpperCase();
-  const hashMode = rawHash && rawHash !== "ALL" ? rawHash : "";
-
-  for (const el of items) {
-    const name = el.dataset.name || "";
-    const nameExpanded = expandRomanNumerals(name);
-    const genres = (el.dataset.genres || "").split(",").map(norm).filter(Boolean);
-    const platforms = (el.dataset.platforms || "").split(",").map(norm).filter(Boolean);
-    const challenges = (el.dataset.challenges || "").split(",").map(norm).filter(Boolean);
-
-    const letter = (el.dataset.letter || "").toUpperCase();
-    const startsWithDigit = letter >= "0" && letter <= "9";
-    const startsWithAtoZ = letter >= "A" && letter <= "Z";
-
-    const okHash =
-      !hashMode ||
-      (hashMode === "0-9" && startsWithDigit) ||
-      (hashMode === "OTHER" && !startsWithDigit && !startsWithAtoZ) ||
-      (hashMode.length === 1 && letter === hashMode);
-
-    const nameMatch = !q || name.includes(q) || nameExpanded.includes(qExpanded);
-
-    const ok =
-      okHash &&
-      nameMatch &&
-      Array.from(activeGenres).every(g => genres.includes(g)) &&
-      Array.from(activePlatforms).every(p => platforms.includes(p)) &&
-      Array.from(activeChallenges).every(c => challenges.includes(c));
-
-    if (ok) matches.push(el);
-    el.style.display = "none";
+    if (resetBtn) resetBtn.hidden = !hasFilters;
   }
 
-  const shown = limit === 0 ? matches.length : Math.min(limit, matches.length);
-  for (let i = 0; i < shown; i++) matches[i].style.display = "";
-
-  status.textContent = `Showing ${shown} of ${matches.length} games.`;
-  updateResetButton();
-}
-
-// =========================================================
-// Dropdown behavior: open on focus/click, close on outside/Esc
-// =========================================================
-function wireDropdown({ filterEl, searchEl, sugEl, set, list, pickedEl }) {
-  function afterPick() {
-    searchEl.value = "";
-    renderPicked(set, list, pickedEl, { onRemove: onRemoveChip });
+  function resetAllFilters() {
+    input.value = '';
+    activeGenres.clear();
+    activePlatforms.clear();
+    activeChallenges.clear();
+    
+    // Clear hash
+    history.pushState('', document.title, window.location.pathname + window.location.search);
+    
+    // Re-render picked chips
+    F.renderPicked(activeGenres, GENRES, genrePickedEl, { onRemove: applyFilter });
+    F.renderPicked(activePlatforms, PLATFORMS, platformPickedEl, { onRemove: applyFilter });
+    F.renderPicked(activeChallenges, CHALLENGES, challengePickedEl, { onRemove: applyFilter });
+    
+    azNav.update();
     applyFilter();
-    renderSuggestions("", set, list, sugEl, { onPick: afterPick });
   }
 
-  function open() {
-    renderSuggestions(searchEl.value, set, list, sugEl, { onPick: afterPick });
+  if (resetBtn) {
+    resetBtn.addEventListener('click', resetAllFilters);
   }
 
-  function close() {
-    sugEl.hidden = true;
+  // =========================================================
+  // Filtering: search + genres + platforms + challenges
+  // =========================================================
+  function applyFilter() {
+    var q = norm(input.value);
+    var qExpanded = expandRomanNumerals(input.value);
+    var limit = Number(limitSelect.value);
+    var matches = [];
+
+    var hashMode = F.getHashMode();
+
+    for (var i = 0; i < items.length; i++) {
+      var el = items[i];
+      var name = el.dataset.name || '';
+      var nameExpanded = expandRomanNumerals(name);
+      var genres = (el.dataset.genres || '').split(',').map(norm).filter(Boolean);
+      var platforms = (el.dataset.platforms || '').split(',').map(norm).filter(Boolean);
+      var challenges = (el.dataset.challenges || '').split(',').map(norm).filter(Boolean);
+
+      var letter = (el.dataset.letter || '').toUpperCase();
+
+      var okHash = F.matchesHashFilter(letter, hashMode);
+      var nameMatch = !q || name.includes(q) || nameExpanded.includes(qExpanded);
+
+      var okGenres = Array.from(activeGenres).every(function(g) { return genres.includes(g); });
+      var okPlatforms = Array.from(activePlatforms).every(function(p) { return platforms.includes(p); });
+      var okChallenges = Array.from(activeChallenges).every(function(c) { return challenges.includes(c); });
+
+      var ok = okHash && nameMatch && okGenres && okPlatforms && okChallenges;
+
+      if (ok) matches.push(el);
+      el.style.display = 'none';
+    }
+
+    var shown = limit === 0 ? matches.length : Math.min(limit, matches.length);
+    for (var j = 0; j < shown; j++) {
+      matches[j].style.display = '';
+    }
+
+    // Fixed: Show "X of [total]" instead of "X of [filtered]"
+    status.textContent = 'Showing ' + shown + ' of ' + totalItems + ' games.';
+    updateResetButton();
   }
 
-  function onRemoveChip() {
-    searchEl.value = "";
-    renderPicked(set, list, pickedEl, { onRemove: onRemoveChip });
-    applyFilter();
-    close();
-  }
-
-  renderPicked(set, list, pickedEl, { onRemove: onRemoveChip });
-
-  searchEl.addEventListener("focus", () => { if (sugEl.hidden) open(); });
-  searchEl.addEventListener("pointerdown", () => { if (sugEl.hidden) open(); else close(); });
-  searchEl.addEventListener("input", () => open());
-  searchEl.addEventListener("keydown", (e) => { if (e.key === "Escape") { close(); searchEl.blur(); } });
-  document.addEventListener("pointerdown", (e) => { if (!filterEl.contains(e.target)) close(); }, true);
-}
-
-// =========================================================
-// Init dropdowns
-// =========================================================
-wireDropdown({
-  filterEl: genreFilterEl,
-  searchEl: genreSearchEl,
-  sugEl: genreSugEl,
-  set: activeGenres,
-  list: GENRES,
-  pickedEl: genrePickedEl
-});
-
-wireDropdown({
-  filterEl: platformFilterEl,
-  searchEl: platformSearchEl,
-  sugEl: platformSugEl,
-  set: activePlatforms,
-  list: PLATFORMS,
-  pickedEl: platformPickedEl
-});
-
-wireDropdown({
-  filterEl: challengeFilterEl,
-  searchEl: challengeSearchEl,
-  sugEl: challengeSugEl,
-  set: activeChallenges,
-  list: CHALLENGES,
-  pickedEl: challengePickedEl
-});
-
-// =========================================================
-// A-Z Navigation: Update active state
-// =========================================================
-const azLinks = document.querySelectorAll('.az a');
-
-function updateAzActive() {
-  const hash = (location.hash || '').replace('#', '').toUpperCase();
-  azLinks.forEach(link => {
-    const linkHash = (link.getAttribute('href') || '').replace('#', '').toUpperCase();
-    link.classList.toggle('is-active', linkHash === hash);
+  // =========================================================
+  // Init A-Z navigation
+  // =========================================================
+  var azNav = F.initAzNav({
+    onHashChange: applyFilter
   });
-}
 
-window.addEventListener("hashchange", () => {
-  updateAzActive();
-  applyFilter();
-});
-
-azLinks.forEach(link => {
-  link.addEventListener('click', () => {
-    setTimeout(updateAzActive, 0);
+  // =========================================================
+  // Init dropdowns using shared utilities
+  // =========================================================
+  F.wireDropdown({
+    filterEl: genreFilterEl,
+    searchEl: genreSearchEl,
+    sugEl: genreSugEl,
+    set: activeGenres,
+    list: GENRES,
+    pickedEl: genrePickedEl,
+    onFilter: applyFilter
   });
-});
 
-input.addEventListener("input", applyFilter);
-limitSelect.addEventListener("change", applyFilter);
+  F.wireDropdown({
+    filterEl: platformFilterEl,
+    searchEl: platformSearchEl,
+    sugEl: platformSugEl,
+    set: activePlatforms,
+    list: PLATFORMS,
+    pickedEl: platformPickedEl,
+    onFilter: applyFilter
+  });
 
-updateAzActive();
-applyFilter();
+  F.wireDropdown({
+    filterEl: challengeFilterEl,
+    searchEl: challengeSearchEl,
+    sugEl: challengeSugEl,
+    set: activeChallenges,
+    list: CHALLENGES,
+    pickedEl: challengePickedEl,
+    onFilter: applyFilter
+  });
+
+  // =========================================================
+  // Event listeners
+  // =========================================================
+  input.addEventListener('input', applyFilter);
+  limitSelect.addEventListener('change', applyFilter);
+
+  // Initial render
+  applyFilter();
+})();
 </script>
