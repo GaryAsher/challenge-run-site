@@ -43,11 +43,8 @@ challenges:
   - hitless
   - no-hit-no-damage
 
-glitches_data:
-  - slug: unrestricted
-    label: "Unrestricted"
-  - slug: glitchless
-    label: "Glitchless"
+# Glitches not relevant for this game
+glitches_relevant: false
 
 restrictions:
   - "Companions Only"
