@@ -15,7 +15,6 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Add bio field
 - [ ] Add featured runs section
 - [ ] Auto-calculate stats (total runs, games played, PBs)
-- [ ] Create runner submission form
 
 **Proposed structure:**
 ```yaml
