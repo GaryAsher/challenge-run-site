@@ -13,7 +13,7 @@ title: Teams
     {% if site.teams.size > 0 %}
       <div class="teams-grid">
         {% for team in site.teams %}
-          <a href="{{ team.url | relative_url }}" class="team-card">
+          <a href="{{ team.url | relative_url }}" class="team-card card-lift--sm">
             {% if team.logo %}
               <img src="{{ team.logo | relative_url }}" alt="{{ team.name }}" class="team-card__logo">
             {% else %}
