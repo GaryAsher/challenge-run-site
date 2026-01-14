@@ -8,7 +8,6 @@ name_aliases:
   - "TR"
 status: "Active"
 
-# TODO: Add genres
 genres:
   - action
   - roguelike
@@ -36,71 +35,80 @@ character_column:
   enabled: true
   label: "Class"
 
-# Standard challenge types (site-wide definitions)
-challenges:
-  - damageless
-  - flawless
-  - hitless
-  - no-hit-no-damage
+# =============================================================================
+# GENERAL RULES
+# =============================================================================
+general_rules:
+  - "**Video Required:** All submissions must include video proof"
+  - "**No Mods:** External mods or cheats are not allowed"
+  - "Show death at the start of a run for unseeded."
+  - "Visualize Player Hitbox: ON (in Options under Gameplay)"
+  - "Show the skill tree choices (optional)."
+  - "Show Cinder options (optional)."
+
+# =============================================================================
+# STANDARD CHALLENGE TYPES
+# =============================================================================
+challenges_data:
+  - slug: damageless
+    label: "Damageless"
+    description: |
+      Complete the run without taking any damage.
+
+      • Damage is any loss of your character's current health, regardless of source
+      • Changes to maximum health are not damage, even if they also change current health
+      • Shield damage counts as taking damage
+  - slug: hitless
+    label: "Hitless"
+    description: |
+      Complete the run without being hit by any enemy attack.
+
+      • Environmental damage may be allowed depending on category
+      • Check specific category rules for clarification
+  - slug: no-hit-no-damage
+    label: "No-Hit / No-Damage"
+    description: |
+      The strictest challenge combining both Hitless and Damageless rules.
+
+      • No hits from any source
+      • No damage taken from any source
 
 # Glitches not relevant for this game
 glitches_relevant: false
 
-restrictions:
-  - "Companions Only"
+# =============================================================================
+# RESTRICTIONS
+# =============================================================================
+restrictions_data:
+  - slug: companions-only
+    label: "Companions Only"
+    description: "Deal damage only through companions. Attacks/Abilities/Items from the player are not allowed."
 
+# =============================================================================
+# CATEGORIES
+# =============================================================================
 categories_data:
   - slug: any
     label: "Any%"
+    description: "Beat the game with any amount of Cinder."
   - slug: cinder-16
     label: "Cinder 16"
+    description: "Beat the game with all 16 Cinder modifiers active."
   - slug: quest-any
     label: "Quest Any%"
+    description: "Beat a Quest with any amount of Cinder."
   - slug: quest-cinder-16
     label: "Quest Cinder 16"
+    description: "Beat a Quest with all 16 Cinder modifiers active."
+
+# =============================================================================
+# CREDITS
+# =============================================================================
+credits:
+  - name: "Gary_Asher"
+    role: "Category and rule definitions"
 ---
 
-Game submitted via form. Awaiting review.
+Tiny Rogues is a challenging roguelike dungeon crawler with bullet-hell elements. Players choose from over 30 unique classes, each with distinct playstyles and abilities. The game features procedurally generated dungeons, hundreds of items and weapons, and intense boss battles.
 
-<!-- REVIEWER NOTES
-
-Credit requested: Yes
-Moderation interest: Yes
-
-Character/Weapon/Class options:
-  - Alchemist
-  - Bandit
-  - Barbarian
-  - Bard
-  - Chaos
-  - Cleric
-  - Cyborg
-  - Dancer
-  - Demon Hunter
-  - Deprived
-  - Doppelganger
-  - Dragoon
-  - Druid
-  - Esper
-  - Gunslinger
-  - Jester
-  - Knight
-  - Monk
-  - Mystic
-  - Necromancer
-  - Ninja
-  - Paladin
-  - Pirate
-  - Ranger
-  - Samurai
-  - Santa
-  - Soldier
-  - Sorcerer
-  - Super Hero
-  - The Hero
-  - Thief
-  - Wanderer
-  - Warrior
-  - Wizard
-
--->
+The Cinder difficulty system allows players to add up to 16 modifiers that increase challenge, making it a favorite for challenge runners seeking the ultimate test of skill.
