@@ -87,6 +87,10 @@ jobs:
             echo "exists=false" >> "$GITHUB_OUTPUT"
           else
             echo "exists=true" >> "$GITHUB_OUTPUT"
+            
+            # Extract game name from file
+            GAME_NAME=$(grep -m1 '^name:' "${SOURCE}" | sed 's/^name:[[:space:]]*//' | tr -d '"')
+            echo "game_name=${GAME_NAME}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Promote game file
@@ -104,8 +108,8 @@ jobs:
           echo "Moving ${SOURCE} -> ${DEST}"
           mv "${SOURCE}" "${DEST}"
           
-          sed -i 's/status: "Pending review - submitted by/status: "Submitted by/g' "${DEST}"
-          sed -i 's/status: "Pending review"/status: "Active"/g' "${DEST}"
+          # Remove status line entirely (we no longer use it)
+          sed -i '/^status:/d' "${DEST}"
           
           echo "✓ Game file promoted"
 
@@ -153,7 +157,6 @@ jobs:
           
           git add -A
           
-          # Use [skip ci] to prevent CI from running again
           git commit -m "feat: Promote game ${GAME_ID} [skip ci]
 
           - Moved _queue_games/${GAME_ID}.md → _games/${GAME_ID}.md
@@ -166,13 +169,66 @@ jobs:
           
           echo "✓ Changes pushed to main"
 
+      - name: Send Discord notification
+        if: steps.check.outputs.exists == 'true'
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_GAMES }}
+          GAME_ID: ${{ steps.identify.outputs.game_id }}
+          GAME_NAME: ${{ steps.check.outputs.game_name }}
+        run: |
+          # Only send if webhook is configured
+          if [ -z "${https://discord.com/api/webhooks/1459068500982239416/_eHXfByEy2JQxNezpTdENRXb-48RM0acPn0D_0Ut3cMrQd1xRop1AFYZzPqiUmghLzSW}" ]; then
+            echo "::notice::Discord webhook not configured, skipping notification"
+            exit 0
+          fi
+          
+          # Build the message
+          GAME_URL="https://challengerun.net/games/${GAME_ID}/"
+          
+          # Create JSON payload
+          PAYLOAD=$(cat <<EOF
+          {
+            "embeds": [{
+              "title": "✅ Game Approved: ${GAME_NAME}",
+              "description": "This game has been reviewed and is now live on the site!",
+              "color": 5763719,
+              "fields": [
+                {
+                  "name": "Game Page",
+                  "value": "[View ${GAME_NAME}](${GAME_URL})",
+                  "inline": true
+                },
+                {
+                  "name": "Status",
+                  "value": "🎮 Now accepting run submissions",
+                  "inline": true
+                }
+              ],
+              "footer": {
+                "text": "Challenge Run Community"
+              },
+              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            }]
+          }
+          EOF
+          )
+          
+          # Send to Discord
+          curl -s -X POST "${DISCORD_WEBHOOK}" \
+            -H "Content-Type: application/json" \
+            -d "${PAYLOAD}"
+          
+          echo "✓ Discord notification sent"
+
       - name: Summary
         if: steps.check.outputs.exists == 'true'
         env:
           GAME_ID: ${{ steps.identify.outputs.game_id }}
+          GAME_NAME: ${{ steps.check.outputs.game_name }}
         run: |
           echo "## Game Promoted! 🎮" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Game:** ${GAME_NAME}" >> $GITHUB_STEP_SUMMARY
           echo "**Game ID:** \`${GAME_ID}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### What was done:" >> $GITHUB_STEP_SUMMARY
@@ -180,6 +236,7 @@ jobs:
           echo "2. ✅ Generated game pages in \`games/${GAME_ID}/\`" >> $GITHUB_STEP_SUMMARY
           echo "3. ✅ Updated CODEOWNERS" >> $GITHUB_STEP_SUMMARY
           echo "4. ✅ Pushed to main" >> $GITHUB_STEP_SUMMARY
+          echo "5. ✅ Sent Discord notification" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Next step:" >> $GITHUB_STEP_SUMMARY
           echo "- Add a cover image to \`assets/img/games/${{ steps.letter.outputs.first_letter }}/\`" >> $GITHUB_STEP_SUMMARY
