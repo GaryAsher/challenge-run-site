@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <!-- Theme initialization (runs immediately to prevent flash) -->
+  <!-- Theme initialization (must be synchronous to prevent flash) -->
   <script>
     (function() {
       try {
@@ -33,11 +33,24 @@
     <meta property="og:image" content="{{ page.cover | absolute_url }}">
   {% endif %}
   
-  <!-- CSS -->
-  <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}">
+  <!-- Critical CSS (inline for fastest render) -->
+  <style>
+    /* Minimal critical styles to prevent layout shift */
+    :root{--accent:#3BC36E;--bg:#0f0f0f;--fg:#fff;--border:rgba(255,255,255,.12);--panel:rgba(255,255,255,.04)}
+    [data-theme="pink"]{--accent:#E91E8C}[data-theme="blue"]{--accent:#3B82F6}[data-theme="purple"]{--accent:#8B5CF6}[data-theme="red"]{--accent:#EF4444}
+    *,*::before,*::after{box-sizing:border-box}
+    body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--fg);margin:0;line-height:1.6}
+    a{color:var(--accent);text-decoration:none}
+    .site-header{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);background:var(--bg)}
+    .brand{font-weight:800;color:var(--accent)}
+    .page-width{max-width:960px;margin:0 auto;padding:0 1.5rem}
+    .muted{color:rgba(255,255,255,.78)}
+    [hidden]{display:none!important}
+  </style>
   
-  <!-- Preload critical assets -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <!-- Main CSS (non-blocking) -->
+  <link rel="preload" href="{{ '/assets/style.css' | relative_url }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}"></noscript>
 </head>
 <body>
   {% include header.html %}
@@ -48,7 +61,7 @@
   
   {% include footer.html %}
   
-  <!-- JS -->
+  <!-- JS - defer ensures it loads after HTML parsing -->
   <script src="{{ '/assets/js/main.js' | relative_url }}" defer></script>
 </body>
 </html>
