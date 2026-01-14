@@ -5,6 +5,7 @@
     <div class="nav-group">
       <a href="{{ '/games/' | relative_url }}">Games</a>
       <a href="{{ '/runners/' | relative_url }}">Runners</a>
+      <a href="{{ '/teams/' | relative_url }}">Teams</a>
       <a href="{{ '/news/' | relative_url }}">News</a>
     </div>
 
@@ -56,6 +57,15 @@
       "id": {{ r.runner_id | default: r.title | jsonify }},
       "name": {{ r.name | default: r.title | jsonify }},
       "url": {{ r.url | relative_url | jsonify }}
+    }{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ],
+  "teams": [
+    {% for t in site.teams %}
+    {
+      "id": {{ t.team_id | default: t.title | jsonify }},
+      "name": {{ t.name | default: t.title | jsonify }},
+      "url": {{ t.url | relative_url | jsonify }}
     }{% unless forloop.last %},{% endunless %}
     {% endfor %}
   ]
@@ -115,7 +125,6 @@
   // Convert roman numerals to arabic for matching
   function expandRomanNumerals(s) {
     var str = norm(s);
-    // Common roman numerals in game titles
     var romans = [
       ['viii', '8'], ['vii', '7'], ['vi', '6'], ['iv', '4'], ['v', '5'],
       ['iii', '3'], ['ii', '2'], ['i', '1'],
@@ -123,7 +132,6 @@
       ['xiv', '14'], ['xv', '15'], ['xvi', '16']
     ];
     romans.forEach(function(pair) {
-      // Match roman numeral as whole word or at end of string
       var regex = new RegExp('\\b' + pair[0] + '\\b', 'g');
       str = str.replace(regex, pair[1]);
     });
@@ -133,14 +141,13 @@
   function search(query) {
     var q = norm(query);
     var qExpanded = expandRomanNumerals(query);
-    if (!q || q.length < 2) return { games: [], runners: [] };
+    if (!q || q.length < 2) return { games: [], runners: [], teams: [] };
     
-    var out = { games: [], runners: [] };
+    var out = { games: [], runners: [], teams: [] };
     
     (searchData.games || []).forEach(function(g) {
       var haystack = [norm(g.name), norm(g.id)].concat((g.aliases || []).map(norm)).join(' ');
       var haystackExpanded = expandRomanNumerals(haystack);
-      // Match against both original and expanded versions
       if (haystack.indexOf(q) !== -1 || haystackExpanded.indexOf(qExpanded) !== -1) {
         out.games.push(g);
       }
@@ -152,8 +159,15 @@
       }
     });
     
+    (searchData.teams || []).forEach(function(t) {
+      if (norm(t.name).indexOf(q) !== -1 || norm(t.id).indexOf(q) !== -1) {
+        out.teams.push(t);
+      }
+    });
+    
     out.games = out.games.slice(0, 5);
     out.runners = out.runners.slice(0, 5);
+    out.teams = out.teams.slice(0, 3);
     
     return out;
   }
@@ -165,7 +179,7 @@
   }
   
   function render(searchResults, query) {
-    var total = searchResults.games.length + searchResults.runners.length;
+    var total = searchResults.games.length + searchResults.runners.length + searchResults.teams.length;
     
     if (!query || query.length < 2) {
       results.hidden = true;
@@ -197,6 +211,17 @@
       searchResults.runners.forEach(function(r) {
         html += '<a href="' + r.url + '" class="search-result-item">';
         html += '<span class="search-result-item__name">' + escapeHtml(r.name) + '</span>';
+        html += '</a>';
+      });
+      html += '</div>';
+    }
+    
+    if (searchResults.teams.length) {
+      html += '<div class="search-result-group">';
+      html += '<div class="search-result-group__title">Teams</div>';
+      searchResults.teams.forEach(function(t) {
+        html += '<a href="' + t.url + '" class="search-result-item">';
+        html += '<span class="search-result-item__name">' + escapeHtml(t.name) + '</span>';
         html += '</a>';
       });
       html += '</div>';
