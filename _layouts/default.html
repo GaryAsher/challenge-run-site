@@ -4,6 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
+  <!-- Theme initialization (runs immediately to prevent flash) -->
+  <script>
+    (function() {
+      try {
+        var theme = localStorage.getItem('crc_theme');
+        if (theme) document.documentElement.setAttribute('data-theme', theme);
+      } catch(e) {}
+    })();
+  </script>
+  
   <!-- SEO Meta Tags -->
   <title>{{ page.title | default: site.title }}</title>
   
