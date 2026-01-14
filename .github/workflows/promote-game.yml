@@ -111,6 +111,16 @@ jobs:
           # Remove status line entirely (we no longer use it)
           sed -i '/^status:/d' "${DEST}"
           
+          # Remove placeholder body text and reviewer notes
+          # This removes everything after the closing --- that isn't meaningful content
+          sed -i '/^---$/,${
+            /^Game submitted via form\. Awaiting review\.$/d
+            /^<!-- REVIEWER NOTES$/,/^-->$/d
+          }' "${DEST}"
+          
+          # Clean up any trailing blank lines at end of file
+          sed -i -e :a -e '/^\n*$/{$d;N;ba' -e '}' "${DEST}"
+          
           echo "✓ Game file promoted"
 
       - name: Generate game pages
