@@ -34,10 +34,6 @@
           <div class="game-hero__content">
             <h1>{{ game.name }}</h1>
 
-            {% if game.status %}
-              <p class="muted">{{ game.status }}</p>
-            {% endif %}
-
             {% if game.genres and game.genres.size > 0 %}
               <div class="game-genres">
                 {% for tag in game.genres %}
