@@ -1261,9 +1261,8 @@ button.tag,
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Hero gets accent border when on overview tab (active state) */
-.game-hero--active,
-.game-hero:hover {
+/* Hero gets accent border only when on overview tab (active state) */
+.game-hero--active {
   border-color: var(--accent);
   box-shadow: 0 0 0 1px var(--focus-2);
 }
