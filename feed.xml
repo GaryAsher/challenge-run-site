@@ -1,0 +1,28 @@
+---
+layout: null
+---
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>{{ site.title }} - News</title>
+    <description>{{ site.description | default: "Challenge run news and updates" }}</description>
+    <link>{{ site.url }}</link>
+    <atom:link href="{{ site.url }}/feed.xml" rel="self" type="application/rss+xml"/>
+    <lastBuildDate>{{ site.time | date_to_rfc822 }}</lastBuildDate>
+    {% for post in site.posts limit:20 %}
+    <item>
+      <title>{{ post.title | xml_escape }}</title>
+      <link>{{ post.url | absolute_url }}</link>
+      <guid isPermaLink="true">{{ post.url | absolute_url }}</guid>
+      <pubDate>{{ post.date | date_to_rfc822 }}</pubDate>
+      <author>{{ site.author | default: "Challenge Run Community" }}</author>
+      {% if post.categories %}
+      {% for category in post.categories %}
+      <category>{{ category | xml_escape }}</category>
+      {% endfor %}
+      {% endif %}
+      <description>{{ post.excerpt | strip_html | xml_escape | truncate: 500 }}</description>
+    </item>
+    {% endfor %}
+  </channel>
+</rss>
