@@ -1262,9 +1262,10 @@ button.tag,
 }
 
 /* Hero gets accent border only when on overview tab (active state) */
+/* Removed accent border/glow to eliminate colored outline around images */
 .game-hero--active {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--focus-2);
+  border-color: var(--border);
+  box-shadow: none;
 }
 
 .game-hero__overlay {
@@ -2164,6 +2165,120 @@ button.tag,
 .news-item__text {
   margin: 0;
   line-height: 1.5;
+}
+
+/* ============================================================
+   News Carousel (Homepage)
+   ============================================================ */
+.home-card--square {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-card--square .home-card__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.news-carousel {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.news-slide {
+  display: none;
+  flex-direction: column;
+  animation: fadeIn 0.4s ease;
+}
+
+.news-slide.is-active {
+  display: flex;
+  flex: 1;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.news-slide__date {
+  display: block;
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.news-slide__title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem 0;
+  line-height: 1.3;
+}
+
+.news-slide__title a {
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.news-slide__title a:hover {
+  color: var(--accent);
+}
+
+.news-slide__excerpt {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+  flex: 1;
+}
+
+.news-carousel__controls {
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+.news-carousel__dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.news-carousel__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.news-carousel__dot:hover {
+  background: var(--panel);
+  transform: scale(1.15);
+}
+
+.news-carousel__dot.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.news-carousel__link {
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+/* Responsive: Remove aspect ratio on mobile for better UX */
+@media (max-width: 900px) {
+  .home-card--square {
+    aspect-ratio: auto;
+    min-height: 280px;
+  }
 }
 
 /* Community Board */
