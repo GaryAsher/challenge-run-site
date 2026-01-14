@@ -3,6 +3,7 @@ layout: post
 title: "Now Tracking: Hades II"
 date: 2026-01-10
 categories: [new-game]
+featured: false
 game_id: hades-2
 ---
 
