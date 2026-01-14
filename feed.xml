@@ -1,0 +1,55 @@
+---
+layout: default
+---
+
+<div class="page-width">
+  <p class="muted page-back">
+    <a href="{{ '/news/' | relative_url }}">← All News</a>
+  </p>
+</div>
+
+<div class="page-width">
+  <div class="game-shell">
+    <article class="post">
+      <header class="post-header">
+        <h1>{{ page.title }}</h1>
+        <div class="post-meta muted">
+          <time datetime="{{ page.date | date_to_xmlschema }}">
+            {{ page.date | date: "%B %d, %Y" }}
+          </time>
+          {% if page.categories and page.categories.size > 0 %}
+            <span class="post-categories">
+              {% for cat in page.categories %}
+                <span class="tag">{{ cat }}</span>
+              {% endfor %}
+            </span>
+          {% endif %}
+          {% if page.game_id %}
+            {% assign game = site.games | where: "game_id", page.game_id | first %}
+            {% if game %}
+              <span class="post-game">
+                Related: <a href="{{ game.url | relative_url }}">{{ game.name }}</a>
+              </span>
+            {% endif %}
+          {% endif %}
+        </div>
+      </header>
+
+      <div class="card post-content">
+        {{ content }}
+      </div>
+
+      {% if page.game_id %}
+        {% assign game = site.games | where: "game_id", page.game_id | first %}
+        {% if game %}
+        <div class="card card--compact mt-4">
+          <p class="muted mb-2">Related Game</p>
+          <a href="{{ game.url | relative_url }}" class="btn btn--outline">
+            View {{ game.name }} →
+          </a>
+        </div>
+        {% endif %}
+      {% endif %}
+    </article>
+  </div>
+</div>
