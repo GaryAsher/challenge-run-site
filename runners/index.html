@@ -65,118 +65,93 @@ title: Runners
   </div>
 </div>
 
+<!-- Load shared filter utilities -->
+<script src="{{ '/assets/js/filter-utils.js' | relative_url }}"></script>
+
 <script>
-// =========================================================
-// Lazy Load Background Images
-// =========================================================
 (function() {
-  const lazyBgs = document.querySelectorAll('[data-bg]');
-  
-  if ('IntersectionObserver' in window) {
-    const observer = new IntersectionObserver(function(entries) {
-      entries.forEach(function(entry) {
-        if (entry.isIntersecting) {
-          const el = entry.target;
-          el.style.backgroundImage = "url('" + el.dataset.bg + "')";
-          el.removeAttribute('data-bg');
-          observer.unobserve(el);
-        }
-      });
-    }, { rootMargin: '100px' });
-    
-    lazyBgs.forEach(function(el) { observer.observe(el); });
-  } else {
-    lazyBgs.forEach(function(el) {
-      el.style.backgroundImage = "url('" + el.dataset.bg + "')";
-    });
-  }
-})();
+  'use strict';
 
-// =========================================================
-// DOM: cache runner items + helpers
-// =========================================================
-const items = Array.from(document.querySelectorAll(".runner-item"));
-const norm = s => (s || "").trim().toLowerCase();
-const input = document.getElementById("q");
-const status = document.getElementById("status");
-const limitSelect = document.getElementById("limit");
-const getLimit = () => (limitSelect ? Number(limitSelect.value) : 0);
+  // =========================================================
+  // Use shared utilities
+  // =========================================================
+  var F = window.CRCFilters;
+  var norm = F.norm;
 
-function applyFilter() {
-  const q = input ? norm(input.value) : "";
-  const limit = getLimit();
-  const matches = [];
+  // =========================================================
+  // Lazy Load Background Images
+  // =========================================================
+  F.lazyLoadBgs();
 
-  const rawHash = (location.hash || "").replace("#", "").toUpperCase();
-  const hashMode = rawHash && rawHash !== "ALL" ? rawHash : "";
+  // =========================================================
+  // DOM: cache runner items + helpers
+  // =========================================================
+  var items = Array.from(document.querySelectorAll('.runner-item'));
+  var totalItems = items.length; // Store total count
+  var input = document.getElementById('q');
+  var status = document.getElementById('status');
+  var limitSelect = document.getElementById('limit');
 
-  for (const el of items) {
-    const name = norm(el.dataset.name || "");
-    const letter = (el.dataset.letter || "").toUpperCase();
-
-    const startsWithDigit = letter >= "0" && letter <= "9";
-    const startsWithAtoZ = letter >= "A" && letter <= "Z";
-
-    const okHash =
-      !hashMode ||
-      (hashMode === "0-9" && startsWithDigit) ||
-      (hashMode === "OTHER" && !startsWithDigit && !startsWithAtoZ) ||
-      (hashMode.length === 1 && letter === hashMode);
-
-    const ok = okHash && (!q || name.includes(q));
-
-    if (ok) matches.push(el);
-    el.style.display = "none";
+  function getLimit() {
+    return limitSelect ? Number(limitSelect.value) : 0;
   }
 
-  const shown = limit === 0 ? matches.length : Math.min(limit, matches.length);
-  for (let i = 0; i < shown; i++) matches[i].style.display = "";
+  function applyFilter() {
+    var q = input ? norm(input.value) : '';
+    var limit = getLimit();
+    var matches = [];
 
-  if (status) {
-    status.textContent =
-      `${shown} shown of ${matches.length} matches` +
-      (hashMode ? ` (section: ${hashMode})` : "");
+    var hashMode = F.getHashMode();
+
+    for (var i = 0; i < items.length; i++) {
+      var el = items[i];
+      var name = norm(el.dataset.name || '');
+      var letter = (el.dataset.letter || '').toUpperCase();
+
+      var okHash = F.matchesHashFilter(letter, hashMode);
+      var ok = okHash && (!q || name.includes(q));
+
+      if (ok) matches.push(el);
+      el.style.display = 'none';
+    }
+
+    var shown = limit === 0 ? matches.length : Math.min(limit, matches.length);
+    for (var j = 0; j < shown; j++) {
+      matches[j].style.display = '';
+    }
+
+    if (status) {
+      // Fixed: Show "X of [total]" instead of "X of [filtered]"
+      var hashInfo = hashMode ? ' (section: ' + hashMode + ')' : '';
+      status.textContent = 'Showing ' + shown + ' of ' + totalItems + ' runners' + hashInfo + '.';
+    }
   }
-}
 
-// =========================================================
-// A-Z Navigation: Update active state
-// =========================================================
-const azLinks = document.querySelectorAll('.az a');
-
-function updateAzActive() {
-  const hash = (location.hash || '').replace('#', '').toUpperCase();
-  azLinks.forEach(link => {
-    const linkHash = (link.getAttribute('href') || '').replace('#', '').toUpperCase();
-    link.classList.toggle('is-active', linkHash === hash);
+  // =========================================================
+  // Init A-Z navigation using shared utilities
+  // =========================================================
+  var azNav = F.initAzNav({
+    onHashChange: applyFilter
   });
-}
 
-window.addEventListener("hashchange", () => {
-  updateAzActive();
+  // =========================================================
+  // Event listeners
+  // =========================================================
+  if (input) input.addEventListener('input', applyFilter);
+  if (limitSelect) limitSelect.addEventListener('change', applyFilter);
+
+  // =========================================================
+  // UX: blur controls when clicking outside the controls block
+  // =========================================================
+  var controlsRoot = document.getElementById('runners-controls');
+
+  document.addEventListener('pointerdown', function(e) {
+    if (controlsRoot && controlsRoot.contains(e.target)) return;
+    if (input) input.blur();
+    if (limitSelect) limitSelect.blur();
+  });
+
+  // Initial render
   applyFilter();
-});
-
-azLinks.forEach(link => {
-  link.addEventListener('click', () => {
-    setTimeout(updateAzActive, 0);
-  });
-});
-
-if (input) input.addEventListener("input", applyFilter);
-if (limitSelect) limitSelect.addEventListener("change", applyFilter);
-
-// =========================================================
-// UX: blur controls when clicking outside the controls block
-// =========================================================
-const controlsRoot = document.getElementById("runners-controls");
-
-document.addEventListener("pointerdown", (e) => {
-  if (controlsRoot && controlsRoot.contains(e.target)) return;
-  if (input) input.blur();
-  if (limitSelect) limitSelect.blur();
-});
-
-updateAzActive();
-applyFilter();
+})();
 </script>
