@@ -1,0 +1,55 @@
+---
+layout: default
+title: News
+---
+
+<div class="page-width">
+  <div class="game-shell">
+    <header class="page-header">
+      <h1>News & Updates</h1>
+      <p class="muted">Latest announcements, new games, rule changes, and community updates.</p>
+      <p class="muted">
+        <a href="{{ '/feed.xml' | relative_url }}" class="rss-link">
+          📡 Subscribe via RSS
+        </a>
+      </p>
+    </header>
+
+    {% if site.posts.size > 0 %}
+      <div class="news-list">
+        {% for post in site.posts %}
+          <article class="card news-item">
+            <div class="news-item__header">
+              <h2 class="news-item__title">
+                <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
+              </h2>
+              <time class="news-item__date muted" datetime="{{ post.date | date_to_xmlschema }}">
+                {{ post.date | date: "%B %d, %Y" }}
+              </time>
+            </div>
+            
+            {% if post.categories and post.categories.size > 0 %}
+              <div class="news-item__categories">
+                {% for cat in post.categories %}
+                  <span class="tag tag--small">{{ cat }}</span>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <div class="news-item__excerpt">
+              {{ post.excerpt | strip_html | truncate: 200 }}
+            </div>
+
+            <a href="{{ post.url | relative_url }}" class="news-item__link">
+              Read more →
+            </a>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="card">
+        <p class="muted">No news posts yet. Check back soon!</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
