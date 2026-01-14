@@ -12,6 +12,52 @@ const CONFIG = {
   'use strict';
 
   // =========================================================
+  // Safe DOM Utilities
+  // =========================================================
+  
+  /**
+   * Safely get an element by ID, returns null if not found
+   */
+  function $(id) {
+    try {
+      return document.getElementById(id);
+    } catch (e) {
+      console.warn(`Failed to get element #${id}:`, e);
+      return null;
+    }
+  }
+  
+  /**
+   * Safely query select, returns empty array on failure
+   */
+  function $$(selector, context = document) {
+    try {
+      return Array.from((context || document).querySelectorAll(selector));
+    } catch (e) {
+      console.warn(`Failed to query "${selector}":`, e);
+      return [];
+    }
+  }
+  
+  /**
+   * Safely add event listener with error handling
+   */
+  function safeOn(el, event, handler) {
+    if (!el) return;
+    try {
+      el.addEventListener(event, function(e) {
+        try {
+          handler(e);
+        } catch (err) {
+          console.error(`Error in ${event} handler:`, err);
+        }
+      });
+    } catch (e) {
+      console.warn(`Failed to attach ${event} listener:`, e);
+    }
+  }
+
+  // =========================================================
   // Scroll preservation
   // =========================================================
   function getGameRoot(pathname) {
