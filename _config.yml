@@ -1,6 +1,10 @@
 title: Challenge Run Community
+description: "Tracking challenge runs, deathless runs, and no-hit achievements across games"
 url: https://challengerun.net
 markdown: kramdown
+
+# For RSS feed
+author: Challenge Run Community
 
 collections:
   games:
@@ -12,7 +16,13 @@ collections:
   runs:
     output: false
 
+# Posts are built-in, but we set defaults
 defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: post
   - scope:
       path: ""
       type: runs
