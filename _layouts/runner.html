@@ -67,7 +67,7 @@ layout: default
   <nav class="runner-tabs game-tabs" id="runner-tabs">
     <button class="tab active" data-tab="profile" type="button">Profile</button>
     <button class="tab" data-tab="runs" type="button">Completed Runs</button>
-    <button class="tab" data-tab="other" type="button">Achievements</button>
+    <button class="tab" data-tab="other" type="button">Something Else</button>
   </nav>
 
   <!-- ==========================================================
@@ -132,8 +132,24 @@ layout: default
             {% assign ch_id = r.challenge_id | default: "" | strip %}
             {% assign ch_label = "" %}
             {% if ch_id != "" %}
-              {% assign chmeta = site.data.challenges[ch_id] %}
-              {% assign ch_label = chmeta.label | default: ch_id %}
+          <!-- First check game-specific challenges_data -->
+              {% assign game_ch = nil %}
+              {% if g and g.challenges_data %}
+                {% for gch in g.challenges_data %}
+                  {% if gch.slug == ch_id %}
+                    {% assign game_ch = gch %}
+                    {% break %}
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+              
+              {% if game_ch %}
+                {% assign ch_label = game_ch.label | default: ch_id %}
+              {% else %}
+          <!-- all back to global challenges -->
+                {% assign chmeta = site.data.challenges[ch_id] %}
+                {% assign ch_label = chmeta.label | default: ch_id %}
+              {% endif %}
               {% assign ch_label = ch_label | strip %}
             {% endif %}
 
@@ -219,11 +235,11 @@ layout: default
   </section>
 
   <!-- ==========================================================
-       ACHIEVEMENTS PANEL
+       OTHER PANEL
        ========================================================== -->
   <section class="tab-panel" data-panel="other">
     <div class="card">
-      <h2>Achievements</h2>
+      <h2>Something Else</h2>
       <p class="muted">Placeholder tab.</p>
     </div>
   </section>
