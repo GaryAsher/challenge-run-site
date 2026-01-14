@@ -1,15 +1,8 @@
+<!-- =========================================================
+     Game Rules Include  
+     ========================================================= -->
 {% assign game = include.game %}
 {% assign game_id = game.game_id %}
-
-<!-- =========================================================
-     Game Rules Include
-  
-     Usage: {% include game-rules.html game=game %}
-  
-     ORDERING (per spec):
-     Rule Builder: General Rules -> Run Categories -> Community Challenges -> Character -> Standard Challenge -> Restrictions -> Glitches Used
-     Accordions:   General Rules -> Run Categories -> Community Challenges -> Character -> Standard Challenge -> Restrictions -> Glitches Used
-     ========================================================= -->
 
 <!-- Determine which data exists -->
 {% assign has_categories = false %}
