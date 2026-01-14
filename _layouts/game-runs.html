@@ -347,12 +347,14 @@ layout: default
             </select>
           </div>
 
+          {% if game.restrictions_data and game.restrictions_data.size > 0 %}
           <div class="runs-filter">
             <span class="muted filter-label-text">Restrictions</span>
             <select id="f-restrictions" class="select filter th-caret" autocomplete="off">
               <option value="">All</option>
             </select>
           </div>
+          {% endif %}
 
           {% if game.glitches_data and game.glitches_data.size > 0 %}
           <div class="runs-filter">
