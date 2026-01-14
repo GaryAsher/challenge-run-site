@@ -1257,6 +1257,15 @@ button.tag,
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Hero gets accent border when on overview tab (active state) */
+.game-hero--active,
+.game-hero:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--focus-2);
 }
 
 .game-hero__overlay {
@@ -3321,14 +3330,19 @@ a.resource-card:hover {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  /* Ensure box-shadow/border highlight isn't clipped */
+  padding: 4px;
+  margin: -4px;
+  margin-bottom: 0;
 }
 
 .news-item {
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .news-item:hover {
   border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--focus-2);
 }
 
 .news-item__header {
