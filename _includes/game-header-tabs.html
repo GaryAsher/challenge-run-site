@@ -24,7 +24,7 @@
   <div class="page-width">
     <div class="game-shell">
       <section
-        class="game-hero"
+        class="game-hero{% if include.active == 'overview' %} game-hero--active{% endif %}"
         style="
           background-image: url('{{ game.cover | relative_url }}');
           background-position: {{ game.cover_position | default: 'center' }};
