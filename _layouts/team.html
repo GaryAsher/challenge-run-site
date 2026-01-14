@@ -1,0 +1,130 @@
+---
+layout: default
+---
+
+<div class="page-width">
+  <p class="muted page-back">
+    <a href="{{ '/teams/' | relative_url }}">← All Teams</a>
+  </p>
+</div>
+
+<div class="page-width">
+  <div class="game-shell">
+
+    <!-- Team Header -->
+    <div class="team-header">
+      {% if page.logo %}
+        <img src="{{ page.logo | relative_url }}" alt="{{ page.name }} logo" class="team-header__logo">
+      {% else %}
+        <div class="team-header__logo team-header__logo--placeholder">{{ page.name | slice: 0 }}</div>
+      {% endif %}
+      
+      <div class="team-header__info">
+        <h1>{{ page.name }}</h1>
+        {% if page.tagline %}
+          <p class="team-header__tagline muted">{{ page.tagline }}</p>
+        {% endif %}
+        
+        {% if page.socials %}
+          <div class="team-header__socials">
+            {% if page.socials.discord %}
+              <a href="{{ page.socials.discord }}" target="_blank" rel="noopener" class="social-link" title="Discord">
+                Discord
+              </a>
+            {% endif %}
+            {% if page.socials.youtube %}
+              <a href="{{ page.socials.youtube }}" target="_blank" rel="noopener" class="social-link" title="YouTube">
+                YouTube
+              </a>
+            {% endif %}
+            {% if page.socials.twitch %}
+              <a href="{{ page.socials.twitch }}" target="_blank" rel="noopener" class="social-link" title="Twitch">
+                Twitch
+              </a>
+            {% endif %}
+            {% if page.socials.twitter %}
+              <a href="https://twitter.com/{{ page.socials.twitter }}" target="_blank" rel="noopener" class="social-link" title="Twitter">
+                Twitter
+              </a>
+            {% endif %}
+            {% if page.socials.website %}
+              <a href="{{ page.socials.website }}" target="_blank" rel="noopener" class="social-link" title="Website">
+                Website
+              </a>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Team Description -->
+    {% assign stripped_content = content | strip %}
+    {% if stripped_content != "" %}
+      <div class="card mt-4">
+        {{ content }}
+      </div>
+    {% endif %}
+
+    <!-- Team Games -->
+    {% if page.games and page.games.size > 0 %}
+      <div class="card card--compact mt-4">
+        <h2 class="mb-2">Games We Run</h2>
+        <div class="tag-picked">
+          {% for game_id in page.games %}
+            {% assign game = site.games | where: "game_id", game_id | first %}
+            {% if game %}
+              <a href="{{ game.url | relative_url }}" class="tag-chip">{{ game.name }}</a>
+            {% else %}
+              <span class="tag">{{ game_id }}</span>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Team Members -->
+    {% if page.members and page.members.size > 0 %}
+      <div class="card card--compact mt-4">
+        <h2 class="mb-2">Members</h2>
+        <div class="team-members">
+          {% for member in page.members %}
+            {% assign runner = site.runners | where: "runner_id", member.runner_id | first %}
+            <div class="team-member">
+              {% if runner %}
+                <a href="{{ runner.url | relative_url }}" class="team-member__name">
+                  {{ member.name | default: runner.name | default: member.runner_id }}
+                </a>
+              {% else %}
+                <span class="team-member__name">{{ member.name | default: member.runner_id }}</span>
+              {% endif %}
+              {% if member.role %}
+                <span class="team-member__role muted">{{ member.role }}</span>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Team Achievements -->
+    {% if page.achievements and page.achievements.size > 0 %}
+      <div class="card card--compact mt-4">
+        <h2 class="mb-2">Achievements</h2>
+        <div class="team-achievements">
+          {% for achievement in page.achievements %}
+            <div class="team-achievement">
+              <span class="team-achievement__title">{{ achievement.title }}</span>
+              {% if achievement.date %}
+                <span class="team-achievement__date muted">{{ achievement.date }}</span>
+              {% endif %}
+              {% if achievement.description %}
+                <p class="team-achievement__desc muted">{{ achievement.description }}</p>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+  </div>
+</div>
