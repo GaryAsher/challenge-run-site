@@ -47,8 +47,7 @@ layout: default
            ========================================================= -->
       {% if page.challenges_data and page.challenges_data.size > 0 %}
       <div class="card card--compact mt-4" data-section-order="2">
-        <h2 class="mb-2">Standard Challenge Types</h2>
-        <p class="muted mb-3">Challenge types tracked for this game:</p>
+        <h2 class="mb-2">Standard Challenges:</h2>
         <div class="accordion">
           {% for ch in page.challenges_data %}
             <details class="accordion-item">
@@ -70,8 +69,7 @@ layout: default
       {% elsif page.challenges and page.challenges.size > 0 %}
       <!-- Fallback to old format if challenges_data not present -->
       <div class="card card--compact mt-4" data-section-order="2">
-        <h2 class="mb-2">Standard Challenge Types</h2>
-        <p class="muted mb-3">Challenge types tracked for this game:</p>
+        <h2 class="mb-2">Standard Challenges:</h2>
         <div class="accordion">
           {% for ch_id in page.challenges %}
             {% assign ch_meta = site.data.challenges[ch_id] %}
@@ -98,8 +96,7 @@ layout: default
            ========================================================= -->
       {% if page.restrictions_data and page.restrictions_data.size > 0 %}
       <div class="card card--compact mt-4" data-section-order="3">
-        <h2 class="mb-2">Optional Restrictions</h2>
-        <p class="muted mb-3">Additional restrictions runners can apply:</p>
+        <h2 class="mb-2">Optional Restrictions:</h2>
         <div class="accordion">
           {% for res in page.restrictions_data %}
           <details class="accordion-item">
@@ -125,7 +122,6 @@ layout: default
       <!-- Fallback to old format -->
       <div class="card card--compact mt-4" data-section-order="3">
         <h2 class="mb-2">Optional Restrictions</h2>
-        <p class="muted mb-3">Additional restrictions runners can apply:</p>
         <div class="accordion">
           {% for res in page.restrictions %}
           <details class="accordion-item">
@@ -148,8 +144,7 @@ layout: default
       {% unless page.glitches_relevant == false %}
         {% if page.glitches_data and page.glitches_data.size > 0 %}
         <div class="card card--compact mt-4" data-section-order="4">
-          <h2 class="mb-2">Glitch Categories</h2>
-          <p class="muted mb-3">Rules for glitches and exploits in runs:</p>
+          <h2 class="mb-2">Glitch Categories:</h2>
           <div class="accordion">
             {% for gl in page.glitches_data %}
             <details class="accordion-item">
@@ -182,7 +177,7 @@ layout: default
         <!-- Glitches not relevant for this game - show notice -->
         <div class="card card--compact mt-4" data-section-order="4">
           <h2 class="mb-2">Glitch Categories</h2>
-          <p class="muted">This game does not distinguish between glitch categories. All runs are accepted regardless of glitch usage.</p>
+          <p class="muted">This game does not distinguish between glitch categories.</p>
         </div>
       {% endunless %}
 
