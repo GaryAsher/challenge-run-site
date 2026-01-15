@@ -1,12 +1,20 @@
 /**
- * Runs Filter & Sort JavaScript
+ * Runs Filter & Sort JavaScript v2
  * 
- * Handles filtering, sorting, and search functionality for the runs table.
+ * Unified filter UI with typeahead inputs matching the Games page.
+ * - Text inputs with placeholders (not dropdowns)
+ * - Selected items shown as chips with × close button
+ * - Consistent UI across all filter types
+ * 
  * Used by _layouts/game-runs.html
  */
 
 document.addEventListener('DOMContentLoaded', function() {
+  'use strict';
+
+  // ============================================================
   // DOM Elements
+  // ============================================================
   const qInput = document.getElementById('q');
   const filterToggle = document.getElementById('filter-toggle');
   const advancedFilters = document.getElementById('advanced-filters');
@@ -15,14 +23,19 @@ document.addEventListener('DOMContentLoaded', function() {
   const rows = runsBody ? Array.from(runsBody.querySelectorAll('.run-row')) : [];
   const totalRuns = rows.length;
 
-  // Filter dropdowns
+  // Filter containers (we'll convert these to typeahead)
+  const fChallengeContainer = document.getElementById('f-challenge-container');
+  const fRestrictionsContainer = document.getElementById('f-restrictions-container');
+  const fGlitchContainer = document.getElementById('f-glitch-container');
+  const fCharacterContainer = document.getElementById('f-character-container');
+  
+  // Legacy select elements (fallback if containers don't exist)
   const fChallenge = document.getElementById('f-challenge');
   const fRestrictions = document.getElementById('f-restrictions');
   const fGlitch = document.getElementById('f-glitch');
   const fCharacter = document.getElementById('f-character');
+  
   const resetBtn = document.getElementById('reset-filters');
-
-  // Results status
   const resultsText = document.getElementById('results-text');
 
   // Sort buttons
@@ -31,90 +44,295 @@ document.addEventListener('DOMContentLoaded', function() {
   const sortTimeAsc = document.getElementById('th-time-asc');
   const sortTimeDesc = document.getElementById('th-time-desc');
 
-  // Track selected items (multi-select style)
-  let selectedChallenges = [];
-  let selectedRestrictions = [];
-  let selectedCharacters = [];
+  // Selected items (multi-select)
+  let selectedChallenges = new Set();
+  let selectedRestrictions = new Set();
+  let selectedCharacters = new Set();
+  let selectedGlitch = '';
 
-  // Store original options for each dropdown
-  const originalOptions = {
-    challenge: fChallenge ? Array.from(fChallenge.options).map(o => ({ value: o.value, text: o.textContent })) : [],
-    restrictions: fRestrictions ? Array.from(fRestrictions.options).map(o => ({ value: o.value, text: o.textContent })) : [],
-    character: fCharacter ? Array.from(fCharacter.options).map(o => ({ value: o.value, text: o.textContent })) : []
-  };
+  // Available options (built from data)
+  let availableChallenges = [];
+  let availableRestrictions = [];
+  let availableCharacters = [];
+  let availableGlitches = [];
 
   // ============================================================
-  // Populate Filters
+  // Utility Functions
   // ============================================================
-  function populateFilters() {
-    const challenges = new Set();
-    const restrictions = new Set();
-    const characters = new Set();
+  function norm(s) {
+    return (s || '').toString().trim().toLowerCase();
+  }
 
-    rows.forEach(row => {
-      const ch = row.dataset.challengeLabel;
-      if (ch) challenges.add(ch);
-
-      const res = row.dataset.restrictions;
-      if (res) res.split('||').forEach(r => { if (r.trim()) restrictions.add(r.trim()); });
-
-      const char = row.dataset.character;
-      if (char) characters.add(char);
-    });
-
-    if (fChallenge) {
-      [...challenges].sort().forEach(c => {
-        const opt = document.createElement('option');
-        opt.value = c;
-        opt.textContent = c;
-        fChallenge.appendChild(opt);
-      });
-      originalOptions.challenge = Array.from(fChallenge.options).map(o => ({ value: o.value, text: o.textContent }));
-    }
-
-    if (fRestrictions) {
-      [...restrictions].sort().forEach(r => {
-        const opt = document.createElement('option');
-        opt.value = r;
-        opt.textContent = r;
-        fRestrictions.appendChild(opt);
-      });
-      originalOptions.restrictions = Array.from(fRestrictions.options).map(o => ({ value: o.value, text: o.textContent }));
-    }
-
-    if (fCharacter) {
-      [...characters].sort().forEach(c => {
-        const opt = document.createElement('option');
-        opt.value = c;
-        opt.textContent = c;
-        fCharacter.appendChild(opt);
-      });
-      originalOptions.character = Array.from(fCharacter.options).map(o => ({ value: o.value, text: o.textContent }));
-    }
-
-    updateResultsStatus();
+  function debounce(fn, ms) {
+    let timer;
+    return function() {
+      const args = arguments;
+      clearTimeout(timer);
+      timer = setTimeout(() => fn.apply(this, args), ms);
+    };
   }
 
   // ============================================================
-  // Dropdown Options Management
+  // Chip Component
   // ============================================================
-  function updateDropdownOptions(select, selectedItems, originalOpts) {
-    if (!select) return;
-    const currentValue = select.value;
-    select.innerHTML = '';
-    originalOpts.forEach(opt => {
-      if (opt.value === '' || !selectedItems.includes(opt.value)) {
-        const option = document.createElement('option');
-        option.value = opt.value;
-        option.textContent = opt.text;
-        select.appendChild(option);
+  function createChip(label, onRemove) {
+    const chip = document.createElement('span');
+    chip.className = 'filter-chip';
+    chip.setAttribute('role', 'button');
+    chip.setAttribute('tabindex', '0');
+    chip.innerHTML = `
+      <span class="filter-chip__text">${escapeHtml(label)}</span>
+      <span class="filter-chip__close" aria-label="Remove ${escapeHtml(label)}">×</span>
+    `;
+    
+    const handleRemove = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (onRemove) onRemove();
+    };
+    
+    chip.addEventListener('click', handleRemove);
+    chip.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Backspace' || e.key === 'Delete') {
+        handleRemove(e);
       }
     });
-    // Restore selection if still valid
-    if (currentValue && !selectedItems.includes(currentValue)) {
-      select.value = currentValue;
-    } else {
-      select.value = '';
+    
+    return chip;
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
+
+  // ============================================================
+  // Typeahead Filter Component
+  // ============================================================
+  function createTypeaheadFilter(config) {
+    const { container, placeholder, items, selectedSet, onFilter, labelKey = 'label', idKey = 'id' } = config;
+    
+    if (!container) return null;
+    container.innerHTML = '';
+    container.className = 'filter-typeahead';
+
+    // Picked chips area
+    const pickedEl = document.createElement('div');
+    pickedEl.className = 'filter-typeahead__picked';
+    container.appendChild(pickedEl);
+
+    // Input wrapper
+    const inputWrap = document.createElement('div');
+    inputWrap.className = 'filter-typeahead__wrap';
+    container.appendChild(inputWrap);
+
+    // Text input
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'filter-typeahead__input';
+    input.placeholder = placeholder;
+    input.autocomplete = 'off';
+    inputWrap.appendChild(input);
+
+    // Suggestions dropdown
+    const sugEl = document.createElement('div');
+    sugEl.className = 'filter-typeahead__dropdown';
+    sugEl.hidden = true;
+    inputWrap.appendChild(sugEl);
+
+    let isOpen = false;
+
+    function renderPicked() {
+      pickedEl.innerHTML = '';
+      selectedSet.forEach(id => {
+        const item = items.find(x => norm(x[idKey] || x) === norm(id));
+        const label = item ? (item[labelKey] || item) : id;
+        const chip = createChip(label, () => {
+          selectedSet.delete(norm(id));
+          renderPicked();
+          onFilter();
+        });
+        pickedEl.appendChild(chip);
+      });
+    }
+
+    function renderSuggestions(query) {
+      const q = norm(query);
+      sugEl.innerHTML = '';
+
+      const available = items.filter(x => {
+        const id = x[idKey] || x;
+        return !selectedSet.has(norm(id));
+      });
+
+      const filtered = q 
+        ? available.filter(x => {
+            const label = x[labelKey] || x;
+            const id = x[idKey] || x;
+            return norm(label).includes(q) || norm(id).includes(q);
+          })
+        : available;
+
+      const show = filtered.slice(0, 20);
+
+      if (!show.length) {
+        const empty = document.createElement('div');
+        empty.className = 'filter-typeahead__option filter-typeahead__option--empty';
+        empty.textContent = available.length ? 'No matches' : 'All selected';
+        sugEl.appendChild(empty);
+        sugEl.hidden = false;
+        return;
+      }
+
+      show.forEach(item => {
+        const label = item[labelKey] || item;
+        const id = item[idKey] || item;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'filter-typeahead__option';
+        btn.textContent = label;
+        btn.addEventListener('click', () => {
+          selectedSet.add(norm(id));
+          input.value = '';
+          renderPicked();
+          renderSuggestions('');
+          onFilter();
+        });
+        sugEl.appendChild(btn);
+      });
+
+      sugEl.hidden = false;
+    }
+
+    function open() {
+      if (isOpen) return;
+      isOpen = true;
+      renderSuggestions(input.value);
+    }
+
+    function close() {
+      isOpen = false;
+      sugEl.hidden = true;
+    }
+
+    // Events
+    input.addEventListener('focus', open);
+    input.addEventListener('input', debounce(() => renderSuggestions(input.value), 100));
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        close();
+        input.blur();
+      }
+    });
+
+    document.addEventListener('pointerdown', (e) => {
+      if (!container.contains(e.target)) close();
+    }, true);
+
+    // Initial render
+    renderPicked();
+
+    return {
+      refresh: renderPicked,
+      clear: () => {
+        selectedSet.clear();
+        input.value = '';
+        renderPicked();
+      }
+    };
+  }
+
+  // ============================================================
+  // Build Options from Row Data
+  // ============================================================
+  function buildFilterOptions() {
+    const challenges = new Map();
+    const restrictions = new Set();
+    const characters = new Set();
+    const glitches = new Map();
+
+    rows.forEach(row => {
+      // Challenges
+      const chLabel = row.dataset.challengeLabel;
+      const chId = row.dataset.challengeId;
+      if (chLabel && chId) {
+        challenges.set(chId, { id: chId, label: chLabel });
+      }
+
+      // Restrictions
+      const res = row.dataset.restrictions;
+      if (res) {
+        res.split('||').forEach(r => {
+          const trimmed = r.trim();
+          if (trimmed) restrictions.add(trimmed);
+        });
+      }
+
+      // Characters
+      const char = row.dataset.character;
+      if (char) characters.add(char);
+
+      // Glitches
+      const glitch = row.dataset.glitch;
+      if (glitch) {
+        glitches.set(glitch, { id: glitch, label: glitch });
+      }
+    });
+
+    availableChallenges = Array.from(challenges.values()).sort((a, b) => a.label.localeCompare(b.label));
+    availableRestrictions = Array.from(restrictions).sort().map(r => ({ id: r, label: r }));
+    availableCharacters = Array.from(characters).sort().map(c => ({ id: c, label: c }));
+    availableGlitches = Array.from(glitches.values()).sort((a, b) => a.label.localeCompare(b.label));
+  }
+
+  // ============================================================
+  // Initialize Typeahead Filters
+  // ============================================================
+  let challengeFilter, restrictionsFilter, characterFilter, glitchFilter;
+
+  function initTypeaheadFilters() {
+    // Challenge filter
+    if (fChallengeContainer && availableChallenges.length > 0) {
+      challengeFilter = createTypeaheadFilter({
+        container: fChallengeContainer,
+        placeholder: 'Type a challenge...',
+        items: availableChallenges,
+        selectedSet: selectedChallenges,
+        onFilter: filterRows
+      });
+    }
+
+    // Restrictions filter
+    if (fRestrictionsContainer && availableRestrictions.length > 0) {
+      restrictionsFilter = createTypeaheadFilter({
+        container: fRestrictionsContainer,
+        placeholder: 'Type a restriction...',
+        items: availableRestrictions,
+        selectedSet: selectedRestrictions,
+        onFilter: filterRows
+      });
+    }
+
+    // Character filter
+    if (fCharacterContainer && availableCharacters.length > 0) {
+      characterFilter = createTypeaheadFilter({
+        container: fCharacterContainer,
+        placeholder: 'Type a weapon/aspect...',
+        items: availableCharacters,
+        selectedSet: selectedCharacters,
+        onFilter: filterRows
+      });
+    }
+
+    // Glitch filter (single select, keep as dropdown for now or convert)
+    // For consistency, we could make this typeahead too but single-select
+    if (fGlitch) {
+      // Keep legacy dropdown behavior
+      fGlitch.addEventListener('change', () => {
+        selectedGlitch = fGlitch.value;
+        filterRows();
+      });
     }
   }
 
@@ -131,54 +349,23 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ============================================================
-  // Multi-Select Handlers
-  // ============================================================
-  if (fChallenge) {
-    fChallenge.addEventListener('change', function() {
-      if (this.value && !selectedChallenges.includes(this.value)) {
-        selectedChallenges.push(this.value);
-        this.value = '';
-        updateDropdownOptions(fChallenge, selectedChallenges, originalOptions.challenge);
-        filterRows();
-      }
-    });
-  }
-
-  if (fRestrictions) {
-    fRestrictions.addEventListener('change', function() {
-      if (this.value && !selectedRestrictions.includes(this.value)) {
-        selectedRestrictions.push(this.value);
-        this.value = '';
-        updateDropdownOptions(fRestrictions, selectedRestrictions, originalOptions.restrictions);
-        filterRows();
-      }
-    });
-  }
-
-  if (fCharacter) {
-    fCharacter.addEventListener('change', function() {
-      if (this.value && !selectedCharacters.includes(this.value)) {
-        selectedCharacters.push(this.value);
-        this.value = '';
-        updateDropdownOptions(fCharacter, selectedCharacters, originalOptions.character);
-        filterRows();
-      }
-    });
-  }
-
-  // ============================================================
   // Reset All Filters
   // ============================================================
   if (resetBtn) {
     resetBtn.addEventListener('click', function() {
       if (qInput) qInput.value = '';
-      selectedChallenges = [];
-      selectedRestrictions = [];
-      selectedCharacters = [];
+      
+      selectedChallenges.clear();
+      selectedRestrictions.clear();
+      selectedCharacters.clear();
+      selectedGlitch = '';
+      
       if (fGlitch) fGlitch.value = '';
-      updateDropdownOptions(fChallenge, selectedChallenges, originalOptions.challenge);
-      updateDropdownOptions(fRestrictions, selectedRestrictions, originalOptions.restrictions);
-      updateDropdownOptions(fCharacter, selectedCharacters, originalOptions.character);
+      
+      if (challengeFilter) challengeFilter.refresh();
+      if (restrictionsFilter) restrictionsFilter.refresh();
+      if (characterFilter) characterFilter.refresh();
+      
       filterRows();
     });
   }
@@ -187,9 +374,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Filter Logic
   // ============================================================
   function filterRows() {
-    const q = qInput ? qInput.value.toLowerCase().trim() : '';
-    const glitch = fGlitch ? fGlitch.value : '';
-
+    const q = qInput ? norm(qInput.value) : '';
     let visibleCount = 0;
 
     rows.forEach(row => {
@@ -207,25 +392,29 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!searchable.includes(q)) show = false;
       }
 
-      // Challenge filter (multi-select - any match)
-      if (show && selectedChallenges.length > 0) {
-        if (!selectedChallenges.includes(row.dataset.challengeLabel)) show = false;
+      // Challenge filter (any match)
+      if (show && selectedChallenges.size > 0) {
+        const rowChallenge = norm(row.dataset.challengeId);
+        if (!selectedChallenges.has(rowChallenge)) show = false;
       }
 
-      // Restriction filter (multi-select - must have all selected)
-      if (show && selectedRestrictions.length > 0) {
-        const rowRes = (row.dataset.restrictions || '').split('||');
-        const hasAll = selectedRestrictions.every(r => rowRes.includes(r));
+      // Restriction filter (must have all selected)
+      if (show && selectedRestrictions.size > 0) {
+        const rowRes = (row.dataset.restrictions || '').split('||').map(norm);
+        const hasAll = Array.from(selectedRestrictions).every(r => rowRes.includes(r));
         if (!hasAll) show = false;
       }
 
-      // Character filter (multi-select - any match)
-      if (show && selectedCharacters.length > 0) {
-        if (!selectedCharacters.includes(row.dataset.character)) show = false;
+      // Character filter (any match)
+      if (show && selectedCharacters.size > 0) {
+        const rowChar = norm(row.dataset.character);
+        if (!selectedCharacters.has(rowChar)) show = false;
       }
 
       // Glitch filter
-      if (show && glitch && row.dataset.glitch !== glitch) show = false;
+      if (show && selectedGlitch && row.dataset.glitch !== selectedGlitch) {
+        show = false;
+      }
 
       row.style.display = show ? '' : 'none';
       if (show) visibleCount++;
@@ -249,69 +438,14 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ============================================================
-  // Active Filters Display
+  // Active Filters Display (chips below filters row)
   // ============================================================
   function updateActiveFilters() {
     if (!activeFiltersDiv) return;
-    const tags = [];
+    activeFiltersDiv.innerHTML = '';
 
-    // Challenge tags
-    selectedChallenges.forEach(c => {
-      tags.push({
-        label: c,
-        clear: () => {
-          selectedChallenges = selectedChallenges.filter(x => x !== c);
-          updateDropdownOptions(fChallenge, selectedChallenges, originalOptions.challenge);
-          filterRows();
-        }
-      });
-    });
-
-    // Restriction tags
-    selectedRestrictions.forEach(r => {
-      tags.push({
-        label: r,
-        clear: () => {
-          selectedRestrictions = selectedRestrictions.filter(x => x !== r);
-          updateDropdownOptions(fRestrictions, selectedRestrictions, originalOptions.restrictions);
-          filterRows();
-        }
-      });
-    });
-
-    // Character tags
-    selectedCharacters.forEach(c => {
-      tags.push({
-        label: c,
-        clear: () => {
-          selectedCharacters = selectedCharacters.filter(x => x !== c);
-          updateDropdownOptions(fCharacter, selectedCharacters, originalOptions.character);
-          filterRows();
-        }
-      });
-    });
-
-    // Glitch tag
-    if (fGlitch && fGlitch.value) {
-      tags.push({
-        label: fGlitch.options[fGlitch.selectedIndex].text,
-        clear: () => { fGlitch.value = ''; filterRows(); }
-      });
-    }
-
-    activeFiltersDiv.innerHTML = tags.map((t, i) => 
-      `<span class="tag tag--removable" data-idx="${i}" role="button" tabindex="0" title="Click to remove">${t.label}</span>`
-    ).join('');
-
-    activeFiltersDiv.querySelectorAll('.tag--removable').forEach((tag, i) => {
-      tag.addEventListener('click', () => tags[i].clear());
-      tag.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          tags[i].clear();
-        }
-      });
-    });
+    // Don't duplicate - chips are shown in the typeahead containers
+    // This area can show a summary or be removed
   }
 
   // ============================================================
@@ -343,9 +477,8 @@ document.addEventListener('DOMContentLoaded', function() {
   // ============================================================
   // Event Listeners
   // ============================================================
-  if (qInput) qInput.addEventListener('input', filterRows);
-  if (fGlitch) fGlitch.addEventListener('change', filterRows);
-
+  if (qInput) qInput.addEventListener('input', debounce(filterRows, 150));
+  
   if (sortDateAsc) sortDateAsc.addEventListener('click', () => sortRows('date', true));
   if (sortDateDesc) sortDateDesc.addEventListener('click', () => sortRows('date', false));
   if (sortTimeAsc) sortTimeAsc.addEventListener('click', () => sortRows('time', true));
@@ -362,44 +495,26 @@ document.addEventListener('DOMContentLoaded', function() {
       const filtersParam = hash.split('filters=')[1];
       const filterData = JSON.parse(decodeURIComponent(filtersParam));
       
-      // Apply challenges
-      if (filterData.challenges && filterData.challenges.length > 0) {
-        filterData.challenges.forEach(label => {
-          if (!selectedChallenges.includes(label)) {
-            selectedChallenges.push(label);
-          }
-        });
-        updateDropdownOptions(fChallenge, selectedChallenges, originalOptions.challenge);
+      if (filterData.challenges) {
+        filterData.challenges.forEach(id => selectedChallenges.add(norm(id)));
       }
       
-      // Apply restrictions
-      if (filterData.restrictions && filterData.restrictions.length > 0) {
-        filterData.restrictions.forEach(label => {
-          if (!selectedRestrictions.includes(label)) {
-            selectedRestrictions.push(label);
-          }
-        });
-        updateDropdownOptions(fRestrictions, selectedRestrictions, originalOptions.restrictions);
+      if (filterData.restrictions) {
+        filterData.restrictions.forEach(id => selectedRestrictions.add(norm(id)));
       }
       
-      // Apply glitch
-      if (filterData.glitch && fGlitch) {
-        fGlitch.value = filterData.glitch;
+      if (filterData.character) {
+        filterData.character.forEach(id => selectedCharacters.add(norm(id)));
       }
       
-      // Apply character
-      if (filterData.character && filterData.character.length > 0) {
-        filterData.character.forEach(label => {
-          if (!selectedCharacters.includes(label)) {
-            selectedCharacters.push(label);
-          }
-        });
-        updateDropdownOptions(fCharacter, selectedCharacters, originalOptions.character);
+      if (filterData.glitch) {
+        selectedGlitch = filterData.glitch;
+        if (fGlitch) fGlitch.value = filterData.glitch;
       }
       
       // Open advanced filters if we have any
-      if (selectedChallenges.length > 0 || selectedRestrictions.length > 0 || 
-          selectedCharacters.length > 0 || (filterData.glitch && filterData.glitch !== '')) {
+      if (selectedChallenges.size > 0 || selectedRestrictions.size > 0 || 
+          selectedCharacters.size > 0 || selectedGlitch) {
         if (advancedFilters && filterToggle) {
           advancedFilters.hidden = false;
           filterToggle.setAttribute('aria-expanded', 'true');
@@ -407,7 +522,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }
       
-      // Apply filters
+      // Refresh typeahead displays
+      if (challengeFilter) challengeFilter.refresh();
+      if (restrictionsFilter) restrictionsFilter.refresh();
+      if (characterFilter) characterFilter.refresh();
+      
       filterRows();
       
       // Clear hash after applying
@@ -421,6 +540,8 @@ document.addEventListener('DOMContentLoaded', function() {
   // ============================================================
   // Initialize
   // ============================================================
-  populateFilters();
+  buildFilterOptions();
+  initTypeaheadFilters();
   applyFiltersFromHash();
+  updateResultsStatus();
 });
