@@ -39,10 +39,10 @@ character_column:
 # GENERAL RULES
 # =============================================================================
 general_rules:
-  - "**Video Required:** All submissions must include video proof"
-  - "**No Mods:** External mods or cheats are not allowed"
+  - "**Video Required:** All submissions must include video proof."
+  - "**No Mods:** External mods or cheats are not allowed."
   - "Show death at the start of a run for unseeded."
-  - "Visualize Player Hitbox: ON (in Options under Gameplay)"
+  - "Visualize Player Hitbox: ON (in Options under Gameplay)."
   - "Show the skill tree choices (optional)."
   - "Show Cinder options (optional)."
 
