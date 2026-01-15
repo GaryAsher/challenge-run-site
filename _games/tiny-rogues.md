@@ -53,8 +53,6 @@ challenges_data:
   - slug: damageless
     label: "Damageless"
     description: |
-      • Complete a category without taking any damage.
-
       • Damage is any loss of your character's current health, regardless of source.
       
       • Current health for Tiny Rogues are: Red Hearts and Soul Hearts.
@@ -63,18 +61,16 @@ challenges_data:
   - slug: hitless
     label: "Hitless"
     description: |
-      Complete the run without being hit by any enemy attack.
+      • Hits are any enemy attack that remove any of the top-left health/armor/evade resources.
 
-      • Environmental damage may be allowed depending on category
-      • Check specific category rules for clarification
+      • Player-initiated actions that cause damage are NOT hits. (e.g: Opening a door/chest/altar that requires a heart instead of a key).
+      
+      **Exceptions**:
+      • That one enemy in Shadow Planes that teleports you to a previous place you were standing is not a hit (because I do not think it is avoidable).
   - slug: no-hit-no-damage
     label: "No-Hit / No-Damage"
     description: |
-      The strictest challenge combining both Hitless and Damageless rules.
-
-      • No hits from any source
-      • No damage taken from any source
-
+      Follow both Hitless and Damageless rules.
 # Glitches not relevant for this game
 glitches_relevant: false
 
