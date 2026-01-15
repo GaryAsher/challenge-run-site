@@ -53,13 +53,12 @@ challenges_data:
   - slug: damageless
     label: "Damageless"
     description: |
-      Complete the run without taking any damage.
+      • Complete the run without taking any damage.
 
-      • Damage is any loss of your character's current health, regardless of source
+      • Damage is any loss of your character's current health, regardless of source.
+          • Current health for Tiny Rogues are: Red Hearts and Soul Hearts.
       
-      • Changes to maximum health are not damage, even if they also change current health
-      
-      • Shield damage counts as taking damage
+      • Changes to maximum health are not damage, even if they also change current health.
   - slug: hitless
     label: "Hitless"
     description: |
