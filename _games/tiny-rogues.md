@@ -56,7 +56,9 @@ challenges_data:
       Complete the run without taking any damage.
 
       • Damage is any loss of your character's current health, regardless of source
+      
       • Changes to maximum health are not damage, even if they also change current health
+      
       • Shield damage counts as taking damage
   - slug: hitless
     label: "Hitless"
