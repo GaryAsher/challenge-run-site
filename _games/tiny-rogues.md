@@ -60,14 +60,12 @@ challenges_data:
       • Changes to maximum health are not damage, even if they also change current health.
   - slug: hitless
     label: "Hitless"
-    description: |
-      • Hits are any enemy attack that remove any of the top-left health/armor/evade resources.
+    description:
+      - "Hits are any enemy attack that remove any of the top-left health/armor/evade resources."
+      - "Player-initiated actions that cause damage are NOT hits. (e.g: Opening a door/chest/altar that requires a heart instead of a key)."
 
-      • Player-initiated actions that cause damage are NOT hits. (e.g: Opening a door/chest/altar that requires a heart instead of a key).
-
-      **Exceptions**:
-      
-      • That one enemy in Shadow Planes that teleports you to a previous place you were standing is not a hit (it seems unavoidable).
+      "**Exceptions**"
+      - "That one enemy in Shadow Planes that teleports you to a previous place you were standing is not a hit (it seems unavoidable)."
   - slug: no-hit-no-damage
     label: "No-Hit / No-Damage"
     description: |
