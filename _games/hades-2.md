@@ -119,7 +119,7 @@ restrictions_data:
     label: "Arcanaless"
     description: |
       - Complete a run with no Arcana Cards selected or Vow of Void(4) selected in the Oath of the Unseen.
-      - Additionally, do not activate Arcana Cards in any way.
+      - Do not activate Arcana Cards in any way.
   - slug: no-hexes
     label: "No Hexes"
     description: |
