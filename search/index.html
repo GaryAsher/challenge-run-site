@@ -3,39 +3,53 @@ layout: default
 title: Search
 ---
 
-<div class="page-width">
-  <h1>Search</h1>
-  <p class="muted">Search across games, runners, and challenges.</p>
+<div class="page-width search-page">
+  
+  <div class="search-hero">
+    <h1>🔍 Search</h1>
+    <p class="muted">Search across games, runners, runs, and news.</p>
+  </div>
 
-  <div class="filter-wrap" style="margin-bottom: 1.5rem;">
-    <input
-      id="global-search"
-      class="filter"
-      type="text"
-      placeholder="Search for games, runners, challenges..."
+  <div class="search-input-wrap">
+    <input 
+      type="text" 
+      id="search-input" 
+      class="search-input" 
+      placeholder="Search for anything..." 
       autocomplete="off"
-      inputmode="search"
-      enterkeyhint="search"
-      aria-label="Global search"
       autofocus
     />
   </div>
 
-  <div id="search-results"></div>
+  <div class="search-filters">
+    <button type="button" class="search-filter-btn is-active" data-filter="all">All</button>
+    <button type="button" class="search-filter-btn" data-filter="games">Games</button>
+    <button type="button" class="search-filter-btn" data-filter="runners">Runners</button>
+    <button type="button" class="search-filter-btn" data-filter="runs">Runs</button>
+    <button type="button" class="search-filter-btn" data-filter="news">News</button>
+  </div>
+
+  <div class="search-results" id="search-results">
+    <div class="search-no-results" id="search-empty">
+      <p>Start typing to search...</p>
+    </div>
+  </div>
+
 </div>
 
 <script>
 (function() {
+  'use strict';
+
   // Build search index from Jekyll data
-  const SEARCH_INDEX = {
+  var searchData = {
     games: [
       {% for g in site.games %}
       {
         type: 'game',
-        id: {{ g.game_id | jsonify }},
         name: {{ g.name | jsonify }},
         url: {{ g.url | relative_url | jsonify }},
-        tags: {{ g.tags | default: empty | jsonify }},
+        genres: {{ g.genres | default: empty | jsonify }},
         platforms: {{ g.platforms | default: empty | jsonify }},
         challenges: {{ g.challenges | default: empty | jsonify }}
       }{% unless forloop.last %},{% endunless %}
@@ -45,275 +59,206 @@ title: Search
       {% for r in site.runners %}
       {
         type: 'runner',
-        id: {{ r.runner_id | default: r.title | jsonify }},
-        name: {{ r.name | default: r.title | jsonify }},
-        url: {{ r.url | relative_url | jsonify }}
+        name: {{ r.display_name | default: r.runner_id | default: r.title | jsonify }},
+        url: {{ r.url | relative_url | jsonify }},
+        runner_id: {{ r.runner_id | default: '' | jsonify }}
       }{% unless forloop.last %},{% endunless %}
       {% endfor %}
     ],
-    challenges: [
-      {% for pair in site.data.challenges %}
+    runs: [
+      {% for r in site.runs %}
       {
-        type: 'challenge',
-        id: {{ pair[0] | jsonify }},
-        name: {{ pair[1].label | default: pair[0] | jsonify }},
-        aliases: {{ pair[1].aliases | default: empty | jsonify }}
+        type: 'run',
+        runner: {{ r.runner | default: r.runner_id | jsonify }},
+        game: {{ r.game_id | jsonify }},
+        challenge: {{ r.challenge_id | jsonify }},
+        category: {{ r.category | default: r.category_slug | jsonify }},
+        date: {{ r.date_completed | jsonify }},
+        url: '/games/{{ r.game_id }}/runs/'
       }{% unless forloop.last %},{% endunless %}
       {% endfor %}
     ],
-    platforms: [
-      {% for pair in site.data.platforms %}
+    news: [
+      {% for p in site.posts %}
       {
-        type: 'platform',
-        id: {{ pair[0] | jsonify }},
-        name: {{ pair[1].label | default: pair[0] | jsonify }},
-        aliases: {{ pair[1].aliases | default: empty | jsonify }}
+        type: 'news',
+        title: {{ p.title | jsonify }},
+        url: {{ p.url | relative_url | jsonify }},
+        date: {{ p.date | date: "%Y-%m-%d" | jsonify }},
+        excerpt: {{ p.excerpt | strip_html | truncate: 100 | jsonify }}
       }{% unless forloop.last %},{% endunless %}
       {% endfor %}
     ]
   };
 
-  const searchInput = document.getElementById('global-search');
-  const resultsContainer = document.getElementById('search-results');
-  const norm = s => (s || '').toString().trim().toLowerCase();
+  var input = document.getElementById('search-input');
+  var resultsEl = document.getElementById('search-results');
+  var emptyEl = document.getElementById('search-empty');
+  var filterBtns = document.querySelectorAll('.search-filter-btn');
+  var activeFilter = 'all';
+
+  function norm(s) {
+    return (s || '').toString().trim().toLowerCase();
+  }
 
   function search(query) {
-    const q = norm(query);
-    if (!q || q.length < 2) return { games: [], runners: [], challenges: [], platforms: [] };
+    var q = norm(query);
+    if (!q) {
+      resultsEl.innerHTML = '';
+      resultsEl.appendChild(emptyEl);
+      emptyEl.innerHTML = '<p>Start typing to search...</p>';
+      return;
+    }
 
-    const results = {
+    var results = {
       games: [],
       runners: [],
-      challenges: [],
-      platforms: []
+      runs: [],
+      news: []
     };
 
     // Search games
-    SEARCH_INDEX.games.forEach(g => {
-      const haystack = [
-        norm(g.name),
-        norm(g.id),
-        ...(g.tags || []).map(norm),
-        ...(g.platforms || []).map(norm),
-        ...(g.challenges || []).map(norm)
-      ].join(' ');
-
-      if (haystack.includes(q)) {
-        results.games.push(g);
-      }
-    });
+    if (activeFilter === 'all' || activeFilter === 'games') {
+      searchData.games.forEach(function(g) {
+        if (norm(g.name).includes(q)) {
+          results.games.push(g);
+        }
+      });
+    }
 
     // Search runners
-    SEARCH_INDEX.runners.forEach(r => {
-      const haystack = [norm(r.name), norm(r.id)].join(' ');
-      if (haystack.includes(q)) {
-        results.runners.push(r);
-      }
-    });
+    if (activeFilter === 'all' || activeFilter === 'runners') {
+      searchData.runners.forEach(function(r) {
+        if (norm(r.name).includes(q) || norm(r.runner_id).includes(q)) {
+          results.runners.push(r);
+        }
+      });
+    }
 
-    // Search challenges
-    SEARCH_INDEX.challenges.forEach(c => {
-      const haystack = [
-        norm(c.name),
-        norm(c.id),
-        ...(c.aliases || []).map(norm)
-      ].join(' ');
+    // Search runs
+    if (activeFilter === 'all' || activeFilter === 'runs') {
+      searchData.runs.forEach(function(r) {
+        if (norm(r.runner).includes(q) || norm(r.game).includes(q) || 
+            norm(r.challenge).includes(q) || norm(r.category).includes(q)) {
+          results.runs.push(r);
+        }
+      });
+    }
 
-      if (haystack.includes(q)) {
-        results.challenges.push(c);
-      }
-    });
+    // Search news
+    if (activeFilter === 'all' || activeFilter === 'news') {
+      searchData.news.forEach(function(n) {
+        if (norm(n.title).includes(q) || norm(n.excerpt).includes(q)) {
+          results.news.push(n);
+        }
+      });
+    }
 
-    // Search platforms
-    SEARCH_INDEX.platforms.forEach(p => {
-      const haystack = [
-        norm(p.name),
-        norm(p.id),
-        ...(p.aliases || []).map(norm)
-      ].join(' ');
-
-      if (haystack.includes(q)) {
-        results.platforms.push(p);
-      }
-    });
-
-    return results;
+    renderResults(results, q);
   }
 
   function renderResults(results, query) {
-    const total = results.games.length + results.runners.length + results.challenges.length + results.platforms.length;
+    var totalResults = results.games.length + results.runners.length + 
+                       results.runs.length + results.news.length;
 
-    if (!query || query.length < 2) {
-      resultsContainer.innerHTML = '<p class="muted">Type at least 2 characters to search.</p>';
+    if (totalResults === 0) {
+      resultsEl.innerHTML = '';
+      emptyEl.innerHTML = '<p>No results found for "<strong>' + escapeHtml(query) + '</strong>"</p>';
+      resultsEl.appendChild(emptyEl);
       return;
     }
 
-    if (total === 0) {
-      resultsContainer.innerHTML = `<p class="muted">No results found for "${query}".</p>`;
-      return;
-    }
+    var html = '';
 
-    let html = '';
-
-    // Games section
+    // Games
     if (results.games.length > 0) {
-      html += `
-        <div class="search-section">
-          <h2 class="search-section__title">Games (${results.games.length})</h2>
-          <div class="search-results-list">
-            ${results.games.map(g => `
-              <a href="${g.url}" class="search-result">
-                <span class="search-result__icon">🎮</span>
-                <span class="search-result__name">${escapeHtml(g.name)}</span>
-              </a>
-            `).join('')}
-          </div>
-        </div>
-      `;
+      html += '<div class="search-result-group">';
+      html += '<h2>🎮 Games (' + results.games.length + ')</h2>';
+      results.games.forEach(function(g) {
+        html += '<a href="' + g.url + '" class="search-result">';
+        html += '<div class="search-result__title">' + escapeHtml(g.name) + '</div>';
+        if (g.genres && g.genres.length) {
+          html += '<div class="search-result__meta">' + g.genres.slice(0, 3).join(', ') + '</div>';
+        }
+        html += '</a>';
+      });
+      html += '</div>';
     }
 
-    // Runners section
+    // Runners
     if (results.runners.length > 0) {
-      html += `
-        <div class="search-section">
-          <h2 class="search-section__title">Runners (${results.runners.length})</h2>
-          <div class="search-results-list">
-            ${results.runners.map(r => `
-              <a href="${r.url}" class="search-result">
-                <span class="search-result__icon">👤</span>
-                <span class="search-result__name">${escapeHtml(r.name)}</span>
-              </a>
-            `).join('')}
-          </div>
-        </div>
-      `;
+      html += '<div class="search-result-group">';
+      html += '<h2>🏆 Runners (' + results.runners.length + ')</h2>';
+      results.runners.forEach(function(r) {
+        html += '<a href="' + r.url + '" class="search-result">';
+        html += '<div class="search-result__title">' + escapeHtml(r.name) + '</div>';
+        html += '</a>';
+      });
+      html += '</div>';
     }
 
-    // Platforms section
-    if (results.platforms.length > 0) {
-      html += `
-        <div class="search-section">
-          <h2 class="search-section__title">Platforms (${results.platforms.length})</h2>
-          <div class="search-results-list">
-            ${results.platforms.map(p => `
-              <a href="/games/?platform=${encodeURIComponent(p.id)}" class="search-result">
-                <span class="search-result__icon">🖥️</span>
-                <span class="search-result__name">${escapeHtml(p.name)}</span>
-                ${p.aliases && p.aliases.length ? `<span class="search-result__aliases muted">(${p.aliases.join(', ')})</span>` : ''}
-              </a>
-            `).join('')}
-          </div>
-        </div>
-      `;
+    // Runs
+    if (results.runs.length > 0) {
+      html += '<div class="search-result-group">';
+      html += '<h2>🏃 Runs (' + results.runs.length + ')</h2>';
+      results.runs.slice(0, 20).forEach(function(r) {
+        html += '<a href="' + r.url + '" class="search-result">';
+        html += '<div class="search-result__title">' + escapeHtml(r.runner) + ' - ' + escapeHtml(r.game) + '</div>';
+        html += '<div class="search-result__meta">' + escapeHtml(r.challenge) + ' • ' + escapeHtml(r.category) + '</div>';
+        html += '</a>';
+      });
+      if (results.runs.length > 20) {
+        html += '<p class="muted" style="padding: 0.5rem;">...and ' + (results.runs.length - 20) + ' more</p>';
+      }
+      html += '</div>';
     }
 
-    // Challenges section
-    if (results.challenges.length > 0) {
-      html += `
-        <div class="search-section">
-          <h2 class="search-section__title">Challenges (${results.challenges.length})</h2>
-          <div class="search-results-list">
-            ${results.challenges.map(c => `
-              <div class="search-result search-result--no-link">
-                <span class="search-result__icon">🏆</span>
-                <span class="search-result__name">${escapeHtml(c.name)}</span>
-                ${c.aliases && c.aliases.length ? `<span class="search-result__aliases muted">(${c.aliases.join(', ')})</span>` : ''}
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      `;
+    // News
+    if (results.news.length > 0) {
+      html += '<div class="search-result-group">';
+      html += '<h2>📰 News (' + results.news.length + ')</h2>';
+      results.news.forEach(function(n) {
+        html += '<a href="' + n.url + '" class="search-result">';
+        html += '<div class="search-result__title">' + escapeHtml(n.title) + '</div>';
+        html += '<div class="search-result__meta">' + n.date + '</div>';
+        html += '</a>';
+      });
+      html += '</div>';
     }
 
-    resultsContainer.innerHTML = html;
+    resultsEl.innerHTML = html;
   }
 
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.textContent = str || '';
     return div.innerHTML;
   }
 
-  // Debounce search
-  let debounceTimer;
-  searchInput.addEventListener('input', function() {
+  // Event listeners
+  var debounceTimer;
+  input.addEventListener('input', function() {
     clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-      const query = searchInput.value;
-      const results = search(query);
-      renderResults(results, query);
+    debounceTimer = setTimeout(function() {
+      search(input.value);
     }, 150);
   });
 
-  // Handle URL query parameter
-  const urlParams = new URLSearchParams(window.location.search);
-  const initialQuery = urlParams.get('q');
+  filterBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      filterBtns.forEach(function(b) { b.classList.remove('is-active'); });
+      btn.classList.add('is-active');
+      activeFilter = btn.dataset.filter;
+      search(input.value);
+    });
+  });
+
+  // Check for query param
+  var urlParams = new URLSearchParams(window.location.search);
+  var initialQuery = urlParams.get('q');
   if (initialQuery) {
-    searchInput.value = initialQuery;
-    const results = search(initialQuery);
-    renderResults(results, initialQuery);
-  } else {
-    renderResults({}, '');
+    input.value = initialQuery;
+    search(initialQuery);
   }
 })();
 </script>
-
-<style>
-.search-section {
-  margin-bottom: 2rem;
-}
-
-.search-section__title {
-  font-size: 1.1rem;
-  margin: 0 0 0.75rem 0;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.search-results-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.search-result {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  text-decoration: none;
-  color: var(--fg);
-  transition: border-color 0.15s ease, background 0.15s ease;
-}
-
-.search-result:hover {
-  border-color: var(--accent);
-  background: var(--panel);
-  text-decoration: none;
-}
-
-.search-result--no-link {
-  cursor: default;
-}
-
-.search-result--no-link:hover {
-  border-color: var(--border);
-  background: var(--surface);
-}
-
-.search-result__icon {
-  font-size: 1.2rem;
-}
-
-.search-result__name {
-  font-weight: 500;
-}
-
-.search-result__aliases {
-  font-size: 0.85em;
-  margin-left: auto;
-}
-</style>
