@@ -45,6 +45,7 @@ character_column:
 # Use | for multi-line descriptions with bullet points
 # =============================================================================
 general_rules:
+  - "**Timing Method:** IGT (In-Game Time) as shown on the file select screen"
   - "**Video Required:** All submissions must include video proof showing the full run"
   - "**No Cheats/Mods:** Gameplay-altering mods are not allowed."
   - "Show in-game timer: Options → Gameplay → "Timer Display"."
