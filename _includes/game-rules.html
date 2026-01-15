@@ -1,6 +1,6 @@
 <!-- =========================================================
-     Game Rules Include  
-     
+     Game Rules Include
+
      FEATURES:
      - Rule Builder shows rules panel below selections
      - "Remove all filters" button positioned like Advanced Filters
@@ -10,6 +10,8 @@
      ========================================================= -->
 {% assign game = include.game %}
 {% assign game_id = game.game_id %}
+
+{% assign community_challenges = game["community-challenges"] %}
 
 <!-- Determine which data exists -->
 {% assign has_categories = false %}
@@ -28,7 +30,7 @@
   {% assign has_challenges = true %}
 {% endif %}
 
-{% if game.community_challenges and game.community_challenges.size > 0 %}
+{% if community_challenges and community_challenges.size > 0 %}
   {% assign has_community_challenges = true %}
 {% endif %}
 
@@ -73,7 +75,7 @@
 
     <div class="rule-builder-content" id="rule-builder-content" hidden>
       <div class="rule-builder__selections">
-        
+
         <!-- 1. Run Category Dropdown -->
         {% if has_categories %}
         <div class="rule-builder__group" data-rb-order="1">
@@ -98,7 +100,7 @@
           <label class="rule-builder__label">Community Challenge</label>
           <select class="rule-builder__select" id="rb-community-challenge">
             <option value="" data-description="">-- Select Community Challenge --</option>
-            {% for cc in game.community_challenges %}
+            {% for cc in community_challenges %}
               <option value="{{ cc.slug }}" data-label="{{ cc.label }}" data-description="{{ cc.description | escape }}">{{ cc.label }}</option>
             {% endfor %}
           </select>
@@ -139,7 +141,7 @@
           <select class="rule-builder__select" id="rb-restriction">
             <option value="" data-description="" data-incompatible="">-- Add Restriction --</option>
             {% for res in game.restrictions_data %}
-              <option value="{{ res.slug }}" 
+              <option value="{{ res.slug }}"
                       data-label="{{ res.label }}"
                       data-description="{{ res.description | escape }}"
                       data-incompatible="{{ res.incompatible_with | join: ',' | escape }}">
@@ -158,7 +160,7 @@
           <select class="rule-builder__select" id="rb-glitch">
             <option value="" data-label="" data-description="" data-allowed="" data-banned="">-- Select Glitch Category --</option>
             {% for glitch in game.glitches_data %}
-              <option value="{{ glitch.slug }}" 
+              <option value="{{ glitch.slug }}"
                       data-label="{{ glitch.label }}"
                       data-description="{{ glitch.description | escape }}"
                       data-allowed="{{ glitch.allowed | join: '|' | escape }}"
@@ -171,7 +173,7 @@
         </div>
         {% endif %}
 
-        <!-- Reset Button - positioned like Advanced Filters -->
+        <!-- Reset Button -->
         <div class="rule-builder__group rule-builder__group--reset">
           <button type="button" class="btn btn--outline btn--reset" id="rb-reset">
             Remove all filters
@@ -179,17 +181,13 @@
         </div>
       </div>
 
-      <!-- Active Selections Display (tags) -->
+      <!-- Active Selections Display -->
       <div class="rule-builder__active" id="rb-active-filters"></div>
 
-      <!-- =========================================================
-           Rules Summary Panel - Shows all selected rules
-           ========================================================= -->
+      <!-- Rules Summary Panel -->
       <div class="rule-builder__summary" id="rb-summary" style="display: none;">
         <h3 class="rule-builder__summary-title">📋 Your Ruleset</h3>
-        <div class="rule-builder__summary-content" id="rb-summary-content">
-          <!-- Rules will be populated here by JavaScript -->
-        </div>
+        <div class="rule-builder__summary-content" id="rb-summary-content"></div>
       </div>
 
       <!-- Validation Warnings -->
@@ -197,7 +195,7 @@
         <p class="rule-builder__warning">⚠️ <span id="rb-warning-text"></span></p>
       </div>
 
-      <!-- See Runners Button - at bottom right with spacing -->
+      <!-- See Runners Button -->
       <div class="rule-builder__actions" id="rb-actions">
         <a href="#" class="btn btn--accent" id="rb-find-runners" style="display: none;">
           🔍 See runners who completed this
@@ -221,14 +219,8 @@
       </summary>
       <div class="accordion-content">
         {% if game.general_rules and game.general_rules.size > 0 %}
-          <!-- Game-specific general rules -->
-          <ul>
-            {% for rule in game.general_rules %}
-              <li>{{ rule | markdownify | remove: '<p>' | remove: '</p>' }}</li>
-            {% endfor %}
-          </ul>
+          {% include md.html text=game.general_rules %}
         {% else %}
-          <!-- Default general rules -->
           <ul>
             <li><strong>Timing Method:</strong> {{ game.timing_method | default: "RTA (Real Time Attack)" }}</li>
             <li><strong>Video Required:</strong> All submissions must include video proof</li>
@@ -256,10 +248,27 @@
                 <span class="accordion-icon">▼</span>
               </summary>
               <div class="accordion-content">
-                {% if cat.description %}<p>{{ cat.description | markdownify }}</p>{% else %}<p class="muted">See resources for rules.</p>{% endif %}
+                {% if cat.description %}
+                  {% include md.html text=cat.description %}
+                {% else %}
+                  <p class="muted">See resources for rules.</p>
+                {% endif %}
+
                 {% if cat.children and cat.children.size > 0 %}
-                  <div class="mt-3"><strong>Subcategories:</strong>
-                    <ul class="mt-2">{% for child in cat.children %}<li><strong>{{ child.label }}</strong>{% if child.description %} - {{ child.description }}{% endif %}</li>{% endfor %}</ul>
+                  <div class="mt-3">
+                    <strong>Subcategories:</strong>
+                    <ul class="mt-2">
+                      {% for child in cat.children %}
+                        <li>
+                          <strong>{{ child.label }}</strong>
+                          {% if child.description %}
+                            <div class="mt-2">
+                              {% include md.html text=child.description %}
+                            </div>
+                          {% endif %}
+                        </li>
+                      {% endfor %}
+                    </ul>
                   </div>
                 {% endif %}
               </div>
@@ -281,14 +290,18 @@
       </summary>
       <div class="accordion-content">
         <div class="accordion">
-          {% for cc in game.community_challenges %}
+          {% for cc in community_challenges %}
             <details class="accordion-item">
               <summary class="accordion-header">
                 <span class="accordion-title">{{ cc.label }}</span>
                 <span class="accordion-icon">▼</span>
               </summary>
               <div class="accordion-content">
-                {% if cc.description %}<p>{{ cc.description | markdownify }}</p>{% else %}<p class="muted">No description available.</p>{% endif %}
+                {% if cc.description %}
+                  {% include md.html text=cc.description %}
+                {% else %}
+                  <p class="muted">No description available.</p>
+                {% endif %}
               </div>
             </details>
           {% endfor %}
@@ -298,7 +311,7 @@
   </div>
   {% endif %}
 
-  <!-- 4. Character/Weapon/Aspect (if applicable) -->
+  <!-- 4. Character/Weapon/Aspect -->
   {% if has_character and game.characters_data and game.characters_data.size > 0 %}
   <div class="rules-section mt-4" data-section-order="4">
     <details class="accordion-item accordion-item--section">
@@ -315,7 +328,11 @@
                 <span class="accordion-icon">▼</span>
               </summary>
               <div class="accordion-content">
-                {% if char.description %}<p>{{ char.description | markdownify }}</p>{% else %}<p class="muted">No description available.</p>{% endif %}
+                {% if char.description %}
+                  {% include md.html text=char.description %}
+                {% else %}
+                  <p class="muted">No description available.</p>
+                {% endif %}
               </div>
             </details>
           {% endfor %}
@@ -342,7 +359,11 @@
                 <span class="accordion-icon">▼</span>
               </summary>
               <div class="accordion-content">
-                {% if ch.description %}<p>{{ ch.description | markdownify }}</p>{% else %}<p class="muted">See resources for detailed rules.</p>{% endif %}
+                {% if ch.description %}
+                  {% include md.html text=ch.description %}
+                {% else %}
+                  <p class="muted">See resources for detailed rules.</p>
+                {% endif %}
               </div>
             </details>
           {% endfor %}
@@ -369,7 +390,11 @@
                 <span class="accordion-icon">▼</span>
               </summary>
               <div class="accordion-content">
-                {% if res.description %}<p>{{ res.description | markdownify }}</p>{% else %}<p class="muted">Can be combined with any category.</p>{% endif %}
+                {% if res.description %}
+                  {% include md.html text=res.description %}
+                {% else %}
+                  <p class="muted">Can be combined with any category.</p>
+                {% endif %}
                 {% if res.incompatible_with and res.incompatible_with.size > 0 %}
                   <p class="mt-2 muted"><em>⚠️ Cannot be combined with: {{ res.incompatible_with | join: ", " }}</em></p>
                 {% endif %}
@@ -399,7 +424,11 @@
                 <span class="accordion-icon">▼</span>
               </summary>
               <div class="accordion-content">
-                {% if glitch.description %}<p>{{ glitch.description | markdownify }}</p>{% else %}<p class="muted">See resources for detailed rules.</p>{% endif %}
+                {% if glitch.description %}
+                  {% include md.html text=glitch.description %}
+                {% else %}
+                  <p class="muted">See resources for detailed rules.</p>
+                {% endif %}
                 {% if glitch.allowed and glitch.allowed.size > 0 %}
                   <p class="mt-2"><strong>Allowed:</strong> {{ glitch.allowed | join: ", " }}</p>
                 {% endif %}
@@ -425,7 +454,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   const gameId = '{{ game_id }}';
-  
+
   // DOM elements
   const rbCard = document.getElementById('rule-builder-card');
   const rbToggle = document.getElementById('rb-toggle');
@@ -496,8 +525,8 @@ document.addEventListener('DOMContentLoaded', function() {
   if (categorySelect) {
     categorySelect.addEventListener('change', function() {
       const option = this.options[this.selectedIndex];
-      selectedCategory = option.value ? { 
-        slug: option.value, 
+      selectedCategory = option.value ? {
+        slug: option.value,
         label: option.dataset.label || option.text.trim(),
         description: option.dataset.description || ''
       } : null;
@@ -509,8 +538,8 @@ document.addEventListener('DOMContentLoaded', function() {
   if (communitySelect) {
     communitySelect.addEventListener('change', function() {
       const option = this.options[this.selectedIndex];
-      selectedCommunityChallenge = option.value ? { 
-        slug: option.value, 
+      selectedCommunityChallenge = option.value ? {
+        slug: option.value,
         label: option.dataset.label || option.text.trim(),
         description: option.dataset.description || ''
       } : null;
@@ -522,8 +551,8 @@ document.addEventListener('DOMContentLoaded', function() {
   if (characterSelect) {
     characterSelect.addEventListener('change', function() {
       const option = this.options[this.selectedIndex];
-      selectedCharacter = option.value ? { 
-        slug: option.value, 
+      selectedCharacter = option.value ? {
+        slug: option.value,
         label: option.dataset.label || option.text.trim(),
         description: option.dataset.description || ''
       } : null;
@@ -535,8 +564,8 @@ document.addEventListener('DOMContentLoaded', function() {
   if (glitchSelect) {
     glitchSelect.addEventListener('change', function() {
       const option = this.options[this.selectedIndex];
-      selectedGlitch = option.value ? { 
-        slug: option.value, 
+      selectedGlitch = option.value ? {
+        slug: option.value,
         label: option.dataset.label || option.text.trim(),
         description: option.dataset.description || '',
         allowed: option.dataset.allowed ? option.dataset.allowed.split('|') : [],
@@ -552,8 +581,8 @@ document.addEventListener('DOMContentLoaded', function() {
     challengeSelect.addEventListener('change', function() {
       const option = this.options[this.selectedIndex];
       if (option.value && !selectedChallenges.find(c => c.slug === option.value)) {
-        selectedChallenges.push({ 
-          slug: option.value, 
+        selectedChallenges.push({
+          slug: option.value,
           label: option.dataset.label || option.text.trim(),
           description: option.dataset.description || ''
         });
@@ -569,8 +598,8 @@ document.addEventListener('DOMContentLoaded', function() {
     restrictionSelect.addEventListener('change', function() {
       const option = this.options[this.selectedIndex];
       if (option.value && !selectedRestrictions.find(r => r.slug === option.value)) {
-        selectedRestrictions.push({ 
-          slug: option.value, 
+        selectedRestrictions.push({
+          slug: option.value,
           label: option.dataset.label || option.text.trim(),
           description: option.dataset.description || ''
         });
@@ -703,7 +732,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Update active filters tags
     if (activeFiltersDiv) {
-      activeFiltersDiv.innerHTML = tags.map(t => 
+      activeFiltersDiv.innerHTML = tags.map(t =>
         `<span class="tag tag--removable" role="button" tabindex="0" title="Click to remove">${t.label}</span>`
       ).join('');
       activeFiltersDiv.querySelectorAll('.tag--removable').forEach((tag, i) => {
@@ -712,41 +741,41 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
 
-    // Update rules summary panel
+    // Update rules summary panel (plain text)
     if (summaryDiv && summaryContent) {
       if (hasContent) {
         let summaryHtml = '<ul class="rule-builder__rules-list">';
-        
+
         if (selectedCategory) {
           summaryHtml += `<li><strong>Category:</strong> ${selectedCategory.label}`;
           if (selectedCategory.description) summaryHtml += `<br><span class="muted">${selectedCategory.description}</span>`;
           summaryHtml += '</li>';
         }
-        
+
         if (selectedCommunityChallenge) {
           summaryHtml += `<li><strong>Community Challenge:</strong> ${selectedCommunityChallenge.label}`;
           if (selectedCommunityChallenge.description) summaryHtml += `<br><span class="muted">${selectedCommunityChallenge.description}</span>`;
           summaryHtml += '</li>';
         }
-        
+
         if (selectedCharacter) {
           summaryHtml += `<li><strong>{{ character_label }}:</strong> ${selectedCharacter.label}`;
           if (selectedCharacter.description) summaryHtml += `<br><span class="muted">${selectedCharacter.description}</span>`;
           summaryHtml += '</li>';
         }
-        
+
         selectedChallenges.forEach(ch => {
           summaryHtml += `<li><strong>Challenge:</strong> ${ch.label}`;
           if (ch.description) summaryHtml += `<br><span class="muted">${ch.description}</span>`;
           summaryHtml += '</li>';
         });
-        
+
         selectedRestrictions.forEach(r => {
           summaryHtml += `<li><strong>Restriction:</strong> ${r.label}`;
           if (r.description) summaryHtml += `<br><span class="muted">${r.description}</span>`;
           summaryHtml += '</li>';
         });
-        
+
         if (selectedGlitch) {
           summaryHtml += `<li><strong>Glitch Rules:</strong> ${selectedGlitch.label}`;
           if (selectedGlitch.description) summaryHtml += `<br><span class="muted">${selectedGlitch.description}</span>`;
@@ -761,7 +790,7 @@ document.addEventListener('DOMContentLoaded', function() {
           }
           summaryHtml += '</li>';
         }
-        
+
         summaryHtml += '</ul>';
         summaryContent.innerHTML = summaryHtml;
         summaryDiv.style.display = 'block';
