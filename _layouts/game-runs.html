@@ -207,10 +207,10 @@ layout: default
       </div>
     {% endif %}
 
-    <!-- Browse by category -->
+    <!-- Browse by Category -->
     {% if game and game.categories_data and game.categories_data.size > 0 %}
       <div class="card card--compact" style="margin-bottom: 1rem;">
-        <h1>Browse by category</h1>
+        <h1>Browse by Category</h1>
         <div class="tag-picked">
           {% for c in game.categories_data %}
             {% assign s = c.slug | default: "" | strip %}
