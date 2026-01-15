@@ -1,0 +1,40 @@
+name: Process Run Submissions
+
+on:
+  workflow_dispatch:  # Manual trigger
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Fetch and Process Submissions
+        env:
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        run: |
+          # This script would:
+          # 1. Fetch new rows from Google Sheets API
+          # 2. Create run files in _queue_runs/
+          # 3. Mark rows as processed
+          node scripts/process-submissions.js
+
+      - name: Create PR for new runs
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "feat: Add new run submissions"
+          title: "New Run Submissions"
+          body: "New runs from Google Form submissions"
+          branch: runs/new-submissions
