@@ -47,9 +47,9 @@ general_rules: |
   - **No Cheats/Mods:** Gameplay-altering mods are not allowed.
   - Show in-game timer: Options → Gameplay → "Timer Display".
   - Unseeded (do one of these before the run):
-    - Salute the Oath of the Unseen and confirm the "Fate Altered!" message
-    - Show the previous run's death
-    - Show a completed run followed by a death.
+   - Salute the Oath of the Unseen and confirm the "Fate Altered!" message
+   - Show the previous run's death
+   - Show a completed run followed by a death.
   - Show Arcana Cards at either the beginning or end of the run (optional).
   - Show Vows from the Oath of the Unseen (optional).
   - Make sure no HUD elements are covered.
