@@ -94,6 +94,11 @@ categories_data:
   - slug: all-red-berries
     label: "All Red Berries"
     description: "Collect all 175 red strawberries in the game."
+  - slug: all-c-sides
+    label: "All C-Sides"
+    description: |
+      • Complete all C-Sides from a new file in any order.
+      • Use of cheat mode is allowed.
   - slug: all-hearts
     label: "All Hearts"
     description: "Collect all 24 Crystal Hearts in the game."
