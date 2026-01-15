@@ -156,6 +156,14 @@ layout: default
   {% endif %}
 {% endif %}
 
+<!-- Character/weapon field setup -->
+{% assign show_character = false %}
+{% assign character_label = "Character" %}
+{% if game.characters_data and game.characters_data.size > 0 %}
+  {% assign show_character = true %}
+  {% assign character_label = game.character_label | default: "Character" %}
+{% endif %}
+
 <!-- =========================================================
      Runs + Filters
      ========================================================= -->
@@ -183,90 +191,55 @@ layout: default
             {% assign crumb_label = "" %}
             {% if category_pairs and category_pairs.size > 0 %}
               {% for p in category_pairs %}
-                {% assign pp = p | split: "||" %}
-                {% if pp[0] == cur %}
-                  {% assign crumb_label = pp[1] | default: cur | strip %}
+                {% assign cp = p | split: "||" %}
+                {% if cp[0] == cur %}
+                  {% assign crumb_label = cp[1] | default: cur | strip %}
                   {% break %}
                 {% endif %}
               {% endfor %}
             {% endif %}
-            {% if crumb_label == "" %}{% assign crumb_label = seg_clean %}{% endif %}
+            {% if crumb_label == "" %}{% assign crumb_label = cur %}{% endif %}
 
+            <span class="breadcrumb-sep"> / </span>
             {% if cur == active_cat_slug %}
-              → <strong>{{ crumb_label }}</strong>
+              <span class="breadcrumb-current">{{ crumb_label }}</span>
             {% else %}
-              → <a href="{{ runs_base | append: cur | append: '/' | relative_url }}">{{ crumb_label }}</a>
+              <a href="{{ runs_base }}{{ cur | replace: '/', '/' }}/">{{ crumb_label }}</a>
             {% endif %}
           {% endfor %}
         </p>
       </div>
-
-      {% if is_child_page and child_pairs.size > 1 %}
-        <div class="card card--compact" style="margin-bottom: 1rem;">
-          <p class="muted" style="margin: 0 0 0.75rem 0;">More in {{ parent_label }}:</p>
-          <div class="category-pills">
-            {% for cp in child_pairs %}
-              {% assign cpp = cp | split: "||" %}
-              {% assign cs = cpp[0] | strip %}
-              {% assign cl = cpp[1] | default: cs | strip %}
-              {% if cs != active_cat_slug %}
-                <a href="{{ runs_base | append: cs | append: '/' | relative_url }}" class="pill-link">{{ cl }}</a>
-              {% endif %}
-            {% endfor %}
-          </div>
-        </div>
-      {% endif %}
-
-      {% assign filtered = runs | where: "category_slug", active_cat_slug %}
-      {% if filtered.size == 0 %}
-        {% assign prefix = active_cat_slug | append: "/" %}
-        {% assign filtered = "" | split: "" %}
-        {% for r in runs %}
-          {% assign rs = r.category_slug | default: "" | strip %}
-          {% assign prefix_len = prefix | size %}
-          {% assign rs_head = rs | slice: 0, prefix_len %}
-          {% if rs_head == prefix or rs == active_cat_slug %}
-            {% assign filtered = filtered | push: r %}
-          {% endif %}
-        {% endfor %}
-      {% endif %}
-      {% assign runs = filtered %}
     {% endif %}
 
-    <!-- =========================================================
-         Runs header with Submit button (ALWAYS VISIBLE)
-         ========================================================= -->
-    <section class="tab-panel active" data-panel="runs">
-      <div class="runs-header">
-        {% if active_cat_slug != "" and active_cat_label != "" %}
-          <p class="muted mt-0 mb-0">Showing runs in: <strong>{{ active_cat_label }}</strong></p>
-        {% else %}
-          <p class="muted mt-0 mb-0">Browse all submitted runs for {{ game.name }}.</p>
-        {% endif %}
-
-        <!-- Submit button - Always visible for all games -->
-        <a href="{{ game_base | relative_url }}submit/" class="btn btn--primary btn--submit">+ Submit a Run</a>
+    <!-- Child categories (if on a parent page) -->
+    {% if child_pairs.size > 0 and is_child_page == false %}
+      <div class="category-grid" style="margin-bottom: 1.25rem;">
+        {% for cp in child_pairs %}
+          {% assign cpparts = cp | split: "||" %}
+          {% assign cpslug = cpparts[0] %}
+          {% assign cplabel = cpparts[1] | default: cpslug %}
+          <a class="category-card" href="{{ runs_base }}{{ cpslug }}/">
+            <span class="category-card__label">{{ cplabel }}</span>
+          </a>
+        {% endfor %}
       </div>
+    {% endif %}
 
-      <!-- Character column config -->
-      {% assign show_character = false %}
-      {% assign character_label = "Character" %}
-      {% if game.character_column and game.character_column.enabled %}
-        {% assign show_character = true %}
-        {% if game.character_column.label %}
-          {% assign character_label = game.character_column.label %}
-        {% endif %}
-      {% endif %}
+    <!-- Main runs section -->
+    <section class="runs-section" data-game-id="{{ page.game_id }}" data-category-slug="{{ active_cat_slug }}">
+      <h2>{% if active_cat_label != "" %}{{ active_cat_label }}{% else %}All Runs{% endif %}</h2>
 
-      <div class="card card--compact">
-        <!-- Search row -->
-        <div class="runs-filters runs-filters--main">
+      <!-- =========================================================
+           Filter Controls - UNIFIED TYPEAHEAD UI
+           ========================================================= -->
+      <div class="runs-controls">
+        <div class="runs-filters">
+          <!-- Text search -->
           <div class="runs-filter runs-filter--search">
-            <span class="muted filter-label-text">Search</span>
             <input
-              id="q"
-              class="filter"
               type="text"
+              id="q"
+              class="input filter"
               placeholder="Search {% if show_character %}{{ character_label | downcase }}, {% endif %}runner, challenge, restrictions{% if game.glitches_data and game.glitches_data.size > 0 %}, glitches{% endif %}..."
               autocomplete="off"
               inputmode="search"
@@ -283,40 +256,34 @@ layout: default
         </div>
 
         <!-- =========================================================
-             Advanced filters
-             ORDERING (per spec): Character -> Standard Challenge -> Restrictions -> Glitches Used
+             Advanced filters - TYPEAHEAD CONTAINERS
+             ORDERING: Character -> Challenge -> Restrictions -> Glitches
              ========================================================= -->
         <div class="runs-filters runs-filters--advanced" id="advanced-filters" hidden>
           
-          <!-- 1. Character (if enabled) -->
+          <!-- 1. Character/Weapon (if enabled) -->
           {% if show_character %}
-          <div class="runs-filter" data-filter-order="1">
+          <div class="runs-filter runs-filter--typeahead" data-filter-order="1">
             <span class="muted filter-label-text">{{ character_label }}</span>
-            <select id="f-character" class="select filter th-caret" autocomplete="off">
-              <option value="">All</option>
-            </select>
+            <div id="f-character-container" class="filter-typeahead-wrap"></div>
           </div>
           {% endif %}
 
-          <!-- 2. Standard Challenge -->
-          <div class="runs-filter" data-filter-order="2">
+          <!-- 2. Challenge -->
+          <div class="runs-filter runs-filter--typeahead" data-filter-order="2">
             <span class="muted filter-label-text">Challenge</span>
-            <select id="f-challenge" class="select filter th-caret" autocomplete="off">
-              <option value="">All</option>
-            </select>
+            <div id="f-challenge-container" class="filter-typeahead-wrap"></div>
           </div>
 
           <!-- 3. Restrictions -->
           {% if game.restrictions_data and game.restrictions_data.size > 0 %}
-          <div class="runs-filter" data-filter-order="3">
+          <div class="runs-filter runs-filter--typeahead" data-filter-order="3">
             <span class="muted filter-label-text">Restrictions</span>
-            <select id="f-restrictions" class="select filter th-caret" autocomplete="off">
-              <option value="">All</option>
-            </select>
+            <div id="f-restrictions-container" class="filter-typeahead-wrap"></div>
           </div>
           {% endif %}
 
-          <!-- 4. Glitches Used -->
+          <!-- 4. Glitches (keep as dropdown for simple single-select) -->
           {% if game.glitches_data and game.glitches_data.size > 0 %}
           <div class="runs-filter" data-filter-order="4">
             <span class="muted filter-label-text">Glitch Category</span>
@@ -496,5 +463,5 @@ layout: default
   </div>
 </div>
 
-<!-- Runs filter JavaScript (external file) -->
+<!-- Runs filter JavaScript -->
 <script src="{{ '/assets/js/runs-filter.js' | relative_url }}"></script>
