@@ -66,7 +66,6 @@ challenges_data:
       ●  Player-initiated actions that cause damage are NOT hits. (e.g: Opening a door/chest/altar that requires a heart instead of a key).
       
       ### Exceptions
-    
       ●  That one enemy in Shadow Planes that teleports you to a previous place you were standing is not a hit (it seems unavoidable).
   - slug: no-hit-no-damage
     label: "No-Hit / No-Damage"
