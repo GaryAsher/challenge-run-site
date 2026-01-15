@@ -57,7 +57,7 @@ challenges_data:
 
       • Damage is any loss of your character's current health, regardless of source.
       
-        • Current health for Tiny Rogues are: Red Hearts and Soul Hearts.
+      • Current health for Tiny Rogues are: Red Hearts and Soul Hearts.
       
       • Changes to maximum health are not damage, even if they also change current health.
   - slug: hitless
