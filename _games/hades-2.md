@@ -38,7 +38,24 @@ tabs:
 character_column:
   enabled: true
   label: "Weapon / Aspect"
-
+  
+# =============================================================================
+# GENERAL RULES
+# Game-specific general rules (overrides defaults if present)
+# Use | for multi-line descriptions with bullet points
+# =============================================================================
+general_rules:
+  - "**Video Required:** All submissions must include video proof showing the full run"
+  - "**No Cheats/Mods:** Gameplay-altering mods are not allowed."
+  - "Show in-game timer: Options → Gameplay → "Timer Display"."
+  - "Unseeded (do one of these before the run): 
+    - "Salute the Oath of the Unseen and confirm the “Fate Altered!” message"
+    - "Show the previous run's death"
+    - "Show a completed run followed by a death."
+  - "Show Arcana Cards at either the beginning or end of the run (optional)."
+  - "Show Vows from the Oath of the Unseen (optional)."
+  - "Make sure no HUD elements are covered."
+  
 # =============================================================================
 # STANDARD CHALLENGE TYPES
 # Game-specific descriptions - SINGLE SOURCE OF TRUTH for Hades II
@@ -54,7 +71,6 @@ challenges_data:
       ### Exceptions: 
 
       ●  Vacuum attacks that pull Melinoë into melee range are NOT considered hits, even if they display the star animation above Melinoë’s head.
-
   - slug: damageless
     label: "Damageless"
     description: |
@@ -71,7 +87,6 @@ challenges_data:
       ●  Do not trigger any Dodge or Deflect abilities.
       
       ●  Do not block any attacks.
-      
 # =============================================================================
 # COMMUNITY CHALLENGES
 # Game-specific challenges created by the Hades II community
@@ -87,7 +102,6 @@ community-challenges:
     description: |
       
       ●  Do not utilize any boons from any god. You may pick up a boon from a god so long as you do not benefit it in any way.
-      
 # =============================================================================
 # GLITCH CATEGORIES
 # Defines what glitches/exploits are allowed
@@ -98,19 +112,16 @@ glitches_data:
     description: |
       
       ●  All glitches and exploits are allowed.
-      
   - slug: nmg
     label: "No Major Glitches"
     description: |
       
       ●  No out-of-bounds, wrong warps, AI/encounter breaks, or item/RNG manipulation.
-      
   - slug: glitchless
     label: "Glitchless"
     description: |
       
       ●  No glitches of any kind.
-      
 # =============================================================================
 # OPTIONAL RESTRICTIONS
 # Additional restrictions runners can apply
@@ -128,7 +139,6 @@ restrictions_data:
     description: |
       
       ●  Complete a run without activating any hexes from Selene. You may pick a hex so long as you do not benefit it in any way.
-      
 # =============================================================================
 # RUN CATEGORIES
 # Main speedrun/challenge categories
