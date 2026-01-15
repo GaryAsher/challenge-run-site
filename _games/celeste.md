@@ -82,7 +82,7 @@ restrictions: []
 categories_data:
   - slug: any
     label: "Any%"
-    description: "Unlock the Epilogue from a new file."
+    description: | Unlock the Epilogue from a new file.
 
   - slug: all-red-berries
     label: "All Red Berries"
@@ -92,7 +92,7 @@ categories_data:
 
   - slug: true-ending
     label: "True Ending"
-    description: "Complete Farewell from a new file."
+    description: | Complete Farewell from a new file.
 
   - slug: all-b-sides
     label: "All B-Sides"
