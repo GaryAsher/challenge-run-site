@@ -3941,3 +3941,462 @@ a.resource-card:hover {
   }
 }
 
+/* ============================================================
+   Unified Filter System CSS
+   ============================================================ */
+/* ============================================================
+   Filter Chip (removable tag with ×)
+   ============================================================ */
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.5rem 0.3rem 0.65rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.filter-chip:hover {
+  background: var(--bg-soft);
+  border-color: var(--accent);
+}
+
+.filter-chip:focus {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.filter-chip__text {
+  color: var(--fg);
+}
+
+.filter-chip__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--text-muted);
+  background: transparent;
+  border-radius: 50%;
+  transition: all 0.15s ease;
+}
+
+.filter-chip:hover .filter-chip__close {
+  background: rgba(239, 68, 68, 0.2);
+  color: #EF4444;
+}
+
+/* ============================================================
+   Filter Input Component (typeahead)
+   ============================================================ */
+.filter-input {
+  position: relative;
+  width: 100%;
+}
+
+.filter-input__picked {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.filter-input__picked:empty {
+  margin-bottom: 0;
+}
+
+.filter-input__wrap {
+  position: relative;
+}
+
+.filter-input__field {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.95rem;
+  color: var(--fg);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.filter-input__field:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--focus-2);
+}
+
+.filter-input__field::placeholder {
+  color: var(--placeholder-dim);
+}
+
+.filter-input__suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  max-height: 280px;
+  overflow-y: auto;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.filter-suggestion {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  font-size: 0.9rem;
+  color: var(--fg);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.filter-suggestion:hover,
+.filter-suggestion:focus {
+  background: var(--bg-soft);
+  outline: none;
+}
+
+.filter-suggestion--empty {
+  color: var(--text-muted);
+  cursor: default;
+  font-style: italic;
+}
+
+.filter-suggestion--empty:hover {
+  background: transparent;
+}
+
+/* ============================================================
+   Back to Top Button
+   ============================================================ */
+.back-to-top {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 90;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--fg);
+  background: var(--accent);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease;
+}
+
+.back-to-top:hover {
+  transform: translateY(-3px);
+  background: var(--accent);
+  filter: brightness(1.1);
+}
+
+.back-to-top:focus {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.back-to-top[hidden] {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(20px);
+}
+
+@media (max-width: 600px) {
+  .back-to-top {
+    bottom: 1rem;
+    right: 1rem;
+    width: 44px;
+    height: 44px;
+    font-size: 1.25rem;
+  }
+}
+
+/* ============================================================
+   Global Search Page
+   ============================================================ */
+.search-page {
+  min-height: 60vh;
+}
+
+.search-hero {
+  text-align: center;
+  padding: 2rem 0 1.5rem;
+}
+
+.search-hero h1 {
+  margin-bottom: 0.5rem;
+}
+
+.search-input-wrap {
+  max-width: 600px;
+  margin: 0 auto 2rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  font-size: 1.1rem;
+  color: var(--fg);
+  background: var(--panel);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-lg);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--focus-2);
+}
+
+.search-filters {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.search-filter-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.search-filter-btn:hover,
+.search-filter-btn.is-active {
+  color: var(--fg);
+  background: var(--bg-soft);
+  border-color: var(--accent);
+}
+
+.search-filter-btn.is-active {
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+}
+
+.search-results {
+  margin-top: 1.5rem;
+}
+
+.search-result-group {
+  margin-bottom: 2rem;
+}
+
+.search-result-group h2 {
+  font-size: 1rem;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.search-result {
+  display: block;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.15s ease;
+}
+
+.search-result:hover {
+  border-color: var(--accent);
+  text-decoration: none;
+}
+
+.search-result__title {
+  font-weight: 600;
+  color: var(--fg);
+  margin-bottom: 0.25rem;
+}
+
+.search-result__meta {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.search-no-results {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted);
+}
+
+/* ============================================================
+   Active Filters Row (for Runs page)
+   ============================================================ */
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+
+.active-filters:empty {
+  display: none;
+}
+
+/* ============================================================
+   Tag Chip (legacy - backwards compatible)
+   ============================================================ */
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tag-chip:hover {
+  background: var(--bg-soft);
+  border-color: var(--accent);
+}
+
+/* ============================================================
+   Runs Advanced Filter - Typeahead Style
+   ============================================================ */
+.runs-filter-typeahead {
+  position: relative;
+}
+
+.runs-filter-typeahead__input {
+  width: 100%;
+  min-width: 180px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  color: var(--fg);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.runs-filter-typeahead__input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--focus-2);
+}
+
+.runs-filter-typeahead__dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  max-height: 240px;
+  overflow-y: auto;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.runs-filter-typeahead__option {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-size: 0.85rem;
+  color: var(--fg);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.runs-filter-typeahead__option:hover {
+  background: var(--bg-soft);
+}
+
+/* ============================================================
+   Submit Form Styles
+   ============================================================ */
+.submit-form {
+  max-width: 700px;
+}
+
+.submit-form .form-group {
+  margin-bottom: 1.25rem;
+}
+
+.submit-form label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-weight: 500;
+  color: var(--fg);
+}
+
+.submit-form .form-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+
+.submit-form input[type="text"],
+.submit-form input[type="url"],
+.submit-form input[type="date"],
+.submit-form select,
+.submit-form textarea {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.95rem;
+  color: var(--fg);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.submit-form input:focus,
+.submit-form select:focus,
+.submit-form textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--focus-2);
+}
+
+.submit-form textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.submit-form .btn-submit {
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
