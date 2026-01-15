@@ -75,7 +75,9 @@ layout: default
               </summary>
               <div class="accordion-content">
                 {% if ch.description %}
-                  {{ ch.description | markdownify }}
+                  <div class="md">
+                    {{ ch.description | markdownify }}
+                  </div>
                 {% else %}
                   <p class="muted">See Rules tab for detailed definition.</p>
                 {% endif %}
