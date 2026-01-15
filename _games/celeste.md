@@ -83,11 +83,12 @@ categories_data:
   - slug: any
     label: "Any%"
     description: "Unlock the Epilogue from a new file."
+    
   - slug: all-red-berries
     label: "All Red Berries"
     description: |
-    - Collect all 175 red strawberries.
-    - Complete Core Ending from a new file.
+      - Collect all 175 red strawberries.
+      - Complete Core Ending from a new file.
 
   - slug: true-ending
     label: "True Ending"
