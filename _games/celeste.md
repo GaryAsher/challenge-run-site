@@ -43,41 +43,36 @@ character_column:
 # Game-specific general rules (overrides defaults if present)
 # Use | for multi-line descriptions with bullet points
 # =============================================================================
-general_rules:
-  - "**Timing Method:** IGT (In-Game Time) as shown on the file select screen"
-  - "**Video Required:** All submissions must include video proof showing the full run"
-  - "**No Cheats/Mods:** Gameplay-altering mods are not allowed. Visual mods are OK"
-  - "**File Select Required:** Run must start from a fresh file or show file select screen"
+general_rules: |
+  - "**Video Required:** All submissions must include video proof showing the full run
+  - **File Select Required:** Run must start from a fresh file or show file select screen
+  - **Timing Method:** IGT (In-Game Time) as shown on the file select screen
+  - **No Cheats/Mods:** Gameplay-altering mods are not allowed. Visual mods are OK
 
 # =============================================================================
 # STANDARD CHALLENGE TYPES
 # Use | for multi-line descriptions with bullet points
 # =============================================================================
 challenges_data:
-  - slug: deathless
-    label: "Deathless"
-    description: |
-      
-      • Death counter must remain at 0
-      
-      • Golden strawberry runs qualify automatically
-      
-      • Assist Mode is not allowed
   - slug: blindfolded
     label: "Blindfolded"
     description: |
-      Complete the run without being able to see the screen.
+      - Complete the run without being able to see the screen.
+      - Monitor must be visibly off or covered
+      - Webcam/handcam strongly recommended for verification
       
-      • Monitor must be visibly off or covered
-      
-      • Audio cues and muscle memory only
-      
-      • Webcam/handcam strongly recommended for verification
+  - slug: deathless
+    label: "Deathless"
+    description: |
+      - Death counter must remain at 0
+      - Assist Mode is not allowed
+
 # Game-specific community challenges
 community_challenges:
   - slug: modded-levels
     label: "Modded Levels"
-    description: "Challenge runs on community-created mod levels. Specify the mod name in submission."
+    description: |
+      - "Challenge runs on community-created mod levels. Specify the mod name in submission."
 
 # Glitches not relevant for this game
 glitches_relevant: false
@@ -97,8 +92,8 @@ categories_data:
   - slug: all-c-sides
     label: "All C-Sides"
     description: |
-      • Complete all C-Sides from a new file in any order.
-      • Use of cheat mode is allowed.
+      - Complete all C-Sides from a new file in any order.
+      - Use of cheat mode is allowed.
   - slug: all-hearts
     label: "All Hearts"
     description: "Collect all 24 Crystal Hearts in the game."
