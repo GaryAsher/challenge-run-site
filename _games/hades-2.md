@@ -44,7 +44,7 @@ character_column:
 # Game-specific general rules (overrides defaults if present)
 # Use | for multi-line descriptions with bullet points
 # =============================================================================
-general_rules:
+general_rules: |
   - "**Video Required:** All submissions must include video proof showing the full run"
   - "**No Cheats/Mods:** Gameplay-altering mods are not allowed."
   - "Show in-game timer: Options → Gameplay → "Timer Display"."
