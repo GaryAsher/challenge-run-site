@@ -8,11 +8,12 @@ layout: default
      Overview Tab - Clean with accordions
      
      ORDERING (per spec):
-     1. Game Description (content)
-     2. General Rules (if present)
+     1. Game Description (content) - or placeholder if empty
+     2. General Rules (default + game-specific)
      3. Standard Challenge Types
      4. Optional Restrictions
      5. Glitch Categories
+     6. Credits (if present)
      ========================================================= -->
 <div class="page-width">
   <div class="game-shell">
@@ -23,33 +24,52 @@ layout: default
            1. Game Description
            ========================================================= -->
       {% assign stripped_content = content | strip %}
-      {% if stripped_content != "" %}
+      {% assign is_placeholder = false %}
+      {% if stripped_content == "" or stripped_content contains "Game submitted via form" or stripped_content contains "Awaiting review" %}
+        {% assign is_placeholder = true %}
+      {% endif %}
+      
+      {% if is_placeholder %}
+        <div class="card">
+          <p class="muted"><em>📝 Game description needed. Want to help? <a href="{{ page.url | relative_url }}resources/">Visit the Resources tab</a> to learn how to contribute.</em></p>
+        </div>
+      {% elsif stripped_content != "" %}
         <div class="card">
           {{ content }}
         </div>
       {% endif %}
 
       <!-- =========================================================
-           2. General Rules (placeholder - shown if game has general_rules)
+           2. General Rules
            ========================================================= -->
-      {% if page.general_rules and page.general_rules.size > 0 %}
       <div class="card card--compact mt-4" data-section-order="1">
         <h2 class="mb-2">General Rules</h2>
-        <p class="muted mb-3">Core rules that apply to all runs:</p>
-        <ul>
-          {% for rule in page.general_rules %}
-            <li>{{ rule }}</li>
-          {% endfor %}
-        </ul>
+        {% if page.general_rules and page.general_rules.size > 0 %}
+          <!-- Game-specific general rules -->
+          <p class="muted mb-3">Core rules that apply to all {{ page.name }} runs:</p>
+          <ul>
+            {% for rule in page.general_rules %}
+              <li>{{ rule | markdownify | remove: '<p>' | remove: '</p>' }}</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <!-- Default general rules -->
+          <p class="muted mb-3">Core rules that apply to all runs:</p>
+          <ul>
+            <li><strong>Timing Method:</strong> {{ page.timing_method | default: "RTA (Real Time Attack)" }}</li>
+            <li><strong>Video Required:</strong> All submissions must include video proof</li>
+            <li><strong>No Cheats/Mods:</strong> External tools or gameplay-altering mods are not allowed</li>
+          </ul>
+        {% endif %}
       </div>
-      {% endif %}
 
       <!-- =========================================================
            3. Standard Challenge Types
            ========================================================= -->
       {% if page.challenges_data and page.challenges_data.size > 0 %}
       <div class="card card--compact mt-4" data-section-order="2">
-        <h2 class="mb-2">Standard Challenges:</h2>
+        <h2 class="mb-2">Standard Challenges</h2>
+        <p class="muted mb-3">Challenge types tracked for this game:</p>
         <div class="accordion">
           {% for ch in page.challenges_data %}
             <details class="accordion-item">
@@ -59,7 +79,7 @@ layout: default
               </summary>
               <div class="accordion-content">
                 {% if ch.description %}
-                  <p>{{ ch.description }}</p>
+                  {{ ch.description | markdownify }}
                 {% else %}
                   <p class="muted">See Rules tab for detailed definition.</p>
                 {% endif %}
@@ -71,7 +91,8 @@ layout: default
       {% elsif page.challenges and page.challenges.size > 0 %}
       <!-- Fallback to old format if challenges_data not present -->
       <div class="card card--compact mt-4" data-section-order="2">
-        <h2 class="mb-2">Standard Challenges:</h2>
+        <h2 class="mb-2">Standard Challenges</h2>
+        <p class="muted mb-3">Challenge types tracked for this game:</p>
         <div class="accordion">
           {% for ch_id in page.challenges %}
             {% assign ch_meta = site.data.challenges[ch_id] %}
@@ -82,7 +103,7 @@ layout: default
               </summary>
               <div class="accordion-content">
                 {% if ch_meta.description %}
-                  <p>{{ ch_meta.description }}</p>
+                  {{ ch_meta.description | markdownify }}
                 {% else %}
                   <p class="muted">See Rules tab for detailed definition.</p>
                 {% endif %}
@@ -98,7 +119,8 @@ layout: default
            ========================================================= -->
       {% if page.restrictions_data and page.restrictions_data.size > 0 %}
       <div class="card card--compact mt-4" data-section-order="3">
-        <h2 class="mb-2">Optional Restrictions:</h2>
+        <h2 class="mb-2">Optional Restrictions</h2>
+        <p class="muted mb-3">Additional restrictions runners can apply:</p>
         <div class="accordion">
           {% for res in page.restrictions_data %}
           <details class="accordion-item">
@@ -108,7 +130,7 @@ layout: default
             </summary>
             <div class="accordion-content">
               {% if res.description %}
-                <p>{{ res.description }}</p>
+                {{ res.description | markdownify }}
               {% else %}
                 <p class="muted">Can be combined with any category.</p>
               {% endif %}
@@ -123,7 +145,8 @@ layout: default
       {% elsif page.restrictions and page.restrictions.size > 0 %}
       <!-- Fallback to old format -->
       <div class="card card--compact mt-4" data-section-order="3">
-        <h2 class="mb-2">Optional Restrictions:</h2>
+        <h2 class="mb-2">Optional Restrictions</h2>
+        <p class="muted mb-3">Additional restrictions runners can apply:</p>
         <div class="accordion">
           {% for res in page.restrictions %}
           <details class="accordion-item">
@@ -146,7 +169,8 @@ layout: default
       {% unless page.glitches_relevant == false %}
         {% if page.glitches_data and page.glitches_data.size > 0 %}
         <div class="card card--compact mt-4" data-section-order="4">
-          <h2 class="mb-2">Glitch Categories:</h2>
+          <h2 class="mb-2">Glitch Categories</h2>
+          <p class="muted mb-3">Rules for glitches and exploits in runs:</p>
           <div class="accordion">
             {% for gl in page.glitches_data %}
             <details class="accordion-item">
@@ -156,7 +180,7 @@ layout: default
               </summary>
               <div class="accordion-content">
                 {% if gl.description %}
-                  <p>{{ gl.description }}</p>
+                  {{ gl.description | markdownify }}
                 {% else %}
                   <p class="muted">See Rules tab for detailed definition.</p>
                 {% endif %}
@@ -178,10 +202,32 @@ layout: default
       {% else %}
         <!-- Glitches not relevant for this game - show notice -->
         <div class="card card--compact mt-4" data-section-order="4">
-          <h2 class="mb-2">Glitch Categories:</h2>
-          <p class="muted">This game does not distinguish between glitch categories.</p>
+          <h2 class="mb-2">Glitch Categories</h2>
+          <p class="muted">This game does not distinguish between glitch categories. All runs are accepted regardless of glitch usage.</p>
         </div>
       {% endunless %}
+
+      <!-- =========================================================
+           6. Credits (if present)
+           ========================================================= -->
+      {% if page.credits and page.credits.size > 0 %}
+      <div class="card card--compact mt-4" data-section-order="5">
+        <h2 class="mb-2">Credits</h2>
+        <p class="muted mb-3">Thanks to the following contributors for helping set up this page:</p>
+        <ul class="credits-list">
+          {% for credit in page.credits %}
+            <li>
+              {% if credit.url %}
+                <a href="{{ credit.url }}" target="_blank" rel="noopener">{{ credit.name }}</a>
+              {% else %}
+                {{ credit.name }}
+              {% endif %}
+              {% if credit.role %}<span class="muted"> — {{ credit.role }}</span>{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
 
       <!-- Note: Community Challenges are NOT shown on Overview page per spec -->
       <!-- They appear only on the Rules page -->
