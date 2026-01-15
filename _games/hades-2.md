@@ -58,6 +58,12 @@ general_rules: |
 # STANDARD CHALLENGE TYPES
 # =============================================================================
 challenges_data:
+  - slug: damageless
+    label: "Damageless"
+    description: |
+      - Do not lose any Health or Armor.
+      - Changes to maximum health are not damage, even if they also change current health or later restore.
+      
   - slug: hitless
     label: "Hitless"
     description: |
@@ -66,12 +72,6 @@ challenges_data:
 
       ### Exceptions:
       - Vacuum attacks that pull Melinoë into melee range are NOT considered hits, even if they display the star animation above Melinoë's head.
-
-  - slug: damageless
-    label: "Damageless"
-    description: |
-      - Do not lose any Health or Armor.
-      - Changes to maximum health are not damage, even if they also change current health or later restore.
 
   - slug: no-hit-no-damage
     label: "No-Hit / No-Damage"
