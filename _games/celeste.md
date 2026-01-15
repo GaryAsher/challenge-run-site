@@ -44,10 +44,10 @@ character_column:
 # Use | for multi-line descriptions with bullet points
 # =============================================================================
 general_rules: |
-  - **Video Required:** All submissions must include video proof showing the full run
-  - **File Select Required:** Run must start from a fresh file or show file select screen
-  - **Timing Method:** IGT (In-Game Time) as shown on the file select screen
-  - **No Cheats/Mods:** Gameplay-altering mods are not allowed. Visual mods are OK
+  - **Video Required:** All submissions must include video proof showing the full run.
+  - **File Select Required:** Run must start from a fresh file or show file select screen.
+  - **Timing Method:** IGT (In-Game Time) as shown on the file select screen.
+  - **No Cheats/Mods:** Gameplay-altering mods are not allowed. Visual mods are OK.
 
 # =============================================================================
 # STANDARD CHALLENGE TYPES
@@ -58,14 +58,14 @@ challenges_data:
     label: "Blindfolded"
     description: |
       - Complete the run without being able to see the screen.
-      - Monitor must be visibly off or covered
-      - Webcam/handcam strongly recommended for verification
+      - Monitor must be visibly off or covered.
+      - Webcam/handcam strongly recommended for verification.
       
   - slug: deathless
     label: "Deathless"
     description: |
-      - Death counter must remain at 0
-      - Assist Mode is not allowed
+      - Death counter must remain at 0.
+      - Assist Mode is not allowed.
 
 # Game-specific community challenges
 community_challenges:
@@ -82,7 +82,8 @@ restrictions: []
 categories_data:
   - slug: any
     label: "Any%"
-    description: "Unlock the Epilogue from a new file."
+    description: |
+      - Unlock the Epilogue from a new file.
     
   - slug: all-red-berries
     label: "All Red Berries"
@@ -92,7 +93,8 @@ categories_data:
 
   - slug: true-ending
     label: "True Ending"
-    description: "Complete Farewell from a new file."
+    description: |
+      - Complete Farewell from a new file.
 
   - slug: all-b-sides
     label: "All B-Sides"
@@ -108,7 +110,8 @@ categories_data:
     
   - slug: all-hearts
     label: "All Hearts"
-    description: "Collect all 24 Crystal Hearts in the game from a new file."
+    description: |
+      - Collect all 24 Crystal Hearts in the game from a new file.
     
   - slug: "100"
     label: "100%"
