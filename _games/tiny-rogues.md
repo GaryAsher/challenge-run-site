@@ -53,7 +53,7 @@ challenges_data:
   - slug: damageless
     label: "Damageless"
     description: |
-      • Complete the run without taking any damage.
+      • Complete a category without taking any damage.
 
       • Damage is any loss of your character's current health, regardless of source.
       
