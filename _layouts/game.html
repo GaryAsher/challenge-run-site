@@ -47,20 +47,19 @@ layout: default
         {% if page.general_rules and page.general_rules.size > 0 %}
           <!-- Game-specific general rules -->
           <p class="muted mb-3">Core rules that apply to all {{ page.name }} runs:</p>
-          <ul>
-            {% for rule in page.general_rules %}
-              <li>{{ rule | markdownify | remove: '<p>' | remove: '</p>' }}</li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          <!-- Default general rules -->
-          <p class="muted mb-3">Core rules that apply to all runs:</p>
-          <ul>
-            <li><strong>Timing Method:</strong> {{ page.timing_method | default: "RTA (Real Time Attack)" }}</li>
-            <li><strong>Video Required:</strong> All submissions must include video proof</li>
-            <li><strong>No Cheats/Mods:</strong> External tools or gameplay-altering mods are not allowed</li>
-          </ul>
-        {% endif %}
+          {% if page.general_rules and page.general_rules.size > 0 %}
+            <p class="muted mb-3">Core rules that apply to all {{ page.name }} runs:</p>
+            <div class="rules-block">
+              {{ page.general_rules | markdownify }}
+            </div>
+          {% else %}
+            <p class="muted mb-3">Core rules that apply to all runs:</p>
+            <ul>
+              <li><strong>Timing Method:</strong> {{ page.timing_method | default: "RTA (Real Time Attack)" }}</li>
+              <li><strong>Video Required:</strong> All submissions must include video proof</li>
+              <li><strong>No Cheats/Mods:</strong> External tools or gameplay-altering mods are not allowed</li>
+            </ul>
+          {% endif %}
       </div>
 
       <!-- =========================================================
