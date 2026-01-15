@@ -44,7 +44,7 @@ character_column:
 # Use | for multi-line descriptions with bullet points
 # =============================================================================
 general_rules: |
-  - "**Video Required:** All submissions must include video proof showing the full run
+  - **Video Required:** All submissions must include video proof showing the full run
   - **File Select Required:** Run must start from a fresh file or show file select screen
   - **Timing Method:** IGT (In-Game Time) as shown on the file select screen
   - **No Cheats/Mods:** Gameplay-altering mods are not allowed. Visual mods are OK
