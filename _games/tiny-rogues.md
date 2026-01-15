@@ -64,8 +64,10 @@ challenges_data:
       • Hits are any enemy attack that remove any of the top-left health/armor/evade resources.
 
       • Player-initiated actions that cause damage are NOT hits. (e.g: Opening a door/chest/altar that requires a heart instead of a key).
+
       
       **Exceptions**:
+      
       • That one enemy in Shadow Planes that teleports you to a previous place you were standing is not a hit (because I do not think it is avoidable).
   - slug: no-hit-no-damage
     label: "No-Hit / No-Damage"
