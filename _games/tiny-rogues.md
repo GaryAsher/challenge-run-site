@@ -82,8 +82,13 @@ glitches_relevant: false
 restrictions_data:
   - slug: companions-only
     label: "Companions Only"
-    description: "Deal damage only through companions. Attacks/Abilities/Items from the player are not allowed."
-
+    description: |
+      • This restriction starts after the Floor 1 boss.
+      
+      • Deal damage only through companions. 
+      
+      • Attacks/Abilities/Items from the player after Floor 1 are not allowed.
+      
 # =============================================================================
 # CATEGORIES
 # =============================================================================
