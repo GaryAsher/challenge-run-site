@@ -57,20 +57,22 @@ challenges_data:
   - slug: deathless
     label: "Deathless"
     description: |
-      Complete the run without dying.
-
+      
       • Death counter must remain at 0
+      
       • Golden strawberry runs qualify automatically
+      
       • Assist Mode is not allowed
   - slug: blindfolded
     label: "Blindfolded"
     description: |
       Complete the run without being able to see the screen.
-
+      
       • Monitor must be visibly off or covered
+      
       • Audio cues and muscle memory only
+      
       • Webcam/handcam strongly recommended for verification
-
 # Game-specific community challenges
 community_challenges:
   - slug: modded-levels
