@@ -1,7 +1,13 @@
 /**
- * CRC Filter Utilities
- * Shared filtering, tag picker, and A-Z navigation logic
- * Used by games/index.html and runners/index.html
+ * CRC Filter Utilities v2
+ * Unified filtering, tag picker, and search components
+ * Used across: Games list, Runs list, Rule Builder, Global Search
+ * 
+ * All filters use the same UI pattern:
+ * - Text input with placeholder "Type a [category]..."
+ * - Dropdown suggestions on focus/type
+ * - Selected items shown as chips with × button
+ * - "Remove all filters" button when filters active
  */
 
 window.CRCFilters = (function() {
@@ -11,16 +17,10 @@ window.CRCFilters = (function() {
   // Core utilities
   // =========================================================
   
-  /**
-   * Normalize string for comparison
-   */
   function norm(s) {
     return (s || '').toString().trim().toLowerCase();
   }
 
-  /**
-   * Convert roman numerals to arabic for matching
-   */
   function expandRomanNumerals(s) {
     var str = norm(s);
     var romans = [
@@ -36,17 +36,64 @@ window.CRCFilters = (function() {
     return str;
   }
 
+  function debounce(fn, ms) {
+    var timer;
+    return function() {
+      var args = arguments;
+      var context = this;
+      clearTimeout(timer);
+      timer = setTimeout(function() { fn.apply(context, args); }, ms);
+    };
+  }
+
   // =========================================================
-  // Tag Picker: Render picked chips
+  // Tag Chip Component
   // =========================================================
   
   /**
-   * Render selected tags as removable chips
-   * @param {Set} set - Set of selected tag IDs
-   * @param {Array} list - List of {id, label} objects
-   * @param {HTMLElement} pickedEl - Container for chips
-   * @param {Object} options - { onRemove: function }
+   * Create a removable tag chip element
+   * @param {string} label - Display text
+   * @param {Function} onRemove - Callback when × clicked
+   * @returns {HTMLElement}
    */
+  function createChip(label, onRemove) {
+    var chip = document.createElement('span');
+    chip.className = 'filter-chip';
+    chip.setAttribute('role', 'button');
+    chip.setAttribute('tabindex', '0');
+    
+    var text = document.createElement('span');
+    text.className = 'filter-chip__text';
+    text.textContent = label;
+    
+    var close = document.createElement('span');
+    close.className = 'filter-chip__close';
+    close.textContent = '×';
+    close.setAttribute('aria-label', 'Remove ' + label);
+    
+    chip.appendChild(text);
+    chip.appendChild(close);
+    
+    function handleRemove(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (onRemove) onRemove();
+    }
+    
+    chip.addEventListener('click', handleRemove);
+    chip.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Backspace' || e.key === 'Delete') {
+        handleRemove(e);
+      }
+    });
+    
+    return chip;
+  }
+
+  // =========================================================
+  // Render picked chips
+  // =========================================================
+  
   function renderPicked(set, list, pickedEl, options) {
     options = options || {};
     pickedEl.innerHTML = '';
@@ -57,33 +104,20 @@ window.CRCFilters = (function() {
     entries.forEach(function(id) {
       var meta = list.find(function(x) { return norm(x.id) === norm(id); });
       var label = meta ? meta.label : id;
-
-      var chip = document.createElement('button');
-      chip.type = 'button';
-      chip.className = 'tag-chip';
-      chip.textContent = label + ' ×';
-
-      chip.addEventListener('click', function() {
+      
+      var chip = createChip(label, function() {
         set.delete(norm(id));
         if (options.onRemove) options.onRemove();
       });
-
+      
       pickedEl.appendChild(chip);
     });
   }
 
   // =========================================================
-  // Tag Picker: Render suggestions dropdown
+  // Render suggestions dropdown
   // =========================================================
   
-  /**
-   * Render filtered suggestions list
-   * @param {string} qRaw - Search query
-   * @param {Set} set - Set of already selected IDs
-   * @param {Array} list - List of {id, label, aliases?} objects
-   * @param {HTMLElement} sugEl - Suggestions container
-   * @param {Object} options - { onPick: function }
-   */
   function renderSuggestions(qRaw, set, list, sugEl, options) {
     options = options || {};
     var q = norm(qRaw);
@@ -104,8 +138,8 @@ window.CRCFilters = (function() {
 
     if (!show.length) {
       var empty = document.createElement('div');
-      empty.className = 'tag-suggestion is-empty';
-      empty.textContent = 'No matches.';
+      empty.className = 'filter-suggestion filter-suggestion--empty';
+      empty.textContent = available.length ? 'No matches.' : 'All options selected.';
       sugEl.appendChild(empty);
       sugEl.hidden = false;
       return;
@@ -114,19 +148,17 @@ window.CRCFilters = (function() {
     show.forEach(function(item) {
       var btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'tag-suggestion';
+      btn.className = 'filter-suggestion';
       btn.textContent = item.label;
       btn.dataset.id = item.id;
       sugEl.appendChild(btn);
     });
 
-    // Use event delegation - single listener on parent
-    // Remove old listener first to prevent duplicates
     if (sugEl._clickHandler) {
       sugEl.removeEventListener('click', sugEl._clickHandler);
     }
     sugEl._clickHandler = function(e) {
-      var btn = e.target.closest('.tag-suggestion:not(.is-empty)');
+      var btn = e.target.closest('.filter-suggestion:not(.filter-suggestion--empty)');
       if (!btn || !btn.dataset.id) return;
       set.add(norm(btn.dataset.id));
       if (options.onPick) {
@@ -140,20 +172,146 @@ window.CRCFilters = (function() {
   }
 
   // =========================================================
-  // Tag Picker: Wire up dropdown behavior
+  // Unified Filter Input Component
   // =========================================================
   
   /**
-   * Initialize a tag picker dropdown
-   * @param {Object} config - Configuration object
-   * @param {HTMLElement} config.filterEl - Container element
-   * @param {HTMLElement} config.searchEl - Search input
-   * @param {HTMLElement} config.sugEl - Suggestions dropdown
-   * @param {Set} config.set - Selected items set
-   * @param {Array} config.list - Available items list
-   * @param {HTMLElement} config.pickedEl - Picked chips container
-   * @param {Function} config.onFilter - Callback when filter changes
+   * Create a complete filter input with typeahead
+   * @param {Object} config
+   * @param {string} config.placeholder - e.g., "Type a weapon..."
+   * @param {Array} config.list - Array of {id, label, aliases?, description?}
+   * @param {Set} config.set - Selected items Set
+   * @param {Function} config.onChange - Called when selection changes
+   * @param {boolean} config.multiSelect - Allow multiple selections (default true)
+   * @returns {HTMLElement} - Container element
    */
+  function createFilterInput(config) {
+    var placeholder = config.placeholder || 'Type to search...';
+    var list = config.list || [];
+    var set = config.set || new Set();
+    var onChange = config.onChange || function() {};
+    var multiSelect = config.multiSelect !== false;
+
+    // Container
+    var container = document.createElement('div');
+    container.className = 'filter-input';
+
+    // Picked chips area
+    var pickedEl = document.createElement('div');
+    pickedEl.className = 'filter-input__picked';
+    container.appendChild(pickedEl);
+
+    // Input wrapper
+    var inputWrap = document.createElement('div');
+    inputWrap.className = 'filter-input__wrap';
+    container.appendChild(inputWrap);
+
+    // Text input
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'filter-input__field';
+    input.placeholder = placeholder;
+    input.autocomplete = 'off';
+    input.setAttribute('aria-label', placeholder);
+    inputWrap.appendChild(input);
+
+    // Suggestions dropdown
+    var sugEl = document.createElement('div');
+    sugEl.className = 'filter-input__suggestions';
+    sugEl.hidden = true;
+    inputWrap.appendChild(sugEl);
+
+    // State
+    var isOpen = false;
+
+    function render() {
+      renderPicked(set, list, pickedEl, { onRemove: function() {
+        render();
+        onChange();
+      }});
+      
+      // Hide input if single-select and has value
+      if (!multiSelect && set.size > 0) {
+        input.style.display = 'none';
+      } else {
+        input.style.display = '';
+      }
+    }
+
+    function open() {
+      if (isOpen) return;
+      isOpen = true;
+      renderSuggestions(input.value, set, list, sugEl, {
+        onPick: function() {
+          input.value = '';
+          render();
+          onChange();
+          if (multiSelect) {
+            renderSuggestions('', set, list, sugEl, { onPick: arguments.callee });
+          } else {
+            close();
+          }
+        }
+      });
+    }
+
+    function close() {
+      isOpen = false;
+      sugEl.hidden = true;
+    }
+
+    // Events
+    input.addEventListener('focus', open);
+    input.addEventListener('input', debounce(function() {
+      renderSuggestions(input.value, set, list, sugEl, {
+        onPick: function(item) {
+          input.value = '';
+          render();
+          onChange();
+          if (multiSelect) {
+            renderSuggestions('', set, list, sugEl, { onPick: arguments.callee });
+          } else {
+            close();
+          }
+        }
+      });
+    }, 100));
+
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        close();
+        input.blur();
+      }
+    });
+
+    document.addEventListener('pointerdown', function(e) {
+      if (!container.contains(e.target)) {
+        close();
+      }
+    }, true);
+
+    // Initial render
+    render();
+
+    // Public API
+    container._api = {
+      getSet: function() { return set; },
+      clear: function() {
+        set.clear();
+        input.value = '';
+        render();
+        onChange();
+      },
+      refresh: render
+    };
+
+    return container;
+  }
+
+  // =========================================================
+  // Wire existing dropdown (backwards compatible)
+  // =========================================================
+  
   function wireDropdown(config) {
     var filterEl = config.filterEl;
     var searchEl = config.searchEl;
@@ -185,10 +343,8 @@ window.CRCFilters = (function() {
       close();
     }
 
-    // Initial render
     renderPicked(set, list, pickedEl, { onRemove: onRemoveChip });
 
-    // Event listeners
     searchEl.addEventListener('focus', function() { if (sugEl.hidden) open(); });
     searchEl.addEventListener('pointerdown', function() { if (sugEl.hidden) open(); else close(); });
     searchEl.addEventListener('input', function() { open(); });
@@ -199,7 +355,6 @@ window.CRCFilters = (function() {
       if (!filterEl.contains(e.target)) close();
     }, true);
 
-    // Return methods for external control
     return {
       open: open,
       close: close,
@@ -213,11 +368,6 @@ window.CRCFilters = (function() {
   // A-Z Navigation
   // =========================================================
   
-  /**
-   * Initialize A-Z letter navigation
-   * @param {Object} config - Configuration object
-   * @param {Function} config.onHashChange - Callback when hash changes
-   */
   function initAzNav(config) {
     config = config || {};
     var azLinks = document.querySelectorAll('.az a');
@@ -241,41 +391,25 @@ window.CRCFilters = (function() {
       });
     });
 
-    // Initial state
     updateAzActive();
 
-    return {
-      update: updateAzActive
-    };
+    return { update: updateAzActive };
   }
 
   // =========================================================
-  // Hash-based letter filtering
+  // Hash-based filtering
   // =========================================================
   
-  /**
-   * Check if an item's letter matches the current hash filter
-   * @param {string} letter - First letter of item name (uppercase)
-   * @param {string} hashMode - Current hash filter (empty string for no filter)
-   * @returns {boolean}
-   */
   function matchesHashFilter(letter, hashMode) {
     if (!hashMode) return true;
-
     var startsWithDigit = letter >= '0' && letter <= '9';
     var startsWithAtoZ = letter >= 'A' && letter <= 'Z';
-
     if (hashMode === '0-9') return startsWithDigit;
     if (hashMode === 'OTHER') return !startsWithDigit && !startsWithAtoZ;
     if (hashMode.length === 1) return letter === hashMode;
-
     return true;
   }
 
-  /**
-   * Get current hash mode from URL
-   * @returns {string} - Uppercase hash or empty string
-   */
   function getHashMode() {
     var rawHash = (location.hash || '').replace('#', '').toUpperCase();
     return rawHash && rawHash !== 'ALL' ? rawHash : '';
@@ -285,12 +419,8 @@ window.CRCFilters = (function() {
   // Lazy load backgrounds
   // =========================================================
   
-  /**
-   * Initialize lazy loading for [data-bg] elements
-   */
   function lazyLoadBgs() {
     var lazyBgs = document.querySelectorAll('[data-bg]');
-
     if ('IntersectionObserver' in window) {
       var observer = new IntersectionObserver(function(entries) {
         entries.forEach(function(entry) {
@@ -302,7 +432,6 @@ window.CRCFilters = (function() {
           }
         });
       }, { rootMargin: '100px' });
-
       lazyBgs.forEach(function(el) { observer.observe(el); });
     } else {
       lazyBgs.forEach(function(el) {
@@ -312,17 +441,55 @@ window.CRCFilters = (function() {
   }
 
   // =========================================================
+  // Back to Top button
+  // =========================================================
+  
+  function initBackToTop() {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'back-to-top';
+    btn.setAttribute('aria-label', 'Back to top');
+    btn.innerHTML = '↑';
+    btn.hidden = true;
+    document.body.appendChild(btn);
+
+    var scrollThreshold = 400;
+
+    function checkScroll() {
+      btn.hidden = window.scrollY < scrollThreshold;
+    }
+
+    window.addEventListener('scroll', debounce(checkScroll, 100));
+    
+    btn.addEventListener('click', function() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    checkScroll();
+    return btn;
+  }
+
+  // =========================================================
   // Public API
   // =========================================================
   return {
     norm: norm,
     expandRomanNumerals: expandRomanNumerals,
+    debounce: debounce,
+    createChip: createChip,
+    createFilterInput: createFilterInput,
     renderPicked: renderPicked,
     renderSuggestions: renderSuggestions,
     wireDropdown: wireDropdown,
     initAzNav: initAzNav,
     matchesHashFilter: matchesHashFilter,
     getHashMode: getHashMode,
-    lazyLoadBgs: lazyLoadBgs
+    lazyLoadBgs: lazyLoadBgs,
+    initBackToTop: initBackToTop
   };
 })();
+
+// Auto-init back to top on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function() {
+  window.CRCFilters.initBackToTop();
+});
