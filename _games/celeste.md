@@ -82,21 +82,40 @@ restrictions: []
 categories_data:
   - slug: any
     label: "Any%"
-    description: "Complete the main story (Chapters 1-7) as fast as possible."
-  - slug: "100"
-    label: "100%"
-    description: "Collect all 175 strawberries, complete all B-Sides and C-Sides, and find all Crystal Hearts."
+    description: "Unlock the Epilogue from a new file."
+    
   - slug: all-red-berries
     label: "All Red Berries"
-    description: "Collect all 175 red strawberries in the game."
+    description: |
+    - Collect all 175 red strawberries.
+    - Complete Core Ending from a new file.
+
+  - slug: true-ending
+    label: "True Ending"
+    description: "Complete Farewell from a new file."
+
+  - slug: all-b-sides
+    label: "All B-Sides"
+    description: |
+      - Complete all B-Sides in any order from a new file.
+      - Use of cheat mode is allowed.
+
   - slug: all-c-sides
     label: "All C-Sides"
     description: |
-      - Complete all C-Sides from a new file in any order.
+      - Complete all C-Sides in any order from a new file.
       - Use of cheat mode is allowed.
+    
   - slug: all-hearts
     label: "All Hearts"
-    description: "Collect all 24 Crystal Hearts in the game."
+    description: "Collect all 24 Crystal Hearts in the game from a new file."
+    
+  - slug: "100"
+    label: "100%"
+    description: |
+      - Complete all chapters, collect all 175 red berries, and collect the moon berry from a new file.
+
+
 
 # =============================================================================
 # CREDITS
