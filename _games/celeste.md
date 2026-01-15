@@ -97,9 +97,6 @@ categories_data:
   - slug: all-hearts
     label: "All Hearts"
     description: "Collect all 24 Crystal Hearts in the game."
-  - slug: any-100
-    label: "Any% (100)"
-    description: "Complete the main story with exactly 100 deaths or fewer."
 
 # =============================================================================
 # CREDITS
