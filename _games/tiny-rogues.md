@@ -67,7 +67,7 @@ challenges_data:
 
       **Exceptions**:
       
-      • That one enemy in Shadow Planes that teleports you to a previous place you were standing is not a hit (because I do not think it is avoidable).
+      • That one enemy in Shadow Planes that teleports you to a previous place you were standing is not a hit (it seems unavoidable).
   - slug: no-hit-no-damage
     label: "No-Hit / No-Damage"
     description: |
