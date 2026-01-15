@@ -53,21 +53,21 @@ challenges_data:
   - slug: damageless
     label: "Damageless"
     description: |
-      • Damage is any loss of your character's current health, regardless of source.
+      ●  Damage is any loss of your character's current health, regardless of source.
       
-      • Current health for Tiny Rogues are: Red Hearts and Soul Hearts.
+      ●  Current health for Tiny Rogues are: Red Hearts and Soul Hearts.
       
-      • Changes to maximum health are not damage, even if they also change current health.
+      ●  Changes to maximum health are not damage, even if they also change current health.
   - slug: hitless
     label: "Hitless"
     description: |
-      ● Hits are any enemy attack that remove any of the top-left health/armor/evade resources.
+      ●  Hits are any enemy attack that remove any of the top-left health/armor/evade resources.
       
-      ● Player-initiated actions that cause damage are NOT hits. (e.g: Opening a door/chest/altar that requires a heart instead of a key).
+      ●  Player-initiated actions that cause damage are NOT hits. (e.g: Opening a door/chest/altar that requires a heart instead of a key).
       
-      "**Exceptions**"
+      ## Exceptions
     
-      ● That one enemy in Shadow Planes that teleports you to a previous place you were standing is not a hit (it seems unavoidable).
+      ●  That one enemy in Shadow Planes that teleports you to a previous place you were standing is not a hit (it seems unavoidable).
   - slug: no-hit-no-damage
     label: "No-Hit / No-Damage"
     description: |
@@ -82,11 +82,11 @@ restrictions_data:
   - slug: companions-only
     label: "Companions Only"
     description: |
-      • This restriction starts after the Floor 1 boss.
+      ●  This restriction starts after the Floor 1 boss.
       
-      • Deal damage only through companions. 
+      ●  Deal damage only through companions. 
       
-      • Attacks/Abilities/Items from the player after Floor 1 are not allowed.
+      ●  Attacks/Abilities/Items from the player after Floor 1 are not allowed.
       
 # =============================================================================
 # CATEGORIES
