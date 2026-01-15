@@ -51,6 +51,10 @@ challenges_data:
       ●  Do not become stunned by any effect (represented by a star orbiting around Melinoë’s head).
       
       ●  Do not trigger damage nullifiers such as Dodge, Daze, The Lovers, or any similar effects that convert an enemy hit into zero damage. You may select boons with these effects so long as the dodge / miss effect does not activate.
+      # Exceptions: 
+
+      ●  Vacuum attacks that pull Melinoë into melee range are NOT considered hits, even if they display the star animation above Melinoë’s head.
+
   - slug: damageless
     label: "Damageless"
     description: |
