@@ -1,0 +1,11 @@
+{%- comment -%}
+Renders Markdown with consistent spacing.
+Usage:
+  {% include md.html text=some_markdown %}
+{%- endcomment -%}
+
+{%- if include.text and include.text != "" -%}
+  <div class="md">
+    {{ include.text | markdownify }}
+  </div>
+{%- endif -%}
