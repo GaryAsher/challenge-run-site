@@ -1,0 +1,13 @@
+# Reviewers data file
+# Maps reviewer IDs to their GitHub usernames and display names
+# Used by CODEOWNERS generation
+
+# Format:
+# reviewer-id:
+#   github: "GitHubUsername"
+#   name: "Display Name"
+#   games: ["game-id-1", "game-id-2"]  # Optional: specific games they review
+
+gary-asher:
+  github: "GaryAsher"
+  name: "Gary Asher"
