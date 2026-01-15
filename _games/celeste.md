@@ -83,7 +83,6 @@ categories_data:
   - slug: any
     label: "Any%"
     description: "Unlock the Epilogue from a new file."
-
   - slug: all-red-berries
     label: "All Red Berries"
     description: |
