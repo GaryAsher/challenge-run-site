@@ -47,16 +47,19 @@ challenges_data:
   - slug: hitless
     label: "Hitless"
     description: |
-    • Do not become stunned by any effect (represented by a star orbiting around Melinoë’s head).
-    • Do not trigger damage nullifiers such as Dodge, Daze, The Lovers, or any similar effects that convert an enemy hit into zero damage. You may select boons with these effects so long as the dodge / miss effect does not activate."
+      • Do not become stunned by any effect (represented by a star orbiting around Melinoë’s head).
+      • Do not trigger damage nullifiers such as Dodge, Daze, The Lovers, or any similar effects that convert an enemy hit into zero damage. You may select boons with these effects so long as the dodge / miss effect does not activate."
   - slug: damageless
     label: "Damageless"
     description: |
-    • Do not lose any Health or Armor.
-    • Chaos' Atrophic curse is NOT considered a hit or damage."
+      • Do not lose any Health or Armor.
+      • Chaos' Atrophic curse is NOT considered a hit or damage."
   - slug: no-hit-no-damage
     label: "No-Hit / No-Damage"
-    description: "Do not lose any health. Do not trigger any Dodge or Deflect abilities. Do not block any attacks."
+    description: |
+      • Do not lose any health.
+      • Do not trigger any Dodge or Deflect abilities.
+      • Do not block any attacks.
 
 # =============================================================================
 # COMMUNITY CHALLENGES
@@ -65,10 +68,12 @@ challenges_data:
 community-challenges:
   - slug: one-god-only
     label: "One God Only"
-    description: "Only utilize boons from one god. You may pick up a boon from a god so long as you do not benefit it in any way."
+    description: |
+      • Only utilize boons from one god. You may pick up a boon from a god so long as you do not benefit it in any way.
   - slug: boonless
     label: "Boonless"
-    description: "Do not utilize any boons from any god. You may pick up a boon from a god so long as you do not benefit it in any way."
+    description: |
+      • Do not utilize any boons from any god. You may pick up a boon from a god so long as you do not benefit it in any way.
 
 # =============================================================================
 # GLITCH CATEGORIES
@@ -77,13 +82,16 @@ community-challenges:
 glitches_data:
   - slug: unrestricted
     label: "Unrestricted"
-    description: "All glitches and exploits are allowed."
+    description: |
+      • All glitches and exploits are allowed.
   - slug: nmg
     label: "No Major Glitches"
-    description: "No out-of-bounds, wrong warps, AI/encounter breaks, or item/RNG manipulation."
+    description: |
+      • No out-of-bounds, wrong warps, AI/encounter breaks, or item/RNG manipulation.
   - slug: glitchless
     label: "Glitchless"
-    description: "No glitches of any kind."
+    description: |
+      • No glitches of any kind.
 
 # =============================================================================
 # OPTIONAL RESTRICTIONS
@@ -92,10 +100,13 @@ glitches_data:
 restrictions_data:
   - slug: arcanaless
     label: "Arcanaless"
-    description: "Complete a run with no Arcana Cards selected or Vow of Void(4) selected in the Oath of the Unseen. Additionally, do not pick up Arcana Cards in any way."
+    description: |
+      • Complete a run with no Arcana Cards selected or Vow of Void(4) selected in the Oath of the Unseen. 
+      • Additionally, do not activate Arcana Cards in any way.
   - slug: no-hexes
     label: "No Hexes"
-    description: "Complete a run without activating any hexes from Selene. You may pick a hex so long as you do not benefit it in any way."
+    description: |
+      • Complete a run without activating any hexes from Selene. You may pick a hex so long as you do not benefit it in any way.
 
 # =============================================================================
 # RUN CATEGORIES
