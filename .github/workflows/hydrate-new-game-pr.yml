@@ -1,0 +1,141 @@
+name: Hydrate New Game PR
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "_queue_games/*.md"
+
+concurrency:
+  group: hydrate-new-game-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  hydrate:
+    # Prevent loops from the bot committing to the PR branch
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Identify queued game id
+        id: identify
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Find the first queued game file in this PR diff
+          FILES="$(git diff --name-only origin/${{ github.base_ref }}...HEAD || true)"
+          echo "Changed files: ${FILES}"
+
+          GAME_ID=""
+          for f in ${FILES}; do
+            if [[ "$f" == _queue_games/*.md ]] && [[ "$f" != *".gitkeep"* ]]; then
+              GAME_ID="$(basename "$f" .md)"
+              break
+            fi
+          done
+
+          if [ -z "${GAME_ID}" ]; then
+            echo "::error::No _queue_games/<id>.md found in PR"
+            exit 1
+          fi
+
+          echo "game_id=${GAME_ID}" >> "$GITHUB_OUTPUT"
+          echo "Found GAME_ID=${GAME_ID}"
+
+      - name: Promote game file in PR branch
+        shell: bash
+        env:
+          GAME_ID: ${{ steps.identify.outputs.game_id }}
+        run: |
+          set -euo pipefail
+
+          SOURCE="_queue_games/${GAME_ID}.md"
+          DEST="_games/${GAME_ID}.md"
+
+          mkdir -p _games
+
+          if [ -f "${SOURCE}" ]; then
+            mv "${SOURCE}" "${DEST}"
+          fi
+
+          # Remove status line entirely
+          if [ -f "${DEST}" ]; then
+            sed -i '/^status:/d' "${DEST}"
+            sed -i '/^---$/,${
+              /^Game submitted via form\. Awaiting review\.$/d
+              /^<!-- REVIEWER NOTES$/,/^-->$/d
+            }' "${DEST}" || true
+          fi
+
+      - name: Generate game pages (PR branch)
+        shell: bash
+        env:
+          GAME_ID: ${{ steps.identify.outputs.game_id }}
+        run: |
+          set -euo pipefail
+          node scripts/generate-game-pages.js --game "${GAME_ID}"
+          node scripts/generate-run-category-pages.js --game "${GAME_ID}"
+          node scripts/generate-codeowners.js
+
+      - name: Commit changes to PR branch (if any)
+        id: commit
+        shell: bash
+        env:
+          GAME_ID: ${{ steps.identify.outputs.game_id }}
+        run: |
+          set -euo pipefail
+
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No generated changes to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+          git commit -m "chore: hydrate new game ${GAME_ID} [skip ci]"
+
+          git push origin HEAD:${{ github.head_ref }}
+
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Comment on PR
+        if: steps.commit.outputs.changed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              body: [
+                "✅ Generated game files have been added to this PR:",
+                "- moved `_queue_games/<id>.md` → `_games/<id>.md`",
+                "- generated `games/<id>/**`",
+                "- updated CODEOWNERS",
+                "",
+                "If everything looks good, merge this PR to publish the game."
+              ].join("\n")
+            });
