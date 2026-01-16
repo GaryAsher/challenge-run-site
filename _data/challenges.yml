@@ -16,8 +16,8 @@ blindfolded:
 damageless:
   label: "Damageless"
   description: |
-    • Damage is any loss of your character’s current health, regardless of the source.
-    • Changes to maximum health are not damage, even if they also change current health or later restore.
+    - Damage is any loss of your character’s current health, regardless of the source.
+    - Changes to maximum health are not damage, even if they also change current health or later restore.
   aliases: 
     - "NoDamage"
     - "No-Damage"
@@ -26,7 +26,7 @@ damageless:
 deathless:
   label: "Deathless"
   description: |
-    • A death is when your character fails in a way that resets progress, typically with a penalty like losing lives, items, or other resources.
+    - A death is when your character fails in a way that resets progress, typically with a penalty like losing lives, items, or other resources.
   aliases:
     - "No-Death"
     - "No Death"
@@ -48,8 +48,8 @@ high-score:
 hitless:
   label: "Hitless"
   description: |
-    • A hit is when an NPC or dynamic object makes contact with your character's hurtbox, causing damage or hard crowd control (Hard CC).
-    • Player-initiated actions that cause damage or movement are NOT hits.
+    - A hit is when an NPC or dynamic object makes contact with your character's hurtbox, causing damage or hard crowd control (Hard CC).
+    - Player-initiated actions that cause damage or movement are NOT hits.
   aliases:
     - "NoHit"
     - "No-Hit"
