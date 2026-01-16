@@ -77,7 +77,7 @@ community_challenges:
 # Glitches not relevant for this game
 glitches_relevant: false
 
-restrictions: []
+restrictions_data: []
 
 categories_data:
   - slug: any
