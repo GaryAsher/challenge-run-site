@@ -40,13 +40,13 @@ character_column:
   enabled: false
   label: "Character"
 
-challenges:
+challenges_data:
   - blindfolded
   - damageless
   - hitless
   - minimalist
 
-restrictions: []
+restrictions_data: []
 
 glitches_data:
   - slug: unrestricted
