@@ -291,11 +291,10 @@ layout: default
           <p class="muted mt-0 mb-0">Browse all submitted runs for {{ game.name }}.</p>
         {% endif %}
 
-        <!-- Submit button - Always visible for all games -->
         <a href="{{ game_base | relative_url }}submit/" class="btn btn--primary btn--submit">+ Submit a Run</a>
       </div>
 
-      <!-- Character column config -->
+      <!-- Column flags -->
       {% assign show_character = false %}
       {% assign character_label = "Character" %}
       {% if game.character_column and game.character_column.enabled %}
@@ -303,6 +302,16 @@ layout: default
         {% if game.character_column.label %}
           {% assign character_label = game.character_column.label %}
         {% endif %}
+      {% endif %}
+
+      {% assign show_glitches = false %}
+      {% if game.glitches_data and game.glitches_data.size > 0 %}
+        {% assign show_glitches = true %}
+      {% endif %}
+
+      {% assign show_restrictions = true %}
+      {% if game.restrictions_data == nil or game.restrictions_data.size == 0 %}
+        {% assign show_restrictions = true %}
       {% endif %}
 
       <div class="card card--compact">
@@ -314,7 +323,7 @@ layout: default
               id="q"
               class="filter"
               type="text"
-              placeholder="Search {% if show_character %}{{ character_label | downcase }}, {% endif %}runner, challenge, restrictions{% if game.glitches_data and game.glitches_data.size > 0 %}, glitches{% endif %}..."
+              placeholder="Search {% if show_character %}{{ character_label | downcase }}, {% endif %}runner, challenge, restrictions{% if show_glitches %}, glitches{% endif %}..."
               autocomplete="off"
               inputmode="search"
               enterkeyhint="search"
@@ -334,15 +343,15 @@ layout: default
              ORDERING (per spec): Character -> Standard Challenge -> Restrictions -> Glitches Used
              ========================================================= -->
         <div class="runs-filters runs-filters--advanced" id="advanced-filters" hidden>
-          
+
           <!-- 1. Character (if enabled) -->
           {% if show_character %}
-          <div class="runs-filter" data-filter-order="1">
-            <span class="muted filter-label-text">{{ character_label }}</span>
-            <select id="f-character" class="select filter th-caret" autocomplete="off">
-              <option value="">All</option>
-            </select>
-          </div>
+            <div class="runs-filter" data-filter-order="1">
+              <span class="muted filter-label-text">{{ character_label }}</span>
+              <select id="f-character" class="select filter th-caret" autocomplete="off">
+                <option value="">All</option>
+              </select>
+            </div>
           {% endif %}
 
           <!-- 2. Standard Challenge -->
@@ -355,25 +364,25 @@ layout: default
 
           <!-- 3. Restrictions -->
           {% if game.restrictions_data and game.restrictions_data.size > 0 %}
-          <div class="runs-filter" data-filter-order="3">
-            <span class="muted filter-label-text">Restrictions</span>
-            <select id="f-restrictions" class="select filter th-caret" autocomplete="off">
-              <option value="">All</option>
-            </select>
-          </div>
+            <div class="runs-filter" data-filter-order="3">
+              <span class="muted filter-label-text">Restrictions</span>
+              <select id="f-restrictions" class="select filter th-caret" autocomplete="off">
+                <option value="">All</option>
+              </select>
+            </div>
           {% endif %}
 
           <!-- 4. Glitches Used -->
-          {% if game.glitches_data and game.glitches_data.size > 0 %}
-          <div class="runs-filter" data-filter-order="4">
-            <span class="muted filter-label-text">Glitch Category</span>
-            <select id="f-glitch" class="select filter th-caret" autocomplete="off">
-              <option value="">All</option>
-              {% for gl in game.glitches_data %}
-                <option value="{{ gl.slug }}">{{ gl.label }}</option>
-              {% endfor %}
-            </select>
-          </div>
+          {% if show_glitches %}
+            <div class="runs-filter" data-filter-order="4">
+              <span class="muted filter-label-text">Glitch Category</span>
+              <select id="f-glitch" class="select filter th-caret" autocomplete="off">
+                <option value="">All</option>
+                {% for gl in game.glitches_data %}
+                  <option value="{{ gl.slug }}">{{ gl.label }}</option>
+                {% endfor %}
+              </select>
+            </div>
           {% endif %}
 
           <div class="runs-filter runs-filter--reset">
@@ -383,11 +392,9 @@ layout: default
           </div>
         </div>
 
-        <!-- Active filters display -->
         <div class="active-filters" id="active-filters"></div>
       </div>
 
-      <!-- Results status -->
       <div class="results-status" id="results-status">
         <span class="results-status__text" id="results-text"></span>
       </div>
@@ -402,7 +409,7 @@ layout: default
                 {% if show_character %}<th>{{ character_label }}</th>{% endif %}
                 <th>Challenge</th>
                 <th>Restrictions</th>
-                {% if game.glitches_data and game.glitches_data.size > 0 %}<th>Glitches Used</th>{% endif %}
+                {% if show_glitches %}<th>Glitches Used</th>{% endif %}
                 <th class="th-filter th-time">
                   <div class="th-title"><span>Time{% if game.timing_method %} ({{ game.timing_method }}){% endif %}</span></div>
                   <div class="th-time-sort" aria-label="Sort by Time">
@@ -472,9 +479,9 @@ layout: default
                     data-challenge-id="{{ r.challenge_id | default: '' | escape }}"
                     data-challenge-label="{{ challenge_label | default: '' | escape }}"
                     data-challenge-aliases="{{ challenge_aliases | escape }}"
-                    data-character="{{ r.character | default: '' | escape }}"
+                    {% if show_character %}data-character="{{ r.character | default: '' | escape }}"{% endif %}
                     data-restrictions="{{ r_texts | join: '||' | escape }}"
-                    data-glitch="{{ r.glitch_id | default: '' | escape }}"
+                    {% if show_glitches %}data-glitch="{{ r.glitch_id | default: '' | escape }}"{% endif %}
                     data-date="{{ r.date_completed | default: '' | escape }}"
                     data-time="{{ r.time_primary | default: r.time | default: '' | escape }}">
                   <td data-label="Runner">
@@ -484,34 +491,41 @@ layout: default
                       {{ runner_label }}
                     {% endif %}
                   </td>
-                  {% if show_character %}<td data-label="{{ character_label }}">{{ r.character | default: "—" }}</td>{% endif %}
+
+                  {% if show_character %}
+                    <td data-label="{{ character_label }}">{{ r.character | default: "—" }}</td>
+                  {% endif %}
+
                   <td data-label="Challenge">
                     {% assign ch = challenge_label | default: "" | strip %}
                     {% if ch != "" and ch != "—" %}
                       <div class="cell-tags"><span class="tag">{{ ch }}</span></div>
                     {% else %}—{% endif %}
                   </td>
+
                   <td data-label="Restrictions">
                     {% if r_texts and r_texts.size > 0 %}
                       <div class="cell-tags">{% for rr in r_texts %}<span class="tag">{{ rr }}</span>{% endfor %}</div>
                     {% else %}—{% endif %}
                   </td>
-                  {% if game.glitches_data and game.glitches_data.size > 0 %}
-                  <td data-label="Glitches">
-                    {% assign glitch_label = r.glitch_id | default: "" %}
-                    {% if glitch_label != "" %}
-                      {% for gl in game.glitches_data %}
-                        {% if gl.slug == r.glitch_id %}{% assign glitch_label = gl.label %}{% endif %}
-                        {% if gl.children %}
-                          {% for child in gl.children %}
-                            {% if child.slug == r.glitch_id %}{% assign glitch_label = child.label %}{% endif %}
-                          {% endfor %}
-                        {% endif %}
-                      {% endfor %}
-                      <span class="tag">{{ glitch_label }}</span>
-                    {% else %}—{% endif %}
-                  </td>
+
+                  {% if show_glitches %}
+                    <td data-label="Glitches">
+                      {% assign glitch_label = r.glitch_id | default: "" %}
+                      {% if glitch_label != "" %}
+                        {% for gl in game.glitches_data %}
+                          {% if gl.slug == r.glitch_id %}{% assign glitch_label = gl.label %}{% endif %}
+                          {% if gl.children %}
+                            {% for child in gl.children %}
+                              {% if child.slug == r.glitch_id %}{% assign glitch_label = child.label %}{% endif %}
+                            {% endfor %}
+                          {% endif %}
+                        {% endfor %}
+                        <span class="tag">{{ glitch_label }}</span>
+                      {% else %}—{% endif %}
+                    </td>
                   {% endif %}
+
                   <td data-label="Time">{{ r.time_primary | default: r.time | default: "—" }}</td>
                   <td data-label="Date">{{ r.date_completed | default: "—" }}</td>
                   <td data-label="Video">
