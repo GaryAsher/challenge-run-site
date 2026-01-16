@@ -1,22 +1,18 @@
 - key: runner
   label: Runner
-- key: category
-  label: Category
+- key: character
+  label: Character
+  optional_flag: character
 - key: challenge
   label: Challenge
-- key: character
-  label: Weapon / Aspect
-- key: glitches
-  label: Glitches
 - key: restrictions
   label: Restrictions
-- key: platform
-  label: Platform
+- key: glitches
+  label: Glitches Used
+  optional_flag: glitches
 - key: timing
   label: Time
 - key: date_completed
-  label: Date
+  label: Date Accomplished
 - key: video
   label: Video
-- key: verified
-  label: Verified
