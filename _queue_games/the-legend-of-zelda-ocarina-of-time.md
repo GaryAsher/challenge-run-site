@@ -13,10 +13,12 @@ cover_position: center
 status: "Pending review"
 reviewers: []
 
-genres: []
+genres:
+  - action-adventure
 
 platforms:
-  - nintendo
+  - nintendo-64
+  - nintendo-gamecube
 
 tabs:
   overview: true
