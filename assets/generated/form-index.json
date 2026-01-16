@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-01-16T19:53:18.991Z",
+  "generated_at": "2026-01-16T23:07:32.040Z",
   "games": [
     {
       "game_id": "celeste",
@@ -34,22 +34,24 @@
           "name": "100%"
         }
       ],
-      "challenges": [
+      "standard_challenges": [
         {
           "id": "blindfolded",
-          "name": "Blindfolded",
-          "group": "Standard Challenges"
+          "name": "Blindfolded"
         },
         {
           "id": "deathless",
-          "name": "Deathless",
-          "group": "Standard Challenges"
+          "name": "Deathless"
         }
       ],
+      "community_challenges": [],
+      "glitches": [],
+      "restrictions": [],
       "character_column": {
         "enabled": false,
         "label": "Character"
-      }
+      },
+      "characters": []
     },
     {
       "game_id": "hades-2",
@@ -136,62 +138,156 @@
           "name": "Chaos Trials: Trial of Destiny"
         }
       ],
-      "challenges": [
+      "standard_challenges": [
         {
           "id": "damageless",
-          "name": "Damageless",
-          "group": "Standard Challenges"
+          "name": "Damageless"
         },
         {
           "id": "hitless",
-          "name": "Hitless",
-          "group": "Standard Challenges"
+          "name": "Hitless"
         },
         {
           "id": "no-hit-no-damage",
-          "name": "No-Hit / No-Damage",
-          "group": "Standard Challenges"
-        },
+          "name": "No-Hit / No-Damage"
+        }
+      ],
+      "community_challenges": [
         {
           "id": "one-god-only",
-          "name": "One God Only",
-          "group": "Community Challenges"
+          "name": "One God Only"
         },
         {
           "id": "boonless",
-          "name": "Boonless",
-          "group": "Community Challenges"
-        },
+          "name": "Boonless"
+        }
+      ],
+      "glitches": [
         {
           "id": "unrestricted",
-          "name": "Unrestricted",
-          "group": "Glitches"
+          "name": "Unrestricted"
         },
         {
           "id": "nmg",
-          "name": "No Major Glitches",
-          "group": "Glitches"
+          "name": "No Major Glitches"
         },
         {
           "id": "glitchless",
-          "name": "Glitchless",
-          "group": "Glitches"
-        },
+          "name": "Glitchless"
+        }
+      ],
+      "restrictions": [
         {
           "id": "arcanaless",
-          "name": "Arcanaless",
-          "group": "Restrictions"
+          "name": "Arcanaless"
         },
         {
           "id": "no-hexes",
-          "name": "No Hexes",
-          "group": "Restrictions"
+          "name": "No Hexes"
         }
       ],
       "character_column": {
         "enabled": true,
         "label": "Weapon / Aspect"
-      }
+      },
+      "characters": [
+        {
+          "id": "witchs-staff-melinoe-aspect",
+          "name": "Witch's Staff / Melinoë Aspect"
+        },
+        {
+          "id": "witchs-staff-circe-aspect",
+          "name": "Witch's Staff / Circe Aspect"
+        },
+        {
+          "id": "witchs-staff-momus-aspect",
+          "name": "Witch's Staff / Momus Aspect"
+        },
+        {
+          "id": "witchs-staff-anubis-aspect",
+          "name": "Witch's Staff / Anubis Aspect"
+        },
+        {
+          "id": "sister-blades-melinoe-aspect",
+          "name": "Sister Blades / Melinoë Aspect"
+        },
+        {
+          "id": "sister-blades-artemis-aspect",
+          "name": "Sister Blades / Artemis Aspect"
+        },
+        {
+          "id": "sister-blades-pan-aspect",
+          "name": "Sister Blades / Pan Aspect"
+        },
+        {
+          "id": "sister-blades-morrigan-aspect",
+          "name": "Sister Blades / Morrigan Aspect"
+        },
+        {
+          "id": "umbral-flames-melinoe-aspect",
+          "name": "Umbral Flames / Melinoë Aspect"
+        },
+        {
+          "id": "umbral-flames-moros-aspect",
+          "name": "Umbral Flames / Moros Aspect"
+        },
+        {
+          "id": "umbral-flames-eos-aspect",
+          "name": "Umbral Flames / Eos Aspect"
+        },
+        {
+          "id": "umbral-flames-supay-aspect",
+          "name": "Umbral Flames / Supay Aspect"
+        },
+        {
+          "id": "moonstone-axe-melinoe-aspect",
+          "name": "Moonstone Axe / Melinoë Aspect"
+        },
+        {
+          "id": "moonstone-axe-charon-aspect",
+          "name": "Moonstone Axe / Charon Aspect"
+        },
+        {
+          "id": "moonstone-axe-thanatos-aspect",
+          "name": "Moonstone Axe / Thanatos Aspect"
+        },
+        {
+          "id": "moonstone-axe-nergal-aspect",
+          "name": "Moonstone Axe / Nergal Aspect"
+        },
+        {
+          "id": "argent-skull-melinoe-aspect",
+          "name": "Argent Skull / Melinoë Aspect"
+        },
+        {
+          "id": "argent-skull-medea-aspect",
+          "name": "Argent Skull / Medea Aspect"
+        },
+        {
+          "id": "argent-skull-persephone-aspect",
+          "name": "Argent Skull / Persephone Aspect"
+        },
+        {
+          "id": "argent-skull-hel-aspect",
+          "name": "Argent Skull / Hel Aspect"
+        },
+        {
+          "id": "black-coat-melinoe-aspect",
+          "name": "Black Coat / Melinoë Aspect"
+        },
+        {
+          "id": "black-coat-selene-aspect",
+          "name": "Black Coat / Selene Aspect"
+        },
+        {
+          "id": "black-coat-nyx-aspect",
+          "name": "Black Coat / Nyx Aspect"
+        },
+        {
+          "id": "black-coat-shiva-aspect",
+          "name": "Black Coat / Shiva Aspect"
+        }
+      ]
     },
     {
       "game_id": "hollow-knight",
@@ -254,82 +350,74 @@
           "name": "Boss Rush: Hall of Gods"
         }
       ],
-      "challenges": [
+      "standard_challenges": [
         {
           "id": "hitless",
-          "name": "Hitless",
-          "group": "Standard Challenges"
+          "name": "Hitless"
         },
         {
           "id": "damageless",
-          "name": "Damageless",
-          "group": "Standard Challenges"
+          "name": "Damageless"
         },
         {
           "id": "deathless",
-          "name": "Deathless",
-          "group": "Standard Challenges"
+          "name": "Deathless"
         },
         {
           "id": "blindfolded",
-          "name": "Blindfolded",
-          "group": "Standard Challenges"
+          "name": "Blindfolded"
         },
         {
           "id": "no-hit-no-damage",
-          "name": "No-Hit / No-Damage",
-          "group": "Standard Challenges"
-        },
+          "name": "No-Hit / No-Damage"
+        }
+      ],
+      "community_challenges": [],
+      "glitches": [
         {
           "id": "unrestricted",
-          "name": "Unrestricted",
-          "group": "Glitches"
+          "name": "Unrestricted"
         },
         {
           "id": "nmg",
-          "name": "No Major Glitches (NMG)",
-          "group": "Glitches"
+          "name": "No Major Glitches (NMG)"
         },
         {
           "id": "glitchless",
-          "name": "Glitchless",
-          "group": "Glitches"
+          "name": "Glitchless"
         },
         {
           "id": "no-main-menu-storage",
-          "name": "No Main Menu Storage (NMMS)",
-          "group": "Glitches"
-        },
+          "name": "No Main Menu Storage (NMMS)"
+        }
+      ],
+      "restrictions": [
         {
           "id": "no-charms",
-          "name": "No Charms",
-          "group": "Restrictions"
+          "name": "No Charms"
         },
         {
           "id": "no-nail-upgrades",
-          "name": "No Nail Upgrades",
-          "group": "Restrictions"
+          "name": "No Nail Upgrades"
         },
         {
           "id": "no-spells",
-          "name": "No Spells",
-          "group": "Restrictions"
+          "name": "No Spells"
         },
         {
           "id": "base-nail-only",
-          "name": "Base Nail Only",
-          "group": "Restrictions"
+          "name": "Base Nail Only"
         },
         {
           "id": "no-monarch-wings",
-          "name": "No Monarch Wings",
-          "group": "Restrictions"
+          "name": "No Monarch Wings"
         }
       ],
       "character_column": {
         "enabled": false,
         "label": "Character"
-      }
+      },
+      "characters": []
     },
     {
       "game_id": "the-legend-of-zelda-ocarina-of-time",
@@ -344,27 +432,28 @@
           "name": "100%"
         }
       ],
-      "challenges": [
+      "standard_challenges": [],
+      "community_challenges": [],
+      "glitches": [
         {
           "id": "unrestricted",
-          "name": "Unrestricted",
-          "group": "Glitches"
+          "name": "Unrestricted"
         },
         {
           "id": "nmg",
-          "name": "No Major Glitches (NMG)",
-          "group": "Glitches"
+          "name": "No Major Glitches (NMG)"
         },
         {
           "id": "glitchless",
-          "name": "Glitchless",
-          "group": "Glitches"
+          "name": "Glitchless"
         }
       ],
+      "restrictions": [],
       "character_column": {
         "enabled": false,
         "label": "Character"
-      }
+      },
+      "characters": []
     },
     {
       "game_id": "tiny-rogues",
@@ -387,32 +476,33 @@
           "name": "Quest Cinder 16"
         }
       ],
-      "challenges": [
+      "standard_challenges": [
         {
           "id": "damageless",
-          "name": "Damageless",
-          "group": "Standard Challenges"
+          "name": "Damageless"
         },
         {
           "id": "hitless",
-          "name": "Hitless",
-          "group": "Standard Challenges"
+          "name": "Hitless"
         },
         {
           "id": "no-hit-no-damage",
-          "name": "No-Hit / No-Damage",
-          "group": "Standard Challenges"
-        },
+          "name": "No-Hit / No-Damage"
+        }
+      ],
+      "community_challenges": [],
+      "glitches": [],
+      "restrictions": [
         {
           "id": "companions-only",
-          "name": "Companions Only",
-          "group": "Restrictions"
+          "name": "Companions Only"
         }
       ],
       "character_column": {
         "enabled": true,
         "label": "Class"
-      }
+      },
+      "characters": []
     }
   ],
   "challenges": [
