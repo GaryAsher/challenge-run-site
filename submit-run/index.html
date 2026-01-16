@@ -13,44 +13,70 @@ permalink: /submit-run/
     </p>
 
     <div class="form-grid" style="display:grid; gap:12px; max-width: 720px;">
+
+      <!-- Game picker -->
       <label>
         <div class="muted" style="margin-bottom:6px;">Game</div>
         <input id="gameSearch" type="text" placeholder="Search game..." autocomplete="off" />
         <select id="gameSelect" style="width:100%; margin-top:8px;"></select>
       </label>
 
-      <label>Standard Challenge</label>
-      <select id="standardChallengeSelect"></select>
-      
-      <label>Community Challenge</label>
-      <select id="communityChallengeSelect"></select>
-      
-      <label id="characterLabel">Character</label>
-      <select id="characterSelect"></select>
-      
-      <label>Glitch Category</label>
-      <select id="glitchSelect"></select>
-      
-      <label>Restrictions</label>
-      <select id="restrictionsSelect" multiple size="10"></select>
+      <!-- Category (MISSING BEFORE) -->
+      <label>
+        <div class="muted" style="margin-bottom:6px;">Category</div>
+        <select id="categorySelect" style="width:100%;"></select>
+      </label>
 
+      <!-- Challenge boxes -->
+      <label>
+        <div class="muted" style="margin-bottom:6px;">Standard Challenge</div>
+        <select id="standardChallengeSelect" style="width:100%;"></select>
+      </label>
+
+      <label>
+        <div class="muted" style="margin-bottom:6px;">Community Challenge</div>
+        <select id="communityChallengeSelect" style="width:100%;"></select>
+      </label>
+
+      <label>
+        <div class="muted" id="characterLabel" style="margin-bottom:6px;">Character</div>
+        <select id="characterSelect" style="width:100%;"></select>
+      </label>
+
+      <label>
+        <div class="muted" style="margin-bottom:6px;">Glitch Category</div>
+        <select id="glitchSelect" style="width:100%;"></select>
+      </label>
+
+      <label>
+        <div class="muted" style="margin-bottom:6px;">Restrictions</div>
+        <div class="muted" style="font-size: 0.9em; margin-bottom:6px;">
+          Tip: Hold Ctrl (Windows) or Cmd (Mac) to select multiple.
+        </div>
+        <select id="restrictionsSelect" multiple size="10" style="width:100%;"></select>
+      </label>
+
+      <!-- Runner -->
       <label>
         <div class="muted" style="margin-bottom:6px;">Runner ID</div>
         <input id="runnerId" type="text" placeholder="your-runner-id" />
       </label>
 
+      <!-- Video -->
       <label>
-        <div class="muted" style="margin-bottom:6px;">YouTube URL</div>
+        <div class="muted" style="margin-bottom:6px;">Video URL (YouTube / Twitch VOD / bilibili)</div>
         <input id="videoUrl" type="url" placeholder="https://www.youtube.com/watch?v=..." />
       </label>
 
+      <!-- Date -->
       <label>
         <div class="muted" style="margin-bottom:6px;">Date completed</div>
         <input id="dateCompleted" type="date" />
       </label>
 
+      <!-- Buttons -->
       <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top: 6px;">
-        <button id="btnSubmit" class="btn">Submit</button>
+        <button id="btnSubmit" class="btn" type="button">Submit</button>
         <button id="btnCopy" class="btn" type="button">Copy payload</button>
       </div>
 
@@ -64,4 +90,4 @@ permalink: /submit-run/
   </div>
 </div>
 
-<script src="/assets/js/submit-run.js"></script>
+<script src="/assets/js/submit-run.js" defer></script>
