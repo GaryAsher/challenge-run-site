@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-01-16T19:35:10.471Z",
+  "generated_at": "2026-01-16T19:53:13.033Z",
   "games": [
     {
       "game_id": "celeste",
@@ -38,14 +38,18 @@
         {
           "id": "blindfolded",
           "name": "Blindfolded",
-          "group": "Standard"
+          "group": "Standard Challenges"
         },
         {
           "id": "deathless",
           "name": "Deathless",
-          "group": "Standard"
+          "group": "Standard Challenges"
         }
-      ]
+      ],
+      "character_column": {
+        "enabled": false,
+        "label": "Character"
+      }
     },
     {
       "game_id": "hades-2",
@@ -136,27 +140,27 @@
         {
           "id": "damageless",
           "name": "Damageless",
-          "group": "Standard"
+          "group": "Standard Challenges"
         },
         {
           "id": "hitless",
           "name": "Hitless",
-          "group": "Standard"
+          "group": "Standard Challenges"
         },
         {
           "id": "no-hit-no-damage",
           "name": "No-Hit / No-Damage",
-          "group": "Standard"
+          "group": "Standard Challenges"
         },
         {
           "id": "one-god-only",
           "name": "One God Only",
-          "group": "Community"
+          "group": "Community Challenges"
         },
         {
           "id": "boonless",
           "name": "Boonless",
-          "group": "Community"
+          "group": "Community Challenges"
         },
         {
           "id": "unrestricted",
@@ -183,7 +187,11 @@
           "name": "No Hexes",
           "group": "Restrictions"
         }
-      ]
+      ],
+      "character_column": {
+        "enabled": true,
+        "label": "Weapon / Aspect"
+      }
     },
     {
       "game_id": "hollow-knight",
@@ -250,27 +258,27 @@
         {
           "id": "hitless",
           "name": "Hitless",
-          "group": "Standard"
+          "group": "Standard Challenges"
         },
         {
           "id": "damageless",
           "name": "Damageless",
-          "group": "Standard"
+          "group": "Standard Challenges"
         },
         {
           "id": "deathless",
           "name": "Deathless",
-          "group": "Standard"
+          "group": "Standard Challenges"
         },
         {
           "id": "blindfolded",
           "name": "Blindfolded",
-          "group": "Standard"
+          "group": "Standard Challenges"
         },
         {
           "id": "no-hit-no-damage",
           "name": "No-Hit / No-Damage",
-          "group": "Standard"
+          "group": "Standard Challenges"
         },
         {
           "id": "unrestricted",
@@ -317,7 +325,11 @@
           "name": "No Monarch Wings",
           "group": "Restrictions"
         }
-      ]
+      ],
+      "character_column": {
+        "enabled": false,
+        "label": "Character"
+      }
     },
     {
       "game_id": "the-legend-of-zelda-ocarina-of-time",
@@ -348,7 +360,11 @@
           "name": "Glitchless",
           "group": "Glitches"
         }
-      ]
+      ],
+      "character_column": {
+        "enabled": false,
+        "label": "Character"
+      }
     },
     {
       "game_id": "tiny-rogues",
@@ -375,24 +391,28 @@
         {
           "id": "damageless",
           "name": "Damageless",
-          "group": "Standard"
+          "group": "Standard Challenges"
         },
         {
           "id": "hitless",
           "name": "Hitless",
-          "group": "Standard"
+          "group": "Standard Challenges"
         },
         {
           "id": "no-hit-no-damage",
           "name": "No-Hit / No-Damage",
-          "group": "Standard"
+          "group": "Standard Challenges"
         },
         {
           "id": "companions-only",
           "name": "Companions Only",
           "group": "Restrictions"
         }
-      ]
+      ],
+      "character_column": {
+        "enabled": true,
+        "label": "Class"
+      }
     }
   ],
   "challenges": [
