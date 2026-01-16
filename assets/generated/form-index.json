@@ -1,0 +1,73 @@
+{
+  "generated_at": "2026-01-16T19:11:21.653Z",
+  "games": [
+    {
+      "game_id": "celeste",
+      "title": "Celeste",
+      "categories": [],
+      "allowed_challenges": null
+    },
+    {
+      "game_id": "hades-2",
+      "title": "Hades II",
+      "categories": [],
+      "allowed_challenges": null
+    },
+    {
+      "game_id": "hollow-knight",
+      "title": "Hollow Knight",
+      "categories": [],
+      "allowed_challenges": null
+    },
+    {
+      "game_id": "the-legend-of-zelda-ocarina-of-time",
+      "title": "The Legend of Zelda: Ocarina of Time",
+      "categories": [],
+      "allowed_challenges": null
+    },
+    {
+      "game_id": "tiny-rogues",
+      "title": "Tiny Rogues",
+      "categories": [],
+      "allowed_challenges": null
+    }
+  ],
+  "challenges": [
+    {
+      "id": "1cc",
+      "name": "1cc"
+    },
+    {
+      "id": "blindfolded",
+      "name": "blindfolded"
+    },
+    {
+      "id": "damageless",
+      "name": "damageless"
+    },
+    {
+      "id": "deathless",
+      "name": "deathless"
+    },
+    {
+      "id": "flawless",
+      "name": "flawless"
+    },
+    {
+      "id": "high-score",
+      "name": "high-score"
+    },
+    {
+      "id": "hitless",
+      "name": "hitless"
+    },
+    {
+      "id": "minimalist",
+      "name": "minimalist"
+    },
+    {
+      "id": "no-hit-no-damage",
+      "name": "no-hit-no-damage"
+    }
+  ]
+}
