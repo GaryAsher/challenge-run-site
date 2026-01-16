@@ -1,13 +1,11 @@
 name: Promote Approved Game
 
 on:
-  # Trigger when a PR with changes to _queue_games is merged
   pull_request:
     types: [closed]
     paths:
-      - '_queue_games/*.md'
-  
-  # Manual trigger to promote a specific game
+      - "_queue_games/*.md"
+
   workflow_dispatch:
     inputs:
       game_id:
@@ -15,7 +13,6 @@ on:
         required: true
         type: string
 
-# Prevent concurrent promotions
 concurrency:
   group: promote-game
   cancel-in-progress: false
@@ -26,235 +23,235 @@ permissions:
 
 jobs:
   promote-game:
-    # Only run if PR was merged (not just closed)
     if: |
       (github.event_name == 'workflow_dispatch') ||
       (github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sync to latest origin/main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git checkout main
+          git reset --hard origin/main
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install dependencies
         run: npm ci
 
       - name: Identify game to promote
         id: identify
+        shell: bash
         run: |
+          set -euo pipefail
+
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             GAME_ID="${{ inputs.game_id }}"
           else
             GAME_ID=""
-            CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.merge_commit_sha }} 2>/dev/null || echo "")
-            
+            CHANGED_FILES="$(git diff --name-only \
+              ${{ github.event.pull_request.base.sha }} \
+              ${{ github.event.pull_request.merge_commit_sha }} \
+              2>/dev/null || true)"
+
             echo "Changed files: ${CHANGED_FILES}"
-            
+
             for file in ${CHANGED_FILES}; do
               if [[ "$file" == _queue_games/*.md ]] && [[ "$file" != *".gitkeep"* ]]; then
-                FILENAME=$(basename "$file" .md)
-                GAME_ID="${FILENAME}"
+                GAME_ID="$(basename "$file" .md)"
                 echo "Found queued game: ${GAME_ID}"
                 break
               fi
             done
           fi
-          
+
           if [ -z "${GAME_ID}" ]; then
             echo "::error::No game found to promote"
             exit 1
           fi
-          
+
           echo "game_id=${GAME_ID}" >> "$GITHUB_OUTPUT"
           echo "Will promote: ${GAME_ID}"
 
       - name: Check if game file exists in queue
         id: check
+        shell: bash
         env:
           GAME_ID: ${{ steps.identify.outputs.game_id }}
         run: |
+          set -euo pipefail
+
           SOURCE="_queue_games/${GAME_ID}.md"
-          
+
           if [ ! -f "${SOURCE}" ]; then
-            echo "::warning::Source file not found: ${SOURCE} - may have already been promoted"
+            echo "::warning::Source file not found: ${SOURCE} (already promoted or removed)"
             echo "exists=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-            
-            # Extract game name from file
-            GAME_NAME=$(grep -m1 '^name:' "${SOURCE}" | sed 's/^name:[[:space:]]*//' | tr -d '"')
-            echo "game_name=${GAME_NAME}" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
+
+          echo "exists=true" >> "$GITHUB_OUTPUT"
+
+          # Extract game name from front matter
+          GAME_NAME="$(grep -m1 '^name:' "${SOURCE}" | sed 's/^name:[[:space:]]*//' | sed 's/^\"//; s/\"$//')"
+          echo "game_name=${GAME_NAME}" >> "$GITHUB_OUTPUT"
 
       - name: Promote game file
         if: steps.check.outputs.exists == 'true'
+        shell: bash
         env:
           GAME_ID: ${{ steps.identify.outputs.game_id }}
         run: |
+          set -euo pipefail
+
           SOURCE="_queue_games/${GAME_ID}.md"
           DEST="_games/${GAME_ID}.md"
-          
-          if [ -f "${DEST}" ]; then
-            echo "::warning::Destination already exists, will overwrite: ${DEST}"
-          fi
-          
+
           echo "Moving ${SOURCE} -> ${DEST}"
           mv "${SOURCE}" "${DEST}"
-          
+
           # Remove status line entirely (we no longer use it)
           sed -i '/^status:/d' "${DEST}"
-          
-          # Remove placeholder body text and reviewer notes
-          # This removes everything after the closing --- that isn't meaningful content
+
+          # Remove placeholder body text and reviewer notes blocks, if present
           sed -i '/^---$/,${
             /^Game submitted via form\. Awaiting review\.$/d
             /^<!-- REVIEWER NOTES$/,/^-->$/d
           }' "${DEST}"
-          
-          # Clean up any trailing blank lines at end of file
-          sed -i -e :a -e '/^\n*$/{$d;N;ba' -e '}' "${DEST}"
-          
+
           echo "✓ Game file promoted"
 
       - name: Generate game pages
         if: steps.check.outputs.exists == 'true'
+        shell: bash
         env:
           GAME_ID: ${{ steps.identify.outputs.game_id }}
         run: |
-          echo "Generating pages for ${GAME_ID}..."
+          set -euo pipefail
           node scripts/generate-game-pages.js --game "${GAME_ID}"
           echo "✓ Game pages generated"
 
       - name: Generate run category pages
         if: steps.check.outputs.exists == 'true'
+        shell: bash
         env:
           GAME_ID: ${{ steps.identify.outputs.game_id }}
         run: |
-          echo "Generating run category pages for ${GAME_ID}..."
-          node scripts/generate-run-category-pages.js --game "${GAME_ID}" || true
-          echo "✓ Run category pages generated (if applicable)"
+          set -euo pipefail
+          node scripts/generate-run-category-pages.js --game "${GAME_ID}"
+          echo "✓ Run category pages generated"
 
       - name: Regenerate CODEOWNERS
         if: steps.check.outputs.exists == 'true'
+        shell: bash
         run: |
-          echo "Regenerating CODEOWNERS..."
+          set -euo pipefail
           node scripts/generate-codeowners.js
           echo "✓ CODEOWNERS updated"
 
       - name: Get first letter for image path
         if: steps.check.outputs.exists == 'true'
         id: letter
+        shell: bash
         env:
           GAME_ID: ${{ steps.identify.outputs.game_id }}
         run: |
-          FIRST_LETTER=$(echo "${GAME_ID}" | cut -c1)
+          set -euo pipefail
+          FIRST_LETTER="$(echo "${GAME_ID}" | cut -c1)"
           echo "first_letter=${FIRST_LETTER}" >> "$GITHUB_OUTPUT"
 
-      - name: Commit and push directly to main
+      - name: Create PR for promotion (required by repo rules)
         if: steps.check.outputs.exists == 'true'
-        env:
-          GAME_ID: ${{ steps.identify.outputs.game_id }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          git add -A
-          
-          git commit -m "feat: Promote game ${GAME_ID} [skip ci]
+        id: cpr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: promote-game/${{ steps.identify.outputs.game_id }}
+          delete-branch: true
+          title: "feat: Promote game ${{ steps.identify.outputs.game_id }}"
+          commit-message: "feat: Promote game ${{ steps.identify.outputs.game_id }}"
+          body: |
+            - Moved `_queue_games/${{ steps.identify.outputs.game_id }}.md` → `_games/${{ steps.identify.outputs.game_id }}.md`
+            - Generated pages in `games/${{ steps.identify.outputs.game_id }}/`
+            - Updated CODEOWNERS
 
-          - Moved _queue_games/${GAME_ID}.md → _games/${GAME_ID}.md
-          - Generated game pages in games/${GAME_ID}/
-          - Updated CODEOWNERS
-          
-          Add cover image to: assets/img/games/${{ steps.letter.outputs.first_letter }}/${GAME_ID}.jpg"
-          
-          git push origin main
-          
-          echo "✓ Changes pushed to main"
+            Next step:
+            - Add a cover image to `assets/img/games/${{ steps.letter.outputs.first_letter }}/`
 
       - name: Send Discord notification
         if: steps.check.outputs.exists == 'true'
+        shell: bash
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_GAMES }}
           GAME_ID: ${{ steps.identify.outputs.game_id }}
           GAME_NAME: ${{ steps.check.outputs.game_name }}
+          PR_URL: ${{ steps.cpr.outputs.pull-request-url }}
         run: |
-          # Only send if webhook is configured
-          if [ -z "${https://discord.com/api/webhooks/1459068500982239416/_eHXfByEy2JQxNezpTdENRXb-48RM0acPn0D_0Ut3cMrQd1xRop1AFYZzPqiUmghLzSW}" ]; then
-            echo "::notice::Discord webhook not configured, skipping notification"
+          set -euo pipefail
+
+          if [ -z "${DISCORD_WEBHOOK}" ]; then
+            echo "::notice::DISCORD_WEBHOOK_GAMES is not set; skipping Discord notification."
             exit 0
           fi
-          
-          # Build the message
+
           GAME_URL="https://challengerun.net/games/${GAME_ID}/"
-          
-          # Create JSON payload
-          PAYLOAD=$(cat <<EOF
+
+          PAYLOAD="$(cat <<EOF
           {
             "embeds": [{
-              "title": "✅ Game Approved: ${GAME_NAME}",
-              "description": "This game has been reviewed and is now live on the site!",
-              "color": 5763719,
+              "title": "🎮 Game promotion PR created: ${GAME_NAME}",
+              "description": "A PR was created to promote this game. Once merged, the game will be live.",
               "fields": [
-                {
-                  "name": "Game Page",
-                  "value": "[View ${GAME_NAME}](${GAME_URL})",
-                  "inline": true
-                },
-                {
-                  "name": "Status",
-                  "value": "🎮 Now accepting run submissions",
-                  "inline": true
-                }
+                { "name": "PR", "value": "${PR_URL}", "inline": false },
+                { "name": "Game Page (after merge)", "value": "${GAME_URL}", "inline": false }
               ],
-              "footer": {
-                "text": "Challenge Run Community"
-              },
+              "footer": { "text": "Challenge Run Community" },
               "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
             }]
           }
           EOF
-          )
-          
-          # Send to Discord
-          curl -s -X POST "${DISCORD_WEBHOOK}" \
+          )"
+
+          curl -fSs -X POST "${DISCORD_WEBHOOK}" \
             -H "Content-Type: application/json" \
             -d "${PAYLOAD}"
-          
+
           echo "✓ Discord notification sent"
 
       - name: Summary
         if: steps.check.outputs.exists == 'true'
+        shell: bash
         env:
           GAME_ID: ${{ steps.identify.outputs.game_id }}
           GAME_NAME: ${{ steps.check.outputs.game_name }}
+          PR_URL: ${{ steps.cpr.outputs.pull-request-url }}
         run: |
-          echo "## Game Promoted! 🎮" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Game:** ${GAME_NAME}" >> $GITHUB_STEP_SUMMARY
-          echo "**Game ID:** \`${GAME_ID}\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### What was done:" >> $GITHUB_STEP_SUMMARY
-          echo "1. ✅ Moved \`_queue_games/${GAME_ID}.md\` → \`_games/${GAME_ID}.md\`" >> $GITHUB_STEP_SUMMARY
-          echo "2. ✅ Generated game pages in \`games/${GAME_ID}/\`" >> $GITHUB_STEP_SUMMARY
-          echo "3. ✅ Updated CODEOWNERS" >> $GITHUB_STEP_SUMMARY
-          echo "4. ✅ Pushed to main" >> $GITHUB_STEP_SUMMARY
-          echo "5. ✅ Sent Discord notification" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Next step:" >> $GITHUB_STEP_SUMMARY
-          echo "- Add a cover image to \`assets/img/games/${{ steps.letter.outputs.first_letter }}/\`" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## Promotion PR created 🎮"
+            echo ""
+            echo "**Game:** ${GAME_NAME}"
+            echo "**Game ID:** \`${GAME_ID}\`"
+            echo ""
+            echo "**PR:** ${PR_URL}"
+            echo ""
+            echo "After the PR merges, the game will be promoted on main."
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Skip message
         if: steps.check.outputs.exists != 'true'
+        shell: bash
         run: |
-          echo "## Skipped - Game Already Promoted" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "The game file was not found in \`_queue_games/\`." >> $GITHUB_STEP_SUMMARY
-          echo "It may have already been promoted or removed." >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## Skipped - Game already promoted"
+            echo ""
+            echo "The game file was not found in \`_queue_games/\`."
+          } >> "$GITHUB_STEP_SUMMARY"
