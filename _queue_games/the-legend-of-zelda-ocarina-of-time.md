@@ -32,7 +32,7 @@ tabs:
 categories_data:
   - slug: any
     label: "Any%"
-  - slug: 100
+  - slug: "100"
     label: "100%"
 
 community_challenges: []
