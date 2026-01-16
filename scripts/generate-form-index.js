@@ -71,28 +71,81 @@ function loadGlobalChallenges() {
 }
 
 function normalizeCategories(game) {
-  // Accept either:
-  // categories: [{ slug, name }]
-  // category_slugs: ["underworld-any", ...]
-  const categories = [];
+  // Supports:
+  // - categories_data: [{ slug, label, children: [...] }]
+  // - categories: [{ slug, name }]
+  // - category_slugs: ["..."]
+  // - run_categories / run_category_slugs (fallbacks)
 
-  if (Array.isArray(game.categories)) {
-    for (const c of game.categories) {
-      if (!c) continue;
-      const slug = String(c.slug || c.category_slug || "").trim();
-      const name = String(c.name || c.title || slug).trim();
-      if (slug) categories.push({ slug, name });
+  const buckets = [
+    game.categories_data,
+    game.categories,
+    game.category_slugs,
+    game.run_categories,
+    game.run_category_slugs,
+    game.runs
+  ];
+
+  const out = [];
+
+  function pushSlug(slugRaw, labelRaw) {
+    const slug = String(slugRaw || "").trim();
+    if (!slug) return;
+    const name = String(labelRaw || slug).trim();
+    out.push({ slug, name });
+  }
+
+  function walk(node, parentSlug = "", parentLabel = "") {
+    if (!node) return;
+
+    const slug = String(node.slug || node.category_slug || "").trim();
+    const label = String(node.label || node.name || node.title || slug).trim();
+
+    if (!slug) return;
+
+    const fullSlug = parentSlug ? `${parentSlug}/${slug}` : slug;
+    const fullLabel = parentLabel ? `${parentLabel}: ${label}` : label;
+
+    pushSlug(fullSlug, fullLabel);
+
+    if (Array.isArray(node.children)) {
+      for (const child of node.children) {
+        walk(child, fullSlug, fullLabel);
+      }
     }
-  } else if (Array.isArray(game.category_slugs)) {
-    for (const slugRaw of game.category_slugs) {
-      const slug = String(slugRaw || "").trim();
-      if (slug) categories.push({ slug, name: slug });
+  }
+
+  for (const bucket of buckets) {
+    if (!bucket) continue;
+
+    if (Array.isArray(bucket)) {
+      for (const item of bucket) {
+        if (!item) continue;
+
+        if (typeof item === "string") {
+          pushSlug(item, item);
+          continue;
+        }
+
+        if (typeof item === "object") {
+          // If it looks like categories_data, flatten children
+          if ("children" in item || "label" in item) {
+            walk(item);
+            continue;
+          }
+
+          const slug = item.slug || item.category_slug || item.id;
+          const name = item.name || item.title || item.label || slug;
+          pushSlug(slug, name);
+        }
+      }
     }
   }
 
   // de-dupe by slug
   const seen = new Set();
-  return categories.filter((c) => {
+  return out.filter((c) => {
+    if (!c.slug) return false;
     if (seen.has(c.slug)) return false;
     seen.add(c.slug);
     return true;
