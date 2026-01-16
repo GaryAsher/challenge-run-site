@@ -86,11 +86,13 @@ function slugToTitle(slug) {
 // Page generation
 // ============================================================
 function pageContent({ title, gameId, categorySlug }) {
+  const q = (v) => JSON.stringify(String(v ?? ""));
+
   return `---
 layout: game-runs
-title: ${title}
+title: ${q(title)}
 game_id: ${gameId}
-category_slug: ${categorySlug}
+category_slug: ${q(categorySlug)}
 permalink: /games/${gameId}/runs/${categorySlug}/
 ---
 `;
