@@ -175,8 +175,8 @@ function normalizeGameChallenges(game) {
   // [{ id, name, group }]
 
   const groups = [
-    { key: "challenges_data", label: "Standard" },
-    { key: "community-challenges", label: "Community" },
+    { key: "challenges_data", label: "Standard Challenges" },
+    { key: "community-challenges", label: "Community Challenges" },
     { key: "glitches_data", label: "Glitches" },
     { key: "restrictions_data", label: "Restrictions" }
   ];
@@ -228,11 +228,21 @@ function main() {
 
     const perGameChallenges = normalizeGameChallenges(data);
 
+    const characterColumn = data.character_column && typeof data.character_column === "object"
+  ? {
+      enabled: Boolean(data.character_column.enabled),
+      label: String(data.character_column.label || "Character").trim()
+    }
+  : { enabled: false, label: "Character" };
+
     games.push({
       game_id,
       title,
       categories,
-      challenges: perGameChallenges.length ? perGameChallenges : null
+      challenges: perGameChallenges.length ? perGameChallenges : null,
+      character_column: characterColumn
+
+      
     });
   }
 
