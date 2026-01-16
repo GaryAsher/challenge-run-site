@@ -168,21 +168,39 @@
     fillSelect(categorySelect, cats, (c) => c.slug, (c) => c.name);
   }
 
-  function populateChallenges() {
-    const game = getGameById(gameSelect.value);
+function populateChallenges() {
+  const game = getGameById(gameSelect.value);
 
-    // Prefer per-game challenge list if available
-    const gameChallenges = game && Array.isArray(game.challenges) ? game.challenges : null;
-    const list = gameChallenges && gameChallenges.length ? gameChallenges : index.challenges;
+  // Prefer per-game list, else fall back to global list
+  const base = game && Array.isArray(game.challenges) && game.challenges.length
+    ? game.challenges
+    : index.challenges;
 
-    // If list contains groups, keep label simple for now: "Group: Name"
-    fillSelect(
-      challengeSelect,
-      list,
-      (c) => c.id,
-      (c) => (c.group ? `${c.group}: ${c.name}` : c.name)
-    );
+  // If character column is enabled, add a pseudo option group.
+  // This does NOT define all weapon/aspect choices yet.
+  // It just gives you a "Character" section that can later become a real dropdown.
+  const out = base.map((c) => ({
+    id: c.id,
+    name: c.name,
+    group: c.group || "Other"
+  }));
+
+  if (game && game.character_column && game.character_column.enabled) {
+    out.unshift({
+      id: "__character__",
+      name: `Set ${game.character_column.label}`,
+      group: "Character"
+    });
   }
+
+  fillSelectGrouped(
+    challengeSelect,
+    out,
+    "group",
+    (c) => c.id,
+    (c) => c.name
+  );
+}
 
   gameSearch.addEventListener("input", () => {
     populateGames(gameSearch.value);
