@@ -9,13 +9,14 @@
  *   _games/*.md
  *   _data/challenges.yml (optional global fallback)
  *
- * Per-game support:
- *   - categories_data (with nested children) -> flattened category slugs
- *   - challenges_data -> standard_challenges
- *   - community-challenges -> community_challenges
- *   - glitches_data -> glitches
- *   - restrictions_data -> restrictions
- *   - character_column + characters_data -> character_column + characters
+ * Exports per game (stable keys expected by submit-run.js):
+ *   - categories: [{slug,name}]
+ *   - standard_challenges: [{id,name}]
+ *   - community_challenges: [{id,name}]
+ *   - glitches: [{id,name}] (empty if glitches_relevant: false)
+ *   - restrictions: [{id,name}]
+ *   - character_column: {enabled,label}
+ *   - characters: [{id,name}]
  */
 
 const fs = require("fs");
@@ -61,20 +62,16 @@ function loadGlobalChallenges() {
 
   const obj = yaml.load(readFile(p)) || {};
 
-  // Support both map and list shapes
   if (Array.isArray(obj)) {
     return obj
       .map((it) => ({
         id: String(it?.challenge_id || it?.id || "").trim(),
-        name: String(
-          it?.name || it?.title || it?.label || it?.challenge_id || it?.id || ""
-        ).trim(),
+        name: String(it?.name || it?.title || it?.label || it?.challenge_id || it?.id || "").trim(),
         group: String(it?.group || "").trim() || "Challenges"
       }))
       .filter((c) => c.id);
   }
 
-  // map: { no-hit: { name: "No Hit" } }
   return Object.keys(obj)
     .map((id) => {
       const it = obj[id] || {};
@@ -137,7 +134,6 @@ function normalizeCategories(game) {
         }
 
         if (typeof item === "object") {
-          // categories_data shape
           if ("children" in item || "label" in item) {
             walk(item);
             continue;
@@ -151,7 +147,6 @@ function normalizeCategories(game) {
     }
   }
 
-  // de-dupe by slug
   const seen = new Set();
   return out.filter((c) => {
     if (!c.slug) return false;
@@ -175,7 +170,24 @@ function normalizeSlugList(list) {
     out.push({ id, name });
   }
 
-  // de-dupe by id, keep first
+  const seen = new Set();
+  return out.filter((c) => {
+    if (!c.id) return false;
+    if (seen.has(c.id)) return false;
+    seen.add(c.id);
+    return true;
+  });
+}
+
+function normalizeStringList(list) {
+  // for legacy shapes like: restrictions: ["No Spells", "No Charms"]
+  if (!Array.isArray(list)) return [];
+  const out = [];
+  for (const s of list) {
+    const v = String(s || "").trim();
+    if (!v) continue;
+    out.push({ id: v.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""), name: v });
+  }
   const seen = new Set();
   return out.filter((c) => {
     if (!c.id) return false;
@@ -193,6 +205,16 @@ function normalizeCharacterColumn(game) {
     };
   }
   return { enabled: false, label: "Character" };
+}
+
+function pickCommunityChallenges(data) {
+  // Support BOTH spellings in your repo
+  return (
+    data.community_challenges ||
+    data["community-challenges"] ||
+    data["communityChallenges"] ||
+    []
+  );
 }
 
 function main() {
@@ -215,9 +237,18 @@ function main() {
     const categories = normalizeCategories(data);
 
     const standard_challenges = normalizeSlugList(data.challenges_data);
-    const community_challenges = normalizeSlugList(data["community-challenges"]);
-    const glitches = normalizeSlugList(data.glitches_data);
-    const restrictions = normalizeSlugList(data.restrictions_data);
+
+    const communityRaw = pickCommunityChallenges(data);
+    const community_challenges = normalizeSlugList(communityRaw);
+
+    const glitchesRelevant = data.glitches_relevant;
+    const hasGlitches = glitchesRelevant === false ? false : true;
+    const glitches = hasGlitches ? normalizeSlugList(data.glitches_data) : [];
+
+    const restrictions =
+      normalizeSlugList(data.restrictions_data).length > 0
+        ? normalizeSlugList(data.restrictions_data)
+        : normalizeStringList(data.restrictions);
 
     const character_column = normalizeCharacterColumn(data);
     const characters = normalizeSlugList(data.characters_data);
