@@ -1,61 +1,48 @@
 # Platforms data file
 # Used for filtering games by platform availability
 
-# Nintendo
-nintendo-64:
-  label: "Nintendo 64"
-  aliases:
-    - "N64"
-    - "Nintendo64"
+######### CONSOLES
 
-nintendo-gamecube:
-  label: "Nintendo Gamecube"
+# Atari
+atari-2600:
+  label: "Atari 2600"
   aliases:
-    - "Gamecube"
-    - "GC"
-    - "NGC"
+    - "Atari VCS"
+    - "Atari Video Computer System"
 
-nintendo-switch:
-  label: "Nintendo Switch"
+atari-7600:
+  label: "Atari 7600"
   aliases:
-    - "Switch"
-    - "NS"
+    - "Pro System"
 
-nintendo-switch-2:
-  label: "Nintendo Switch 2"
+atari-jaguar:
+  label: "Atari: Jaguar"
+
+#	Coleco
+colecovision:
+  label: "ColecoVision"
+
+# Fairchild Camera and Instrument
+fairchild-channel-f:
+  label: "Fairchild Channel F"
   aliases:
-    - "Switch 2"
-    - "NS2"
+    - "Fairchild Video Entertainment System"
 
-# Playstation
-playstation:
-  label: "PlayStation"
+# Magnavox
+magnavox-odyssey-2:
+  label: "Magnavox Odyssey 2"
   aliases:
-    - "PS1"
-    - "PSX"
-    - "PS"
+    - "Philips Odyssey 2"
+    - "Philips Videopac G7000"
+    - "Philips Odyssey"
+    - "Odyssey 2"
+    - "Odyssey2"
+    
+#	Mattel Electronics
+intellivision:
+  label: "Intellivision"
 
-playstation-2:
-  label: "PlayStation 2"
-  aliases:
-    - "PS2"
-
-playstation-3:
-  label: "PlayStation 3"
-  aliases:
-    - "PS3"
-
-playstation-4:
-  label: "PlayStation 4"
-  aliases:
-    - "PS4"
-
-playstation-5:
-  label: "PlayStation 5"
-  aliases:
-    - "PS5"
-
-# Xbox
+# Microsoft
 xbox:
   label: "Xbox"
   aliases:
@@ -71,7 +58,261 @@ xbox-one:
   aliases:
     - "Xbox 1"
     - "XB1"
-    - "Xbone"
+    - "Xone"
+    - "XBO"
+
+xbox-series-x-s:
+  label: "Xbox Series X|S"
+  aliases:
+    - "Xbox Series X"
+    - "Series X"
+    - "Xbox Series S"
+    - "Series S"
+   
+# NEC
+turbografx-16:
+  label: "TurboGrafx-16"
+  aliases:
+    - "PC Engine"
+
+# Nintendo
+nintendo-entertainment-system:
+  label: "NES
+  aliases:
+    - "Nintendo Entertainment System"
+    - "Hyundai Comboy"
+    - "Samurai Electronic TV Game System"
+    - "Dendy"
+
+super-nintendo-entertainment-system:
+  label: "SNES"
+  aliases:
+    - "Super Nintendo"
+    - "Super NES"
+    - "Super Famicom"
+    - "Super Comboy"
+
+nintendo-64:
+  label: "Nintendo 64"
+  aliases:
+    - "N64"
+    - "Nintendo64"
+    - "Ultra 64"
+    - "Hyundai Comboy 64"
+
+nintendo-gamecube:
+  label: "Nintendo GameCube"
+  aliases:
+    - "GameCube"
+    - "GC"
+    - "NGC"
+
+nintendo-wii:
+  label: "Nintendo Wii"
+  aliases:
+    - "Wii"
+
+nintendo-wii-u:
+  label: "Nintendo Wii U"
+  aliases:
+    - "Wii U"
+    
+nintendo-switch:
+  label: "Nintendo Switch"
+  aliases:
+    - "Switch"
+    - "NS"
+
+nintendo-switch-2:
+  label: "Nintendo Switch 2"
+  aliases:
+    - "Switch 2"
+    - "NS2"
+
+# Sega
+sega-master-system:
+  label: "Sega: Master System"
+  aliases:
+    - "Mark III"
+    - "Mark 3"
+    - "Master System"
+
+sega-genesis:
+  label: "Sega Genesis"
+  aliases:
+    - "Genesis"
+    - "Mega Drive"
+
+sega-saturn:
+  label: "Sega Saturn"
+  aliases:
+    - "Saturn"
+    
+sega-dreamcast:
+  label: "Sega Dreamcast"
+  aliases:
+    - "Dreamcast"
+
+# SNK Corporation
+neo-geo:
+  label: "Neo Geo"
+  aliases:
+    - "NEOGEO"
+
+# Sony
+playstation:
+  label: "PlayStation"
+  aliases:
+    - "PS1"
+    - "PS 1"
+    - "PSX"
+    - "PS"
+    - "PS One"
+
+playstation-2:
+  label: "PlayStation 2"
+  aliases:
+    - "PS2"
+    - "PS 2"
+
+playstation-3:
+  label: "PlayStation 3"
+  aliases:
+    - "PS3"
+    - "PS 3"
+    
+playstation-4:
+  label: "PlayStation 4"
+  aliases:
+    - "PS4"
+    - "PS 4"
+
+playstation-5:
+  label: "PlayStation 5"
+  aliases:
+    - "PS5"
+    - "PS 5"
+
+# The 3DO Company
+3do:
+  label: "3DO"
+
+######### HANDHELD
+
+# Atari
+atari-lynx:
+  label: "Atari Lynx"
+  aliases:
+    - "Lynx"
+
+# Bandai
+bandai-wonderswan:
+  label: "WonderSwan"
+  aliases:
+    - "Lynx"
+
+# Microsoft
+rog-xbox-ally:
+  label: "ROG Xbox Ally"
+  aliases:
+    - "Ally"
+    - "rog"
+
+# NEC Home Electronics
+nec-turboexpress:
+  label: "TurboExpress"
+  aliases:
+    - "PC Engine GT"
+    - "Mini Comboy"
+
+# Nintendo
+nintendo-game-boy:
+  label: "Game Boy"
+  aliases:
+    - "DMG-01"
+    - "Mini Comboy"
+
+nintendo-game-boy-color:
+  label: "Game Boy Color"
+  aliases:
+    - "GBC"
+    - "Mini Comboy"
+
+nintendo-game-boy-advance:
+  label: "Game Boy Advance"
+  aliases:
+    - "GBA"
+    - "Mini Comboy"
+
+nintendo-ds:
+  label: "Nintendo DS"
+  aliases:
+    - "DS"
+    - "Dual Screen"
+
+nintendo-3ds:
+  label: "Nintendo 3DS"
+  aliases:
+    - "3DS"
+    
+# Nokia
+n-gage:
+  label: "N-Gage"
+  aliases:
+    - "Game Deck"
+
+# Sega
+sega-game-gear:
+  label: "Game Gear"
+  aliases:
+    - "Game Gear"
+    
+sega-genesis-nomad:
+  label: "Genesis Nomad"
+  aliases:
+    - "Sega Nomad"
+
+# SNK
+neo-geo-pocket:
+  label: "Neo Geo Pocket"
+
+neo-geo-x:
+  label: "Neo Geo X"
+  aliases:
+    "NGX"
+
+# Sony
+playstation-portable:
+  label: "PlayStation Portable"
+  aliases:
+    - "PSP"
+    
+playstation-vita:
+  label: "PlayStation Vita"
+  aliases:
+    - "PS Vita"
+    - "PSVita"
+    - "Vita"
+
+# Valve
+steam-deck:
+  label: "Steam Deck"
+
+######### OTHER
+
+# Mobile
+ios:
+  label: "iOS"
+  aliases:
+    - "iPhone"
+    - "iPad"
+    - "Apple"
+
+android:
+  label: "Android"
+  aliases:
+    - "Google Play"
+    - "Mobile"
 
 # PC
 pc-steam:
@@ -99,17 +340,3 @@ pc-other:
     - "Windows"
     - "Computer"
     - "Desktop"
-
-# Mobile
-ios:
-  label: "iOS"
-  aliases:
-    - "iPhone"
-    - "iPad"
-    - "Apple"
-
-android:
-  label: "Android"
-  aliases:
-    - "Google Play"
-    - "Mobile"
