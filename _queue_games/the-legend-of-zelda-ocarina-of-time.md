@@ -30,7 +30,7 @@ tabs:
   extra_2: false
 
 categories_data:
-  - slug: any
+  - slug: "any"
     label: "Any%"
   - slug: "100"
     label: "100%"
