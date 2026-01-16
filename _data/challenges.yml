@@ -9,7 +9,11 @@
 # B
 blindfolded:
   label: "Blindfolded"
-  
+  description: |
+    - Complete the run without being able to see the screen.
+    - Monitor must be visibly off or covered.
+    - Webcam/handcam strongly recommended for verification.
+    
 # C
 
 # D
