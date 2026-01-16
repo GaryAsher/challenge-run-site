@@ -11,10 +11,11 @@
  *
  * Per-game support:
  *   - categories_data (with nested children) -> flattened category slugs
- *   - challenges_data
- *   - community-challenges
- *   - glitches_data
- *   - restrictions_data
+ *   - challenges_data -> standard_challenges
+ *   - community-challenges -> community_challenges
+ *   - glitches_data -> glitches
+ *   - restrictions_data -> restrictions
+ *   - character_column + characters_data -> character_column + characters
  */
 
 const fs = require("fs");
@@ -65,31 +66,28 @@ function loadGlobalChallenges() {
     return obj
       .map((it) => ({
         id: String(it?.challenge_id || it?.id || "").trim(),
-        name: String(it?.name || it?.title || it?.label || it?.challenge_id || it?.id || "").trim(),
+        name: String(
+          it?.name || it?.title || it?.label || it?.challenge_id || it?.id || ""
+        ).trim(),
         group: String(it?.group || "").trim() || "Challenges"
       }))
       .filter((c) => c.id);
   }
 
   // map: { no-hit: { name: "No Hit" } }
-  return Object.keys(obj).map((id) => {
-    const it = obj[id] || {};
-    return {
-      id: String(id).trim(),
-      name: String(it.name || it.title || it.label || id).trim(),
-      group: String(it.group || "").trim() || "Challenges"
-    };
-  });
+  return Object.keys(obj)
+    .map((id) => {
+      const it = obj[id] || {};
+      return {
+        id: String(id).trim(),
+        name: String(it.name || it.title || it.label || id).trim(),
+        group: String(it.group || "").trim() || "Challenges"
+      };
+    })
+    .filter((c) => c.id);
 }
 
 function normalizeCategories(game) {
-  // Supports:
-  // - categories_data: [{ slug, label, children: [...] }]
-  // - categories: [{ slug, name }]
-  // - category_slugs: ["..."]
-  // - run_categories / run_category_slugs
-  // - runs
-
   const buckets = [
     game.categories_data,
     game.categories,
@@ -163,48 +161,38 @@ function normalizeCategories(game) {
   });
 }
 
-function normalizeGameChallenges(game) {
-  // Pull from multiple per-game keys.
-  // Your Hades II file uses:
-  // - challenges_data: [{ slug, label }]
-  // - community-challenges: [{ slug, label }]
-  // - glitches_data: [{ slug, label }]
-  // - restrictions_data: [{ slug, label }]
-  //
-  // Output unified list:
-  // [{ id, name, group }]
-
-  const groups = [
-    { key: "challenges_data", label: "Standard Challenges" },
-    { key: "community-challenges", label: "Community Challenges" },
-    { key: "glitches_data", label: "Glitches" },
-    { key: "restrictions_data", label: "Restrictions" }
-  ];
+function normalizeSlugList(list) {
+  if (!Array.isArray(list)) return [];
 
   const out = [];
+  for (const item of list) {
+    if (!item) continue;
 
-  for (const g of groups) {
-    const bucket = game[g.key];
-    if (!Array.isArray(bucket)) continue;
+    const id = String(item.slug || item.challenge_id || item.id || "").trim();
+    if (!id) continue;
 
-    for (const item of bucket) {
-      if (!item) continue;
-
-      const id = String(item.slug || item.challenge_id || item.id || "").trim();
-      if (!id) continue;
-
-      const name = String(item.label || item.name || item.title || id).trim();
-      out.push({ id, name, group: g.label });
-    }
+    const name = String(item.label || item.name || item.title || id).trim();
+    out.push({ id, name });
   }
 
-  // De-dupe by id. If duplicate, prefer earlier groups.
+  // de-dupe by id, keep first
   const seen = new Set();
   return out.filter((c) => {
+    if (!c.id) return false;
     if (seen.has(c.id)) return false;
     seen.add(c.id);
     return true;
   });
+}
+
+function normalizeCharacterColumn(game) {
+  if (game.character_column && typeof game.character_column === "object") {
+    return {
+      enabled: Boolean(game.character_column.enabled),
+      label: String(game.character_column.label || "Character").trim()
+    };
+  }
+  return { enabled: false, label: "Character" };
 }
 
 function main() {
@@ -226,23 +214,24 @@ function main() {
     const title = String(data.name || data.title || game_id).trim();
     const categories = normalizeCategories(data);
 
-    const perGameChallenges = normalizeGameChallenges(data);
+    const standard_challenges = normalizeSlugList(data.challenges_data);
+    const community_challenges = normalizeSlugList(data["community-challenges"]);
+    const glitches = normalizeSlugList(data.glitches_data);
+    const restrictions = normalizeSlugList(data.restrictions_data);
 
-    const characterColumn = data.character_column && typeof data.character_column === "object"
-  ? {
-      enabled: Boolean(data.character_column.enabled),
-      label: String(data.character_column.label || "Character").trim()
-    }
-  : { enabled: false, label: "Character" };
+    const character_column = normalizeCharacterColumn(data);
+    const characters = normalizeSlugList(data.characters_data);
 
     games.push({
       game_id,
       title,
       categories,
-      challenges: perGameChallenges.length ? perGameChallenges : null,
-      character_column: characterColumn
-
-      
+      standard_challenges,
+      community_challenges,
+      glitches,
+      restrictions,
+      character_column,
+      characters
     });
   }
 
