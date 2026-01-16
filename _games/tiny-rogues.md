@@ -38,13 +38,13 @@ character_column:
 # =============================================================================
 # GENERAL RULES
 # =============================================================================
-general_rules:
-  - "**Video Required:** All submissions must include video proof."
-  - "**No Mods:** External mods or cheats are not allowed."
-  - "Show death at the start of a run for unseeded."
-  - "Visualize Player Hitbox: ON (in Options under Gameplay)."
-  - "Show the skill tree choices (optional)."
-  - "Show Cinder options (optional)."
+general_rules: |
+  - **Video Required:** All submissions must include video proof.
+  - **No Mods:** External mods or cheats are not allowed.
+  - Show death at the start of a run for unseeded.
+  - Visualize Player Hitbox: ON (in Options under Gameplay).
+  - Show the skill tree choices (optional).
+  - Show Cinder options (optional).
 
 # =============================================================================
 # STANDARD CHALLENGE TYPES
@@ -53,24 +53,24 @@ challenges_data:
   - slug: damageless
     label: "Damageless"
     description: |
-      ●  Damage is any loss of your character's current health, regardless of source.
+      - Damage is any loss of your character's current health, regardless of source.
+      - Current health for Tiny Rogues are: Red Hearts and Soul Hearts.
+      - Changes to maximum health are not damage, even if they also change current health.
       
-      ●  Current health for Tiny Rogues are: Red Hearts and Soul Hearts.
-      
-      ●  Changes to maximum health are not damage, even if they also change current health.
   - slug: hitless
     label: "Hitless"
     description: |
-      ●  Hits are any enemy attack that remove any of the top-left health/armor/evade resources.
-      
-      ●  Player-initiated actions that cause damage are NOT hits. (e.g: Opening a door/chest/altar that requires a heart instead of a key).
+      - Hits are any enemy attack that remove any of the top-left health/armor/evade resources.
+      - Player-initiated actions that cause damage are NOT hits. (e.g: Opening a door/chest/altar that requires a heart instead of a key).
       
       ### Exceptions:
-      ●  That one enemy in Shadow Planes that teleports you to a previous place you were standing is not a hit (it seems unavoidable).
+      - That one enemy in Shadow Planes that teleports you to a previous place you were standing is not a hit (it seems unavoidable).
+      
   - slug: no-hit-no-damage
     label: "No-Hit / No-Damage"
     description: |
       Follow both Hitless and Damageless rules.
+      
 # Glitches not relevant for this game
 glitches_relevant: false
 
@@ -81,11 +81,9 @@ restrictions_data:
   - slug: companions-only
     label: "Companions Only"
     description: |
-      ●  This restriction starts after the Floor 1 boss.
-      
-      ●  Deal damage only through companions. 
-      
-      ●  Attacks/Abilities/Items from the player after Floor 1 are not allowed.
+      - This restriction starts after the Floor 1 boss.
+      - Deal damage only through companions.
+      - Attacks/Abilities/Items from the player after Floor 1 are not allowed.
       
 # =============================================================================
 # CATEGORIES
@@ -93,16 +91,23 @@ restrictions_data:
 categories_data:
   - slug: any
     label: "Any%"
-    description: "Beat the game with any amount of Cinder."
+    description: |
+      Beat the game with any amount of Cinder.
+    
   - slug: cinder-16
     label: "Cinder 16"
-    description: "Beat the game with all 16 Cinder modifiers active."
+    description: |
+      Beat the game with all 16 Cinder modifiers active.
+    
   - slug: quest-any
     label: "Quest Any%"
-    description: "Beat a Quest with any amount of Cinder."
+    description: |
+      Beat a Quest with any amount of Cinder.
+    
   - slug: quest-cinder-16
     label: "Quest Cinder 16"
-    description: "Beat a Quest with all 16 Cinder modifiers active."
+    description: |
+      Beat a Quest with all 16 Cinder modifiers active.
 
 # =============================================================================
 # CREDITS
