@@ -156,10 +156,10 @@ jobs:
 
             ### 📋 Reviewer Checklist
 
-            - [ ] Verify game info looks correct
-            - [ ] Add genre tags if missing
-            
-            **Merge this PR to promote the game automatically.**
+            - [ ] Verify game info looks correct.
+            - [ ] Edit file and add genre tags.
+            - [ ] Find game image, compress via https://tinypng.com/, then upload it to  
+            `assets/img/games/${{ steps.generate.outputs.first_letter }}/${{ steps.generate.outputs.game_id }}.jpg`
 
             ---
             *Submitted via Google Form*
