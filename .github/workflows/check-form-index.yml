@@ -1,0 +1,32 @@
+name: Check form index is up to date
+
+on:
+  pull_request:
+    paths:
+      - "_games/**"
+      - "_data/**"
+      - "scripts/generate-form-index.js"
+      - "assets/generated/form-index.json"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm ci
+
+      - name: Regenerate form index
+        run: npm run generate:form-index
+
+      - name: Fail if changed
+        run: |
+          git status --porcelain
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Generated files are out of date. Run: npm run generate:form-index"
+            exit 1
+          fi
