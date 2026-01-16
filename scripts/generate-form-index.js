@@ -6,15 +6,15 @@
  *   assets/generated/form-index.json
  *
  * Reads:
- *   _games/*.md  (front matter)
- *   _data/challenges.yml (optional)
+ *   _games/*.md
+ *   _data/challenges.yml (optional global fallback)
  *
- * Contract (minimal):
- *   Each game should expose:
- *     - game_id
- *     - title (or name)
- *     - categories: [{ slug, name }]  OR category_slugs: [string]
- *     - allowed_challenges: [challenge_id] (optional, else use global)
+ * Per-game support:
+ *   - categories_data (with nested children) -> flattened category slugs
+ *   - challenges_data
+ *   - community-challenges
+ *   - glitches_data
+ *   - restrictions_data
  */
 
 const fs = require("fs");
@@ -36,11 +36,12 @@ function safeMkdir(dir) {
 }
 
 function parseFrontMatter(md) {
-  // simple, robust front matter parser
   if (!md.startsWith("---")) return { data: {}, body: md };
+
   const end = md.indexOf("\n---", 3);
   if (end === -1) return { data: {}, body: md };
-  const fmRaw = md.slice(3, end + 1); // include trailing newline
+
+  const fmRaw = md.slice(3, end + 1);
   const body = md.slice(end + 4);
   const data = yaml.load(fmRaw) || {};
   return { data, body };
@@ -55,19 +56,30 @@ function listMarkdownFiles(dir) {
 
 function loadGlobalChallenges() {
   const p = path.join(DATA_DIR, "challenges.yml");
-  if (!fs.existsSync(p)) return {};
+  if (!fs.existsSync(p)) return [];
+
   const obj = yaml.load(readFile(p)) || {};
-  // Support both:
-  // - map: { no-hit: { name: "No Hit" } }
-  // - list: [{ challenge_id: "no-hit", name: "No Hit" }]
+
+  // Support both map and list shapes
   if (Array.isArray(obj)) {
-    const out = {};
-    for (const item of obj) {
-      if (item && item.challenge_id) out[item.challenge_id] = item;
-    }
-    return out;
+    return obj
+      .map((it) => ({
+        id: String(it?.challenge_id || it?.id || "").trim(),
+        name: String(it?.name || it?.title || it?.label || it?.challenge_id || it?.id || "").trim(),
+        group: String(it?.group || "").trim() || "Challenges"
+      }))
+      .filter((c) => c.id);
   }
-  return obj;
+
+  // map: { no-hit: { name: "No Hit" } }
+  return Object.keys(obj).map((id) => {
+    const it = obj[id] || {};
+    return {
+      id: String(id).trim(),
+      name: String(it.name || it.title || it.label || id).trim(),
+      group: String(it.group || "").trim() || "Challenges"
+    };
+  });
 }
 
 function normalizeCategories(game) {
@@ -75,7 +87,8 @@ function normalizeCategories(game) {
   // - categories_data: [{ slug, label, children: [...] }]
   // - categories: [{ slug, name }]
   // - category_slugs: ["..."]
-  // - run_categories / run_category_slugs (fallbacks)
+  // - run_categories / run_category_slugs
+  // - runs
 
   const buckets = [
     game.categories_data,
@@ -96,12 +109,10 @@ function normalizeCategories(game) {
   }
 
   function walk(node, parentSlug = "", parentLabel = "") {
-    if (!node) return;
-
-    const slug = String(node.slug || node.category_slug || "").trim();
-    const label = String(node.label || node.name || node.title || slug).trim();
-
+    const slug = String(node?.slug || node?.category_slug || "").trim();
     if (!slug) return;
+
+    const label = String(node?.label || node?.name || node?.title || slug).trim();
 
     const fullSlug = parentSlug ? `${parentSlug}/${slug}` : slug;
     const fullLabel = parentLabel ? `${parentLabel}: ${label}` : label;
@@ -128,7 +139,7 @@ function normalizeCategories(game) {
         }
 
         if (typeof item === "object") {
-          // If it looks like categories_data, flatten children
+          // categories_data shape
           if ("children" in item || "label" in item) {
             walk(item);
             continue;
@@ -152,20 +163,57 @@ function normalizeCategories(game) {
   });
 }
 
+function normalizeGameChallenges(game) {
+  // Pull from multiple per-game keys.
+  // Your Hades II file uses:
+  // - challenges_data: [{ slug, label }]
+  // - community-challenges: [{ slug, label }]
+  // - glitches_data: [{ slug, label }]
+  // - restrictions_data: [{ slug, label }]
+  //
+  // Output unified list:
+  // [{ id, name, group }]
+
+  const groups = [
+    { key: "challenges_data", label: "Standard" },
+    { key: "community-challenges", label: "Community" },
+    { key: "glitches_data", label: "Glitches" },
+    { key: "restrictions_data", label: "Restrictions" }
+  ];
+
+  const out = [];
+
+  for (const g of groups) {
+    const bucket = game[g.key];
+    if (!Array.isArray(bucket)) continue;
+
+    for (const item of bucket) {
+      if (!item) continue;
+
+      const id = String(item.slug || item.challenge_id || item.id || "").trim();
+      if (!id) continue;
+
+      const name = String(item.label || item.name || item.title || id).trim();
+      out.push({ id, name, group: g.label });
+    }
+  }
+
+  // De-dupe by id. If duplicate, prefer earlier groups.
+  const seen = new Set();
+  return out.filter((c) => {
+    if (seen.has(c.id)) return false;
+    seen.add(c.id);
+    return true;
+  });
+}
+
 function main() {
   if (!fs.existsSync(GAMES_DIR)) {
     console.error("Missing _games/ directory.");
     process.exit(1);
   }
 
-  const challenges = loadGlobalChallenges();
-  const globalChallengeList = Object.keys(challenges).map((id) => {
-    const c = challenges[id] || {};
-    return {
-      id,
-      name: String(c.name || c.title || id),
-    };
-  });
+  const globalChallenges = loadGlobalChallenges();
 
   const games = [];
   for (const file of listMarkdownFiles(GAMES_DIR)) {
@@ -175,19 +223,16 @@ function main() {
     const game_id = String(data.game_id || "").trim();
     if (!game_id) continue;
 
-    const title = String(data.title || data.name || game_id).trim();
+    const title = String(data.name || data.title || game_id).trim();
     const categories = normalizeCategories(data);
 
-    // allowed challenges may be per-game, else use global list
-    const allowed = Array.isArray(data.allowed_challenges)
-      ? data.allowed_challenges.map((x) => String(x).trim()).filter(Boolean)
-      : null;
+    const perGameChallenges = normalizeGameChallenges(data);
 
     games.push({
       game_id,
       title,
       categories,
-      allowed_challenges: allowed, // null means use global on client
+      challenges: perGameChallenges.length ? perGameChallenges : null
     });
   }
 
@@ -198,7 +243,7 @@ function main() {
   const payload = {
     generated_at: new Date().toISOString(),
     games,
-    challenges: globalChallengeList,
+    challenges: globalChallenges
   };
 
   fs.writeFileSync(OUT_FILE, JSON.stringify(payload, null, 2) + "\n", "utf8");
