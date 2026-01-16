@@ -77,7 +77,7 @@ turbografx-16:
 
 # Nintendo
 nintendo-entertainment-system:
-  label: "NES
+  label: "NES"
   aliases:
     - "Nintendo Entertainment System"
     - "Hyundai Comboy"
