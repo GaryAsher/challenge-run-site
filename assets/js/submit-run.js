@@ -14,37 +14,68 @@
     return u.searchParams.get(name) || "";
   }
 
-  function normalizeYouTubeId(url) {
-    // Returns { ok, id, reason }
+  function parseVideo(url) {
+    // Returns { ok, host, id, canonical_url, reason }
     try {
       const u = new URL(url);
       const host = u.hostname.replace(/^www\./, "").toLowerCase();
 
+      // YouTube
       if (host === "youtu.be") {
         const id = u.pathname.replace("/", "").trim();
-        if (!id) return { ok: false, reason: "Missing video id." };
-        return { ok: true, id };
+        if (!id) return { ok: false, reason: "Missing YouTube video id." };
+        return { ok: true, host: "youtube", id, canonical_url: `https://www.youtube.com/watch?v=${id}` };
       }
 
       if (host === "youtube.com" || host === "m.youtube.com") {
-        const v = u.searchParams.get("v");
-        if (v) return { ok: true, id: v.trim() };
+        const v = (u.searchParams.get("v") || "").trim();
+        if (v) return { ok: true, host: "youtube", id: v, canonical_url: `https://www.youtube.com/watch?v=${v}` };
 
-        // handle /shorts/<id>
         const parts = u.pathname.split("/").filter(Boolean);
-        if (parts[0] === "shorts" && parts[1]) return { ok: true, id: parts[1].trim() };
+        if (parts[0] === "shorts" && parts[1]) {
+          const id = parts[1].trim();
+          return { ok: true, host: "youtube", id, canonical_url: `https://www.youtube.com/watch?v=${id}` };
+        }
 
         return { ok: false, reason: "Unsupported YouTube URL format." };
       }
 
-      return { ok: false, reason: "Only YouTube links are allowed right now." };
+      // Twitch VODs
+      if (host === "twitch.tv" || host === "m.twitch.tv") {
+        const parts = u.pathname.split("/").filter(Boolean);
+        if (parts[0] === "videos" && parts[1]) {
+          const id = parts[1].trim();
+          return { ok: true, host: "twitch", id, canonical_url: `https://www.twitch.tv/videos/${id}` };
+        }
+        return { ok: false, reason: "Twitch link must look like twitch.tv/videos/<id>." };
+      }
+
+      if (host === "player.twitch.tv") {
+        let v = (u.searchParams.get("video") || "").trim();
+        if (v.startsWith("v")) v = v.slice(1);
+        if (!v) return { ok: false, reason: "Twitch player link missing video id." };
+        return { ok: true, host: "twitch", id: v, canonical_url: `https://www.twitch.tv/videos/${v}` };
+      }
+
+      // bilibili
+      if (host === "bilibili.com" || host === "m.bilibili.com" || host === "www.bilibili.com") {
+        const parts = u.pathname.split("/").filter(Boolean);
+        if (parts[0] === "video" && parts[1]) {
+          const id = parts[1].trim();
+          return { ok: true, host: "bilibili", id, canonical_url: `https://www.bilibili.com/video/${id}` };
+        }
+        return { ok: false, reason: "bilibili link must look like bilibili.com/video/<BV... or av...>." };
+      }
+
+      return { ok: false, reason: "Only YouTube, Twitch VODs, and bilibili are allowed right now." };
     } catch {
       return { ok: false, reason: "Invalid URL." };
     }
   }
 
   async function loadIndex() {
-    const res = await fetch("/assets/generated/form-index.json", { cache: "no-store" });
+    const url = window.CRC_FORM_INDEX_URL || "/assets/generated/form-index.json";
+    const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) throw new Error("Could not load form index JSON.");
     return res.json();
   }
@@ -64,10 +95,10 @@
     const category_slug = $("categorySelect").value.trim();
     const challenge_id = $("challengeSelect").value.trim();
     const runner_id = $("runnerId").value.trim();
-    const video_url = $("videoUrl").value.trim();
+    const video_url_raw = $("videoUrl").value.trim();
     const date_completed = $("dateCompleted").value;
 
-    const yt = normalizeYouTubeId(video_url);
+    const v = parseVideo(video_url_raw);
 
     const payload = {
       kind: "run_submission",
@@ -75,26 +106,27 @@
       category_slug,
       challenge_id,
       runner_id,
-      video_url: yt.ok ? `https://www.youtube.com/watch?v=${yt.id}` : video_url,
-      video_id: yt.ok ? yt.id : "",
+      video_url: v.ok ? v.canonical_url : video_url_raw,
+      video_host: v.ok ? v.host : "",
+      video_id: v.ok ? v.id : "",
       date_completed,
       submitted_at: new Date().toISOString(),
       source: "site_form",
-      schema_version: 1
+      schema_version: 2
     };
 
     previewEl.textContent = JSON.stringify(payload, null, 2);
 
-    return { payload, yt };
+    return { payload, v };
   }
 
-  function validatePayload(payload, yt) {
+  function validatePayload(payload, v) {
     if (!payload.game_id) return "Missing game.";
     if (!payload.category_slug) return "Missing category.";
     if (!payload.challenge_id) return "Missing challenge.";
     if (!payload.runner_id) return "Missing runner id.";
     if (!payload.video_url) return "Missing video URL.";
-    if (!yt.ok) return yt.reason || "Invalid YouTube URL.";
+    if (!v.ok) return v.reason || "Invalid video URL.";
     if (!payload.date_completed) return "Missing completed date.";
     return "";
   }
@@ -132,19 +164,24 @@
 
   function populateCategories() {
     const game = getGameById(gameSelect.value);
-    const cats = (game && game.categories) ? game.categories : [];
+    const cats = game && Array.isArray(game.categories) ? game.categories : [];
     fillSelect(categorySelect, cats, (c) => c.slug, (c) => c.name);
   }
 
   function populateChallenges() {
     const game = getGameById(gameSelect.value);
-    const allowed = game && Array.isArray(game.allowed_challenges) ? game.allowed_challenges : null;
 
-    const list = allowed
-      ? index.challenges.filter((c) => allowed.includes(c.id))
-      : index.challenges;
+    // Prefer per-game challenge list if available
+    const gameChallenges = game && Array.isArray(game.challenges) ? game.challenges : null;
+    const list = gameChallenges && gameChallenges.length ? gameChallenges : index.challenges;
 
-    fillSelect(challengeSelect, list, (c) => c.id, (c) => c.name);
+    // If list contains groups, keep label simple for now: "Group: Name"
+    fillSelect(
+      challengeSelect,
+      list,
+      (c) => c.id,
+      (c) => (c.group ? `${c.group}: ${c.name}` : c.name)
+    );
   }
 
   gameSearch.addEventListener("input", () => {
@@ -168,8 +205,8 @@
   });
 
   $("btnCopy").addEventListener("click", async () => {
-    const { payload, yt } = buildPayload(index);
-    const err = validatePayload(payload, yt);
+    const { payload, v } = buildPayload(index);
+    const err = validatePayload(payload, v);
     if (err) return setMsg(err, true);
 
     await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
@@ -178,12 +215,10 @@
 
   $("btnSubmit").addEventListener("click", async (e) => {
     e.preventDefault();
-    const { payload, yt } = buildPayload(index);
-    const err = validatePayload(payload, yt);
+    const { payload, v } = buildPayload(index);
+    const err = validatePayload(payload, v);
     if (err) return setMsg(err, true);
 
-    // If you later add a webhook endpoint, set it here:
-    // window.CRC_RUN_SUBMIT_ENDPOINT = "https://...";
     const endpoint = window.CRC_RUN_SUBMIT_ENDPOINT;
 
     if (!endpoint) {
