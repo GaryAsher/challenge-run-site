@@ -45,7 +45,6 @@ featured_runs:
 ## Future Features
 
 ### Site Features
-- [ ] Search page - Global search across all content
 - [ ] Add Spanish version
 - [ ] Dark/light mode toggle
 - [ ] Add a "Back to Top" button for long pages
