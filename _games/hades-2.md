@@ -138,7 +138,7 @@ challenges_data:
 # =============================================================================
 # COMMUNITY CHALLENGES
 # =============================================================================
-community-challenges:
+community_challenges:
   - slug: one-god-only
     label: "One God Only"
     description: |
