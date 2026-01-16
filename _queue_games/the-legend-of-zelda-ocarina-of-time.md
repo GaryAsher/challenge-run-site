@@ -33,22 +33,7 @@ categories_data:
   - slug: 100
     label: "100%"
 
-community_challenges:
-  - slug: 4bae
-    label: "4BAE"
-    description: "Visit each of the four child \"babes\" and complete the following in any order:"
-  - slug: get-saria-s-song
-    label: "get Saria's Song"
-  - slug: get-zora-s-sapphire-from-beating-jabu
-    label: "get Zora's Sapphire from beating jabu"
-  - slug: get-epona-s-song
-    label: "get Epona's Song"
-  - slug: get-zelda-s-letter
-    label: "get Zelda's Letter"
-  - slug: restrictions
-    label: "Restrictions"
-  - slug: srm-is-banned
-    label: "SRM is banned."
+community_challenges: []
 
 character_column:
   enabled: false
