@@ -39,6 +39,61 @@ character_column:
   enabled: true
   label: "Weapon / Aspect"
 
+characters_data:
+  - slug: witchs-staff-melinoe-aspect
+    label: "Witch's Staff / Melinoë Aspect"
+  - slug: witchs-staff-circe-aspect
+    label: "Witch's Staff / Circe Aspect"
+  - slug: witchs-staff-momus-aspect
+    label: "Witch's Staff / Momus Aspect"
+  - slug: witchs-staff-anubis-aspect
+    label: "Witch's Staff / Anubis Aspect"
+    
+  - slug: sister-blades-melinoe-aspect
+    label: "Sister Blades / Melinoë Aspect"
+  - slug: sister-blades-artemis-aspect
+    label: "Sister Blades / Artemis Aspect"
+  - slug: sister-blades-pan-aspect
+    label: "Sister Blades / Pan Aspect"
+  - slug: sister-blades-morrigan-aspect
+    label: "Sister Blades / Morrigan Aspect"
+  
+  - slug: umbral-flames-melinoe-aspect
+    label: "Umbral Flames / Melinoë Aspect"
+  - slug: umbral-flames-moros-aspect
+    label: "Umbral Flames / Moros Aspect"
+  - slug: umbral-flames-eos-aspect
+    label: "Umbral Flames / Eos Aspect"
+  - slug: umbral-flames-supay-aspect
+    label: "Umbral Flames / Supay Aspect"
+    
+  - slug: moonstone-axe-melinoe-aspect
+    label: "Moonstone Axe / Melinoë Aspect"
+  - slug: moonstone-axe-charon-aspect
+    label: "Moonstone Axe / Charon Aspect"
+  - slug: moonstone-axe-thanatos-aspect
+    label: "Moonstone Axe / Thanatos Aspect"
+  - slug: moonstone-axe-nergal-aspect
+    label: "Moonstone Axe / Nergal Aspect"  
+    
+  - slug: argent-skull-melinoe-aspect
+    label: "Argent Skull / Melinoë Aspect"
+  - slug: argent-skull-medea-aspect
+    label: "Argent Skull / Medea Aspect"
+  - slug: argent-skull-persephone-aspect
+    label: "Argent Skull / Persephone Aspect"
+  - slug: argent-skull-hel-aspect
+    label: "Argent Skull / Hel Aspect"
+
+  - slug: black-coat-melinoe-aspect
+    label: "Black Coat / Melinoë Aspect"
+  - slug: black-coat-selene-aspect
+    label: "Black Coat / Selene Aspect"
+  - slug: black-coat-nyx-aspect
+    label: "Black Coat / Nyx Aspect"
+  - slug: black-coat-shiva-aspect
+    label: "Black Coat / Shiva Aspect"    
+
 # =============================================================================
 # GENERAL RULES
 # =============================================================================
