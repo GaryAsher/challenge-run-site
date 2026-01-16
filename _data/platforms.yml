@@ -315,27 +315,27 @@ android:
     - "Mobile"
 
 # PC
-pc-steam:
-  label: "PC (Steam)"
-  aliases:
-    - "Steam"
-    - "PC Steam"
-
 pc-epic-games:
-  label: "PC (Epic Games)"
+  label: "PC: Epic Games"
   aliases:
     - "Epic Games"
     - "Epic"
     - "EGS"
 
 pc-gog:
-  label: "PC (GOG)"
+  label: "PC: GOG"
   aliases:
     - "GOG"
     - "Good Old Games"
 
+pc-steam:
+  label: "PC: Steam"
+  aliases:
+    - "Steam"
+    - "PC Steam"
+
 pc-other:
-  label: "PC (Other)"
+  label: "PC: Other"
   aliases:
     - "Windows"
     - "Computer"
