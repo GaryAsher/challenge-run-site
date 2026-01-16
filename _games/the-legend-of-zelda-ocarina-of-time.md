@@ -10,7 +10,6 @@ name_aliases:
 cover: /assets/img/games/t/the-legend-of-zelda-ocarina-of-time.jpg
 cover_position: center
 
-status: "Pending review"
 reviewers: []
 
 genres:
