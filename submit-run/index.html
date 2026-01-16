@@ -21,40 +21,49 @@ permalink: /submit-run/
         <select id="gameSelect" style="width:100%; margin-top:8px;"></select>
       </label>
 
-      <!-- Category (MISSING BEFORE) -->
+      <!-- Category -->
       <label>
         <div class="muted" style="margin-bottom:6px;">Category</div>
         <select id="categorySelect" style="width:100%;"></select>
       </label>
 
-      <!-- Challenge boxes -->
-      <label>
-        <div class="muted" style="margin-bottom:6px;">Standard Challenge</div>
-        <select id="standardChallengeSelect" style="width:100%;"></select>
-      </label>
+      <!-- Standard Challenge (multi-select with chips) -->
+      <div class="field-block">
+        <label class="field-label">Standard Challenges</label>
+      
+        <div class="chip-picker">
+          <select id="standardChallengeSelect" class="select"></select>
+          <div id="standardChallengeChips" class="chip-row" aria-live="polite"></div>
+        </div>
+      </div>
 
+      <!-- Community Challenge -->
       <label>
         <div class="muted" style="margin-bottom:6px;">Community Challenge</div>
         <select id="communityChallengeSelect" style="width:100%;"></select>
       </label>
 
+      <!-- Character -->
       <label>
         <div class="muted" id="characterLabel" style="margin-bottom:6px;">Character</div>
         <select id="characterSelect" style="width:100%;"></select>
       </label>
 
+      <!-- Glitch Category -->      
       <label>
         <div class="muted" style="margin-bottom:6px;">Glitch Category</div>
         <select id="glitchSelect" style="width:100%;"></select>
       </label>
 
-      <label>
-        <div class="muted" style="margin-bottom:6px;">Restrictions</div>
-        <div class="muted" style="font-size: 0.9em; margin-bottom:6px;">
-          Tip: Hold Ctrl (Windows) or Cmd (Mac) to select multiple.
+      <!-- Restrictions (multi-select with chips) -->
+      <div class="field-block">
+        <label class="field-label">Restrictions</label>
+      
+        <div class="chip-picker">
+          <select id="restrictionsSelect" class="select"></select>
+          <div id="restrictionsChips" class="chip-row" aria-live="polite"></div>
         </div>
-        <select id="restrictionsSelect" multiple size="10" style="width:100%;"></select>
-      </label>
+      </div>
 
       <!-- Runner -->
       <label>
