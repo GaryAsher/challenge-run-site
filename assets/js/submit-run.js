@@ -24,17 +24,34 @@
       if (host === "youtu.be") {
         const id = u.pathname.replace("/", "").trim();
         if (!id) return { ok: false, reason: "Missing YouTube video id." };
-        return { ok: true, host: "youtube", id, canonical_url: `https://www.youtube.com/watch?v=${id}` };
+        return {
+          ok: true,
+          host: "youtube",
+          id,
+          canonical_url: `https://www.youtube.com/watch?v=${id}`
+        };
       }
 
       if (host === "youtube.com" || host === "m.youtube.com") {
         const v = (u.searchParams.get("v") || "").trim();
-        if (v) return { ok: true, host: "youtube", id: v, canonical_url: `https://www.youtube.com/watch?v=${v}` };
+        if (v) {
+          return {
+            ok: true,
+            host: "youtube",
+            id: v,
+            canonical_url: `https://www.youtube.com/watch?v=${v}`
+          };
+        }
 
         const parts = u.pathname.split("/").filter(Boolean);
         if (parts[0] === "shorts" && parts[1]) {
           const id = parts[1].trim();
-          return { ok: true, host: "youtube", id, canonical_url: `https://www.youtube.com/watch?v=${id}` };
+          return {
+            ok: true,
+            host: "youtube",
+            id,
+            canonical_url: `https://www.youtube.com/watch?v=${id}`
+          };
         }
 
         return { ok: false, reason: "Unsupported YouTube URL format." };
@@ -45,7 +62,12 @@
         const parts = u.pathname.split("/").filter(Boolean);
         if (parts[0] === "videos" && parts[1]) {
           const id = parts[1].trim();
-          return { ok: true, host: "twitch", id, canonical_url: `https://www.twitch.tv/videos/${id}` };
+          return {
+            ok: true,
+            host: "twitch",
+            id,
+            canonical_url: `https://www.twitch.tv/videos/${id}`
+          };
         }
         return { ok: false, reason: "Twitch link must look like twitch.tv/videos/<id>." };
       }
@@ -54,7 +76,12 @@
         let v = (u.searchParams.get("video") || "").trim();
         if (v.startsWith("v")) v = v.slice(1);
         if (!v) return { ok: false, reason: "Twitch player link missing video id." };
-        return { ok: true, host: "twitch", id: v, canonical_url: `https://www.twitch.tv/videos/${v}` };
+        return {
+          ok: true,
+          host: "twitch",
+          id: v,
+          canonical_url: `https://www.twitch.tv/videos/${v}`
+        };
       }
 
       // bilibili
@@ -62,7 +89,12 @@
         const parts = u.pathname.split("/").filter(Boolean);
         if (parts[0] === "video" && parts[1]) {
           const id = parts[1].trim();
-          return { ok: true, host: "bilibili", id, canonical_url: `https://www.bilibili.com/video/${id}` };
+          return {
+            ok: true,
+            host: "bilibili",
+            id,
+            canonical_url: `https://www.bilibili.com/video/${id}`
+          };
         }
         return { ok: false, reason: "bilibili link must look like bilibili.com/video/<BV... or av...>." };
       }
@@ -87,6 +119,47 @@
       opt.value = getValue(item);
       opt.textContent = getLabel(item);
       selectEl.appendChild(opt);
+    }
+  }
+
+  function fillSelectGrouped(selectEl, items, groupKey, getValue, getLabel) {
+    selectEl.innerHTML = "";
+
+    // Group items
+    const groups = new Map();
+    for (const item of items) {
+      const g = String(item[groupKey] || "").trim() || "Other";
+      if (!groups.has(g)) groups.set(g, []);
+      groups.get(g).push(item);
+    }
+
+    // Preserve a preferred order
+    const preferred = [
+      "Standard Challenges",
+      "Community Challenges",
+      "Character",
+      "Glitches",
+      "Restrictions",
+      "Other"
+    ];
+
+    const orderedGroupNames = [
+      ...preferred.filter((g) => groups.has(g)),
+      ...Array.from(groups.keys()).filter((g) => !preferred.includes(g))
+    ];
+
+    for (const groupName of orderedGroupNames) {
+      const optgroup = document.createElement("optgroup");
+      optgroup.label = groupName;
+
+      for (const item of groups.get(groupName)) {
+        const opt = document.createElement("option");
+        opt.value = getValue(item);
+        opt.textContent = getLabel(item);
+        optgroup.appendChild(opt);
+      }
+
+      selectEl.appendChild(optgroup);
     }
   }
 
@@ -168,39 +241,37 @@
     fillSelect(categorySelect, cats, (c) => c.slug, (c) => c.name);
   }
 
-function populateChallenges() {
-  const game = getGameById(gameSelect.value);
+  function populateChallenges() {
+    const game = getGameById(gameSelect.value);
 
-  // Prefer per-game list, else fall back to global list
-  const base = game && Array.isArray(game.challenges) && game.challenges.length
-    ? game.challenges
-    : index.challenges;
+    // Prefer per-game list, else fall back to global list
+    const base =
+      game && Array.isArray(game.challenges) && game.challenges.length
+        ? game.challenges
+        : index.challenges;
 
-  // If character column is enabled, add a pseudo option group.
-  // This does NOT define all weapon/aspect choices yet.
-  // It just gives you a "Character" section that can later become a real dropdown.
-  const out = base.map((c) => ({
-    id: c.id,
-    name: c.name,
-    group: c.group || "Other"
-  }));
+    const out = base.map((c) => ({
+      id: c.id,
+      name: c.name,
+      group: c.group || "Other"
+    }));
 
-  if (game && game.character_column && game.character_column.enabled) {
-    out.unshift({
-      id: "__character__",
-      name: `Set ${game.character_column.label}`,
-      group: "Character"
-    });
+    if (game && game.character_column && game.character_column.enabled) {
+      out.unshift({
+        id: "__character__",
+        name: `Set ${game.character_column.label}`,
+        group: "Character"
+      });
+    }
+
+    fillSelectGrouped(
+      challengeSelect,
+      out,
+      "group",
+      (c) => c.id,
+      (c) => c.name
+    );
   }
-
-  fillSelectGrouped(
-    challengeSelect,
-    out,
-    "group",
-    (c) => c.id,
-    (c) => c.name
-  );
-}
 
   gameSearch.addEventListener("input", () => {
     populateGames(gameSearch.value);
