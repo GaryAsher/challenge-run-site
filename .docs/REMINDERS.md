@@ -11,6 +11,7 @@ This document consolidates all reminders, future ideas, and planned features for
   - [ ] Remove Community Challenges. We need a different form for it.
   - [ ] Nintendo 64 and Gamecube are not returning properly for Platforms. Do we make a drop-down for all platforms?
   - [ ] Do we ask users to fill out Genres again?
+  - [ ] Add logic to handle when a game or category is only numbers.
 
 ### Forms & Submissions
 - [ ] Run submission form (Google Form → GitHub)
