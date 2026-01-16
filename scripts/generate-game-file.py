@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Generate a game markdown file from form submission data.
-VERSION 5.0 - Reordered form with community challenges
+VERSION 6.0 - Reordered form without community challenges
 
 Form Q-numbers:
   Q1  - Game Name
@@ -9,15 +9,14 @@ Form Q-numbers:
   Q3  - Platforms
   Q4  - Categories
   Q5  - Challenge Types
-  Q6  - Community Challenges (game-specific)
-  Q7  - Glitch Rules
-  Q8  - Glitch Docs
-  Q9 - Timing Method
-  Q10 - Character Column Label
-  Q11 - Character Options
-  Q12 - Restrictions
-  Q13 - Discord & Preferences
-  Q14 - Feedback
+  Q6  - Glitch Rules
+  Q7  - Glitch Docs
+  Q8 - Timing Method
+  Q9 - Character Column Label
+  Q10 - Character Options
+  Q11 - Restrictions
+  Q12 - Discord & Preferences
+  Q13 - Feedback
 """
 
 import json
@@ -149,41 +148,6 @@ def parse_categories_with_children(categories_raw):
     
     return categories, children_map
 
-
-def parse_community_challenges(raw):
-    """
-    Parse community challenges from freeform text.
-    Expected formats:
-      - Simple: "Challenge Name" (one per line)
-      - With description: "Challenge Name: Description here"
-      - With description: "Challenge Name - Description here"
-    """
-    lines = split_by_newlines(raw)
-    challenges = []
-    
-    for line in lines:
-        # Try to split on ": " or " - " for name/description
-        if ': ' in line:
-            name, desc = line.split(': ', 1)
-        elif ' - ' in line and not line.startswith('-'):
-            name, desc = line.split(' - ', 1)
-        else:
-            name = line
-            desc = ""
-        
-        name = name.strip()
-        desc = desc.strip()
-        
-        if name:
-            challenges.append({
-                'slug': slugify(name),
-                'label': name,
-                'description': desc
-            })
-    
-    return challenges
-
-
 def main():
     # Load environment variables
     game_name = os.environ.get('GAME_NAME', '')
@@ -215,7 +179,6 @@ def main():
     character_options = split_by_newlines(get_detail('character_options'))
     
     platforms = split_by_newlines(get_detail('platforms'))
-    community_challenges = parse_community_challenges(get_detail('community_challenges'))
     discord_handle = get_detail('discord_handle', submitter)
     wants_credit = get_detail('wants_credit', 'false') == 'true' or credit_requested
     wants_moderate = get_detail('wants_moderate', 'false') == 'true'
@@ -229,7 +192,6 @@ def main():
     print(f"  - aliases: {aliases}", file=sys.stderr)
     print(f"  - glitch_categories: {glitch_categories}", file=sys.stderr)
     print(f"  - platforms: {platforms}", file=sys.stderr)
-    print(f"  - community_challenges: {len(community_challenges)}", file=sys.stderr)
     print(f"  - restrictions: {restrictions}", file=sys.stderr)
 
     # Parse categories
@@ -300,16 +262,6 @@ def main():
                 lines.append(f'      - slug: {slugify(child)}')
                 lines.append(f'        label: {yaml_quote(child)}')
     lines.append('')
-
-    # Community challenges (game-specific)
-    if community_challenges:
-        lines.append('community_challenges:')
-        for cc in community_challenges:
-            lines.append(f'  - slug: {cc["slug"]}')
-            lines.append(f'    label: {yaml_quote(cc["label"])}')
-            if cc['description']:
-                lines.append(f'    description: {yaml_quote(cc["description"])}')
-        lines.append('')
 
     # Character column
     lines.append('character_column:')
@@ -391,7 +343,6 @@ def main():
     print(f"✓ Generated {out_file}")
     print(f"  - {len(categories)} categories")
     print(f"  - {len(challenges)} standard challenges")
-    print(f"  - {len(community_challenges)} community challenges")
     print(f"  - {len(glitch_categories)} glitch categories")
     print(f"  - {len(platforms)} platforms")
 
