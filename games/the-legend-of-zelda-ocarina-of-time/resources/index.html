@@ -1,0 +1,17 @@
+---
+layout: default
+title: "The Legend of Zelda: Ocarina of Time - Resources"
+game_id: the-legend-of-zelda-ocarina-of-time
+---
+
+{% assign game = site.games | where: "game_id", "the-legend-of-zelda-ocarina-of-time" | first %}
+{% include game-header-tabs.html game=game active="resources" %}
+
+<div class="page-width">
+  <div class="game-shell">
+    <div class="card">
+      <h1>Resources</h1>
+      <p class="muted">Useful tools, mods, and external resources.</p>
+    </div>
+  </div>
+</div>
