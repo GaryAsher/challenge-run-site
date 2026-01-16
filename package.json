@@ -17,10 +17,11 @@
     "check:yaml": "node scripts/check-yaml-syntax.js",
     
     "//": "=== GENERATION (Run after adding/editing games) ===",
-    "generate": "npm run generate:codeowners && npm run generate:game-pages && npm run generate:run-categories",
+    "generate": "npm run generate:codeowners && npm run generate:game-pages && npm run generate:run-categories && npm run generate:form-index",
     "generate:codeowners": "node scripts/generate-codeowners.js",
-    "generate:run-categories": "node scripts/generate-run-category-pages.js",
     "generate:game-pages": "node scripts/generate-game-pages.js",
+    "generate:run-categories": "node scripts/generate-run-category-pages.js",
+    "generate:form-index": "node scripts/generate-form-index.js",
     
     "//": "=== QUICK COMMANDS ===",
     "regen": "npm run generate && git add -A && git commit -m 'chore: Regenerate pages' && git push",
