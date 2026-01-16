@@ -1,0 +1,62 @@
+---
+layout: default
+title: Submit a Run
+permalink: /submit-run/
+---
+
+<div class="page-width">
+  <div class="card">
+    <h1>Submit a Run</h1>
+    <p class="muted">
+      This creates a submission payload. If your automated intake is enabled, it will submit directly.
+      Otherwise, you can copy the payload and submit via your current channel.
+    </p>
+
+    <div class="form-grid" style="display:grid; gap:12px; max-width: 720px;">
+      <label>
+        <div class="muted" style="margin-bottom:6px;">Game</div>
+        <input id="gameSearch" type="text" placeholder="Search game..." autocomplete="off" />
+        <select id="gameSelect" style="width:100%; margin-top:8px;"></select>
+      </label>
+
+      <label>
+        <div class="muted" style="margin-bottom:6px;">Category</div>
+        <select id="categorySelect" style="width:100%;"></select>
+      </label>
+
+      <label>
+        <div class="muted" style="margin-bottom:6px;">Challenge</div>
+        <select id="challengeSelect" style="width:100%;"></select>
+      </label>
+
+      <label>
+        <div class="muted" style="margin-bottom:6px;">Runner ID</div>
+        <input id="runnerId" type="text" placeholder="your-runner-id" />
+      </label>
+
+      <label>
+        <div class="muted" style="margin-bottom:6px;">YouTube URL</div>
+        <input id="videoUrl" type="url" placeholder="https://www.youtube.com/watch?v=..." />
+      </label>
+
+      <label>
+        <div class="muted" style="margin-bottom:6px;">Date completed</div>
+        <input id="dateCompleted" type="date" />
+      </label>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top: 6px;">
+        <button id="btnSubmit" class="btn">Submit</button>
+        <button id="btnCopy" class="btn" type="button">Copy payload</button>
+      </div>
+
+      <div id="msg" class="muted" style="margin-top:6px;"></div>
+
+      <details style="margin-top:12px;">
+        <summary>Preview payload</summary>
+        <pre id="preview" style="white-space:pre-wrap;"></pre>
+      </details>
+    </div>
+  </div>
+</div>
+
+<script src="/assets/js/submit-run.js"></script>
