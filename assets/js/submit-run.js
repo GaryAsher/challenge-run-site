@@ -5,6 +5,7 @@
   const previewEl = $("preview");
 
   function setMsg(text, isError = false) {
+    if (!msgEl) return;
     msgEl.textContent = text;
     msgEl.style.color = isError ? "var(--danger, #ff6b6b)" : "";
   }
@@ -19,30 +20,54 @@
       const u = new URL(url);
       const host = u.hostname.replace(/^www\./, "").toLowerCase();
 
+      // YouTube
       if (host === "youtu.be") {
         const id = u.pathname.replace("/", "").trim();
         if (!id) return { ok: false, reason: "Missing YouTube video id." };
-        return { ok: true, host: "youtube", id, canonical_url: `https://www.youtube.com/watch?v=${id}` };
+        return {
+          ok: true,
+          host: "youtube",
+          id,
+          canonical_url: `https://www.youtube.com/watch?v=${id}`
+        };
       }
 
       if (host === "youtube.com" || host === "m.youtube.com") {
         const v = (u.searchParams.get("v") || "").trim();
-        if (v) return { ok: true, host: "youtube", id: v, canonical_url: `https://www.youtube.com/watch?v=${v}` };
+        if (v) {
+          return {
+            ok: true,
+            host: "youtube",
+            id: v,
+            canonical_url: `https://www.youtube.com/watch?v=${v}`
+          };
+        }
 
         const parts = u.pathname.split("/").filter(Boolean);
         if (parts[0] === "shorts" && parts[1]) {
           const id = parts[1].trim();
-          return { ok: true, host: "youtube", id, canonical_url: `https://www.youtube.com/watch?v=${id}` };
+          return {
+            ok: true,
+            host: "youtube",
+            id,
+            canonical_url: `https://www.youtube.com/watch?v=${id}`
+          };
         }
 
         return { ok: false, reason: "Unsupported YouTube URL format." };
       }
 
+      // Twitch VODs
       if (host === "twitch.tv" || host === "m.twitch.tv") {
         const parts = u.pathname.split("/").filter(Boolean);
         if (parts[0] === "videos" && parts[1]) {
           const id = parts[1].trim();
-          return { ok: true, host: "twitch", id, canonical_url: `https://www.twitch.tv/videos/${id}` };
+          return {
+            ok: true,
+            host: "twitch",
+            id,
+            canonical_url: `https://www.twitch.tv/videos/${id}`
+          };
         }
         return { ok: false, reason: "Twitch link must look like twitch.tv/videos/<id>." };
       }
@@ -51,14 +76,25 @@
         let v = (u.searchParams.get("video") || "").trim();
         if (v.startsWith("v")) v = v.slice(1);
         if (!v) return { ok: false, reason: "Twitch player link missing video id." };
-        return { ok: true, host: "twitch", id: v, canonical_url: `https://www.twitch.tv/videos/${v}` };
+        return {
+          ok: true,
+          host: "twitch",
+          id: v,
+          canonical_url: `https://www.twitch.tv/videos/${v}`
+        };
       }
 
-      if (host === "bilibili.com" || host === "m.bilibili.com" || host === "www.bilibili.com") {
+      // bilibili
+      if (host === "bilibili.com" || host === "m.bilibili.com") {
         const parts = u.pathname.split("/").filter(Boolean);
         if (parts[0] === "video" && parts[1]) {
           const id = parts[1].trim();
-          return { ok: true, host: "bilibili", id, canonical_url: `https://www.bilibili.com/video/${id}` };
+          return {
+            ok: true,
+            host: "bilibili",
+            id,
+            canonical_url: `https://www.bilibili.com/video/${id}`
+          };
         }
         return { ok: false, reason: "bilibili link must look like bilibili.com/video/<BV... or av...>." };
       }
@@ -76,14 +112,18 @@
     return res.json();
   }
 
-  function fillSelect(selectEl, items, getValue, getLabel, includeBlank = true, blankLabel = "Select...") {
+  // Simple select fill with an optional blank placeholder
+  function fillSelect(selectEl, items, getValue, getLabel, includeBlank, blankLabel) {
+    if (!selectEl) return;
     selectEl.innerHTML = "";
+
     if (includeBlank) {
       const opt = document.createElement("option");
       opt.value = "";
-      opt.textContent = blankLabel;
+      opt.textContent = blankLabel || "Select...";
       selectEl.appendChild(opt);
     }
+
     for (const item of items) {
       const opt = document.createElement("option");
       opt.value = getValue(item);
@@ -92,18 +132,106 @@
     }
   }
 
-  function fillMultiSelect(selectEl, items, getValue, getLabel) {
-    selectEl.innerHTML = "";
-    for (const item of items) {
-      const opt = document.createElement("option");
-      opt.value = getValue(item);
-      opt.textContent = getLabel(item);
-      selectEl.appendChild(opt);
-    }
-  }
+  // Chip-style multi-picker
+  function createChipMultiPicker(opts) {
+    const {
+      selectEl,
+      chipsEl,
+      placeholderLabel = "Select...",
+      noneLabel = "None"
+    } = opts;
 
-  function getSelectedMulti(selectEl) {
-    return Array.from(selectEl.selectedOptions).map((o) => o.value).filter(Boolean);
+    let all = []; // [{id,name}]
+    const selected = new Map(); // id -> {id,name}
+
+    function renderSelect() {
+      if (!selectEl) return;
+
+      const available = all.filter((it) => it && it.id && !selected.has(it.id));
+
+      fillSelect(
+        selectEl,
+        available,
+        (it) => it.id,
+        (it) => it.name,
+        true,
+        available.length ? placeholderLabel : noneLabel
+      );
+
+      // Always reset to placeholder after picking
+      selectEl.value = "";
+      selectEl.disabled = available.length === 0;
+    }
+
+    function renderChips() {
+      if (!chipsEl) return;
+      chipsEl.innerHTML = "";
+
+      const items = Array.from(selected.values());
+      if (!items.length) return;
+
+      for (const it of items) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "chip";
+        btn.dataset.id = it.id;
+        btn.textContent = it.name;
+
+        // Click chip to remove and return option to dropdown
+        btn.addEventListener("click", () => {
+          selected.delete(it.id);
+          renderChips();
+          renderSelect();
+          opts.onChange && opts.onChange();
+        });
+
+        chipsEl.appendChild(btn);
+      }
+    }
+
+    function setItems(items) {
+      all = Array.isArray(items) ? items.slice() : [];
+      selected.clear();
+      renderSelect();
+      renderChips();
+    }
+
+    function setSelected(ids) {
+      selected.clear();
+      for (const id of ids || []) {
+        const found = all.find((x) => x && x.id === id);
+        if (found) selected.set(found.id, found);
+      }
+      renderSelect();
+      renderChips();
+    }
+
+    function getSelectedIds() {
+      return Array.from(selected.keys());
+    }
+
+    function clear() {
+      selected.clear();
+      renderSelect();
+      renderChips();
+    }
+
+    // When user picks from dropdown, convert into chip and remove from dropdown
+    if (selectEl) {
+      selectEl.addEventListener("change", () => {
+        const id = String(selectEl.value || "").trim();
+        if (!id) return;
+        const found = all.find((x) => x && x.id === id);
+        if (!found) return;
+
+        selected.set(found.id, found);
+        renderChips();
+        renderSelect();
+        opts.onChange && opts.onChange();
+      });
+    }
+
+    return { setItems, setSelected, getSelectedIds, clear };
   }
 
   const index = await loadIndex();
@@ -117,7 +245,26 @@
   const characterSelect = $("characterSelect");
   const glitchSelect = $("glitchSelect");
   const restrictionsSelect = $("restrictionsSelect");
-  const characterLabelEl = $("characterLabel"); // label element for character box
+  const characterLabelEl = $("characterLabel");
+
+  const standardChipsEl = $("standardChallengeChips");
+  const restrictionsChipsEl = $("restrictionsChips");
+
+  const standardPicker = createChipMultiPicker({
+    selectEl: standardChallengeSelect,
+    chipsEl: standardChipsEl,
+    placeholderLabel: "Select a standard challenge...",
+    noneLabel: "No standard challenges",
+    onChange: repaint
+  });
+
+  const restrictionsPicker = createChipMultiPicker({
+    selectEl: restrictionsSelect,
+    chipsEl: restrictionsChipsEl,
+    placeholderLabel: "Select a restriction...",
+    noneLabel: "No restrictions",
+    onChange: repaint
+  });
 
   function getGameById(id) {
     return index.games.find((g) => g.game_id === id) || null;
@@ -129,6 +276,7 @@
       ? index.games.filter((g) => g.title.toLowerCase().includes(q) || g.game_id.toLowerCase().includes(q))
       : index.games;
 
+    // game select should not have blank option
     fillSelect(
       gameSelect,
       list,
@@ -150,79 +298,82 @@
     fillSelect(categorySelect, cats, (c) => c.slug, (c) => c.name, true, "Select category...");
   }
 
+  function normalizeList(list) {
+    if (!Array.isArray(list)) return [];
+    return list
+      .map((x) => ({
+        id: String(x?.id || x?.slug || x?.challenge_id || "").trim(),
+        name: String(x?.name || x?.label || x?.title || x?.id || x?.slug || "").trim()
+      }))
+      .filter((x) => x.id && x.name);
+  }
+
   function populateChallengeBoxes() {
     const game = getGameById(gameSelect.value);
 
-    const standard = game && Array.isArray(game.standard_challenges) ? game.standard_challenges : [];
-    const community = game && Array.isArray(game.community_challenges) ? game.community_challenges : [];
-    const glitches = game && Array.isArray(game.glitches) ? game.glitches : [];
-    const restrictions = game && Array.isArray(game.restrictions) ? game.restrictions : [];
+    const standard = normalizeList(game && game.standard_challenges);
+    const community = normalizeList(game && game.community_challenges);
+    const glitches = normalizeList(game && game.glitches);
+    const restrictions = normalizeList(game && game.restrictions);
 
     // Character
     const cc = game && game.character_column ? game.character_column : { enabled: false, label: "Character" };
-    const chars = game && Array.isArray(game.characters) ? game.characters : [];
+    const chars = normalizeList(game && game.characters);
 
-    // Update label text to match the game (Weapon / Aspect for Hades II)
-    if (characterLabelEl) characterLabelEl.textContent = cc.label || "Character";
+    if (characterLabelEl) characterLabelEl.textContent = (cc && cc.label) ? cc.label : "Character";
 
-    // Standard challenge box
-    fillSelect(standardChallengeSelect, standard, (c) => c.id, (c) => c.name, true, "None");
+    // Standard and restrictions are now chip-pickers
+    standardPicker.setItems(standard);
+    restrictionsPicker.setItems(restrictions);
 
-    // Community challenge box
+    // Community is still single-select
     fillSelect(communityChallengeSelect, community, (c) => c.id, (c) => c.name, true, "None");
 
-    // Glitches box
+    // Glitches is still single-select
     fillSelect(glitchSelect, glitches, (c) => c.id, (c) => c.name, true, "None");
-
-    // Restrictions box (multi)
-    fillMultiSelect(restrictionsSelect, restrictions, (c) => c.id, (c) => c.name);
 
     // Character box
     if (cc && cc.enabled) {
-      characterSelect.disabled = false;
-      characterSelect.parentElement && (characterSelect.parentElement.style.display = "");
-      fillSelect(characterSelect, chars, (c) => c.id, (c) => c.name, true, "Any");
+      if (characterSelect) {
+        characterSelect.disabled = false;
+        if (characterSelect.parentElement) characterSelect.parentElement.style.display = "";
+        fillSelect(characterSelect, chars, (c) => c.id, (c) => c.name, true, "Any");
+      }
     } else {
-      // Hide/disable if not enabled for this game
-      characterSelect.value = "";
-      characterSelect.disabled = true;
-      if (characterSelect.parentElement) characterSelect.parentElement.style.display = "none";
+      if (characterSelect) {
+        characterSelect.value = "";
+        characterSelect.disabled = true;
+        if (characterSelect.parentElement) characterSelect.parentElement.style.display = "none";
+      }
     }
 
-    // Reset conflicts when switching games
-    standardChallengeSelect.value = "";
-    communityChallengeSelect.value = "";
+    // Reset single-selects when switching games
+    if (communityChallengeSelect) communityChallengeSelect.value = "";
+    if (glitchSelect) glitchSelect.value = "";
+
+    // Chip pickers reset automatically via setItems()
   }
 
   function buildPayload() {
-    const game_id = $("gameSelect").value.trim();
-    const category_slug = $("categorySelect").value.trim();
+    const game_id = (gameSelect?.value || "").trim();
+    const category_slug = (categorySelect?.value || "").trim();
 
-    const standard_id = standardChallengeSelect.value.trim();
-    const community_id = communityChallengeSelect.value.trim();
+    const standard_ids = standardPicker.getSelectedIds();
+    const community_id = (communityChallengeSelect?.value || "").trim();
 
-    // Exactly one of these can be chosen (adjust if you want a different rule)
-    let challenge_id = "";
+    // Mutual exclusivity: if community picked, standard should be empty and vice versa
     let challenge_group = "";
+    if (community_id) challenge_group = "community";
+    else if (standard_ids.length) challenge_group = "standard";
 
-    if (standard_id) {
-      challenge_id = standard_id;
-      challenge_group = "standard";
-    }
-    if (community_id) {
-      // If both selected, leave handling to validation
-      challenge_id = community_id;
-      challenge_group = "community";
-    }
+    const glitch_id = (glitchSelect?.value || "").trim();
+    const restrictions = restrictionsPicker.getSelectedIds();
 
-    const glitch_id = glitchSelect.value.trim();
-    const restrictions = getSelectedMulti(restrictionsSelect);
+    const character = characterSelect && !characterSelect.disabled ? (characterSelect.value || "").trim() : "";
 
-    const character = characterSelect && !characterSelect.disabled ? characterSelect.value.trim() : "";
-
-    const runner_id = $("runnerId").value.trim();
-    const video_url_raw = $("videoUrl").value.trim();
-    const date_completed = $("dateCompleted").value;
+    const runner_id = ($("runnerId")?.value || "").trim();
+    const video_url_raw = ($("videoUrl")?.value || "").trim();
+    const date_completed = $("dateCompleted")?.value || "";
 
     const v = parseVideo(video_url_raw);
 
@@ -230,27 +381,35 @@
       kind: "run_submission",
       game_id,
       category_slug,
-      challenge_id,
+
+      // New shape:
+      standard_challenges: standard_ids,   // array
+      community_challenge: community_id,   // single
+
       challenge_group,
+
       character,
       glitch_id,
       restrictions,
+
       runner_id,
+
       video_url: v.ok ? v.canonical_url : video_url_raw,
       video_host: v.ok ? v.host : "",
       video_id: v.ok ? v.id : "",
+
       date_completed,
       submitted_at: new Date().toISOString(),
       source: "site_form",
-      schema_version: 3
+      schema_version: 4
     };
 
-    previewEl.textContent = JSON.stringify(payload, null, 2);
+    if (previewEl) previewEl.textContent = JSON.stringify(payload, null, 2);
 
-    return { payload, v, standard_id, community_id };
+    return { payload, v, standard_ids, community_id };
   }
 
-  function validatePayload(payload, v, standard_id, community_id) {
+  function validatePayload(payload, v, standard_ids, community_id) {
     if (!payload.game_id) return "Missing game.";
     if (!payload.category_slug) return "Missing category.";
     if (!payload.runner_id) return "Missing runner id.";
@@ -258,8 +417,8 @@
     if (!v.ok) return v.reason || "Invalid video URL.";
     if (!payload.date_completed) return "Missing completed date.";
 
-    if (standard_id && community_id) return "Pick either a Standard Challenge or a Community Challenge, not both.";
-    if (!standard_id && !community_id) return "Pick a Standard Challenge or a Community Challenge.";
+    if (standard_ids.length && community_id) return "Pick either Standard Challenges or a Community Challenge, not both.";
+    if (!standard_ids.length && !community_id) return "Pick at least one Standard Challenge or a Community Challenge.";
 
     return "";
   }
@@ -270,18 +429,22 @@
   }
 
   // Events
-  gameSearch.addEventListener("input", () => {
-    populateGames(gameSearch.value);
-    populateCategories();
-    populateChallengeBoxes();
-    repaint();
-  });
+  if (gameSearch) {
+    gameSearch.addEventListener("input", () => {
+      populateGames(gameSearch.value);
+      populateCategories();
+      populateChallengeBoxes();
+      repaint();
+    });
+  }
 
-  gameSelect.addEventListener("change", () => {
-    populateCategories();
-    populateChallengeBoxes();
-    repaint();
-  });
+  if (gameSelect) {
+    gameSelect.addEventListener("change", () => {
+      populateCategories();
+      populateChallengeBoxes();
+      repaint();
+    });
+  }
 
   [
     "categorySelect",
@@ -289,35 +452,32 @@
     "videoUrl",
     "dateCompleted"
   ].forEach((id) => {
-    $(id).addEventListener("input", repaint);
-    $(id).addEventListener("change", repaint);
-  });
-
-  [
-    standardChallengeSelect,
-    communityChallengeSelect,
-    characterSelect,
-    glitchSelect,
-    restrictionsSelect
-  ].forEach((el) => {
+    const el = $(id);
     if (!el) return;
     el.addEventListener("input", repaint);
     el.addEventListener("change", repaint);
   });
 
-  $("btnCopy").addEventListener("click", async () => {
-    const { payload, v, standard_id, community_id } = buildPayload();
-    const err = validatePayload(payload, v, standard_id, community_id);
+  // Single selects that are not part of chip widgets
+  [communityChallengeSelect, characterSelect, glitchSelect].forEach((el) => {
+    if (!el) return;
+    el.addEventListener("input", repaint);
+    el.addEventListener("change", repaint);
+  });
+
+  $("btnCopy")?.addEventListener("click", async () => {
+    const { payload, v, standard_ids, community_id } = buildPayload();
+    const err = validatePayload(payload, v, standard_ids, community_id);
     if (err) return setMsg(err, true);
 
     await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
     setMsg("Copied payload to clipboard.", false);
   });
 
-  $("btnSubmit").addEventListener("click", async (e) => {
+  $("btnSubmit")?.addEventListener("click", async (e) => {
     e.preventDefault();
-    const { payload, v, standard_id, community_id } = buildPayload();
-    const err = validatePayload(payload, v, standard_id, community_id);
+    const { payload, v, standard_ids, community_id } = buildPayload();
+    const err = validatePayload(payload, v, standard_ids, community_id);
     if (err) return setMsg(err, true);
 
     const endpoint = window.CRC_RUN_SUBMIT_ENDPOINT;
