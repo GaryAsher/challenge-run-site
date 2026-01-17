@@ -208,8 +208,6 @@ atari-lynx:
 # Bandai
 bandai-wonderswan:
   label: "WonderSwan"
-  aliases:
-    - "Lynx"
 
 # Microsoft
 rog-xbox-ally:
