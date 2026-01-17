@@ -24,34 +24,17 @@
       if (host === "youtu.be") {
         const id = u.pathname.replace("/", "").trim();
         if (!id) return { ok: false, reason: "Missing YouTube video id." };
-        return {
-          ok: true,
-          host: "youtube",
-          id,
-          canonical_url: `https://www.youtube.com/watch?v=${id}`
-        };
+        return { ok: true, host: "youtube", id, canonical_url: `https://www.youtube.com/watch?v=${id}` };
       }
 
       if (host === "youtube.com" || host === "m.youtube.com") {
         const v = (u.searchParams.get("v") || "").trim();
-        if (v) {
-          return {
-            ok: true,
-            host: "youtube",
-            id: v,
-            canonical_url: `https://www.youtube.com/watch?v=${v}`
-          };
-        }
+        if (v) return { ok: true, host: "youtube", id: v, canonical_url: `https://www.youtube.com/watch?v=${v}` };
 
         const parts = u.pathname.split("/").filter(Boolean);
         if (parts[0] === "shorts" && parts[1]) {
           const id = parts[1].trim();
-          return {
-            ok: true,
-            host: "youtube",
-            id,
-            canonical_url: `https://www.youtube.com/watch?v=${id}`
-          };
+          return { ok: true, host: "youtube", id, canonical_url: `https://www.youtube.com/watch?v=${id}` };
         }
 
         return { ok: false, reason: "Unsupported YouTube URL format." };
@@ -62,12 +45,7 @@
         const parts = u.pathname.split("/").filter(Boolean);
         if (parts[0] === "videos" && parts[1]) {
           const id = parts[1].trim();
-          return {
-            ok: true,
-            host: "twitch",
-            id,
-            canonical_url: `https://www.twitch.tv/videos/${id}`
-          };
+          return { ok: true, host: "twitch", id, canonical_url: `https://www.twitch.tv/videos/${id}` };
         }
         return { ok: false, reason: "Twitch link must look like twitch.tv/videos/<id>." };
       }
@@ -76,12 +54,7 @@
         let v = (u.searchParams.get("video") || "").trim();
         if (v.startsWith("v")) v = v.slice(1);
         if (!v) return { ok: false, reason: "Twitch player link missing video id." };
-        return {
-          ok: true,
-          host: "twitch",
-          id: v,
-          canonical_url: `https://www.twitch.tv/videos/${v}`
-        };
+        return { ok: true, host: "twitch", id: v, canonical_url: `https://www.twitch.tv/videos/${v}` };
       }
 
       // bilibili
@@ -89,12 +62,7 @@
         const parts = u.pathname.split("/").filter(Boolean);
         if (parts[0] === "video" && parts[1]) {
           const id = parts[1].trim();
-          return {
-            ok: true,
-            host: "bilibili",
-            id,
-            canonical_url: `https://www.bilibili.com/video/${id}`
-          };
+          return { ok: true, host: "bilibili", id, canonical_url: `https://www.bilibili.com/video/${id}` };
         }
         return { ok: false, reason: "bilibili link must look like bilibili.com/video/<BV... or av...>." };
       }
@@ -112,7 +80,6 @@
     return res.json();
   }
 
-  // Simple select fill with an optional blank placeholder
   function fillSelect(selectEl, items, getValue, getLabel, includeBlank, blankLabel) {
     if (!selectEl) return;
     selectEl.innerHTML = "";
@@ -132,21 +99,14 @@
     }
   }
 
-  // Chip-style multi-picker
   function createChipMultiPicker(opts) {
-    const {
-      selectEl,
-      chipsEl,
-      placeholderLabel = "Select...",
-      noneLabel = "None"
-    } = opts;
+    const { selectEl, chipsEl, placeholderLabel = "Select...", noneLabel = "None" } = opts;
 
-    let all = []; // [{id,name}]
+    let all = [];
     const selected = new Map(); // id -> {id,name}
 
     function renderSelect() {
       if (!selectEl) return;
-
       const available = all.filter((it) => it && it.id && !selected.has(it.id));
 
       fillSelect(
@@ -158,7 +118,6 @@
         available.length ? placeholderLabel : noneLabel
       );
 
-      // Always reset to placeholder after picking
       selectEl.value = "";
       selectEl.disabled = available.length === 0;
     }
@@ -171,37 +130,37 @@
       if (!items.length) return;
 
       for (const it of items) {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "chip";
-        btn.dataset.id = it.id;
-        btn.textContent = it.name;
+        // Use your unified filter-chip styling
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "filter-chip";
+        chip.dataset.id = it.id;
 
-        // Click chip to remove and return option to dropdown
-        btn.addEventListener("click", () => {
+        const text = document.createElement("span");
+        text.className = "filter-chip__text";
+        text.textContent = it.name;
+
+        const close = document.createElement("span");
+        close.className = "filter-chip__close";
+        close.textContent = "×";
+
+        chip.appendChild(text);
+        chip.appendChild(close);
+
+        chip.addEventListener("click", () => {
           selected.delete(it.id);
           renderChips();
           renderSelect();
           opts.onChange && opts.onChange();
         });
 
-        chipsEl.appendChild(btn);
+        chipsEl.appendChild(chip);
       }
     }
 
     function setItems(items) {
       all = Array.isArray(items) ? items.slice() : [];
       selected.clear();
-      renderSelect();
-      renderChips();
-    }
-
-    function setSelected(ids) {
-      selected.clear();
-      for (const id of ids || []) {
-        const found = all.find((x) => x && x.id === id);
-        if (found) selected.set(found.id, found);
-      }
       renderSelect();
       renderChips();
     }
@@ -216,7 +175,6 @@
       renderChips();
     }
 
-    // When user picks from dropdown, convert into chip and remove from dropdown
     if (selectEl) {
       selectEl.addEventListener("change", () => {
         const id = String(selectEl.value || "").trim();
@@ -231,7 +189,7 @@
       });
     }
 
-    return { setItems, setSelected, getSelectedIds, clear };
+    return { setItems, getSelectedIds, clear };
   }
 
   const index = await loadIndex();
@@ -276,7 +234,6 @@
       ? index.games.filter((g) => g.title.toLowerCase().includes(q) || g.game_id.toLowerCase().includes(q))
       : index.games;
 
-    // game select should not have blank option
     fillSelect(
       gameSelect,
       list,
@@ -308,7 +265,7 @@
       .filter((x) => x.id && x.name);
   }
 
-  function populateChallengeBoxes() {
+  function populateBoxes() {
     const game = getGameById(gameSelect.value);
 
     const standard = normalizeList(game && game.standard_challenges);
@@ -316,23 +273,17 @@
     const glitches = normalizeList(game && game.glitches);
     const restrictions = normalizeList(game && game.restrictions);
 
-    // Character
     const cc = game && game.character_column ? game.character_column : { enabled: false, label: "Character" };
     const chars = normalizeList(game && game.characters);
 
     if (characterLabelEl) characterLabelEl.textContent = (cc && cc.label) ? cc.label : "Character";
 
-    // Standard and restrictions are now chip-pickers
     standardPicker.setItems(standard);
     restrictionsPicker.setItems(restrictions);
 
-    // Community is still single-select
     fillSelect(communityChallengeSelect, community, (c) => c.id, (c) => c.name, true, "None");
-
-    // Glitches is still single-select
     fillSelect(glitchSelect, glitches, (c) => c.id, (c) => c.name, true, "None");
 
-    // Character box
     if (cc && cc.enabled) {
       if (characterSelect) {
         characterSelect.disabled = false;
@@ -347,11 +298,8 @@
       }
     }
 
-    // Reset single-selects when switching games
     if (communityChallengeSelect) communityChallengeSelect.value = "";
     if (glitchSelect) glitchSelect.value = "";
-
-    // Chip pickers reset automatically via setItems()
   }
 
   function buildPayload() {
@@ -360,11 +308,6 @@
 
     const standard_ids = standardPicker.getSelectedIds();
     const community_id = (communityChallengeSelect?.value || "").trim();
-
-    // Mutual exclusivity: if community picked, standard should be empty and vice versa
-    let challenge_group = "";
-    if (community_id) challenge_group = "community";
-    else if (standard_ids.length) challenge_group = "standard";
 
     const glitch_id = (glitchSelect?.value || "").trim();
     const restrictions = restrictionsPicker.getSelectedIds();
@@ -379,14 +322,14 @@
 
     const payload = {
       kind: "run_submission",
+      schema_version: 5,
+
       game_id,
       category_slug,
 
-      // New shape:
-      standard_challenges: standard_ids,   // array
-      community_challenge: community_id,   // single
-
-      challenge_group,
+      // Allow BOTH:
+      standard_challenges: standard_ids,     // array
+      community_challenge: community_id,     // single string (or "")
 
       character,
       glitch_id,
@@ -400,16 +343,14 @@
 
       date_completed,
       submitted_at: new Date().toISOString(),
-      source: "site_form",
-      schema_version: 4
+      source: "site_form"
     };
 
     if (previewEl) previewEl.textContent = JSON.stringify(payload, null, 2);
-
-    return { payload, v, standard_ids, community_id };
+    return { payload, v };
   }
 
-  function validatePayload(payload, v, standard_ids, community_id) {
+  function validatePayload(payload, v) {
     if (!payload.game_id) return "Missing game.";
     if (!payload.category_slug) return "Missing category.";
     if (!payload.runner_id) return "Missing runner id.";
@@ -417,15 +358,17 @@
     if (!v.ok) return v.reason || "Invalid video URL.";
     if (!payload.date_completed) return "Missing completed date.";
 
-    if (standard_ids.length && community_id) return "Pick either Standard Challenges or a Community Challenge, not both.";
-    if (!standard_ids.length && !community_id) return "Pick at least one Standard Challenge or a Community Challenge.";
+    const hasAnyChallenge =
+      (Array.isArray(payload.standard_challenges) && payload.standard_challenges.length > 0) ||
+      !!payload.community_challenge;
+
+    if (!hasAnyChallenge) return "Pick at least one Standard Challenge and/or a Community Challenge.";
 
     return "";
   }
 
   function repaint() {
-    const { payload } = buildPayload();
-    setMsg(payload.game_id ? `Loaded ${payload.game_id}` : "", false);
+    buildPayload();
   }
 
   // Events
@@ -433,7 +376,7 @@
     gameSearch.addEventListener("input", () => {
       populateGames(gameSearch.value);
       populateCategories();
-      populateChallengeBoxes();
+      populateBoxes();
       repaint();
     });
   }
@@ -441,7 +384,7 @@
   if (gameSelect) {
     gameSelect.addEventListener("change", () => {
       populateCategories();
-      populateChallengeBoxes();
+      populateBoxes();
       repaint();
     });
   }
@@ -458,7 +401,6 @@
     el.addEventListener("change", repaint);
   });
 
-  // Single selects that are not part of chip widgets
   [communityChallengeSelect, characterSelect, glitchSelect].forEach((el) => {
     if (!el) return;
     el.addEventListener("input", repaint);
@@ -466,8 +408,8 @@
   });
 
   $("btnCopy")?.addEventListener("click", async () => {
-    const { payload, v, standard_ids, community_id } = buildPayload();
-    const err = validatePayload(payload, v, standard_ids, community_id);
+    const { payload, v } = buildPayload();
+    const err = validatePayload(payload, v);
     if (err) return setMsg(err, true);
 
     await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
@@ -476,8 +418,8 @@
 
   $("btnSubmit")?.addEventListener("click", async (e) => {
     e.preventDefault();
-    const { payload, v, standard_ids, community_id } = buildPayload();
-    const err = validatePayload(payload, v, standard_ids, community_id);
+    const { payload, v } = buildPayload();
+    const err = validatePayload(payload, v);
     if (err) return setMsg(err, true);
 
     const endpoint = window.CRC_RUN_SUBMIT_ENDPOINT;
@@ -508,7 +450,7 @@
   // Initial paint
   populateGames("");
   populateCategories();
-  populateChallengeBoxes();
+  populateBoxes();
   repaint();
   setMsg("Ready.", false);
 })();
