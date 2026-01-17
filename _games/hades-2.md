@@ -3,8 +3,8 @@ layout: game
 game_id: hades-2
 reviewers: []
 
-name: "Hades II"
-name_aliases:
+game_name: "Hades II"
+game_name_aliases:
   - "Hades 2"
   - "Hades2"
 status: "Active"
