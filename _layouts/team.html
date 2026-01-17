@@ -73,7 +73,7 @@ layout: default
           {% for game_id in page.games %}
             {% assign game = site.games | where: "game_id", game_id | first %}
             {% if game %}
-              <a href="{{ game.url | relative_url }}" class="tag-chip">{{ game.name }}</a>
+              <a href="{{ game.url | relative_url }}" class="tag-chip">{{ game.game_name }}</a>
             {% else %}
               <span class="tag">{{ game_id }}</span>
             {% endif %}
