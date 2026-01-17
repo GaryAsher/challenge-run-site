@@ -1,0 +1,248 @@
+{% assign preset_game = include.game %}
+{% assign hide_game_select = false %}
+<!-- =========================
+     Submit Run Form Include
+  
+     Usage: {% include submit-run-form.html game=game %}
+  
+     If game is provided, the form will be pre-configured for that game
+     and the game selector will be hidden.
+     ========================= -->
+
+{% if preset_game and preset_game.game_id %}
+  {% assign hide_game_select = true %}
+{% endif %}
+
+<div class="submit-run-page">
+  <div class="card">
+    {% unless hide_game_select %}
+      <h1>Submit a Run</h1>
+      <p class="muted submit-lead">
+        Select a game to see its specific options, then fill in your run details.
+      </p>
+    {% else %}
+      <h1>Submit a {{ preset_game.game_name }} Run</h1>
+      <p class="muted submit-lead">
+        Fill in your run details below. All options are specific to {{ preset_game.game_name }}.
+      </p>
+    {% endunless %}
+
+    <div class="submit-form">
+      <div class="submit-grid">
+
+        <!-- =========================
+             GAME + CATEGORY
+             ========================= -->
+        {% unless hide_game_select %}
+        <div class="submit-section">
+          <p class="submit-section__title">Game</p>
+          <p class="submit-section__sub">Pick the game first so the options below match that game.</p>
+
+          <div class="submit-field">
+            <div class="submit-label muted" style="margin-bottom:0;">Search</div>
+            <input id="gameSearch" type="text" placeholder="Search game..." autocomplete="off" />
+          </div>
+
+          <div class="submit-field">
+            <div class="submit-label muted" style="margin-bottom:0;">Select</div>
+            <select id="gameSelect"></select>
+          </div>
+        </div>
+        {% else %}
+        <!-- Hidden game selector - pre-filled -->
+        <input type="hidden" id="gameSelect" value="{{ preset_game.game_id }}" />
+        <div style="display:none;">
+          <input id="gameSearch" type="hidden" value="" />
+        </div>
+        {% endunless %}
+
+        <div class="submit-section">
+          <p class="submit-section__title">Category</p>
+          <p class="submit-section__sub">Select the run category.</p>
+
+          <div class="submit-field">
+            <div class="submit-label muted" style="margin-bottom:0;">Category</div>
+            <select id="categorySelect"></select>
+          </div>
+        </div>
+
+        <!-- =========================
+             RUN DETAILS
+             ========================= -->
+        <div class="submit-section">
+          <p class="submit-section__title">Run Details</p>
+          <p class="submit-section__sub">Basic information about your run.</p>
+
+          <div class="submit-row-2">
+            <div class="submit-field">
+              <div class="submit-label">Runner ID</div>
+              <div class="submit-hint">Use your CRC runner id (example: <code>gary-asher</code>).</div>
+              <input id="runnerId" type="text" placeholder="your-runner-id" />
+            </div>
+
+            <div class="submit-field">
+              <div class="submit-label">Date Completed</div>
+              <div class="submit-hint">Local date you finished the run.</div>
+              <input id="dateCompleted" type="date" />
+            </div>
+          </div>
+
+          <div class="submit-field">
+            <div class="submit-label">Video URL</div>
+            <div class="submit-hint">YouTube, Twitch VOD, or Bilibili are accepted.</div>
+            <input
+              id="videoUrl"
+              type="url"
+              placeholder="https://www.youtube.com/watch?v=...  |  https://www.twitch.tv/videos/...  |  https://www.bilibili.com/video/..."
+            />
+          </div>
+        </div>
+
+        <!-- =========================
+             STANDARD CHALLENGES
+             ========================= -->
+        <div class="submit-section" aria-labelledby="standard-challenges-title">
+          <p id="standard-challenges-title" class="submit-section__title">Standard Challenges</p>
+          <p class="submit-section__sub">
+            Multi-select. Click a suggestion to add it, click a chip to remove it.
+          </p>
+
+          <div class="multi-pick" id="standardChallengePicker" data-kind="standard-challenges">
+            <div class="multi-pick__picked filter-input__picked" id="standardChallengePicked"></div>
+
+            <div class="filter-input">
+              <div class="filter-input__wrap">
+                <input
+                  id="standardChallengeSearch"
+                  class="filter-input__field"
+                  type="text"
+                  placeholder="Add a standard challenge..."
+                  autocomplete="off"
+                />
+                <div
+                  id="standardChallengeSuggestions"
+                  class="filter-input__suggestions"
+                  hidden
+                ></div>
+              </div>
+            </div>
+
+            <div class="multi-pick__help">
+              Examples: Damageless, Hitless, No-Hit / No-Damage
+            </div>
+          </div>
+
+          <select id="standardChallengeSelect" multiple hidden></select>
+        </div>
+
+        <!-- =========================
+             COMMUNITY CHALLENGE
+             ========================= -->
+        <div class="submit-section" aria-labelledby="community-challenges-title">
+          <p id="community-challenges-title" class="submit-section__title">Community Challenge</p>
+          <p class="submit-section__sub">Optional. Pick one game-specific community challenge.</p>
+
+          <div class="submit-field">
+            <div class="submit-label muted" style="margin-bottom:0;">Community Challenge</div>
+            <select id="communityChallengeSelect"></select>
+          </div>
+        </div>
+
+        <!-- =========================
+             CHARACTER / WEAPON / CLASS
+             ========================= -->
+        <div class="submit-section" aria-labelledby="character-title" id="characterSection">
+          <p id="character-title" class="submit-section__title">Character</p>
+          <p class="submit-section__sub">
+            This label changes per game (e.g., "Weapon / Aspect", "Class").
+          </p>
+
+          <div class="submit-field">
+            <div class="submit-label muted" id="characterLabel" style="margin-bottom:0;">Character</div>
+            <select id="characterSelect"></select>
+          </div>
+        </div>
+
+        <!-- =========================
+             GLITCH CATEGORY
+             ========================= -->
+        <div class="submit-section" aria-labelledby="glitch-title" id="glitchSection">
+          <p id="glitch-title" class="submit-section__title">Glitch Category</p>
+          <p class="submit-section__sub">Optional. Select the glitch ruleset used.</p>
+
+          <div class="submit-field">
+            <div class="submit-label muted" style="margin-bottom:0;">Glitch Category</div>
+            <select id="glitchSelect"></select>
+          </div>
+        </div>
+
+        <!-- =========================
+             RESTRICTIONS
+             ========================= -->
+        <div class="submit-section" aria-labelledby="restrictions-title">
+          <p id="restrictions-title" class="submit-section__title">Restrictions</p>
+          <p class="submit-section__sub">
+            Multi-select. Additional restrictions applied to the run.
+          </p>
+
+          <div class="multi-pick" id="restrictionsPicker" data-kind="restrictions">
+            <div class="multi-pick__picked filter-input__picked" id="restrictionsPicked"></div>
+
+            <div class="filter-input">
+              <div class="filter-input__wrap">
+                <input
+                  id="restrictionsSearch"
+                  class="filter-input__field"
+                  type="text"
+                  placeholder="Add a restriction..."
+                  autocomplete="off"
+                />
+                <div
+                  id="restrictionsSuggestions"
+                  class="filter-input__suggestions"
+                  hidden
+                ></div>
+              </div>
+            </div>
+
+            <div class="multi-pick__help">
+              Game-specific restrictions like "Arcanaless", "No Hexes", etc.
+            </div>
+          </div>
+
+          <select id="restrictionsSelect" multiple size="10" hidden></select>
+        </div>
+
+        <!-- =========================
+             ACTIONS + OUTPUT
+             ========================= -->
+        <div class="submit-section">
+          <p class="submit-section__title">Submit</p>
+          <p class="submit-section__sub">Generate and send the payload.</p>
+
+          <div class="submit-actions">
+            <button id="btnSubmit" class="btn btn--primary" type="button">Submit Run</button>
+            <button id="btnCopy" class="btn" type="button">Copy Payload</button>
+          </div>
+
+          <div id="msg" class="muted" aria-live="polite"></div>
+
+          <details>
+            <summary>Preview payload</summary>
+            <pre id="preview" style="white-space:pre-wrap;"></pre>
+          </details>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if hide_game_select %}
+<!-- Pre-set the game for the JS -->
+<script>
+  window.CRC_PRESET_GAME_ID = {{ preset_game.game_id | jsonify }};
+</script>
+{% endif %}
+
+<script src="{{ '/assets/js/submit-run.js' | relative_url }}"></script>
