@@ -28,7 +28,7 @@ layout: default
             {% assign game = site.games | where: "game_id", page.game_id | first %}
             {% if game %}
               <span class="post-game">
-                Related: <a href="{{ game.url | relative_url }}">{{ game.name }}</a>
+                Related: <a href="{{ game.url | relative_url }}">{{ game.game_name }}</a>
               </span>
             {% endif %}
           {% endif %}
@@ -45,7 +45,7 @@ layout: default
         <div class="card card--compact mt-4">
           <p class="muted mb-2">Related Game</p>
           <a href="{{ game.url | relative_url }}" class="btn btn--outline">
-            View {{ game.name }} →
+            View {{ game.game_name }} →
           </a>
         </div>
         {% endif %}
