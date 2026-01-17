@@ -5,19 +5,22 @@ layout: null
 game_id: hades-2
 runner_id: gary-asher
 category_slug: underworld-any
-challenge_id: no-hit-no-damage
+standard_challenges:
+  - no-hit-no-damage
+community_challenge: ""
+glitch_id: ""
 
 # === Display (matches table columns) ===
 runner: "Gary_Asher"
 character: "Moonstone Axe / Aspect of Thanatos"
 restrictions: []
 restriction_ids: []
-time_primary: "02:27:41"
+time_primary: "03:27:41"
 timing_method_primary: IGT
 time_secondary:
 timing_method_secondary:
 date_completed: 2025-11-20
-video_link: https://www.twitch.tv/videos/123456789
+video_url: https://www.twitch.tv/videos/123456789
 
 # === Metadata ===
 category: "Underworld Any%"
