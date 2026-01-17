@@ -4411,3 +4411,45 @@ a.resource-card:hover {
 .md h1, .md h2, .md h3, .md h4 {
   margin: 0.9rem 0 0.5rem;
 }
+   
+/* ============================================================
+   Submit Run: chip pickers (Standard + Restrictions)
+   ============================================================ */
+.field-block {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.field-label {
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.chip-picker {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  min-height: 0;
+}
+
+/* Make selects match site selects */
+#standardChallengeSelect,
+#restrictionsSelect,
+#communityChallengeSelect,
+#characterSelect,
+#glitchSelect,
+#gameSelect {
+  width: 100%;
+}
+
+/* Make the submit form grid feel consistent */
+.form-grid .select,
+.form-grid select,
+.form-grid input {
+  min-height: var(--tap);
+}
