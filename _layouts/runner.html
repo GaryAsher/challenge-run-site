@@ -89,7 +89,7 @@ layout: default
               <a href="{{ g.url | relative_url }}" class="game-card card-lift">
                 <div class="game-card__bg" data-bg="{{ g.cover | relative_url }}"></div>
                 <div class="game-card__overlay">
-                  <div class="game-card__title">{{ g.name }}</div>
+                  <div class="game-card__title">{{ g.game_name }}</div>
                 </div>
               </a>
             {% else %}
@@ -125,32 +125,57 @@ layout: default
         <div class="list-items">
           {% for r in runs %}
             {% assign g = site.games | where: "game_id", r.game_id | first %}
-            {% assign r_video = r.video_link | default: r.video | default: "" %}
+            {% assign r_video = r.video_url | default: r.video | default: "" %}
             {% assign r_date  = r.date_completed | default: "" %}
             {% assign r_time  = r.time | default: "" %}
 
-            {% assign ch_id = r.challenge_id | default: "" | strip %}
-            {% assign ch_label = "" %}
-            {% if ch_id != "" %}
-              {% comment %} First check game-specific challenges_data {% endcomment %}
-              {% assign game_ch = nil %}
+            {% comment %} Build challenge labels from standard_challenges + community_challenge {% endcomment %}
+            {% assign challenge_labels = "" | split: "" %}
+            
+            {% comment %} Process standard_challenges array {% endcomment %}
+            {% if r.standard_challenges and r.standard_challenges.size > 0 %}
+              {% for ch_id in r.standard_challenges %}
+                {% assign ch_label = ch_id %}
+                {% comment %} Check game-specific challenges_data first {% endcomment %}
+                {% if g and g.challenges_data %}
+                  {% for gch in g.challenges_data %}
+                    {% if gch.slug == ch_id %}
+                      {% assign ch_label = gch.label | default: ch_id %}
+                      {% break %}
+                    {% endif %}
+                  {% endfor %}
+                {% endif %}
+                {% comment %} Fall back to global challenges {% endcomment %}
+                {% if ch_label == ch_id %}
+                  {% assign chmeta = site.data.challenges[ch_id] %}
+                  {% if chmeta and chmeta.label %}{% assign ch_label = chmeta.label %}{% endif %}
+                {% endif %}
+                {% assign challenge_labels = challenge_labels | push: ch_label %}
+              {% endfor %}
+            {% endif %}
+            
+            {% comment %} Process community_challenge {% endcomment %}
+            {% if r.community_challenge and r.community_challenge != "" %}
+              {% assign challenge_labels = challenge_labels | push: r.community_challenge %}
+            {% endif %}
+            
+            {% comment %} Backwards compatibility: check old challenge_id field {% endcomment %}
+            {% if challenge_labels.size == 0 and r.challenge_id %}
+              {% assign ch_id = r.challenge_id | strip %}
+              {% assign ch_label = ch_id %}
               {% if g and g.challenges_data %}
                 {% for gch in g.challenges_data %}
                   {% if gch.slug == ch_id %}
-                    {% assign game_ch = gch %}
+                    {% assign ch_label = gch.label | default: ch_id %}
                     {% break %}
                   {% endif %}
                 {% endfor %}
               {% endif %}
-              
-              {% if game_ch %}
-                {% assign ch_label = game_ch.label | default: ch_id %}
-              {% else %}
-                {% comment %} Fall back to global challenges {% endcomment %}
+              {% if ch_label == ch_id %}
                 {% assign chmeta = site.data.challenges[ch_id] %}
-                {% assign ch_label = chmeta.label | default: ch_id %}
+                {% if chmeta and chmeta.label %}{% assign ch_label = chmeta.label %}{% endif %}
               {% endif %}
-              {% assign ch_label = ch_label | strip %}
+              {% assign challenge_labels = challenge_labels | push: ch_label %}
             {% endif %}
 
             {% assign r_texts = "" | split: "" %}
@@ -174,7 +199,7 @@ layout: default
             <article class="card list-item">
               <strong>
                 {% if g %}
-                  <a href="{{ g.url | relative_url }}">{{ g.name }}</a>
+                  <a href="{{ g.url | relative_url }}">{{ g.game_name }}</a>
                 {% else %}
                   {{ r.game_id }}
                 {% endif %}
@@ -185,8 +210,10 @@ layout: default
               {% endif %}
 
               <div class="muted runner-run-meta">
-                {% if ch_label != "" and ch_label != "—" %}
-                  <span class="tag">{{ ch_label }}</span>
+                {% if challenge_labels and challenge_labels.size > 0 %}
+                  {% for ch_lbl in challenge_labels %}
+                    <span class="tag">{{ ch_lbl }}</span>
+                  {% endfor %}
                 {% endif %}
 
                 {% if r_time != "" %}
