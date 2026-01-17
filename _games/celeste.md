@@ -3,8 +3,8 @@ layout: game
 game_id: celeste
 reviewers: []
 
-name: "Celeste"
-name_aliases: []
+game_name: "Celeste"
+game_name_aliases: []
 status: "Active"
 
 genres:
