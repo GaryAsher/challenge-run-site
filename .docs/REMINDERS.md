@@ -12,7 +12,6 @@ This document consolidates all reminders, future ideas, and planned features for
   - [ ] Do we ask users to fill out Genres again?
 
 ### Forms & Submissions
-- [ ] Run submission form (Google Form → GitHub)
 - [ ] Runner profile submission - Self-service profile creation
 
 ### Enhanced Runner Profiles
