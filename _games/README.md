@@ -13,7 +13,7 @@ Each file in this folder defines a game tracked by Challenge Run Central.
 
 ```yaml
 game_id: hades-2        # Must match filename
-name: "Hades II"        # Display name
+game_name: "Hades II"        # Display name
 reviewers: []           # GitHub usernames who can approve runs
 ```
 
