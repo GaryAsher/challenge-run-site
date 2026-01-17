@@ -417,6 +417,11 @@
   }
 
   function populateGames(filterText = "") {
+    // If gameSelect is a hidden input, don't try to populate it as a select
+    if (!gameSelect || (gameSelect.tagName === "INPUT" && gameSelect.type === "hidden")) {
+      return;
+    }
+    
     const q = filterText.trim().toLowerCase();
     const list = q
       ? index.games.filter((g) => g.title.toLowerCase().includes(q) || g.game_id.toLowerCase().includes(q))
@@ -430,7 +435,8 @@
       false
     );
 
-    const pre = qs("game");
+    // Check for preset game ID (from window variable or query string)
+    const pre = window.CRC_PRESET_GAME_ID || qs("game");
     if (pre) {
       const exists = list.some((g) => g.game_id === pre);
       if (exists) gameSelect.value = pre;
@@ -622,9 +628,30 @@
   });
 
   // Initial paint
-  populateGames("");
-  populateCategories();
-  populateBoxes();
+  // Check for preset game (from game-specific submit page)
+  const presetGameId = window.CRC_PRESET_GAME_ID || qs("game") || "";
+  
+  // If gameSelect is a hidden input (preset mode), just set its value
+  if (gameSelect && gameSelect.tagName === "INPUT" && gameSelect.type === "hidden") {
+    // Game is preset via hidden input - just populate based on that value
+    populateCategories();
+    populateBoxes();
+  } else {
+    // Normal mode - populate game dropdown
+    populateGames("");
+    
+    // If we have a preset game ID, select it
+    if (presetGameId && gameSelect) {
+      const exists = index.games.some((g) => g.game_id === presetGameId);
+      if (exists) {
+        gameSelect.value = presetGameId;
+      }
+    }
+    
+    populateCategories();
+    populateBoxes();
+  }
+  
   repaint();
   setMsg("Ready.", false);
 })();
