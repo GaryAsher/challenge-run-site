@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-01-16T23:07:32.040Z",
+  "generated_at": "2026-01-17T00:08:55.937Z",
   "games": [
     {
       "game_id": "celeste",
@@ -44,7 +44,12 @@
           "name": "Deathless"
         }
       ],
-      "community_challenges": [],
+      "community_challenges": [
+        {
+          "id": "modded-levels",
+          "name": "Modded Levels"
+        }
+      ],
       "glitches": [],
       "restrictions": [],
       "character_column": {
@@ -372,7 +377,12 @@
           "name": "No-Hit / No-Damage"
         }
       ],
-      "community_challenges": [],
+      "community_challenges": [
+        {
+          "id": "radiant-bosses",
+          "name": "Radiant Bosses"
+        }
+      ],
       "glitches": [
         {
           "id": "unrestricted",
