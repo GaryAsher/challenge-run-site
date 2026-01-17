@@ -146,6 +146,16 @@
         </a>
       {% endif %}
 
+      <!-- Submit Run (always shown) -->
+      <a
+        class="tab tab--submit {% if include.active == 'submit' %}active{% endif %}"
+        data-tab="submit"
+        href="{{ game.url | relative_url }}submit/"
+        data-href="{{ game.url | relative_url }}submit/"
+      >
+        Submit Run
+      </a>
+
     </nav>
   </div>
 </div>
