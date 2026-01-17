@@ -288,7 +288,7 @@ layout: default
         {% if active_cat_slug != "" and active_cat_label != "" %}
           <p class="muted mt-0 mb-0">Showing runs in: <strong>{{ active_cat_label }}</strong></p>
         {% else %}
-          <p class="muted mt-0 mb-0">Browse all submitted runs for {{ game.name }}.</p>
+          <p class="muted mt-0 mb-0">Browse all submitted runs for {{ game.game_name }}.</p>
         {% endif %}
 
         <a href="{{ game_base | relative_url }}submit/" class="btn btn--primary btn--submit">+ Submit a Run</a>
@@ -429,11 +429,44 @@ layout: default
             </thead>
             <tbody id="runs-body">
               {% for r in runs %}
-                {% assign meta = site.data.challenges[r.challenge_id] %}
-                {% assign challenge_label = r.challenge_id %}
-                {% assign challenge_aliases = "" %}
-                {% if meta and meta.label %}{% assign challenge_label = meta.label %}{% endif %}
-                {% if meta and meta.aliases %}{% assign challenge_aliases = meta.aliases | join: '||' %}{% endif %}
+                {% comment %} Build challenge labels from standard_challenges array + community_challenge {% endcomment %}
+                {% assign challenge_labels = "" | split: "" %}
+                {% assign challenge_ids = "" | split: "" %}
+                {% assign all_aliases = "" | split: "" %}
+                
+                {% comment %} Process standard_challenges array {% endcomment %}
+                {% if r.standard_challenges and r.standard_challenges.size > 0 %}
+                  {% for ch_id in r.standard_challenges %}
+                    {% assign meta = site.data.challenges[ch_id] %}
+                    {% assign ch_label = ch_id %}
+                    {% if meta and meta.label %}{% assign ch_label = meta.label %}{% endif %}
+                    {% assign challenge_labels = challenge_labels | push: ch_label %}
+                    {% assign challenge_ids = challenge_ids | push: ch_id %}
+                    {% if meta and meta.aliases %}
+                      {% for a in meta.aliases %}
+                        {% assign all_aliases = all_aliases | push: a %}
+                      {% endfor %}
+                    {% endif %}
+                  {% endfor %}
+                {% endif %}
+                
+                {% comment %} Process community_challenge (single string) {% endcomment %}
+                {% if r.community_challenge and r.community_challenge != "" %}
+                  {% assign challenge_labels = challenge_labels | push: r.community_challenge %}
+                  {% assign challenge_ids = challenge_ids | push: r.community_challenge %}
+                {% endif %}
+                
+                {% comment %} Backwards compatibility: also check old challenge_id field {% endcomment %}
+                {% if challenge_ids.size == 0 and r.challenge_id %}
+                  {% assign meta = site.data.challenges[r.challenge_id] %}
+                  {% assign ch_label = r.challenge_id %}
+                  {% if meta and meta.label %}{% assign ch_label = meta.label %}{% endif %}
+                  {% assign challenge_labels = challenge_labels | push: ch_label %}
+                  {% assign challenge_ids = challenge_ids | push: r.challenge_id %}
+                  {% if meta and meta.aliases %}{% assign all_aliases = meta.aliases %}{% endif %}
+                {% endif %}
+                
+                {% assign challenge_aliases = all_aliases | join: '||' %}
 
                 {% assign runner_label = r.runner | default: r.runner_id | default: "—" | replace: "_", " " %}
 
@@ -469,15 +502,15 @@ layout: default
                 {% endfor %}
                 {% assign r_texts = r_clean | uniq %}
 
-                {% assign video_url = r.video_link | default: r.video %}
+                {% assign video_url = r.video_url | default: r.video %}
 
                 <tr class="run-row"
                     data-runner="{{ r.runner_id | default: r.runner | default: '' | escape }}"
                     data-runner-name="{{ runner_label | default: '' | escape }}"
                     data-category="{{ cat_label | default: '' | escape }}"
                     data-category-slug="{{ r.category_slug | default: '' | escape }}"
-                    data-challenge-id="{{ r.challenge_id | default: '' | escape }}"
-                    data-challenge-label="{{ challenge_label | default: '' | escape }}"
+                    data-challenge-id="{{ challenge_ids | join: '||' | escape }}"
+                    data-challenge-label="{{ challenge_labels | join: '||' | escape }}"
                     data-challenge-aliases="{{ challenge_aliases | escape }}"
                     {% if show_character %}data-character="{{ r.character | default: '' | escape }}"{% endif %}
                     data-restrictions="{{ r_texts | join: '||' | escape }}"
@@ -497,9 +530,8 @@ layout: default
                   {% endif %}
 
                   <td data-label="Challenge">
-                    {% assign ch = challenge_label | default: "" | strip %}
-                    {% if ch != "" and ch != "—" %}
-                      <div class="cell-tags"><span class="tag">{{ ch }}</span></div>
+                    {% if challenge_labels and challenge_labels.size > 0 %}
+                      <div class="cell-tags">{% for ch in challenge_labels %}<span class="tag">{{ ch }}</span>{% endfor %}</div>
                     {% else %}—{% endif %}
                   </td>
 
