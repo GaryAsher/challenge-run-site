@@ -17,7 +17,6 @@ on:
           - best-practices
 
   # Optional: weekly scheduled run (Sundays at midnight UTC)
-  # Uncomment if you want automatic weekly checks
   # schedule:
   #   - cron: '0 0 * * 0'
 
