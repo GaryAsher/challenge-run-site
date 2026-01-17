@@ -87,12 +87,11 @@ function validateOne(filePath) {
     console.log(`WARN ${fileRel}: extra subfolders under game_id folder are allowed but not recommended.`);
   }
 
-  // Required routing + display fields
+  // Required routing + display fields (challenge validation is separate)
   const required = [
     'game_id',
     'runner_id',
     'category_slug',
-    'challenge_id',
     'runner',
     'category',
     'date_completed',
@@ -104,6 +103,29 @@ function validateOne(filePath) {
     if (v === undefined || v === null || String(v).trim() === '') {
       fail(fileRel, `Missing required field: ${k}`);
     }
+  }
+  
+  // Challenge validation: require at least one of standard_challenges, community_challenge, or legacy challenge_id
+  const hasStandardChallenges = Array.isArray(data.standard_challenges) && data.standard_challenges.length > 0;
+  const hasCommunityChallenge = data.community_challenge && String(data.community_challenge).trim();
+  const hasLegacyChallengeId = data.challenge_id && String(data.challenge_id).trim();
+  
+  if (!hasStandardChallenges && !hasCommunityChallenge && !hasLegacyChallengeId) {
+    fail(fileRel, 'At least one of standard_challenges, community_challenge, or challenge_id is required');
+  }
+  
+  // Validate standard_challenges array if present
+  if (hasStandardChallenges) {
+    for (const ch of data.standard_challenges) {
+      if (!ID_RE.test(String(ch))) {
+        fail(fileRel, `standard_challenges must be slugs (lowercase, hyphen). Got: ${ch}`);
+      }
+    }
+  }
+  
+  // Validate legacy challenge_id if present
+  if (hasLegacyChallengeId && !ID_RE.test(String(data.challenge_id))) {
+    fail(fileRel, `challenge_id must be a slug (lowercase, hyphen). Got: ${data.challenge_id}`);
   }
 
   // Filename must match content IDs
@@ -126,9 +148,6 @@ function validateOne(filePath) {
   }
   if (!CATEGORY_SLUG_RE.test(String(data.category_slug))) {
     fail(fileRel, `category_slug must be a slug (lowercase, hyphen). Got: ${data.category_slug}`);
-  }
-  if (!ID_RE.test(String(data.challenge_id))) {
-    fail(fileRel, `challenge_id must be a slug (lowercase, hyphen). Got: ${data.challenge_id}`);
   }
 
   // Status
