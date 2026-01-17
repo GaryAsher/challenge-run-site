@@ -4,14 +4,11 @@ title: "Celeste - Submit Run"
 game_id: celeste
 ---
 
-{% assign game = site.games | where: "game_id", "celeste" | first %}
+{% assign game = site.games | where: "game_id", page.game_id | first %}
 {% include game-header-tabs.html game=game active="submit" %}
 
 <div class="page-width">
   <div class="game-shell">
-    <div class="card">
-      <h1>Submit Run</h1>
-      <p class="muted">Submit your challenge run for review.</p>
-    </div>
+    {% include submit-run-form.html game=game %}
   </div>
 </div>
