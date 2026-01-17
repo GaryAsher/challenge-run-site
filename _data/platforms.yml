@@ -279,7 +279,7 @@ neo-geo-pocket:
 neo-geo-x:
   label: "Neo Geo X"
   aliases:
-    "NGX"
+    - "NGX"
 
 # Sony
 playstation-portable:
