@@ -1,11 +1,25 @@
 name: Lighthouse CI
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  # Manual trigger only - run when you want to test SEO/performance
   workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'What to test'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - performance
+          - accessibility
+          - seo
+          - best-practices
+
+  # Optional: weekly scheduled run (Sundays at midnight UTC)
+  # Uncomment if you want automatic weekly checks
+  # schedule:
+  #   - cron: '0 0 * * 0'
 
 concurrency:
   group: lighthouse-${{ github.ref }}
@@ -53,3 +67,6 @@ jobs:
           echo "## Lighthouse Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Lighthouse audit completed. Check the workflow logs for detailed scores." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Run manually anytime:" >> $GITHUB_STEP_SUMMARY
+          echo "Actions → Lighthouse CI → Run workflow" >> $GITHUB_STEP_SUMMARY
