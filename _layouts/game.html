@@ -46,7 +46,7 @@ layout: default
         <h2 class="mb-2">General Rules</h2>
 
         {% if page.general_rules and page.general_rules.size > 0 %}
-          <p class="muted mb-3">Core rules that apply to all {{ page.name }} runs:</p>
+          <p class="muted mb-3">Core rules that apply to all {{ page.game_name }} runs:</p>
           <div class="md">
             {{ page.general_rules | markdownify }}
           </div>
