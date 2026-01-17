@@ -3,8 +3,8 @@ layout: game
 game_id: hollow-knight
 reviewers: []
 
-name: "Hollow Knight"
-name_aliases:
+game_name: "Hollow Knight"
+game_name_aliases:
   - "HK"
 status: "Active"
 
