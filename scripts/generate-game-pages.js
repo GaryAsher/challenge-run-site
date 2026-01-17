@@ -125,12 +125,31 @@ title: "${gameName} - ${title}"
 game_id: ${gameId}
 ---
 
-{% assign game = site.games | where: "game_id", "${gameId}" | first %}
+{% assign game = site.games | where: "game_id", page.game_id | first %}
 {% include game-header-tabs.html game=game active="${section}" %}
 
 <div class="page-width">
   <div class="game-shell">
     {% include game-rules.html game=game %}
+  </div>
+</div>
+`;
+  }
+
+  // Submit page uses the submit-run-form include with preset game
+  if (section === 'submit') {
+    return `---
+layout: default
+title: "${gameName} - ${title}"
+game_id: ${gameId}
+---
+
+{% assign game = site.games | where: "game_id", page.game_id | first %}
+{% include game-header-tabs.html game=game active="${section}" %}
+
+<div class="page-width">
+  <div class="game-shell">
+    {% include submit-run-form.html game=game %}
   </div>
 </div>
 `;
@@ -142,7 +161,7 @@ title: "${gameName} - ${title}"
 game_id: ${gameId}
 ---
 
-{% assign game = site.games | where: "game_id", "${gameId}" | first %}
+{% assign game = site.games | where: "game_id", page.game_id | first %}
 {% include game-header-tabs.html game=game active="${section}" %}
 
 <div class="page-width">
@@ -195,7 +214,7 @@ function generateGamePages(gameId, checkOnly = false, forceOverwrite = false) {
     return false;
   }
 
-  const gameName = fm.name || gameId;
+  const gameName = fm.game_name || fm.name || gameId;
   const gameDir = path.join(OUTPUT_DIR, gameId);
   
   let missingCount = 0;
