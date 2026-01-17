@@ -233,7 +233,7 @@ function main() {
     const game_id = String(data.game_id || "").trim();
     if (!game_id) continue;
 
-    const title = String(data.name || data.title || game_id).trim();
+    const title = String(data.game_name || data.name || data.title || game_id).trim();
     const categories = normalizeCategories(data);
 
     const standard_challenges = normalizeSlugList(data.challenges_data);
