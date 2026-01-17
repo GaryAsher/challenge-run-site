@@ -221,7 +221,6 @@ nec-turboexpress:
   label: "TurboExpress"
   aliases:
     - "PC Engine GT"
-    - "Mini Comboy"
 
 # Nintendo
 nintendo-game-boy:
@@ -234,13 +233,11 @@ nintendo-game-boy-color:
   label: "Game Boy Color"
   aliases:
     - "GBC"
-    - "Mini Comboy"
 
 nintendo-game-boy-advance:
   label: "Game Boy Advance"
   aliases:
     - "GBA"
-    - "Mini Comboy"
 
 nintendo-ds:
   label: "Nintendo DS"
