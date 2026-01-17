@@ -6,8 +6,8 @@ layout: game
 game_id: example-game
 reviewers: []
 
-name: "Example Game"
-name_aliases:
+game_name: "Example Game"
+game_name_aliases:
   - "EG"
   - "Example"
 status: "Active"
