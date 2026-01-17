@@ -32,7 +32,9 @@ const data = yaml.load(match[1]);
 console.log('✅ Front matter parsed successfully\n');
 
 // Check required fields
-const required = ['game_id', 'name', 'layout'];
+const required = ['game_id', 'layout'];
+const gameName = data.game_name || data.name;
+if (!gameName) missing.push('game_name');
 const missing = required.filter(f => !data[f]);
 
 if (missing.length) {
@@ -44,7 +46,7 @@ if (missing.length) {
 // Check optional fields
 console.log('\n📋 Field Summary:');
 console.log(`  - game_id: ${data.game_id}`);
-console.log(`  - name: ${data.name}`);
+console.log(`  - game_name: ${data.game_name || data.name}`);
 console.log(`  - status: ${data.status || '(not set)'}`);
 console.log(`  - tags: ${(data.tags || []).length} tags`);
 console.log(`  - platforms: ${(data.platforms || []).length} platforms`);
