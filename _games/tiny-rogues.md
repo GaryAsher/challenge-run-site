@@ -3,8 +3,8 @@ layout: game
 game_id: tiny-rogues
 reviewers: []
 
-name: "Tiny Rogues"
-name_aliases:
+game_name: "Tiny Rogues"
+game_name_aliases:
   - "TR"
 status: "Active"
 
