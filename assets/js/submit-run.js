@@ -1,3 +1,15 @@
+/* assets/js/submit-run.js
+   Full replacement. No dependencies.
+   Implements chip + typeahead pickers for:
+   - Standard Challenges (multi)
+   - Restrictions (multi)
+
+   Contract:
+   - Clicking a suggestion adds it (and removes it from the dropdown list).
+   - Clicking a chip removes it (and returns it to the dropdown list).
+   - Keeps hidden <select multiple> elements in sync for backwards compatibility.
+*/
+
 (async function () {
   const $ = (id) => document.getElementById(id);
 
@@ -99,27 +111,83 @@
     }
   }
 
-  function createChipMultiPicker(opts) {
-    const { selectEl, chipsEl, placeholderLabel = "Select...", noneLabel = "None" } = opts;
+  function normalizeList(list) {
+    if (!Array.isArray(list)) return [];
+    return list
+      .map((x) => ({
+        id: String(x?.id || x?.slug || x?.challenge_id || "").trim(),
+        name: String(x?.name || x?.label || x?.title || x?.id || x?.slug || "").trim()
+      }))
+      .filter((x) => x.id && x.name);
+  }
+
+  function syncHiddenMultiSelect(selectEl, selectedIds) {
+    if (!selectEl) return;
+    const wanted = new Set((selectedIds || []).map((x) => String(x)));
+    for (const opt of Array.from(selectEl.options)) {
+      opt.selected = wanted.has(String(opt.value));
+    }
+  }
+
+  function ensureHiddenSelectOptions(selectEl, allItems) {
+    if (!selectEl) return;
+    const existing = new Set(Array.from(selectEl.options).map((o) => String(o.value)));
+
+    // Ensure every known item exists as an option so selected state can be synced.
+    for (const it of allItems) {
+      if (!existing.has(it.id)) {
+        const opt = document.createElement("option");
+        opt.value = it.id;
+        opt.textContent = it.name;
+        selectEl.appendChild(opt);
+      }
+    }
+  }
+
+  function createTypeaheadChipPicker(opts) {
+    const {
+      kind,
+      inputEl,
+      suggestionsEl,
+      chipsEl,
+      hiddenSelectEl,
+      placeholder = "Type to search...",
+      noneText = "No options",
+      emptyText = "No matches",
+      onChange
+    } = opts;
 
     let all = [];
-    const selected = new Map(); // id -> {id,name}
+    const selected = new Map(); // id -> item
 
-    function renderSelect() {
-      if (!selectEl) return;
-      const available = all.filter((it) => it && it.id && !selected.has(it.id));
+    function setItems(items) {
+      all = Array.isArray(items) ? items.slice() : [];
+      selected.clear();
 
-      fillSelect(
-        selectEl,
-        available,
-        (it) => it.id,
-        (it) => it.name,
-        true,
-        available.length ? placeholderLabel : noneLabel
-      );
+      if (inputEl) inputEl.value = "";
+      if (inputEl) inputEl.placeholder = placeholder;
 
-      selectEl.value = "";
-      selectEl.disabled = available.length === 0;
+      ensureHiddenSelectOptions(hiddenSelectEl, all);
+      syncHiddenMultiSelect(hiddenSelectEl, getSelectedIds());
+
+      renderChips();
+      renderSuggestions();
+      hideSuggestions();
+    }
+
+    function getSelectedIds() {
+      return Array.from(selected.keys());
+    }
+
+    function clear() {
+      selected.clear();
+      ensureHiddenSelectOptions(hiddenSelectEl, all);
+      syncHiddenMultiSelect(hiddenSelectEl, getSelectedIds());
+      if (inputEl) inputEl.value = "";
+      renderChips();
+      renderSuggestions();
+      hideSuggestions();
+      onChange && onChange();
     }
 
     function renderChips() {
@@ -130,7 +198,6 @@
       if (!items.length) return;
 
       for (const it of items) {
-        // Use your unified filter-chip styling
         const chip = document.createElement("button");
         chip.type = "button";
         chip.className = "filter-chip";
@@ -149,78 +216,199 @@
 
         chip.addEventListener("click", () => {
           selected.delete(it.id);
+          ensureHiddenSelectOptions(hiddenSelectEl, all);
+          syncHiddenMultiSelect(hiddenSelectEl, getSelectedIds());
           renderChips();
-          renderSelect();
-          opts.onChange && opts.onChange();
+          renderSuggestions();
+          onChange && onChange();
         });
 
         chipsEl.appendChild(chip);
       }
     }
 
-    function setItems(items) {
-      all = Array.isArray(items) ? items.slice() : [];
-      selected.clear();
-      renderSelect();
-      renderChips();
+    function hideSuggestions() {
+      if (!suggestionsEl) return;
+      suggestionsEl.hidden = true;
     }
 
-    function getSelectedIds() {
-      return Array.from(selected.keys());
+    function showSuggestions() {
+      if (!suggestionsEl) return;
+      suggestionsEl.hidden = false;
     }
 
-    function clear() {
-      selected.clear();
-      renderSelect();
-      renderChips();
+    function currentQuery() {
+      return String(inputEl?.value || "").trim().toLowerCase();
     }
 
-    if (selectEl) {
-      selectEl.addEventListener("change", () => {
-        const id = String(selectEl.value || "").trim();
-        if (!id) return;
-        const found = all.find((x) => x && x.id === id);
-        if (!found) return;
-
-        selected.set(found.id, found);
-        renderChips();
-        renderSelect();
-        opts.onChange && opts.onChange();
-      });
+    function matchesQuery(item, q) {
+      if (!q) return true;
+      const hay = `${item.name} ${item.id}`.toLowerCase();
+      return hay.includes(q);
     }
 
-    return { setItems, getSelectedIds, clear };
+    function getAvailable(q) {
+      const list = all.filter((it) => it && it.id && !selected.has(it.id));
+      if (!q) return list;
+      return list.filter((it) => matchesQuery(it, q));
+    }
+
+    function renderSuggestions() {
+      if (!suggestionsEl) return;
+
+      const q = currentQuery();
+      const list = getAvailable(q);
+
+      suggestionsEl.innerHTML = "";
+
+      if (!all.length) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "filter-suggestion filter-suggestion--empty";
+        btn.textContent = noneText;
+        btn.disabled = true;
+        suggestionsEl.appendChild(btn);
+        return;
+      }
+
+      if (!list.length) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "filter-suggestion filter-suggestion--empty";
+        btn.textContent = q ? emptyText : noneText;
+        btn.disabled = true;
+        suggestionsEl.appendChild(btn);
+        return;
+      }
+
+      for (const it of list) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "filter-suggestion";
+        btn.dataset.id = it.id;
+        btn.textContent = it.name;
+
+        btn.addEventListener("click", () => {
+          selected.set(it.id, it);
+          ensureHiddenSelectOptions(hiddenSelectEl, all);
+          syncHiddenMultiSelect(hiddenSelectEl, getSelectedIds());
+
+          // clear query after add (feels like games filters)
+          if (inputEl) inputEl.value = "";
+
+          renderChips();
+          renderSuggestions();
+          showSuggestions(); // keep open for rapid multi-add
+          onChange && onChange();
+        });
+
+        suggestionsEl.appendChild(btn);
+      }
+    }
+
+    function onInput() {
+      renderSuggestions();
+      showSuggestions();
+    }
+
+    function onFocus() {
+      renderSuggestions();
+      showSuggestions();
+    }
+
+    function onKeyDown(e) {
+      if (e.key === "Escape") {
+        hideSuggestions();
+        return;
+      }
+
+      // Quick add on Enter if only one match
+      if (e.key === "Enter") {
+        const q = currentQuery();
+        const list = getAvailable(q);
+        if (list.length === 1) {
+          e.preventDefault();
+          const it = list[0];
+          selected.set(it.id, it);
+          ensureHiddenSelectOptions(hiddenSelectEl, all);
+          syncHiddenMultiSelect(hiddenSelectEl, getSelectedIds());
+          if (inputEl) inputEl.value = "";
+          renderChips();
+          renderSuggestions();
+          showSuggestions();
+          onChange && onChange();
+        }
+      }
+    }
+
+    function onDocClick(e) {
+      const t = e.target;
+      const inBox =
+        (inputEl && (t === inputEl || inputEl.contains(t))) ||
+        (suggestionsEl && (t === suggestionsEl || suggestionsEl.contains(t))) ||
+        (chipsEl && (t === chipsEl || chipsEl.contains(t)));
+
+      if (!inBox) hideSuggestions();
+    }
+
+    if (inputEl) {
+      inputEl.addEventListener("input", onInput);
+      inputEl.addEventListener("focus", onFocus);
+      inputEl.addEventListener("keydown", onKeyDown);
+    }
+
+    document.addEventListener("click", onDocClick);
+
+    return { kind, setItems, getSelectedIds, clear };
   }
 
+  // ===== Load index =====
   const index = await loadIndex();
 
   const gameSelect = $("gameSelect");
   const categorySelect = $("categorySelect");
   const gameSearch = $("gameSearch");
 
-  const standardChallengeSelect = $("standardChallengeSelect");
   const communityChallengeSelect = $("communityChallengeSelect");
   const characterSelect = $("characterSelect");
   const glitchSelect = $("glitchSelect");
-  const restrictionsSelect = $("restrictionsSelect");
   const characterLabelEl = $("characterLabel");
 
-  const standardChipsEl = $("standardChallengeChips");
-  const restrictionsChipsEl = $("restrictionsChips");
+  // Hidden selects (kept in sync)
+  const standardChallengeSelect = $("standardChallengeSelect");
+  const restrictionsSelect = $("restrictionsSelect");
 
-  const standardPicker = createChipMultiPicker({
-    selectEl: standardChallengeSelect,
-    chipsEl: standardChipsEl,
-    placeholderLabel: "Select a standard challenge...",
-    noneLabel: "No standard challenges",
+  // Typeahead picker DOM
+  const standardInput = $("standardChallengeSearch");
+  const standardSuggestions = $("standardChallengeSuggestions");
+  const standardChips = $("standardChallengePicked");
+
+  const restrictionsInput = $("restrictionsSearch");
+  const restrictionsSuggestions = $("restrictionsSuggestions");
+  const restrictionsChips = $("restrictionsPicked");
+
+  // Create pickers
+  const standardPicker = createTypeaheadChipPicker({
+    kind: "standard_challenges",
+    inputEl: standardInput,
+    suggestionsEl: standardSuggestions,
+    chipsEl: standardChips,
+    hiddenSelectEl: standardChallengeSelect,
+    placeholder: "Add a standard challenge...",
+    noneText: "No standard challenges available",
+    emptyText: "No matches",
     onChange: repaint
   });
 
-  const restrictionsPicker = createChipMultiPicker({
-    selectEl: restrictionsSelect,
-    chipsEl: restrictionsChipsEl,
-    placeholderLabel: "Select a restriction...",
-    noneLabel: "No restrictions",
+  const restrictionsPicker = createTypeaheadChipPicker({
+    kind: "restrictions",
+    inputEl: restrictionsInput,
+    suggestionsEl: restrictionsSuggestions,
+    chipsEl: restrictionsChips,
+    hiddenSelectEl: restrictionsSelect,
+    placeholder: "Add a restriction...",
+    noneText: "No restrictions available",
+    emptyText: "No matches",
     onChange: repaint
   });
 
@@ -255,16 +443,6 @@
     fillSelect(categorySelect, cats, (c) => c.slug, (c) => c.name, true, "Select category...");
   }
 
-  function normalizeList(list) {
-    if (!Array.isArray(list)) return [];
-    return list
-      .map((x) => ({
-        id: String(x?.id || x?.slug || x?.challenge_id || "").trim(),
-        name: String(x?.name || x?.label || x?.title || x?.id || x?.slug || "").trim()
-      }))
-      .filter((x) => x.id && x.name);
-  }
-
   function populateBoxes() {
     const game = getGameById(gameSelect.value);
 
@@ -276,8 +454,9 @@
     const cc = game && game.character_column ? game.character_column : { enabled: false, label: "Character" };
     const chars = normalizeList(game && game.characters);
 
-    if (characterLabelEl) characterLabelEl.textContent = (cc && cc.label) ? cc.label : "Character";
+    if (characterLabelEl) characterLabelEl.textContent = cc && cc.label ? cc.label : "Character";
 
+    // Wire multi pickers (chips + typeahead)
     standardPicker.setItems(standard);
     restrictionsPicker.setItems(restrictions);
 
@@ -328,8 +507,8 @@
       category_slug,
 
       // Allow BOTH:
-      standard_challenges: standard_ids,     // array
-      community_challenge: community_id,     // single string (or "")
+      standard_challenges: standard_ids, // array
+      community_challenge: community_id, // string or ""
 
       character,
       glitch_id,
@@ -389,12 +568,7 @@
     });
   }
 
-  [
-    "categorySelect",
-    "runnerId",
-    "videoUrl",
-    "dateCompleted"
-  ].forEach((id) => {
+  ["categorySelect", "runnerId", "videoUrl", "dateCompleted"].forEach((id) => {
     const el = $(id);
     if (!el) return;
     el.addEventListener("input", repaint);
