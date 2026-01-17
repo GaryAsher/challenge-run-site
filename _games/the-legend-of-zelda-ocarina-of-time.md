@@ -1,8 +1,8 @@
 ---
 layout: game
 game_id: the-legend-of-zelda-ocarina-of-time
-name: "The Legend of Zelda: Ocarina of Time"
-name_aliases:
+game_name: "The Legend of Zelda: Ocarina of Time"
+game_name_aliases:
   - "OoT"
   - "Ocarina of Time"
   - "LoZ"
