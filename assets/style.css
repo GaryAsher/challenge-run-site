@@ -4453,3 +4453,216 @@ a.resource-card:hover {
 .form-grid input {
   min-height: var(--tap);
 }
+
+/* ============================================================
+   Submit Run Page (submit-run/index.html)
+   ============================================================ */
+/* Scope everything to the submit-run page */
+.submit-run-page .card {
+  max-width: 860px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.submit-run-page h1 {
+  margin: 0 0 0.5rem 0;
+}
+
+.submit-run-page .submit-lead {
+  margin: 0 0 1rem 0;
+}
+
+/* Form wrapper */
+.submit-run-page .submit-form {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+/* Replace inline grid with a class */
+.submit-run-page .submit-grid {
+  display: grid;
+  gap: 14px;
+}
+
+/* Field blocks */
+.submit-run-page .submit-field {
+  display: grid;
+  gap: 6px;
+}
+
+.submit-run-page .submit-label {
+  font-weight: 650;
+  color: var(--fg);
+}
+
+.submit-run-page .submit-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Inputs/selects match site styling */
+.submit-run-page input[type="text"],
+.submit-run-page input[type="url"],
+.submit-run-page input[type="date"],
+.submit-run-page select,
+.submit-run-page textarea {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--fg);
+  min-height: var(--tap);
+}
+
+.submit-run-page input::placeholder,
+.submit-run-page textarea::placeholder {
+  color: var(--placeholder);
+}
+
+.submit-run-page input:focus,
+.submit-run-page select:focus,
+.submit-run-page textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--focus-2);
+}
+
+.submit-run-page select {
+  cursor: pointer;
+}
+
+.submit-run-page select option,
+.submit-run-page select optgroup {
+  background: var(--surface);
+  color: var(--fg);
+}
+
+/* Two-up rows where useful */
+.submit-run-page .submit-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 720px) {
+  .submit-run-page .submit-row-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Section cards (for grouping Standard / Community / Character / Glitches / Restrictions) */
+.submit-run-page .submit-section {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--panel);
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.submit-run-page .submit-section__title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  color: var(--fg);
+}
+
+.submit-run-page .submit-section__sub {
+  margin: -6px 0 0 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Actions row */
+.submit-run-page .submit-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.submit-run-page .submit-actions .btn {
+  flex: 0 0 auto;
+}
+
+.submit-run-page .btn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+  font-weight: 700;
+}
+
+.submit-run-page .btn--primary:hover {
+  filter: brightness(1.05);
+}
+
+/* Status message */
+.submit-run-page #msg {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.02);
+}
+
+/* Preview payload */
+.submit-run-page details {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  padding: 10px 12px;
+}
+
+.submit-run-page details > summary {
+  cursor: pointer;
+  font-weight: 650;
+  user-select: none;
+}
+
+.submit-run-page #preview {
+  margin: 10px 0 0 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  padding: 10px 12px;
+  overflow: auto;
+}
+
+/* ============================================================
+   Multi-select chip input (for Standard Challenges + Restrictions)
+   ============================================================ */
+.submit-run-page .multi-pick {
+  display: grid;
+  gap: 8px;
+}
+
+.submit-run-page .multi-pick__picked {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-height: 1.5rem;
+}
+
+.submit-run-page .multi-pick__picked:empty {
+  display: none;
+}
+
+.submit-run-page .multi-pick__help {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: -2px 0 0 0;
+}
+
+/* Make suggestions list feel consistent with site */
+.submit-run-page .filter-input__suggestions {
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
+.submit-run-page .filter-suggestion {
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+.submit-run-page .filter-suggestion:first-child {
+  border-top: none;
+}
