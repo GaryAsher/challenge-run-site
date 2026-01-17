@@ -45,8 +45,8 @@
     {% for g in site.games %}
     {
       "id": {{ g.game_id | jsonify }},
-      "name": {{ g.name | jsonify }},
-      "aliases": {{ g.name_aliases | default: empty | jsonify }},
+      "name": {{ g.game_name | jsonify }},
+      "aliases": {{ g.game_name_aliases | default: empty | jsonify }},
       "url": {{ g.url | relative_url | jsonify }}
     }{% unless forloop.last %},{% endunless %}
     {% endfor %}
