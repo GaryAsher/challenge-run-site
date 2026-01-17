@@ -4,14 +4,11 @@ title: "The Legend of Zelda: Ocarina of Time - Submit Run"
 game_id: the-legend-of-zelda-ocarina-of-time
 ---
 
-{% assign game = site.games | where: "game_id", "the-legend-of-zelda-ocarina-of-time" | first %}
+{% assign game = site.games | where: "game_id", page.game_id | first %}
 {% include game-header-tabs.html game=game active="submit" %}
 
 <div class="page-width">
   <div class="game-shell">
-    <div class="card">
-      <h1>Submit Run</h1>
-      <p class="muted">Submit your challenge run for review.</p>
-    </div>
+    {% include submit-run-form.html game=game %}
   </div>
 </div>
