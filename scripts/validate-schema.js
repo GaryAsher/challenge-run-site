@@ -358,7 +358,12 @@ function validateGames({ genresResolver, challengeResolver, platformResolver }) 
     }
 
     mustSlug(fileRel, 'game_id', fm.game_id);
-    mustString(fileRel, 'name', fm.name);
+    
+    // Support both game_name (new) and name (legacy)
+    const gameName = fm.game_name || fm.name;
+    if (!gameName || typeof gameName !== 'string' || !gameName.trim()) {
+      die(`${fileRel}: game_name is required (or legacy 'name' field)`);
+    }
 
     validateCategoriesData(fileRel, fm);
 
@@ -461,14 +466,15 @@ function validateGames({ genresResolver, challengeResolver, platformResolver }) 
       die(`${fileRel}: timing_method must be a non-empty string if provided`);
     }
 
-    // Validate name_aliases (optional)
-    if (fm.name_aliases != null) {
-      if (!Array.isArray(fm.name_aliases)) {
-        die(`${fileRel}: name_aliases must be a YAML list`);
+    // Validate game_name_aliases (or legacy name_aliases)
+    const gameNameAliases = fm.game_name_aliases || fm.name_aliases;
+    if (gameNameAliases != null) {
+      if (!Array.isArray(gameNameAliases)) {
+        die(`${fileRel}: game_name_aliases must be a YAML list`);
       }
-      for (const alias of fm.name_aliases) {
+      for (const alias of gameNameAliases) {
         if (typeof alias !== 'string' || !alias.trim()) {
-          die(`${fileRel}: name_aliases must contain only non-empty strings`);
+          die(`${fileRel}: game_name_aliases must contain only non-empty strings`);
         }
       }
     }
@@ -569,18 +575,38 @@ function validateRuns({ gameIds, runnerIds, challengeResolver, gameCategoryIndex
       }
     }
 
-    // challenge_id: allow aliases/labels
-    if (fm.challenge_id === undefined || fm.challenge_id === null) {
-      die(`${fileRel}: challenge_id is required`);
+    // Challenge validation: support both new (standard_challenges + community_challenge) and legacy (challenge_id)
+    const hasStandardChallenges = Array.isArray(fm.standard_challenges) && fm.standard_challenges.length > 0;
+    const hasCommunityChallenge = fm.community_challenge && typeof fm.community_challenge === 'string' && fm.community_challenge.trim();
+    const hasLegacyChallengeId = fm.challenge_id && typeof fm.challenge_id === 'string' && fm.challenge_id.trim();
+    
+    if (!hasStandardChallenges && !hasCommunityChallenge && !hasLegacyChallengeId) {
+      die(`${fileRel}: At least one of standard_challenges, community_challenge, or challenge_id is required`);
     }
-    if (typeof fm.challenge_id !== 'string' || !fm.challenge_id.trim()) {
-      die(`${fileRel}: challenge_id must be a non-empty string`);
+    
+    // Validate standard_challenges array
+    if (hasStandardChallenges) {
+      for (const ch of fm.standard_challenges) {
+        if (typeof ch !== 'string' || !ch.trim()) {
+          die(`${fileRel}: standard_challenges must contain only non-empty strings`);
+        }
+        const cr = challengeResolver.resolve(ch);
+        if (!cr) {
+          warn(`${fileRel}: unknown challenge in standard_challenges: ${ch}`);
+        } else if (cr.source !== 'id' && cr.canonical !== ch) {
+          warn(`${fileRel}: standard_challenges "${ch}" should be "${cr.canonical}" (canonical id)`);
+        }
+      }
     }
-
-    const cr = challengeResolver.resolve(fm.challenge_id);
-    if (!cr) die(`${fileRel}: unknown challenge_id: ${fm.challenge_id}`);
-    if (cr.source !== 'id' && cr.canonical !== fm.challenge_id) {
-      warn(`${fileRel}: challenge_id "${fm.challenge_id}" should be "${cr.canonical}" (canonical id)`);
+    
+    // Validate legacy challenge_id if present
+    if (hasLegacyChallengeId) {
+      const cr = challengeResolver.resolve(fm.challenge_id);
+      if (!cr) {
+        warn(`${fileRel}: unknown challenge_id: ${fm.challenge_id}`);
+      } else if (cr.source !== 'id' && cr.canonical !== fm.challenge_id) {
+        warn(`${fileRel}: challenge_id "${fm.challenge_id}" should be "${cr.canonical}" (canonical id)`);
+      }
     }
 
     if (fm.restrictions != null) {
@@ -610,12 +636,14 @@ function validateRuns({ gameIds, runnerIds, challengeResolver, gameCategoryIndex
       }
     }
 
-    if (fm.video_link != null) {
-      if (typeof fm.video_link !== 'string' || !/^https?:\/\//i.test(fm.video_link)) {
-        die(`${fileRel}: video_link must be an http(s) URL`);
+    // Support both video_url (new) and video_link (legacy)
+    const videoUrl = fm.video_url || fm.video_link;
+    if (videoUrl != null) {
+      if (typeof videoUrl !== 'string' || !/^https?:\/\//i.test(videoUrl)) {
+        die(`${fileRel}: video_url must be an http(s) URL`);
       }
     } else {
-      warn(`${fileRel}: video_link missing`);
+      warn(`${fileRel}: video_url missing`);
     }
 
     // Optional filename pattern warning (do not fail)
