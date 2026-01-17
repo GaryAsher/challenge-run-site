@@ -28,7 +28,7 @@
       >
         <div class="game-hero__overlay">
           <div class="game-hero__content">
-            <h1>{{ game.name }}</h1>
+            <h1>{{ game.game_name }}</h1>
 
             {% if game.genres and game.genres.size > 0 %}
               <div class="game-genres">
@@ -55,7 +55,7 @@
 {% else %}
   <div class="page-width">
     <div class="game-shell">
-      <h1>{{ game.name }}</h1>
+      <h1>{{ game.game_name }}</h1>
 
       {% if game.status %}
         <p class="muted">{{ game.status }}</p>
