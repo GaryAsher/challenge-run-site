@@ -12,8 +12,9 @@ date_submitted: YYYY-MM-DD
 game_id: GAME-ID
 runner_id: runner-id
 category_slug: category-slug
-challenge_id: challenge-id
-ruleset_id: null                   # unrestricted | nmg | glitchless
+standard_challenges: []            # Array of challenge slugs (e.g., ["hitless", "damageless"])
+community_challenge: ""            # Single community challenge slug or ""
+glitch_id: ""                      # unrestricted | nmg | glitchless | ""
 
 # =========================================================
 # User-submitted (core info)
@@ -21,7 +22,7 @@ ruleset_id: null                   # unrestricted | nmg | glitchless
 runner: "Runner Name"
 category: "Category Name"
 date_completed: YYYY-MM-DD
-video_link: https://example.com/VIDEO
+video_url: https://example.com/VIDEO
 
 # =========================================================
 # User-submitted (optional)
