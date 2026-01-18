@@ -1,0 +1,60 @@
+{% if site.turnstile_site_key %}
+<!-- Cloudflare Turnstile -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+<div class="submit-field turnstile-field">
+  <div class="submit-label">Verification</div>
+  <div class="submit-hint">Please complete this check to submit.</div>
+  <div 
+    class="cf-turnstile" 
+    id="turnstile-widget"
+    data-sitekey="{{ site.turnstile_site_key }}"
+    data-callback="onTurnstileSuccess"
+    data-expired-callback="onTurnstileExpired"
+    data-theme="auto"
+  ></div>
+  <input type="hidden" id="turnstileToken" value="" />
+</div>
+
+<script>
+  // Turnstile callbacks
+  function onTurnstileSuccess(token) {
+    document.getElementById('turnstileToken').value = token;
+    // Enable submit button
+    var btn = document.getElementById('btnSubmit');
+    if (btn) btn.disabled = false;
+  }
+  
+  function onTurnstileExpired() {
+    document.getElementById('turnstileToken').value = '';
+    // Disable submit button until re-verified
+    var btn = document.getElementById('btnSubmit');
+    if (btn) btn.disabled = true;
+  }
+  
+  // Initially disable submit button until Turnstile completes
+  document.addEventListener('DOMContentLoaded', function() {
+    var btn = document.getElementById('btnSubmit');
+    if (btn && '{{ site.turnstile_site_key }}') {
+      btn.disabled = true;
+    }
+  });
+</script>
+
+<style>
+  .turnstile-field {
+    margin: 1rem 0;
+  }
+  .cf-turnstile {
+    margin-top: 0.5rem;
+  }
+</style>
+{% else %}
+<!-- Turnstile not configured - no captcha protection -->
+{% endif %}
+
+{% if site.run_submit_endpoint %}
+<script>
+  window.CRC_RUN_SUBMIT_ENDPOINT = {{ site.run_submit_endpoint | jsonify }};
+</script>
+{% endif %}
