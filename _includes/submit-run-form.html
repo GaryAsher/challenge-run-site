@@ -210,7 +210,12 @@
 
           <select id="restrictionsSelect" multiple size="10" hidden></select>
         </div>
-
+           
+        <!-- =========================
+             CAPTCHA VERIFICATION
+             ========================= -->
+        {% include turnstile.html %}
+           
         <!-- =========================
              ACTIONS + OUTPUT
              ========================= -->
