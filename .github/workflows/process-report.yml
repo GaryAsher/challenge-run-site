@@ -1,0 +1,176 @@
+name: Process Report
+
+on:
+  repository_dispatch:
+    types: [content-report]
+  workflow_dispatch:
+    inputs:
+      report_type:
+        description: "Type of report"
+        required: true
+        type: choice
+        options:
+          - run
+          - game
+          - gm_complaint
+          - other
+      content_id:
+        description: "Content ID (run filename, game_id, etc.)"
+        required: true
+        type: string
+      reason:
+        description: "Reason for report"
+        required: true
+        type: choice
+        options:
+          - invalid_run
+          - wrong_category
+          - wrong_challenge
+          - video_unavailable
+          - cheating_suspected
+          - incorrect_game_info
+          - gm_abuse
+          - spam
+          - other
+      details:
+        description: "Additional details"
+        required: false
+        type: string
+      game_id:
+        description: "Game ID (for routing)"
+        required: false
+        type: string
+
+permissions:
+  issues: write
+
+jobs:
+  create-report:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Determine routing
+        id: route
+        env:
+          REPORT_TYPE: ${{ github.event.client_payload.report_type || inputs.report_type }}
+          GAME_ID: ${{ github.event.client_payload.game_id || inputs.game_id }}
+        run: |
+          # GM complaints go only to admins (private)
+          if [ "$REPORT_TYPE" = "gm_complaint" ]; then
+            echo "assignees=GaryAsher" >> "$GITHUB_OUTPUT"
+            echo "labels=report,gm-complaint,confidential" >> "$GITHUB_OUTPUT"
+            echo "private=true" >> "$GITHUB_OUTPUT"
+          else
+            # Regular reports can be assigned to game GMs
+            if [ -n "$GAME_ID" ] && [ -f "_data/game-moderators.yml" ]; then
+              ASSIGNEES=$(node -e "
+                const yaml = require('js-yaml');
+                const fs = require('fs');
+                try {
+                  const data = yaml.load(fs.readFileSync('_data/game-moderators.yml', 'utf8'));
+                  const admins = data['_admins'] || [];
+                  const game = data['${GAME_ID}'] || {};
+                  const mods = game.moderators || [];
+                  const all = [...admins, ...mods].map(m => m.github).filter(Boolean);
+                  console.log(all.slice(0, 3).join(','));
+                } catch(e) {
+                  console.log('GaryAsher');
+                }
+              " 2>/dev/null || echo "GaryAsher")
+            else
+              ASSIGNEES="GaryAsher"
+            fi
+            
+            echo "assignees=${ASSIGNEES}" >> "$GITHUB_OUTPUT"
+            echo "labels=report,needs-review,game/${GAME_ID:-general}" >> "$GITHUB_OUTPUT"
+            echo "private=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPORT_TYPE: ${{ github.event.client_payload.report_type || inputs.report_type }}
+          CONTENT_ID: ${{ github.event.client_payload.content_id || inputs.content_id }}
+          REASON: ${{ github.event.client_payload.reason || inputs.reason }}
+          DETAILS: ${{ github.event.client_payload.details || inputs.details }}
+          GAME_ID: ${{ github.event.client_payload.game_id || inputs.game_id }}
+          ASSIGNEES: ${{ steps.route.outputs.assignees }}
+          LABELS: ${{ steps.route.outputs.labels }}
+          IS_PRIVATE: ${{ steps.route.outputs.private }}
+        run: |
+          # Map reason codes
+          case "$REASON" in
+            invalid_run) REASON_TEXT="Run appears invalid or incomplete" ;;
+            wrong_category) REASON_TEXT="Wrong category selected" ;;
+            wrong_challenge) REASON_TEXT="Wrong challenge type" ;;
+            video_unavailable) REASON_TEXT="Video unavailable or deleted" ;;
+            cheating_suspected) REASON_TEXT="Cheating/tool assistance suspected" ;;
+            incorrect_game_info) REASON_TEXT="Game information incorrect" ;;
+            gm_abuse) REASON_TEXT="GM abuse of power" ;;
+            spam) REASON_TEXT="Spam or inappropriate content" ;;
+            *) REASON_TEXT="Other issue" ;;
+          esac
+          
+          # Set title based on type
+          case "$REPORT_TYPE" in
+            run) TITLE="📢 Run Report: ${CONTENT_ID}" ;;
+            game) TITLE="📢 Game Report: ${CONTENT_ID}" ;;
+            gm_complaint) TITLE="🔒 GM Complaint (Confidential)" ;;
+            *) TITLE="📢 Report: ${CONTENT_ID}" ;;
+          esac
+          
+          # Build body
+          BODY="## Content Report
+
+**Type:** ${REPORT_TYPE}
+**Content:** \`${CONTENT_ID}\`
+**Game:** ${GAME_ID:-N/A}
+**Reason:** ${REASON_TEXT}
+
+### Details
+
+${DETAILS:-_No additional details provided._}
+
+---
+
+### Moderator Actions
+
+- [ ] Review the reported content
+- [ ] Take appropriate action
+- [ ] Close this issue when resolved
+
+---
+*This report was submitted anonymously.*"
+
+          # Add confidential note for GM complaints
+          if [ "$IS_PRIVATE" = "true" ]; then
+            BODY="${BODY}
+
+> ⚠️ **CONFIDENTIAL**: This is a GM complaint. Do not discuss publicly or with the reported GM."
+          fi
+          
+          # Create issue
+          gh issue create \
+            --title "$TITLE" \
+            --body "$BODY" \
+            --label "$LABELS" \
+            --assignee "$ASSIGNEES"
+
+      - name: Notify admin (GM complaints only)
+        if: steps.route.outputs.private == 'true' && env.DISCORD_ADMIN_WEBHOOK != ''
+        env:
+          DISCORD_ADMIN_WEBHOOK: ${{ secrets.DISCORD_ADMIN_WEBHOOK }}
+          CONTENT_ID: ${{ github.event.client_payload.content_id || inputs.content_id }}
+        run: |
+          curl -H "Content-Type: application/json" \
+            -d "{
+              \"content\": \"🔒 **Confidential GM Complaint Received**\nCheck GitHub Issues for details.\",
+              \"embeds\": [{
+                \"color\": 15158332,
+                \"description\": \"A user has submitted a complaint about a Game Moderator. Please review in GitHub Issues.\"
+              }]
+            }" \
+            "$DISCORD_ADMIN_WEBHOOK" || true
