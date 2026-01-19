@@ -1,4 +1,4 @@
-name: Process New Run Submission
+name: Process Run Submission
 
 on:
   repository_dispatch:
@@ -46,7 +46,7 @@ on:
         required: false
         type: string
       submission_id:
-        description: "Unique submission ID (for dedup)"
+        description: "Unique submission ID"
         required: false
         type: string
 
@@ -61,6 +61,13 @@ permissions:
 jobs:
   create-run-pr:
     runs-on: ubuntu-latest
+    outputs:
+      pr_number: ${{ steps.cpr.outputs.pull-request-number }}
+      pr_url: ${{ steps.cpr.outputs.pull-request-url }}
+      game_id: ${{ steps.create.outputs.game_id }}
+      runner_id: ${{ steps.create.outputs.runner_id }}
+      filename: ${{ steps.create.outputs.filename }}
+      
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -77,33 +84,23 @@ jobs:
         id: dedup
         env:
           VIDEO_URL: ${{ github.event.client_payload.video_url || inputs.video_url }}
-          GAME_ID: ${{ github.event.client_payload.game_id || inputs.game_id }}
         run: |
-          # Check if this video URL already exists in _runs/ or _queue_runs/
-          VIDEO_HASH=$(echo -n "$VIDEO_URL" | sha256sum | cut -c1-16)
-          
           EXISTING=$(grep -rl "$VIDEO_URL" _runs/ _queue_runs/ 2>/dev/null | head -1 || true)
           
           if [ -n "$EXISTING" ]; then
             echo "duplicate=true" >> "$GITHUB_OUTPUT"
             echo "existing_file=$EXISTING" >> "$GITHUB_OUTPUT"
-            echo "::warning::Duplicate submission detected: $VIDEO_URL already exists in $EXISTING"
           else
             echo "duplicate=false" >> "$GITHUB_OUTPUT"
           fi
-          
-          echo "video_hash=$VIDEO_HASH" >> "$GITHUB_OUTPUT"
 
-      - name: Skip if duplicate
+      - name: Stop if duplicate
         if: steps.dedup.outputs.duplicate == 'true'
         run: |
-          echo "⚠️ Skipping duplicate submission"
-          echo "Video URL already exists in: ${{ steps.dedup.outputs.existing_file }}"
-          exit 0
+          echo "::error::Duplicate submission - video already exists in ${{ steps.dedup.outputs.existing_file }}"
+          exit 1
 
       - name: Validate game exists
-        if: steps.dedup.outputs.duplicate != 'true'
-        id: validate
         env:
           GAME_ID: ${{ github.event.client_payload.game_id || inputs.game_id }}
         run: |
@@ -111,11 +108,42 @@ jobs:
             echo "::error::Game not found: ${GAME_ID}"
             exit 1
           fi
-          echo "game_valid=true" >> "$GITHUB_OUTPUT"
 
-      - name: Generate run file
-        if: steps.dedup.outputs.duplicate != 'true'
-        id: generate
+      - name: Get game moderators
+        id: gm
+        env:
+          GAME_ID: ${{ github.event.client_payload.game_id || inputs.game_id }}
+        run: |
+          # Extract GM info from game-moderators.yml
+          if [ -f "_data/game-moderators.yml" ]; then
+            # Get discord role for the game
+            DISCORD_ROLE=$(grep -A1 "^${GAME_ID}:" _data/game-moderators.yml | grep "discord_role:" | sed 's/.*discord_role: *"\([^"]*\)".*/\1/' || echo "")
+            DISCORD_TAG=$(grep -A2 "^${GAME_ID}:" _data/game-moderators.yml | grep "discord_tag:" | sed 's/.*discord_tag: *"\([^"]*\)".*/\1/' || echo "$GAME_ID")
+            
+            # Get GitHub usernames for PR assignment
+            # This is simplified - in production you'd parse YAML properly
+            GITHUB_REVIEWERS=$(node -e "
+              const yaml = require('js-yaml');
+              const fs = require('fs');
+              const data = yaml.load(fs.readFileSync('_data/game-moderators.yml', 'utf8'));
+              const game = data['${GAME_ID}'] || {};
+              const admins = data['_admins'] || [];
+              const mods = game.moderators || [];
+              const all = [...admins, ...mods].map(m => m.github).filter(Boolean);
+              console.log(all.join(','));
+            " 2>/dev/null || echo "GaryAsher")
+            
+            echo "discord_role=$DISCORD_ROLE" >> "$GITHUB_OUTPUT"
+            echo "discord_tag=$DISCORD_TAG" >> "$GITHUB_OUTPUT"
+            echo "github_reviewers=$GITHUB_REVIEWERS" >> "$GITHUB_OUTPUT"
+          else
+            echo "discord_role=" >> "$GITHUB_OUTPUT"
+            echo "discord_tag=$GAME_ID" >> "$GITHUB_OUTPUT"
+            echo "github_reviewers=GaryAsher" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create run file in queue
+        id: create
         env:
           GAME_ID: ${{ github.event.client_payload.game_id || inputs.game_id }}
           RUNNER_ID: ${{ github.event.client_payload.runner_id || inputs.runner_id }}
@@ -131,21 +159,11 @@ jobs:
         run: |
           set -euo pipefail
           
-          # Validate required fields
-          if [ -z "${GAME_ID:-}" ]; then echo "::error::GAME_ID is required"; exit 1; fi
-          if [ -z "${RUNNER_ID:-}" ]; then echo "::error::RUNNER_ID is required"; exit 1; fi
-          if [ -z "${CATEGORY:-}" ]; then echo "::error::CATEGORY is required"; exit 1; fi
-          if [ -z "${VIDEO_URL:-}" ]; then echo "::error::VIDEO_URL is required"; exit 1; fi
-          if [ -z "${DATE_COMPLETED:-}" ]; then echo "::error::DATE_COMPLETED is required"; exit 1; fi
-          
-          # Ensure queue directory exists
+          # Create queue directory
           mkdir -p "_queue_runs/${GAME_ID}"
           
-          # Generate unique filename
-          # Format: DATE__GAME__RUNNER__CATEGORY__NN.md
+          # Generate filename
           BASENAME="${DATE_COMPLETED}__${GAME_ID}__${RUNNER_ID}__${CATEGORY}"
-          
-          # Find next available number
           COUNTER=1
           while [ -f "_queue_runs/${GAME_ID}/${BASENAME}__$(printf '%02d' $COUNTER).md" ] || \
                 [ -f "_runs/${GAME_ID}/${BASENAME}__$(printf '%02d' $COUNTER).md" ]; do
@@ -155,178 +173,210 @@ jobs:
           FILENAME="${BASENAME}__$(printf '%02d' $COUNTER).md"
           FILEPATH="_queue_runs/${GAME_ID}/${FILENAME}"
           
-          # Build standard_challenges array
-          CHALLENGES_YAML=""
+          # Build challenges array
+          CHALLENGES_YAML="standard_challenges:"
           if [ -n "${STANDARD_CHALLENGES:-}" ]; then
-            CHALLENGES_YAML="standard_challenges:"
             IFS=',' read -ra CHALLENGES <<< "$STANDARD_CHALLENGES"
             for c in "${CHALLENGES[@]}"; do
-              c=$(echo "$c" | xargs)  # trim whitespace
-              if [ -n "$c" ]; then
-                CHALLENGES_YAML="${CHALLENGES_YAML}
+              c=$(echo "$c" | xargs)
+              [ -n "$c" ] && CHALLENGES_YAML="${CHALLENGES_YAML}
   - \"$c\""
-              fi
             done
           else
             CHALLENGES_YAML="standard_challenges: []"
           fi
           
           # Build restrictions array
-          RESTRICTIONS_YAML=""
+          RESTRICTIONS_YAML="restrictions:"
           if [ -n "${RESTRICTIONS:-}" ]; then
-            RESTRICTIONS_YAML="restrictions:"
             IFS=',' read -ra RESTS <<< "$RESTRICTIONS"
             for r in "${RESTS[@]}"; do
               r=$(echo "$r" | xargs)
-              if [ -n "$r" ]; then
-                RESTRICTIONS_YAML="${RESTRICTIONS_YAML}
+              [ -n "$r" ] && RESTRICTIONS_YAML="${RESTRICTIONS_YAML}
   - \"$r\""
-              fi
             done
           else
             RESTRICTIONS_YAML="restrictions: []"
           fi
           
-          # Generate the run file
+          # Create the run file
           cat > "$FILEPATH" << ENDOFFILE
-          ---
-          layout: run
-          game_id: "${GAME_ID}"
-          runner_id: "${RUNNER_ID}"
-          category: "${CATEGORY}"
-          video_url: "${VIDEO_URL}"
-          date: "${DATE_COMPLETED}"
-          ${CHALLENGES_YAML}
-          community_challenge: "${COMMUNITY_CHALLENGE:-}"
-          character: "${CHARACTER:-}"
-          glitch_id: "${GLITCH_ID:-}"
-          ${RESTRICTIONS_YAML}
-          status: pending
-          submission_id: "${SUBMISSION_ID}"
-          ---
-          ENDOFFILE
+---
+layout: run
+game_id: "${GAME_ID}"
+runner_id: "${RUNNER_ID}"
+category: "${CATEGORY}"
+video_url: "${VIDEO_URL}"
+date: "${DATE_COMPLETED}"
+${CHALLENGES_YAML}
+community_challenge: "${COMMUNITY_CHALLENGE:-}"
+character: "${CHARACTER:-}"
+glitch_id: "${GLITCH_ID:-}"
+${RESTRICTIONS_YAML}
+verified: false
+submission_id: "${SUBMISSION_ID}"
+submitted_at: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+---
+ENDOFFILE
           
-          # Clean up empty fields and fix indentation
-          sed -i 's/^          //' "$FILEPATH"
-          sed -i '/^[a-z_]*: ""$/d' "$FILEPATH"
+          # Clean up empty optional fields
+          sed -i '/^community_challenge: ""$/d' "$FILEPATH"
+          sed -i '/^character: ""$/d' "$FILEPATH"
+          sed -i '/^glitch_id: ""$/d' "$FILEPATH"
           
           echo "filepath=$FILEPATH" >> "$GITHUB_OUTPUT"
           echo "filename=$FILENAME" >> "$GITHUB_OUTPUT"
           echo "game_id=$GAME_ID" >> "$GITHUB_OUTPUT"
           echo "runner_id=$RUNNER_ID" >> "$GITHUB_OUTPUT"
           echo "category=$CATEGORY" >> "$GITHUB_OUTPUT"
+          echo "video_url=$VIDEO_URL" >> "$GITHUB_OUTPUT"
           
-          echo "✅ Created: $FILEPATH"
           cat "$FILEPATH"
 
-      - name: Get game reviewers
-        if: steps.dedup.outputs.duplicate != 'true'
-        id: reviewers
+      - name: Log submission to history
         env:
-          GAME_ID: ${{ steps.generate.outputs.game_id }}
+          GAME_ID: ${{ steps.create.outputs.game_id }}
+          FILENAME: ${{ steps.create.outputs.filename }}
+          RUNNER_ID: ${{ steps.create.outputs.runner_id }}
         run: |
-          # Extract reviewers from game file
-          REVIEWERS=$(grep -A20 "^reviewers:" "_games/${GAME_ID}.md" | grep "^\s*-" | sed 's/.*- *//' | tr -d '"' | tr '\n' ',' | sed 's/,$//')
+          mkdir -p "_data/history"
+          HISTORY_FILE="_data/history/${GAME_ID}.yml"
           
-          if [ -z "$REVIEWERS" ]; then
-            # Fallback to global owner
-            REVIEWERS="GaryAsher"
+          # Create file if doesn't exist
+          if [ ! -f "$HISTORY_FILE" ]; then
+            echo "# History log for ${GAME_ID}" > "$HISTORY_FILE"
+            echo "# Auto-generated - do not edit manually" >> "$HISTORY_FILE"
+            echo "" >> "$HISTORY_FILE"
           fi
           
-          echo "reviewers=$REVIEWERS" >> "$GITHUB_OUTPUT"
-          echo "Game reviewers: $REVIEWERS"
+          # Append new entry
+          cat >> "$HISTORY_FILE" << ENDOFENTRY
+
+- date: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  action: run_submitted
+  target: "${FILENAME}"
+  by:
+    discord: "anonymous"
+    github: ""
+  note: "Run submitted by ${RUNNER_ID}, awaiting approval"
+ENDOFENTRY
 
       - name: Create Pull Request
-        if: steps.dedup.outputs.duplicate != 'true'
         id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           add-paths: |
             _queue_runs/**
-          commit-message: "feat: New run submission - ${{ steps.generate.outputs.game_id }} by ${{ steps.generate.outputs.runner_id }}"
-          title: "🏃 Run Submission: ${{ steps.generate.outputs.game_id }} - ${{ steps.generate.outputs.runner_id }}"
+            _data/history/**
+          commit-message: "feat: New run submission - ${{ steps.create.outputs.game_id }} by ${{ steps.create.outputs.runner_id }}"
+          title: "🏃 [${{ steps.create.outputs.game_id }}] Run by ${{ steps.create.outputs.runner_id }}"
           body: |
             ## New Run Submission
             
             | Field | Value |
             |-------|-------|
-            | **Game** | `${{ steps.generate.outputs.game_id }}` |
-            | **Runner** | `${{ steps.generate.outputs.runner_id }}` |
-            | **Category** | `${{ steps.generate.outputs.category }}` |
-            | **Video** | ${{ github.event.client_payload.video_url || inputs.video_url }} |
-            | **Date** | ${{ github.event.client_payload.date_completed || inputs.date_completed }} |
+            | **Game** | `${{ steps.create.outputs.game_id }}` |
+            | **Runner** | `${{ steps.create.outputs.runner_id }}` |
+            | **Category** | `${{ steps.create.outputs.category }}` |
+            | **Video** | ${{ steps.create.outputs.video_url }} |
+            | **File** | `_queue_runs/${{ steps.create.outputs.game_id }}/${{ steps.create.outputs.filename }}` |
             
             ---
             
             ### 📋 Moderator Checklist
             
-            - [ ] Video is accessible and shows a complete run
+            Before approving, please verify:
+            - [ ] Video is accessible
+            - [ ] Run appears complete
             - [ ] Category and challenges are correct
-            - [ ] Runner ID matches an existing runner (or create new runner file)
-            - [ ] No rule violations detected
+            - [ ] No obvious rule violations
+            
+            ### Actions
+            - **Approve**: Merge this PR
+            - **Reject**: Close this PR with a comment explaining why
             
             ---
-            
-            **Game Moderators:** @${{ steps.reviewers.outputs.reviewers }}
-            
-            *Merge this PR to approve the run, or close it to reject.*
-          branch: "run/${{ steps.generate.outputs.game_id }}-${{ steps.generate.outputs.runner_id }}-${{ github.run_id }}"
+            *Game Moderators: @${{ steps.gm.outputs.github_reviewers }}*
+          branch: "run/${{ steps.create.outputs.game_id }}-${{ steps.create.outputs.runner_id }}-${{ github.run_id }}"
           delete-branch: true
           labels: |
             run-submission
             needs-review
-            game/${{ steps.generate.outputs.game_id }}
+            game/${{ steps.create.outputs.game_id }}
 
-      - name: Send Discord Notification
-        if: steps.dedup.outputs.duplicate != 'true' && steps.cpr.outputs.pull-request-number
+      - name: Create Discord Forum Post
+        if: steps.cpr.outputs.pull-request-number
         env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_RUNS }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_FORUM }}
+          DISCORD_FORUM_CHANNEL_ID: ${{ secrets.DISCORD_FORUM_CHANNEL_ID }}
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           PR_URL: ${{ steps.cpr.outputs.pull-request-url }}
           PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
-          GAME_ID: ${{ steps.generate.outputs.game_id }}
-          RUNNER_ID: ${{ steps.generate.outputs.runner_id }}
-          CATEGORY: ${{ steps.generate.outputs.category }}
-          VIDEO_URL: ${{ github.event.client_payload.video_url || inputs.video_url }}
+          GAME_ID: ${{ steps.create.outputs.game_id }}
+          GAME_TAG: ${{ steps.gm.outputs.discord_tag }}
+          RUNNER_ID: ${{ steps.create.outputs.runner_id }}
+          CATEGORY: ${{ steps.create.outputs.category }}
+          VIDEO_URL: ${{ steps.create.outputs.video_url }}
+          GM_ROLE: ${{ steps.gm.outputs.discord_role }}
         run: |
-          if [ -z "${DISCORD_WEBHOOK:-}" ]; then
-            echo "⚠️ No Discord webhook configured, skipping notification"
-            exit 0
+          # If we have a bot token and forum channel, create a forum post
+          # Otherwise fall back to webhook
+          
+          if [ -n "${DISCORD_BOT_TOKEN:-}" ] && [ -n "${DISCORD_FORUM_CHANNEL_ID:-}" ]; then
+            # Create forum thread using Discord API
+            ROLE_PING=""
+            if [ -n "${GM_ROLE:-}" ]; then
+              ROLE_PING="<@&${GM_ROLE}> "
+            fi
+            
+            curl -X POST "https://discord.com/api/v10/channels/${DISCORD_FORUM_CHANNEL_ID}/threads" \
+              -H "Authorization: Bot ${DISCORD_BOT_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "{
+                \"name\": \"[${GAME_TAG}] Run by ${RUNNER_ID}\",
+                \"message\": {
+                  \"content\": \"${ROLE_PING}New run submission needs review!\",
+                  \"embeds\": [{
+                    \"title\": \"Run Submission #${PR_NUMBER}\",
+                    \"color\": 3447003,
+                    \"fields\": [
+                      {\"name\": \"Game\", \"value\": \"\`${GAME_ID}\`\", \"inline\": true},
+                      {\"name\": \"Runner\", \"value\": \"\`${RUNNER_ID}\`\", \"inline\": true},
+                      {\"name\": \"Category\", \"value\": \"\`${CATEGORY}\`\", \"inline\": true},
+                      {\"name\": \"Video\", \"value\": \"${VIDEO_URL}\", \"inline\": false},
+                      {\"name\": \"Review PR\", \"value\": \"[View on GitHub](${PR_URL})\", \"inline\": false}
+                    ],
+                    \"footer\": {\"text\": \"Merge PR to approve • Close PR to reject\"}
+                  }]
+                },
+                \"applied_tags\": []
+              }" || echo "Discord forum post failed"
+          
+          elif [ -n "${DISCORD_WEBHOOK:-}" ]; then
+            # Fallback to simple webhook
+            curl -H "Content-Type: application/json" \
+              -d "{
+                \"content\": \"**[${GAME_TAG}]** New run submission needs review!\",
+                \"embeds\": [{
+                  \"title\": \"Run by ${RUNNER_ID}\",
+                  \"color\": 3447003,
+                  \"fields\": [
+                    {\"name\": \"Game\", \"value\": \"\`${GAME_ID}\`\", \"inline\": true},
+                    {\"name\": \"Category\", \"value\": \"\`${CATEGORY}\`\", \"inline\": true},
+                    {\"name\": \"Video\", \"value\": \"${VIDEO_URL}\", \"inline\": false},
+                    {\"name\": \"Review\", \"value\": \"[PR #${PR_NUMBER}](${PR_URL})\", \"inline\": false}
+                  ]
+                }]
+              }" \
+              "$DISCORD_WEBHOOK" || echo "Discord webhook failed"
+          else
+            echo "No Discord notification configured"
           fi
-          
-          # Send Discord embed
-          curl -H "Content-Type: application/json" \
-            -d "{
-              \"embeds\": [{
-                \"title\": \"🏃 New Run Submission\",
-                \"color\": 3447003,
-                \"fields\": [
-                  {\"name\": \"Game\", \"value\": \"\`${GAME_ID}\`\", \"inline\": true},
-                  {\"name\": \"Runner\", \"value\": \"\`${RUNNER_ID}\`\", \"inline\": true},
-                  {\"name\": \"Category\", \"value\": \"\`${CATEGORY}\`\", \"inline\": true},
-                  {\"name\": \"Video\", \"value\": \"${VIDEO_URL}\", \"inline\": false},
-                  {\"name\": \"Review PR\", \"value\": \"[PR #${PR_NUMBER}](${PR_URL})\", \"inline\": false}
-                ],
-                \"footer\": {\"text\": \"Awaiting moderator review\"},
-                \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
-              }]
-            }" \
-            "$DISCORD_WEBHOOK"
-          
-          echo "✅ Discord notification sent"
 
       - name: Summary
-        if: always()
         run: |
-          echo "## Run Submission Result" >> $GITHUB_STEP_SUMMARY
+          echo "## Run Submission Created" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
-          if [ "${{ steps.dedup.outputs.duplicate }}" = "true" ]; then
-            echo "⚠️ **Duplicate detected** - submission skipped" >> $GITHUB_STEP_SUMMARY
-            echo "Video already exists in: \`${{ steps.dedup.outputs.existing_file }}\`" >> $GITHUB_STEP_SUMMARY
-          elif [ -n "${{ steps.cpr.outputs.pull-request-number }}" ]; then
-            echo "✅ **PR Created:** #${{ steps.cpr.outputs.pull-request-number }}" >> $GITHUB_STEP_SUMMARY
-            echo "📎 ${{ steps.cpr.outputs.pull-request-url }}" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "❌ **Failed to create PR**" >> $GITHUB_STEP_SUMMARY
-          fi
+          echo "**PR:** #${{ steps.cpr.outputs.pull-request-number }}" >> $GITHUB_STEP_SUMMARY
+          echo "**URL:** ${{ steps.cpr.outputs.pull-request-url }}" >> $GITHUB_STEP_SUMMARY
