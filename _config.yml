@@ -61,4 +61,4 @@ exclude:
 
 # Cloudflare Turnstile (captcha)
 turnstile_site_key: "0x4AAAAAACNQ1SYSD-234zPt"
-# run_submit_endpoint: "https://your-worker.workers.dev/submit"
+run_submit_endpoint: "https://crc-run-submissions.280sauce.workers.dev"
