@@ -1,0 +1,133 @@
+name: Run Approved (PR Merged)
+
+on:
+  pull_request:
+    types: [closed]
+    paths:
+      - '_queue_runs/**'
+
+permissions:
+  contents: write
+
+jobs:
+  process-approval:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Move runs from queue to live
+        id: move
+        run: |
+          MOVED_FILES=""
+          GAME_IDS=""
+          
+          # Find all files in _queue_runs and move to _runs
+          for file in _queue_runs/*/*.md; do
+            if [ -f "$file" ]; then
+              # Extract game_id from path
+              GAME_ID=$(echo "$file" | cut -d'/' -f2)
+              FILENAME=$(basename "$file")
+              
+              # Create target directory
+              mkdir -p "_runs/${GAME_ID}"
+              
+              # Move file
+              mv "$file" "_runs/${GAME_ID}/${FILENAME}"
+              
+              echo "Moved: $file -> _runs/${GAME_ID}/${FILENAME}"
+              
+              MOVED_FILES="${MOVED_FILES}${FILENAME},"
+              GAME_IDS="${GAME_IDS}${GAME_ID},"
+            fi
+          done
+          
+          # Clean up empty queue directories
+          find _queue_runs -type d -empty -delete 2>/dev/null || true
+          
+          echo "moved_files=${MOVED_FILES}" >> "$GITHUB_OUTPUT"
+          echo "game_ids=${GAME_IDS}" >> "$GITHUB_OUTPUT"
+
+      - name: Log approval to history
+        env:
+          MOVED_FILES: ${{ steps.move.outputs.moved_files }}
+          GAME_IDS: ${{ steps.move.outputs.game_ids }}
+          APPROVER: ${{ github.event.pull_request.merged_by.login }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          IFS=',' read -ra FILES <<< "$MOVED_FILES"
+          IFS=',' read -ra GAMES <<< "$GAME_IDS"
+          
+          for i in "${!FILES[@]}"; do
+            FILE="${FILES[$i]}"
+            GAME="${GAMES[$i]}"
+            
+            if [ -n "$FILE" ] && [ -n "$GAME" ]; then
+              HISTORY_FILE="_data/history/${GAME}.yml"
+              mkdir -p "_data/history"
+              
+              if [ ! -f "$HISTORY_FILE" ]; then
+                echo "# History log for ${GAME}" > "$HISTORY_FILE"
+              fi
+              
+              cat >> "$HISTORY_FILE" << ENDOFENTRY
+
+- date: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  action: run_approved
+  target: "${FILE}"
+  by:
+    github: "${APPROVER}"
+  note: "Approved via PR #${PR_NUMBER}"
+ENDOFENTRY
+            fi
+          done
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git add _runs/ _data/history/
+          git rm -rf _queue_runs/ 2>/dev/null || true
+          
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "feat: Approve runs from PR #${{ github.event.pull_request.number }}"
+            git push
+          fi
+
+      - name: Notify Discord
+        if: env.DISCORD_WEBHOOK != ''
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_FORUM }}
+          MOVED_FILES: ${{ steps.move.outputs.moved_files }}
+          GAME_IDS: ${{ steps.move.outputs.game_ids }}
+          APPROVER: ${{ github.event.pull_request.merged_by.login }}
+        run: |
+          curl -H "Content-Type: application/json" \
+            -d "{
+              \"embeds\": [{
+                \"title\": \"✅ Run Approved\",
+                \"color\": 3066993,
+                \"description\": \"A run has been approved and is now live!\",
+                \"fields\": [
+                  {\"name\": \"Approved by\", \"value\": \"@${APPROVER}\", \"inline\": true}
+                ],
+                \"footer\": {\"text\": \"The run is now visible on the site\"}
+              }]
+            }" \
+            "$DISCORD_WEBHOOK" || true
