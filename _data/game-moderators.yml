@@ -1,0 +1,100 @@
+# Game Moderators Registry
+# 
+# This file defines who can moderate each game.
+# GMs can only approve/verify runs for games they're assigned to.
+#
+# Structure:
+#   game_id:
+#     discord_role: "Role ID for pinging in Discord"
+#     moderators:
+#       - discord: "Username#1234" or Discord user ID
+#         github: "github-username" (for PR assignment)
+#         name: "Display Name" (optional)
+#
+# All GM actions are logged to _data/history/{game_id}.yml
+
+# Global admins (can moderate any game)
+_admins:
+  - discord: "# Game Moderators Registry
+# 
+# This file defines who can moderate each game.
+# GMs can only approve/verify runs for games they're assigned to.
+#
+# Structure:
+#   game_id:
+#     discord_role: "Role ID for pinging in Discord"
+#     moderators:
+#       - discord: "Username#1234" or Discord user ID
+#         github: "github-username" (for PR assignment)
+#         name: "Display Name" (optional)
+#
+# All GM actions are logged to _data/history/{game_id}.yml
+
+# Global admins (can moderate any game)
+_admins:
+  - discord: "318918826983161858"
+    github: "GaryAsher"
+    name: "Gary_Asher"
+
+# Per-game moderators
+celeste:
+  discord_role: ""  # Add Discord role ID when created
+  discord_tag: "Celeste"  # Forum tag name
+  moderators: []
+  # Example:
+  # - discord: "CelesteMod#1234"
+  #   github: "celestemod"
+  #   name: "Celeste Moderator"
+
+hades-2:
+  discord_role: ""
+  discord_tag: "Hades II"
+  moderators: []
+
+hollow-knight:
+  discord_role: ""
+  discord_tag: "Hollow Knight"
+  moderators: []
+
+tiny-rogues:
+  discord_role: ""
+  discord_tag: "Tiny Rogues"
+  moderators: []
+
+the-legend-of-zelda-ocarina-of-time:
+  discord_role: ""
+  discord_tag: "Zelda OoT"
+  moderators: []
+"
+    github: "GaryAsher"
+    name: "Gary Asher"
+
+# Per-game moderators
+celeste:
+  discord_role: ""  # Add Discord role ID when created
+  discord_tag: "Celeste"  # Forum tag name
+  moderators: []
+  # Example:
+  # - discord: "CelesteMod#1234"
+  #   github: "celestemod"
+  #   name: "Celeste Moderator"
+
+hades-2:
+  discord_role: ""
+  discord_tag: "Hades II"
+  moderators: []
+
+hollow-knight:
+  discord_role: ""
+  discord_tag: "Hollow Knight"
+  moderators: []
+
+tiny-rogues:
+  discord_role: ""
+  discord_tag: "Tiny Rogues"
+  moderators: []
+
+the-legend-of-zelda-ocarina-of-time:
+  discord_role: ""
+  discord_tag: "Zelda OoT"
+  moderators: []
