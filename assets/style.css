@@ -4561,17 +4561,22 @@ a.resource-card:hover {
   gap: 6px;
 }
 
+/* Field labels - smaller, muted, uppercase to differentiate from section titles */
 .submit-run-page .submit-label {
-  font-weight: 650;
-  color: var(--fg);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
 }
 
 .submit-run-page .submit-hint {
   font-size: 0.85rem;
-  color: var(--text-muted);
+  color: var(--text-dim);
+  margin-top: -2px;
 }
 
-/* Inputs/selects match site styling */
+/* Inputs/selects - consistent dark background */
 .submit-run-page input[type="text"],
 .submit-run-page input[type="url"],
 .submit-run-page input[type="date"],
@@ -4581,14 +4586,15 @@ a.resource-card:hover {
   padding: 0.6rem 0.75rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  background: var(--surface);
+  background: var(--bg);
   color: var(--fg);
   min-height: var(--tap);
+  font-size: 0.95rem;
 }
 
 .submit-run-page input::placeholder,
 .submit-run-page textarea::placeholder {
-  color: var(--placeholder);
+  color: var(--placeholder-dim);
 }
 
 .submit-run-page input:focus,
@@ -4622,28 +4628,51 @@ a.resource-card:hover {
   }
 }
 
-/* Section cards (for grouping Standard / Community / Character / Glitches / Restrictions) */
+/* Section cards - these are the main groupings */
 .submit-run-page .submit-section {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--panel);
-  padding: 14px;
+  padding: 16px;
   display: grid;
   gap: 12px;
 }
 
+/* Section titles - prominent headers */
 .submit-run-page .submit-section__title {
   margin: 0;
-  font-size: 0.95rem;
-  font-weight: 800;
-  letter-spacing: 0.2px;
-  color: var(--fg);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Add a subtle line under the title */
+.submit-run-page .submit-section__title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  margin-left: 0.5rem;
 }
 
 .submit-run-page .submit-section__sub {
-  margin: -6px 0 0 0;
+  margin: -4px 0 4px 0;
   font-size: 0.85rem;
   color: var(--text-muted);
+}
+
+/* Filter input fields inside submit page - match the dark bg */
+.submit-run-page .filter-input__field {
+  background: var(--bg);
+  border-color: var(--border);
+}
+
+.submit-run-page .filter-input__field:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--focus-2);
 }
 
 /* Actions row */
