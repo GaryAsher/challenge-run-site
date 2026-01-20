@@ -32,8 +32,26 @@ from typing import Any, Dict, List
 
 def slugify(s: str) -> str:
     """Convert string to URL-friendly slug."""
-    s = (s or "").strip().lower()
+    s = (s or "").strip()
+    
+    # Special case mappings (preserve meaningful slugs)
+    special_cases = {
+        "100%": "100-percent",
+        "any%": "any-percent",
+        "low%": "low-percent",
+        "all%": "all-percent",
+        "true%": "true-percent",
+    }
+    
+    # Check for special cases (case-insensitive)
+    s_lower = s.lower()
+    if s_lower in special_cases:
+        return special_cases[s_lower]
+    
+    # Standard slugify
+    s = s.lower()
     s = re.sub(r"['']", "", s)
+    s = re.sub(r"%", "-percent", s)  # Handle % in other contexts
     s = re.sub(r"[^a-z0-9]+", "-", s)
     s = re.sub(r"-{2,}", "-", s)
     s = s.strip("-")
@@ -131,9 +149,7 @@ def main() -> None:
     if not categories_raw:
         print("ERROR: CATEGORIES is required", file=sys.stderr)
         sys.exit(1)
-    if not challenges_raw:
-        print("ERROR: CHALLENGES is required", file=sys.stderr)
-        sys.exit(1)
+    # CHALLENGES is optional - some games may not have standard challenge types
     if not out_file:
         print("ERROR: OUT_FILE is required", file=sys.stderr)
         sys.exit(1)
