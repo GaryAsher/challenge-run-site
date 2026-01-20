@@ -130,7 +130,9 @@ game_id: ${gameId}
 
 <div class="page-width">
   <div class="game-shell">
-    {% include game-rules.html game=game %}
+    <section class="tab-panel active" data-panel="${section}">
+      {% include game-rules.html game=game %}
+    </section>
   </div>
 </div>
 `;
@@ -149,12 +151,101 @@ game_id: ${gameId}
 
 <div class="page-width">
   <div class="game-shell">
-    {% include submit-run-form.html game=game %}
+    <section class="tab-panel active" data-panel="${section}">
+      {% include submit-run-form.html game=game %}
+    </section>
   </div>
 </div>
 `;
   }
 
+  // History page uses the game-history include
+  if (section === 'history') {
+    return `---
+layout: default
+title: "${gameName} - ${title}"
+game_id: ${gameId}
+---
+
+{% assign game = site.games | where: "game_id", page.game_id | first %}
+{% include game-header-tabs.html game=game active="${section}" %}
+
+<div class="page-width">
+  <div class="game-shell">
+    <section class="tab-panel active" data-panel="${section}">
+      <h2 class="mb-3">${title}</h2>
+      <p class="muted mb-4">${description}</p>
+      {% include game-history.html game=game %}
+    </section>
+  </div>
+</div>
+`;
+  }
+
+  // Resources page
+  if (section === 'resources') {
+    return `---
+layout: default
+title: "${gameName} - ${title}"
+game_id: ${gameId}
+---
+
+{% assign game = site.games | where: "game_id", page.game_id | first %}
+{% include game-header-tabs.html game=game active="${section}" %}
+
+<div class="page-width">
+  <div class="game-shell">
+    <section class="tab-panel active" data-panel="${section}">
+      <h2 class="mb-3">${title}</h2>
+      <p class="muted mb-4">${description}</p>
+      
+      {% if game.resources and game.resources.size > 0 %}
+        <div class="resources-list">
+          {% for resource in game.resources %}
+            <div class="resource-item">
+              <a href="{{ resource.url }}" target="_blank" rel="noopener">
+                <strong>{{ resource.name }}</strong>
+              </a>
+              {% if resource.description %}
+                <p class="muted">{{ resource.description }}</p>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="muted"><em>No resources have been added yet. Want to contribute? Contact a moderator!</em></p>
+      {% endif %}
+    </section>
+  </div>
+</div>
+`;
+  }
+
+  // Forum page
+  if (section === 'forum') {
+    return `---
+layout: default
+title: "${gameName} - ${title}"
+game_id: ${gameId}
+---
+
+{% assign game = site.games | where: "game_id", page.game_id | first %}
+{% include game-header-tabs.html game=game active="${section}" %}
+
+<div class="page-width">
+  <div class="game-shell">
+    <section class="tab-panel active" data-panel="${section}">
+      <h2 class="mb-3">${title}</h2>
+      <p class="muted mb-4">${description}</p>
+      
+      <p class="muted"><em>Forum functionality coming soon!</em></p>
+    </section>
+  </div>
+</div>
+`;
+  }
+
+  // Default template for any other section
   return `---
 layout: default
 title: "${gameName} - ${title}"
@@ -166,10 +257,10 @@ game_id: ${gameId}
 
 <div class="page-width">
   <div class="game-shell">
-    <div class="card">
-      <h1>${title}</h1>
+    <section class="tab-panel active" data-panel="${section}">
+      <h2 class="mb-3">${title}</h2>
       <p class="muted">${description}</p>
-    </div>
+    </section>
   </div>
 </div>
 `;
@@ -198,31 +289,35 @@ category_slug: "${categorySlug}"
 // ============================================================
 // Main Generation Logic
 // ============================================================
-function generateGamePages(gameId, checkOnly = false, forceOverwrite = false) {
-  const gameFile = path.join(GAMES_DIR, `${gameId}.md`);
+function generatePagesForGame(gameFile, checkOnly = false, forceOverwrite = false) {
+  const md = readText(gameFile);
+  const { data: fm } = parseFrontMatter(md);
   
-  if (!isFile(gameFile)) {
-    console.error(`Game file not found: ${gameFile}`);
-    return false;
+  const gameId = fm.game_id;
+  if (!gameId) {
+    console.warn(`Skipping ${gameFile} - no game_id`);
+    return 0;
   }
 
-  const content = readText(gameFile);
-  const { data: fm, hasFrontMatter } = parseFrontMatter(content);
-
-  if (!hasFrontMatter) {
-    console.error(`No front matter in: ${gameFile}`);
-    return false;
-  }
-
-  const gameName = fm.game_name || fm.name || gameId;
+  const gameName = fm.game_name || fm.title || gameId;
+  const tabs = fm.tabs || {};
   const gameDir = path.join(OUTPUT_DIR, gameId);
   
   let missingCount = 0;
 
-  // Standard sub-pages
-  const subPages = ['forum', 'guides', 'history', 'resources', 'rules', 'submit'];
+  // Sub-pages to generate based on tabs config
+  const sections = ['rules']; // Always generate rules
   
-  for (const section of subPages) {
+  // Add optional sections if enabled
+  if (tabs.resources !== false) sections.push('resources');
+  if (tabs.history !== false) sections.push('history');
+  if (tabs.forum) sections.push('forum');
+  if (tabs.guides) sections.push('guides');
+  
+  // Always generate submit page
+  sections.push('submit');
+  
+  for (const section of sections) {
     const sectionDir = path.join(gameDir, section);
     const template = generateSubPageTemplate(gameId, section, gameName);
     
@@ -262,8 +357,9 @@ function generateGamePages(gameId, checkOnly = false, forceOverwrite = false) {
             
             if (childSlug) {
               const fullSlug = `${slug}/${childSlug}`;
-              const childDir = path.join(catDir, childSlug);
-              const childTemplate = generateCategoryPageTemplate(gameId, gameName, fullSlug, childLabel);
+              const fullLabel = `${label}: ${childLabel}`;
+              const childDir = path.join(runsDir, slug, childSlug);
+              const childTemplate = generateCategoryPageTemplate(gameId, gameName, fullSlug, fullLabel);
               
               if (ensureIndexPage(childDir, childTemplate, checkOnly, forceOverwrite)) {
                 missingCount++;
@@ -275,71 +371,52 @@ function generateGamePages(gameId, checkOnly = false, forceOverwrite = false) {
     }
   }
 
-  if (checkOnly && missingCount > 0) {
-    console.log(`\n${gameId}: ${missingCount} missing page(s)`);
-  } else if (!checkOnly) {
-    console.log(`${gameId}: Done.`);
-  }
-
-  return missingCount === 0;
+  return missingCount;
 }
 
 // ============================================================
-// CLI
+// CLI Entry Point
 // ============================================================
 function main() {
   const args = process.argv.slice(2);
-  let targetGame = null;
-  let checkOnly = false;
-  let forceOverwrite = false;
-
-  for (let i = 0; i < args.length; i++) {
-    if (args[i] === '--game' && args[i + 1]) {
-      targetGame = args[i + 1];
-      i++;
-    } else if (args[i] === '--check') {
-      checkOnly = true;
-    } else if (args[i] === '--force') {
-      forceOverwrite = true;
-    }
+  const checkOnly = args.includes('--check');
+  const forceOverwrite = args.includes('--force');
+  
+  let specificGame = null;
+  const gameIndex = args.indexOf('--game');
+  if (gameIndex !== -1 && args[gameIndex + 1]) {
+    specificGame = args[gameIndex + 1];
   }
 
-  if (targetGame) {
-    // Generate for specific game
-    const success = generateGamePages(targetGame, checkOnly, forceOverwrite);
-    if (checkOnly && !success) {
-      process.exit(1);
+  if (!isDir(GAMES_DIR)) {
+    console.error('_games directory not found');
+    process.exit(1);
+  }
+
+  const gameFiles = fs.readdirSync(GAMES_DIR)
+    .filter(f => f.endsWith('.md'))
+    .map(f => path.join(GAMES_DIR, f));
+
+  let totalMissing = 0;
+  let gamesProcessed = 0;
+
+  for (const gameFile of gameFiles) {
+    const gameId = path.basename(gameFile, '.md');
+    
+    if (specificGame && gameId !== specificGame) {
+      continue;
     }
+
+    const missing = generatePagesForGame(gameFile, checkOnly, forceOverwrite);
+    totalMissing += missing;
+    gamesProcessed++;
+  }
+
+  if (checkOnly) {
+    console.log(`\nChecked ${gamesProcessed} game(s). ${totalMissing} page(s) missing.`);
+    process.exit(totalMissing > 0 ? 1 : 0);
   } else {
-    // Generate for all games
-    if (!isDir(GAMES_DIR)) {
-      console.error(`Games directory not found: ${GAMES_DIR}`);
-      process.exit(1);
-    }
-
-    const gameFiles = fs.readdirSync(GAMES_DIR)
-      .filter(f => f.endsWith('.md') && f.toLowerCase() !== 'readme.md');
-
-    if (gameFiles.length === 0) {
-      console.log('No game files found.');
-      return;
-    }
-
-    let allSuccess = true;
-    for (const file of gameFiles) {
-      const gameId = file.replace('.md', '');
-      const success = generateGamePages(gameId, checkOnly, forceOverwrite);
-      if (!success) allSuccess = false;
-    }
-
-    if (checkOnly && !allSuccess) {
-      console.log('\nRun without --check to create missing pages.');
-      process.exit(1);
-    }
-  }
-
-  if (!checkOnly) {
-    console.log('\nAll game pages generated successfully.');
+    console.log(`\nProcessed ${gamesProcessed} game(s). ${totalMissing} page(s) created.`);
   }
 }
 
