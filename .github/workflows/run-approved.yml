@@ -35,17 +35,12 @@ jobs:
           MOVED_FILES=""
           GAME_IDS=""
           
-          # Find all files in _queue_runs and move to _runs
           for file in _queue_runs/*/*.md; do
             if [ -f "$file" ]; then
-              # Extract game_id from path
               GAME_ID=$(echo "$file" | cut -d'/' -f2)
               FILENAME=$(basename "$file")
               
-              # Create target directory
               mkdir -p "_runs/${GAME_ID}"
-              
-              # Move file
               mv "$file" "_runs/${GAME_ID}/${FILENAME}"
               
               echo "Moved: $file -> _runs/${GAME_ID}/${FILENAME}"
@@ -55,7 +50,6 @@ jobs:
             fi
           done
           
-          # Clean up empty queue directories
           find _queue_runs -type d -empty -delete 2>/dev/null || true
           
           echo "moved_files=${MOVED_FILES}" >> "$GITHUB_OUTPUT"
@@ -83,15 +77,14 @@ jobs:
                 echo "# History log for ${GAME}" > "$HISTORY_FILE"
               fi
               
-              cat >> "$HISTORY_FILE" << ENDOFENTRY
-
-- date: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-  action: run_approved
-  target: "${FILE}"
-  by:
-    github: "${APPROVER}"
-  note: "Approved via PR #${PR_NUMBER}"
-ENDOFENTRY
+              # Use echo instead of heredoc to avoid YAML parsing issues
+              echo "" >> "$HISTORY_FILE"
+              echo "- date: \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"" >> "$HISTORY_FILE"
+              echo "  action: run_approved" >> "$HISTORY_FILE"
+              echo "  target: \"${FILE}\"" >> "$HISTORY_FILE"
+              echo "  by:" >> "$HISTORY_FILE"
+              echo "    github: \"${APPROVER}\"" >> "$HISTORY_FILE"
+              echo "  note: \"Approved via PR #${PR_NUMBER}\"" >> "$HISTORY_FILE"
             fi
           done
 
@@ -113,7 +106,7 @@ ENDOFENTRY
       - name: Notify Discord
         if: env.DISCORD_WEBHOOK != ''
         env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_FORUM }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_NEW_RUN_SUBMISSION }}
           MOVED_FILES: ${{ steps.move.outputs.moved_files }}
           GAME_IDS: ${{ steps.move.outputs.game_ids }}
           APPROVER: ${{ github.event.pull_request.merged_by.login }}
