@@ -3908,8 +3908,8 @@ a.resource-card:hover {
 }
 
 .rule-builder__rule-desc {
-  margin: 0.25rem 0 0;
-  padding-left: 1.5rem;
+  margin: 0.25rem 0 0 0;
+  margin-left: 1.5rem;
   font-size: 0.9em;
   color: var(--text-muted);
 }
@@ -3917,6 +3917,7 @@ a.resource-card:hover {
 .rule-builder__rule-desc ul {
   margin: 0.25rem 0 0 0;
   padding-left: 1.25rem;
+  list-style-type: disc;
 }
 
 .rule-builder__rule-desc li {
@@ -3946,7 +3947,7 @@ a.resource-card:hover {
 
 .rule-builder__rule-extra {
   margin: 0.25rem 0 0 0;
-  padding-left: 1.5rem;
+  margin-left: 1.5rem;
   font-size: 0.9em;
 }
 
