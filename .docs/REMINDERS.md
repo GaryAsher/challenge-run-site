@@ -6,13 +6,17 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ## Priority Roadmap
 
-### Needs Fixing
-- New Game Submission form:
-  - [ ] We need a different form for community challenges.
-  - [ ] Do we ask users to fill out Genres again?
+### New Game Submission form:
+- [ ] Do we ask users to fill out Genres again?
+- [ ] Discord Webhook not working properly
+- [ ] Fix script to change variables into strings.
+  - This will fix when people submit 100% as a category.
 
 ### Forms & Submissions
 - [ ] Runner profile submission - Self-service profile creation
+- [ ] Make separate form for community challenges
+- [ ] Make separate form for custom player challenges?
+  - Users can list their own rules
 
 ### Enhanced Runner Profiles
 - [ ] Add social links (YouTube, Twitch, Twitter, Discord)
