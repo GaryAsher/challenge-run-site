@@ -89,10 +89,10 @@ restrictions_data:
 # RUN CATEGORIES
 # =============================================================================
 categories_data:
-  - slug: any
+  - slug: "any"
     label: "Any%"
     description: ""
-  - slug: 100
+  - slug: "100"
     label: "100%"
     description: ""
 
