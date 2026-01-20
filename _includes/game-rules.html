@@ -319,37 +319,6 @@
   </div>
   {% endif %}
 
-  <!-- 4. Character/Weapon/Aspect -->
-  {% if has_character and game.characters_data and game.characters_data.size > 0 %}
-  <div class="rules-section mt-4" data-section-order="4">
-    <details class="accordion-item accordion-item--section">
-      <summary class="accordion-header accordion-header--section">
-        <span class="accordion-title">🎭 {{ character_label }}s</span>
-        <span class="accordion-icon">▼</span>
-      </summary>
-      <div class="accordion-content">
-        <div class="accordion">
-          {% for char in game.characters_data %}
-            <details class="accordion-item">
-              <summary class="accordion-header">
-                <span class="accordion-title">{{ char.label }}</span>
-                <span class="accordion-icon">▼</span>
-              </summary>
-              <div class="accordion-content">
-                {% if char.description %}
-                  {% include md.html text=char.description %}
-                {% else %}
-                  <p class="muted">No description available.</p>
-                {% endif %}
-              </div>
-            </details>
-          {% endfor %}
-        </div>
-      </div>
-    </details>
-  </div>
-  {% endif %}
-
   <!-- 5. Standard Challenge Types -->
   {% if has_challenges %}
   <div class="rules-section mt-4" data-section-order="5">
