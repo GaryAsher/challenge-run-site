@@ -2,429 +2,340 @@
 """
 generate-game-file.py
 
-Create or normalize a standardized CRC game file in _games/<game_id>.md
+Create a standardized CRC game file in _queue_games/<game_id>.md
 
-Usage examples:
+This script reads from ENVIRONMENT VARIABLES (set by GitHub Actions):
+  - GAME_NAME (required)
+  - GAME_ID (required)
+  - CATEGORIES (required, newline-separated)
+  - CHALLENGES (required, comma-separated challenge types)
+  - CHAR_ENABLED (optional, "true"/"false")
+  - CHAR_LABEL (optional, e.g., "Weapon / Aspect")
+  - SUBMITTER (optional, Discord handle)
+  - CREDIT_REQUESTED (optional, "true"/"false")
+  - DETAILS_IN (optional, JSON string with additional fields)
+  - OUT_FILE (required, output path)
 
-1) Create from JSON file
-   python scripts/generate-game-file.py create --input game.json --out _games/hades-2.md
-
-2) Create from stdin
-   cat game.json | python scripts/generate-game-file.py create --out _games/hades-2.md
-
-3) Normalize an existing game file
-   python scripts/generate-game-file.py normalize --infile _games/hades-2.md --out _games/hades-2.md
+Usage:
+  # Set env vars then run:
+  python3 scripts/generate-game-file.py
 """
 
 from __future__ import annotations
 
-import argparse
 import json
 import os
 import re
-from typing import Any, Dict, List, Optional, Tuple
+import sys
+from typing import Any, Dict, List
 
-
-# -----------------------------
-# Helpers
-# -----------------------------
 
 def slugify(s: str) -> str:
-  s = (s or "").strip().lower()
-  s = re.sub(r"[’']", "", s)
-  s = re.sub(r"[^a-z0-9]+", "-", s)
-  s = re.sub(r"-{2,}", "-", s)
-  s = s.strip("-")
-  return s
+    """Convert string to URL-friendly slug."""
+    s = (s or "").strip().lower()
+    s = re.sub(r"['']", "", s)
+    s = re.sub(r"[^a-z0-9]+", "-", s)
+    s = re.sub(r"-{2,}", "-", s)
+    s = s.strip("-")
+    return s
 
 
-def ensure_list(x: Any) -> List[Any]:
-  if x is None:
-    return []
-  if isinstance(x, list):
-    return x
-  return [x]
+def parse_newline_list(s: str) -> List[str]:
+    """Parse newline-separated string into list."""
+    if not s:
+        return []
+    return [line.strip() for line in s.strip().split("\n") if line.strip()]
+
+
+def parse_comma_list(s: str) -> List[str]:
+    """Parse comma-separated string into list."""
+    if not s:
+        return []
+    return [item.strip() for item in s.split(",") if item.strip()]
 
 
 def as_bool(x: Any, default: bool = False) -> bool:
-  if isinstance(x, bool):
-    return x
-  if isinstance(x, str):
-    v = x.strip().lower()
-    if v in ("true", "yes", "1", "y", "on"):
-      return True
-    if v in ("false", "no", "0", "n", "off"):
-      return False
-  if isinstance(x, (int, float)):
-    return bool(x)
-  return default
-
-
-def clean_str(x: Any) -> str:
-  return str(x).strip() if x is not None else ""
-
-
-def unique_keep_order(items: List[str]) -> List[str]:
-  seen = set()
-  out = []
-  for it in items:
-    it = clean_str(it)
-    if not it:
-      continue
-    if it in seen:
-      continue
-    seen.add(it)
-    out.append(it)
-  return out
-
-
-def normalize_id_label_list(items: Any, id_key: str = "id", label_key: str = "name") -> List[Dict[str, str]]:
-  """
-  Accepts:
-    - ["hitless", "damageless"]
-    - [{"id":"hitless","name":"Hitless"}]
-    - [{"slug":"hitless","label":"Hitless"}]
-  Produces:
-    - [{"id":"hitless","name":"Hitless"}]
-  """
-  out: List[Dict[str, str]] = []
-  for raw in ensure_list(items):
-    if raw is None:
-      continue
-
-    if isinstance(raw, str):
-      sid = slugify(raw)
-      if not sid:
-        continue
-      out.append({"id": sid, "name": raw.strip()})
-      continue
-
-    if isinstance(raw, dict):
-      rid = clean_str(raw.get(id_key) or raw.get("id") or raw.get("slug") or raw.get("challenge_id"))
-      rname = clean_str(raw.get(label_key) or raw.get("name") or raw.get("label") or raw.get("title") or rid)
-      rid = slugify(rid) if rid else slugify(rname)
-      if not rid:
-        continue
-      out.append({"id": rid, "name": rname or rid})
-      continue
-
-  # dedupe by id
-  seen = set()
-  deduped: List[Dict[str, str]] = []
-  for it in out:
-    if it["id"] in seen:
-      continue
-    seen.add(it["id"])
-    deduped.append(it)
-  return deduped
-
-
-def normalize_categories(items: Any) -> List[Dict[str, Any]]:
-  """
-  Category contract:
-    - slug: "any"
-      name: "Any%"
-      children:
-        - slug: "underworld-any"
-          name: "Underworld Any%"
-  """
-  out: List[Dict[str, Any]] = []
-  for raw in ensure_list(items):
-    if raw is None:
-      continue
-
-    if isinstance(raw, str):
-      sid = slugify(raw)
-      if not sid:
-        continue
-      out.append({"slug": sid, "name": raw.strip()})
-      continue
-
-    if isinstance(raw, dict):
-      slug = clean_str(raw.get("slug") or raw.get("id") or raw.get("category_slug") or raw.get("key"))
-      name = clean_str(raw.get("name") or raw.get("title") or slug)
-      slug = slugify(slug) if slug else slugify(name)
-
-      cat: Dict[str, Any] = {"slug": slug, "name": name or slug}
-      children = raw.get("children") or raw.get("subcategories") or raw.get("subs")
-      if children:
-        cat["children"] = normalize_categories(children)
-      out.append(cat)
-
-  # dedupe by slug
-  seen = set()
-  deduped: List[Dict[str, Any]] = []
-  for it in out:
-    if it["slug"] in seen:
-      continue
-    seen.add(it["slug"])
-    deduped.append(it)
-  return deduped
-
-
-def split_front_matter(md: str) -> Tuple[Dict[str, Any], str]:
-  """
-  Minimal front matter parser:
-  - expects file begins with --- front matter ---
-  - reads YAML-ish keys, but we only need to preserve the body and re-emit normalized YAML
-
-  This is intentionally limited: it is for your controlled repo content.
-  """
-  if not md.startswith("---"):
-    return {}, md
-
-  parts = md.split("\n")
-  if len(parts) < 3:
-    return {}, md
-
-  # find second '---'
-  end = None
-  for i in range(1, len(parts)):
-    if parts[i].strip() == "---":
-      end = i
-      break
-  if end is None:
-    return {}, md
-
-  fm_lines = parts[1:end]
-  body = "\n".join(parts[end + 1:]).lstrip("\n")
-
-  # naive YAML to dict via json-ish approach is not safe
-  # Instead: we parse only simple "key: value" scalars; lists/maps should be provided via normalize input
-  # For normalize mode, we strongly recommend the input file was generated by this tool already.
-  fm: Dict[str, Any] = {}
-  key_re = re.compile(r"^([A-Za-z0-9_]+):\s*(.*)$")
-  current_key: Optional[str] = None
-  for line in fm_lines:
-    if not line.strip():
-      continue
-    m = key_re.match(line)
-    if m:
-      current_key = m.group(1)
-      val = m.group(2).strip()
-      if val == "":
-        fm[current_key] = []
-      else:
-        # strip quotes
-        if (val.startswith('"') and val.endswith('"')) or (val.startswith("'") and val.endswith("'")):
-          val = val[1:-1]
-        fm[current_key] = val
-      continue
-
-    # extremely minimal handling for indented list items under current_key
-    if current_key and line.startswith("  - "):
-      if not isinstance(fm.get(current_key), list):
-        fm[current_key] = []
-      fm[current_key].append(line.replace("  - ", "", 1).strip())
-
-  return fm, body
+    """Convert value to boolean."""
+    if isinstance(x, bool):
+        return x
+    if isinstance(x, str):
+        return x.strip().lower() in ("true", "yes", "1", "y", "on")
+    return default
 
 
 def yaml_quote(s: str) -> str:
-  # quote if needed
-  if s == "":
-    return '""'
-  if re.search(r"[:\[\]\{\},#&*!|>'\"%@`]", s) or s.strip() != s or "\n" in s:
-    return json.dumps(s)  # safe double-quoted string
-  return s
+    """Quote string for YAML if needed."""
+    if s == "":
+        return '""'
+    if re.search(r'[:\[\]\{\},#&*!|>\'"%@`\n]', s) or s.strip() != s:
+        return json.dumps(s)
+    return s
 
 
-def emit_yaml_value(v: Any, indent: int = 0) -> List[str]:
-  sp = "  " * indent
+def build_yaml_list(items: List[str], indent: int = 0) -> List[str]:
+    """Build YAML list lines."""
+    sp = "  " * indent
+    if not items:
+        return [f"{sp}[]"]
+    return [f"{sp}- {yaml_quote(item)}" for item in items]
 
-  if isinstance(v, bool):
-    return [f"{sp}{'true' if v else 'false'}"]
-  if v is None:
-    return [f"{sp}"]
-  if isinstance(v, (int, float)):
-    return [f"{sp}{v}"]
-  if isinstance(v, str):
-    return [f"{sp}{yaml_quote(v)}"]
-  if isinstance(v, list):
-    if len(v) == 0:
-      return [f"{sp}[]"]
-    lines: List[str] = []
-    for item in v:
-      if isinstance(item, (str, int, float, bool)) or item is None:
-        lines.append(f"{sp}- {emit_yaml_value(item, 0)[0].strip()}")
-      elif isinstance(item, dict):
-        lines.append(f"{sp}-")
-        lines.extend(emit_yaml_dict(item, indent + 1))
-      else:
-        lines.append(f"{sp}- {yaml_quote(str(item))}")
-    return lines
-  if isinstance(v, dict):
-    if len(v) == 0:
-      return [f"{sp}{{}}"]
-    lines: List[str] = []
-    lines.extend(emit_yaml_dict(v, indent))
+
+def build_categories_yaml(categories: List[str]) -> List[str]:
+    """Build categories_data YAML section."""
+    lines = []
+    for cat in categories:
+        slug = slugify(cat)
+        if not slug:
+            continue
+        lines.append(f"  - slug: {yaml_quote(slug)}")
+        lines.append(f"    label: {yaml_quote(cat)}")
+        lines.append(f'    description: ""')
     return lines
 
-  return [f"{sp}{yaml_quote(str(v))}"]
 
+def build_challenges_yaml(challenges: List[str]) -> List[str]:
+    """Build challenges_data YAML section."""
+    lines = []
+    for ch in challenges:
+        slug = slugify(ch)
+        if not slug:
+            continue
+        lines.append(f"  - slug: {yaml_quote(slug)}")
+        lines.append(f"    label: {yaml_quote(ch)}")
+        lines.append(f'    description: ""')
+    return lines
 
-def emit_yaml_dict(d: Dict[str, Any], indent: int = 0) -> List[str]:
-  sp = "  " * indent
-  lines: List[str] = []
-  for k, v in d.items():
-    if isinstance(v, dict):
-      lines.append(f"{sp}{k}:")
-      lines.extend(emit_yaml_dict(v, indent + 1))
-    elif isinstance(v, list):
-      if len(v) == 0:
-        lines.append(f"{sp}{k}: []")
-      else:
-        lines.append(f"{sp}{k}:")
-        lines.extend(emit_yaml_value(v, indent))
-    else:
-      lines.append(f"{sp}{k}: {emit_yaml_value(v, 0)[0].strip()}")
-  return lines
-
-
-# -----------------------------
-# Standardization contract
-# -----------------------------
-
-def standardize_game(data: Dict[str, Any]) -> Dict[str, Any]:
-  title = clean_str(data.get("title") or data.get("name") or "")
-  game_id = clean_str(data.get("game_id") or data.get("id") or slugify(title))
-  game_id = slugify(game_id)
-
-  # core fields
-  out: Dict[str, Any] = {
-    "layout": "game",
-    "title": title or game_id,
-    "game_id": game_id,
-  }
-
-  # optional cosmetics
-  hero_image = clean_str(data.get("hero_image") or data.get("hero") or "")
-  if hero_image:
-    out["hero_image"] = hero_image
-
-  aliases = ensure_list(data.get("aliases") or data.get("alias") or [])
-  out["aliases"] = unique_keep_order([clean_str(a) for a in aliases])
-
-  tags = ensure_list(data.get("tags") or [])
-  out["tags"] = unique_keep_order([slugify(t) if isinstance(t, str) else clean_str(t) for t in tags])
-
-  platforms = ensure_list(data.get("platforms") or [])
-  out["platforms"] = unique_keep_order([clean_str(p) for p in platforms])
-
-  # tabs (optional)
-  tabs = data.get("tabs")
-  if isinstance(tabs, list):
-    out["tabs"] = tabs
-
-  # categories
-  out["categories"] = normalize_categories(data.get("categories") or [])
-
-  # Standard vs Community challenges
-  out["standard_challenges"] = normalize_id_label_list(data.get("standard_challenges") or data.get("challenges") or [])
-  out["community_challenges"] = normalize_id_label_list(data.get("community_challenges") or data.get("community") or [])
-
-  # character column + characters list
-  cc = data.get("character_column") or {}
-  cc_enabled = as_bool(cc.get("enabled"), default=False) if isinstance(cc, dict) else False
-  cc_label = clean_str(cc.get("label")) if isinstance(cc, dict) else ""
-
-  out["character_column"] = {
-    "enabled": bool(cc_enabled),
-    "label": cc_label or "Character"
-  }
-
-  # "characters" list can come from `characters_data` or `characters`
-  out["characters"] = normalize_id_label_list(
-    data.get("characters_data") or data.get("characters") or []
-  )
-
-  # glitches + restrictions
-  out["glitches"] = normalize_id_label_list(data.get("glitches") or [])
-  out["restrictions"] = normalize_id_label_list(data.get("restrictions") or [])
-
-  # notes / description (optional)
-  desc = clean_str(data.get("description") or "")
-  if desc:
-    out["description"] = desc
-
-  return out
-
-
-def build_md(front_matter: Dict[str, Any], body: str) -> str:
-  lines = ["---"]
-  lines.extend(emit_yaml_dict(front_matter, 0))
-  lines.append("---")
-  lines.append("")
-  lines.append(body.rstrip() + ("\n" if body and not body.endswith("\n") else ""))
-  return "\n".join(lines)
-
-
-# -----------------------------
-# CLI
-# -----------------------------
 
 def main() -> None:
-  ap = argparse.ArgumentParser()
-  sub = ap.add_subparsers(dest="cmd", required=True)
+    # Read environment variables
+    game_name = os.environ.get("GAME_NAME", "").strip()
+    game_id = os.environ.get("GAME_ID", "").strip()
+    categories_raw = os.environ.get("CATEGORIES", "").strip()
+    challenges_raw = os.environ.get("CHALLENGES", "").strip()
+    char_enabled = as_bool(os.environ.get("CHAR_ENABLED", "false"))
+    char_label = os.environ.get("CHAR_LABEL", "Character").strip()
+    submitter = os.environ.get("SUBMITTER", "").strip()
+    credit_requested = as_bool(os.environ.get("CREDIT_REQUESTED", "false"))
+    details_raw = os.environ.get("DETAILS_IN", "{}").strip()
+    out_file = os.environ.get("OUT_FILE", "").strip()
 
-  ap_create = sub.add_parser("create", help="Create a standardized game file from JSON input")
-  ap_create.add_argument("--input", help="Path to JSON input. If omitted, reads stdin.", default="")
-  ap_create.add_argument("--out", help="Output path (e.g., _games/hades-2.md)", required=True)
-  ap_create.add_argument("--body", help="Optional markdown body text", default="")
+    # Validate required fields
+    if not game_name:
+        print("ERROR: GAME_NAME is required", file=sys.stderr)
+        sys.exit(1)
+    if not game_id:
+        game_id = slugify(game_name)
+    if not game_id:
+        print("ERROR: Could not generate GAME_ID", file=sys.stderr)
+        sys.exit(1)
+    if not categories_raw:
+        print("ERROR: CATEGORIES is required", file=sys.stderr)
+        sys.exit(1)
+    if not challenges_raw:
+        print("ERROR: CHALLENGES is required", file=sys.stderr)
+        sys.exit(1)
+    if not out_file:
+        print("ERROR: OUT_FILE is required", file=sys.stderr)
+        sys.exit(1)
 
-  ap_norm = sub.add_parser("normalize", help="Normalize an existing game file into the standard format")
-  ap_norm.add_argument("--infile", help="Existing game file path", required=True)
-  ap_norm.add_argument("--out", help="Output path (can be same as infile)", required=True)
+    # Parse details JSON
+    try:
+        details = json.loads(details_raw) if details_raw else {}
+    except json.JSONDecodeError:
+        details = {}
 
-  args = ap.parse_args()
+    # Parse lists
+    categories = parse_newline_list(categories_raw)
+    challenges = parse_comma_list(challenges_raw)
 
-  if args.cmd == "create":
-    if args.input:
-      with open(args.input, "r", encoding="utf-8") as f:
-        data = json.load(f)
+    # Extract additional fields from details
+    aliases_raw = details.get("game_name_aliases", "")
+    aliases = parse_newline_list(aliases_raw) if aliases_raw else []
+    
+    platforms_raw = details.get("platforms", "")
+    platforms = parse_newline_list(platforms_raw) if platforms_raw else []
+    
+    restrictions_raw = details.get("restrictions", "")
+    restrictions = parse_newline_list(restrictions_raw) if restrictions_raw else []
+    
+    glitch_structure = details.get("glitch_category_structure", "")
+    glitch_docs = details.get("glitches_doc", "")
+    timing_primary = details.get("timing_primary", "RTA (Real Time Attack)")
+    
+    character_options_raw = details.get("character_options", "")
+    character_options = parse_newline_list(character_options_raw) if character_options_raw else []
+
+    # Build the file content
+    lines = ["---"]
+    lines.append("layout: game")
+    lines.append(f"game_id: {yaml_quote(game_id)}")
+    lines.append("reviewers: []")
+    lines.append("")
+    lines.append(f"game_name: {yaml_quote(game_name)}")
+    
+    # Aliases
+    if aliases:
+        lines.append("game_name_aliases:")
+        for alias in aliases:
+            lines.append(f"  - {yaml_quote(alias)}")
     else:
-      raw = sys_stdin_read()
-      data = json.loads(raw) if raw.strip() else {}
+        lines.append("game_name_aliases: []")
+    
+    lines.append('status: "Pending Review"')
+    lines.append("")
+    
+    # Genres (empty for now, to be filled in review)
+    lines.append("genres: []")
+    
+    # Platforms
+    if platforms:
+        lines.append("platforms:")
+        for p in platforms:
+            lines.append(f"  - {yaml_quote(p)}")
+    else:
+        lines.append("platforms: []")
+    
+    lines.append("")
+    lines.append(f"cover: /assets/img/games/{game_id[0]}/{game_id}.jpg")
+    lines.append("cover_position: center")
+    lines.append("")
+    
+    # Timing
+    timing_method = "RTA"
+    if "IGT" in timing_primary.upper():
+        timing_method = "IGT"
+    lines.append(f"timing_method: {timing_method}")
+    lines.append("")
+    
+    # Tabs
+    lines.append("tabs:")
+    lines.append("  overview: true")
+    lines.append("  runs: true")
+    lines.append("  history: true")
+    lines.append("  resources: true")
+    lines.append("  forum: false")
+    lines.append("  extra_1: false")
+    lines.append("  extra_2: false")
+    lines.append("")
+    
+    # Character column
+    lines.append("character_column:")
+    lines.append(f"  enabled: {'true' if char_enabled else 'false'}")
+    lines.append(f"  label: {yaml_quote(char_label)}")
+    lines.append("")
+    
+    # Characters data
+    if char_enabled and character_options:
+        lines.append("characters_data:")
+        for ch in character_options:
+            ch_slug = slugify(ch)
+            if ch_slug:
+                lines.append(f"  - slug: {yaml_quote(ch_slug)}")
+                lines.append(f"    label: {yaml_quote(ch)}")
+    else:
+        lines.append("characters_data: []")
+    lines.append("")
+    
+    # General rules (placeholder)
+    lines.append("general_rules: |")
+    lines.append("  - **Video Required:** All submissions must include video proof showing the full run.")
+    lines.append("  - **No Cheats/Mods:** Gameplay-altering mods are not allowed.")
+    lines.append("")
+    
+    # Standard challenges
+    lines.append("# =============================================================================")
+    lines.append("# STANDARD CHALLENGE TYPES")
+    lines.append("# =============================================================================")
+    lines.append("challenges_data:")
+    if challenges:
+        lines.extend(build_challenges_yaml(challenges))
+    else:
+        lines.append("  []")
+    lines.append("")
+    
+    # Community challenges (empty for now)
+    lines.append("community_challenges: []")
+    lines.append("")
+    
+    # Glitch categories
+    lines.append("# =============================================================================")
+    lines.append("# GLITCH CATEGORIES")
+    lines.append("# =============================================================================")
+    lines.append("glitches_data:")
+    if "no structure" in glitch_structure.lower() or "single" in glitch_structure.lower():
+        lines.append("  - slug: any")
+        lines.append('    label: "Any"')
+        lines.append('    description: "No glitch restrictions."')
+    else:
+        lines.append("  - slug: unrestricted")
+        lines.append('    label: "Unrestricted"')
+        lines.append('    description: "All glitches and exploits are allowed."')
+        lines.append("  - slug: nmg")
+        lines.append('    label: "No Major Glitches"')
+        lines.append('    description: "No out-of-bounds, wrong warps, or major sequence breaks."')
+        lines.append("  - slug: glitchless")
+        lines.append('    label: "Glitchless"')
+        lines.append('    description: "No glitches of any kind."')
+    lines.append("")
+    
+    # Glitch documentation
+    if glitch_docs:
+        lines.append("# Glitch documentation links:")
+        for doc_line in parse_newline_list(glitch_docs):
+            lines.append(f"# - {doc_line}")
+        lines.append("")
+    
+    # Restrictions
+    lines.append("# =============================================================================")
+    lines.append("# OPTIONAL RESTRICTIONS")
+    lines.append("# =============================================================================")
+    lines.append("restrictions_data:")
+    if restrictions:
+        for r in restrictions:
+            r_slug = slugify(r)
+            if r_slug:
+                lines.append(f"  - slug: {yaml_quote(r_slug)}")
+                lines.append(f"    label: {yaml_quote(r)}")
+                lines.append('    description: ""')
+    else:
+        lines.append("  []")
+    lines.append("")
+    
+    # Categories
+    lines.append("# =============================================================================")
+    lines.append("# RUN CATEGORIES")
+    lines.append("# =============================================================================")
+    lines.append("categories_data:")
+    if categories:
+        lines.extend(build_categories_yaml(categories))
+    else:
+        lines.append("  []")
+    lines.append("")
+    
+    # Submission metadata
+    lines.append("# =============================================================================")
+    lines.append("# SUBMISSION METADATA")
+    lines.append("# =============================================================================")
+    if submitter:
+        lines.append(f"submitted_by: {yaml_quote(submitter)}")
+    else:
+        lines.append('submitted_by: "Anonymous"')
+    lines.append(f"credit_requested: {'true' if credit_requested else 'false'}")
+    
+    lines.append("---")
+    lines.append("")
+    lines.append(f"# {game_name}")
+    lines.append("")
+    lines.append("*Game description to be added during review.*")
+    lines.append("")
 
-    fm = standardize_game(data)
-    body = args.body or clean_str(data.get("body") or "")
-    md = build_md(fm, body)
+    # Write output file
+    os.makedirs(os.path.dirname(out_file) or ".", exist_ok=True)
+    with open(out_file, "w", encoding="utf-8", newline="\n") as f:
+        f.write("\n".join(lines))
 
-    os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
-    with open(args.out, "w", encoding="utf-8", newline="\n") as f:
-      f.write(md)
-
-    print(f"Wrote: {args.out}")
-    return
-
-  if args.cmd == "normalize":
-    with open(args.infile, "r", encoding="utf-8") as f:
-      md_in = f.read()
-
-    fm_existing, body = split_front_matter(md_in)
-
-    # If the existing file was made by this tool, fm_existing may be incomplete.
-    # Prefer to keep body and rebuild front matter from any richer JSON block the repo might have elsewhere.
-    # Here we standardize what we have.
-    fm_std = standardize_game(fm_existing)
-
-    md_out = build_md(fm_std, body)
-
-    os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
-    with open(args.out, "w", encoding="utf-8", newline="\n") as f:
-      f.write(md_out)
-
-    print(f"Wrote: {args.out}")
-    return
-
-
-def sys_stdin_read() -> str:
-  try:
-    import sys
-    return sys.stdin.read()
-  except Exception:
-    return ""
+    print(f"Created: {out_file}")
 
 
 if __name__ == "__main__":
-  main()
+    main()
