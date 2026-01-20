@@ -116,28 +116,15 @@ jobs:
         run: |
           # Extract GM info from game-moderators.yml
           if [ -f "_data/game-moderators.yml" ]; then
-            # Get discord role for the game
-            DISCORD_ROLE=$(grep -A1 "^${GAME_ID}:" _data/game-moderators.yml | grep "discord_role:" | sed 's/.*discord_role: *"\([^"]*\)".*/\1/' || echo "")
-            DISCORD_TAG=$(grep -A2 "^${GAME_ID}:" _data/game-moderators.yml | grep "discord_tag:" | sed 's/.*discord_tag: *"\([^"]*\)".*/\1/' || echo "$GAME_ID")
+            # Get discord tag for the game
+            DISCORD_TAG=$(grep -A3 "^${GAME_ID}:" _data/game-moderators.yml | grep "discord_tag:" | sed 's/.*discord_tag: *"\{0,1\}\([^"]*\)"\{0,1\}/\1/' | head -1 || echo "$GAME_ID")
             
-            # Get GitHub usernames for PR assignment
-            # This is simplified - in production you'd parse YAML properly
-            GITHUB_REVIEWERS=$(node -e "
-              const yaml = require('js-yaml');
-              const fs = require('fs');
-              const data = yaml.load(fs.readFileSync('_data/game-moderators.yml', 'utf8'));
-              const game = data['${GAME_ID}'] || {};
-              const admins = data['_admins'] || [];
-              const mods = game.moderators || [];
-              const all = [...admins, ...mods].map(m => m.github).filter(Boolean);
-              console.log(all.join(','));
-            " 2>/dev/null || echo "GaryAsher")
+            # Get GitHub usernames for PR assignment - fallback to admin
+            GITHUB_REVIEWERS="GaryAsher"
             
-            echo "discord_role=$DISCORD_ROLE" >> "$GITHUB_OUTPUT"
-            echo "discord_tag=$DISCORD_TAG" >> "$GITHUB_OUTPUT"
+            echo "discord_tag=${DISCORD_TAG:-$GAME_ID}" >> "$GITHUB_OUTPUT"
             echo "github_reviewers=$GITHUB_REVIEWERS" >> "$GITHUB_OUTPUT"
           else
-            echo "discord_role=" >> "$GITHUB_OUTPUT"
             echo "discord_tag=$GAME_ID" >> "$GITHUB_OUTPUT"
             echo "github_reviewers=GaryAsher" >> "$GITHUB_OUTPUT"
           fi
@@ -305,12 +292,10 @@ ENDOFENTRY
             needs-review
             game/${{ steps.create.outputs.game_id }}
 
-      - name: Create Discord Forum Post
+      - name: Send Discord Notification
         if: steps.cpr.outputs.pull-request-number
         env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_FORUM }}
-          DISCORD_FORUM_CHANNEL_ID: ${{ secrets.DISCORD_FORUM_CHANNEL_ID }}
-          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_NEW_RUN_SUBMISSION }}
           PR_URL: ${{ steps.cpr.outputs.pull-request-url }}
           PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
           GAME_ID: ${{ steps.create.outputs.game_id }}
@@ -318,61 +303,29 @@ ENDOFENTRY
           RUNNER_ID: ${{ steps.create.outputs.runner_id }}
           CATEGORY: ${{ steps.create.outputs.category }}
           VIDEO_URL: ${{ steps.create.outputs.video_url }}
-          GM_ROLE: ${{ steps.gm.outputs.discord_role }}
         run: |
-          # If we have a bot token and forum channel, create a forum post
-          # Otherwise fall back to webhook
-          
-          if [ -n "${DISCORD_BOT_TOKEN:-}" ] && [ -n "${DISCORD_FORUM_CHANNEL_ID:-}" ]; then
-            # Create forum thread using Discord API
-            ROLE_PING=""
-            if [ -n "${GM_ROLE:-}" ]; then
-              ROLE_PING="<@&${GM_ROLE}> "
-            fi
-            
-            curl -X POST "https://discord.com/api/v10/channels/${DISCORD_FORUM_CHANNEL_ID}/threads" \
-              -H "Authorization: Bot ${DISCORD_BOT_TOKEN}" \
-              -H "Content-Type: application/json" \
-              -d "{
-                \"name\": \"[${GAME_TAG}] Run by ${RUNNER_ID}\",
-                \"message\": {
-                  \"content\": \"${ROLE_PING}New run submission needs review!\",
-                  \"embeds\": [{
-                    \"title\": \"Run Submission #${PR_NUMBER}\",
-                    \"color\": 3447003,
-                    \"fields\": [
-                      {\"name\": \"Game\", \"value\": \"\`${GAME_ID}\`\", \"inline\": true},
-                      {\"name\": \"Runner\", \"value\": \"\`${RUNNER_ID}\`\", \"inline\": true},
-                      {\"name\": \"Category\", \"value\": \"\`${CATEGORY}\`\", \"inline\": true},
-                      {\"name\": \"Video\", \"value\": \"${VIDEO_URL}\", \"inline\": false},
-                      {\"name\": \"Review PR\", \"value\": \"[View on GitHub](${PR_URL})\", \"inline\": false}
-                    ],
-                    \"footer\": {\"text\": \"Merge PR to approve • Close PR to reject\"}
-                  }]
-                },
-                \"applied_tags\": []
-              }" || echo "Discord forum post failed"
-          
-          elif [ -n "${DISCORD_WEBHOOK:-}" ]; then
-            # Fallback to simple webhook
-            curl -H "Content-Type: application/json" \
-              -d "{
-                \"content\": \"**[${GAME_TAG}]** New run submission needs review!\",
-                \"embeds\": [{
-                  \"title\": \"Run by ${RUNNER_ID}\",
-                  \"color\": 3447003,
-                  \"fields\": [
-                    {\"name\": \"Game\", \"value\": \"\`${GAME_ID}\`\", \"inline\": true},
-                    {\"name\": \"Category\", \"value\": \"\`${CATEGORY}\`\", \"inline\": true},
-                    {\"name\": \"Video\", \"value\": \"${VIDEO_URL}\", \"inline\": false},
-                    {\"name\": \"Review\", \"value\": \"[PR #${PR_NUMBER}](${PR_URL})\", \"inline\": false}
-                  ]
-                }]
-              }" \
-              "$DISCORD_WEBHOOK" || echo "Discord webhook failed"
-          else
-            echo "No Discord notification configured"
+          if [ -z "${DISCORD_WEBHOOK:-}" ]; then
+            echo "No Discord webhook configured, skipping notification"
+            exit 0
           fi
+          
+          curl -H "Content-Type: application/json" \
+            -d "{
+              \"embeds\": [{
+                \"title\": \"🏃 New Run Submission\",
+                \"color\": 3447003,
+                \"fields\": [
+                  {\"name\": \"Game\", \"value\": \"**${GAME_TAG}**\", \"inline\": true},
+                  {\"name\": \"Runner\", \"value\": \"\`${RUNNER_ID}\`\", \"inline\": true},
+                  {\"name\": \"Category\", \"value\": \"\`${CATEGORY}\`\", \"inline\": true},
+                  {\"name\": \"Video\", \"value\": \"${VIDEO_URL}\", \"inline\": false},
+                  {\"name\": \"Review PR\", \"value\": \"[PR #${PR_NUMBER}](${PR_URL})\", \"inline\": false}
+                ],
+                \"footer\": {\"text\": \"Merge PR to approve • Close PR to reject\"},
+                \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+              }]
+            }" \
+            "$DISCORD_WEBHOOK" || echo "Discord notification failed"
 
       - name: Summary
         run: |
