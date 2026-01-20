@@ -81,6 +81,11 @@ roguelite:
   label: "Roguelite"
 
 # S
+singleplayer:
+  label: "Singleplayer"
+  aliases: 
+    - "Single Player"
+
 souls-like:
   label: "Souls-like"
   aliases: 
