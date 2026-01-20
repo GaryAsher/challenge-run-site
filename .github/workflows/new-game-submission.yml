@@ -17,7 +17,7 @@ on:
         description: "Categories (newline separated)"
         required: true
         type: string
-      challenges:
+      standard_challenges:
         description: "Challenge types (comma separated)"
         required: true
         type: string
@@ -77,7 +77,7 @@ jobs:
           GAME_NAME: ${{ github.event.client_payload.game_name || inputs.game_name }}
           GAME_ID_INPUT: ${{ github.event.client_payload.game_id || inputs.game_id }}
           CATEGORIES: ${{ github.event.client_payload.categories || inputs.categories }}
-          CHALLENGES: ${{ github.event.client_payload.challenges || inputs.challenges }}
+          CHALLENGES: ${{ github.event.client_payload.standard_challenges || inputs.standard_challenges }}
           CHAR_ENABLED: ${{ github.event.client_payload.character_column || inputs.character_column || 'false' }}
           CHAR_LABEL: ${{ github.event.client_payload.character_label || inputs.character_label || 'Character' }}
           SUBMITTER: ${{ github.event.client_payload.submitter_handle || inputs.submitter_handle }}
@@ -96,7 +96,7 @@ jobs:
           fi
           
           if [ -z "${CHALLENGES:-}" ]; then 
-            echo "::error::CHALLENGES is empty"
+            echo "::error::STANDARD_CHALLENGES is empty"
             exit 1
           fi
           
