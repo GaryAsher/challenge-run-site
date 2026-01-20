@@ -3897,7 +3897,7 @@ a.resource-card:hover {
 }
 
 .rule-builder__rule-item {
-  margin: 0 0 0.25rem 0;
+  margin: 0;
   padding-top: 0.75rem;
   border-top: 1px solid var(--border);
 }
@@ -3908,28 +3908,45 @@ a.resource-card:hover {
 }
 
 .rule-builder__rule-desc {
-  margin: 0.25rem 0 0.5rem 0;
+  margin: 0.25rem 0 0;
+  padding-left: 1.5rem;
   font-size: 0.9em;
   color: var(--text-muted);
 }
 
 .rule-builder__rule-desc ul {
-  margin: 0.25rem 0 0.5rem 1.25rem;
-  padding: 0;
+  margin: 0.25rem 0 0 0;
+  padding-left: 1.25rem;
 }
 
 .rule-builder__rule-desc li {
   margin: 0.15rem 0;
 }
 
+.rule-builder__rule-desc li:last-child {
+  margin-bottom: 0;
+}
+
 .rule-builder__rule-desc h4 {
-  margin: 0.5rem 0 0.25rem 0;
+  margin: 0.35rem 0 0.15rem 0;
   font-size: 0.95em;
   color: var(--fg);
 }
 
+/* Remove extra space before headers that follow lists */
+.rule-builder__rule-desc ul + h4,
+.rule-builder__rule-desc ul + br + h4 {
+  margin-top: 0.25rem;
+}
+
+/* Clean up any trailing <br> in descriptions */
+.rule-builder__rule-desc br:last-child {
+  display: none;
+}
+
 .rule-builder__rule-extra {
-  margin: 0.25rem 0;
+  margin: 0.25rem 0 0 0;
+  padding-left: 1.5rem;
   font-size: 0.9em;
 }
 
