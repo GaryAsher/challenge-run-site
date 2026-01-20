@@ -3891,6 +3891,48 @@ a.resource-card:hover {
   margin-top: 0.25rem;
 }
 
+/* New rule builder summary content (without bullets) */
+.rule-builder__rules-content {
+  line-height: 1.6;
+}
+
+.rule-builder__rule-item {
+  margin: 0 0 0.25rem 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.rule-builder__rule-item:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.rule-builder__rule-desc {
+  margin: 0.25rem 0 0.5rem 0;
+  font-size: 0.9em;
+  color: var(--text-muted);
+}
+
+.rule-builder__rule-desc ul {
+  margin: 0.25rem 0 0.5rem 1.25rem;
+  padding: 0;
+}
+
+.rule-builder__rule-desc li {
+  margin: 0.15rem 0;
+}
+
+.rule-builder__rule-desc h4 {
+  margin: 0.5rem 0 0.25rem 0;
+  font-size: 0.95em;
+  color: var(--fg);
+}
+
+.rule-builder__rule-extra {
+  margin: 0.25rem 0;
+  font-size: 0.9em;
+}
+
 /* Text colors for allowed/banned */
 .text-success {
   color: #3BC36E;
