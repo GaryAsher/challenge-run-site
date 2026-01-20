@@ -199,8 +199,7 @@ jobs:
                   {\"name\": \"Submitted by\", \"value\": \"${SUBMITTER_TEXT}\", \"inline\": true},
                   {\"name\": \"Review PR\", \"value\": \"[PR #${PR_NUMBER}](${PR_URL})\", \"inline\": false}
                 ],
-                \"footer\": {\"text\": \"Merge PR to add game • Close PR to reject\"},
-                \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+                \"footer\": {\"text\": \"Merge PR to add game • Close PR to reject\"}
               }]
             }" \
             "$DISCORD_WEBHOOK" || echo "Discord notification failed"
