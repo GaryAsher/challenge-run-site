@@ -1,0 +1,372 @@
+<!-- Report Modal Include -->
+{% assign report_type = include.type | default: "run" %}
+{% assign content_id = include.content_id %}
+{% assign game_id = include.game_id | default: "" %}
+
+<!-- Report Button -->
+<button type="button" class="btn btn--small btn--muted report-btn" onclick="openReportModal()">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+    <line x1="4" y1="22" x2="4" y2="15"></line>
+  </svg>
+  Report
+</button>
+
+<!-- Report Modal -->
+<div id="reportModal" class="report-modal" hidden>
+  <div class="report-modal__backdrop" onclick="closeReportModal()"></div>
+  <div class="report-modal__content">
+    <div class="report-modal__header">
+      <h3>Report Issue</h3>
+      <button type="button" class="report-modal__close" onclick="closeReportModal()" aria-label="Close">&times;</button>
+    </div>
+    
+    <div class="report-modal__body">
+      <p class="muted">Help us improve by reporting issues. All reports are anonymous.</p>
+      
+      <input type="hidden" id="reportType" value="{{ report_type }}">
+      <input type="hidden" id="reportContentId" value="{{ content_id }}">
+      <input type="hidden" id="reportGameId" value="{{ game_id }}">
+      
+      <div class="report-field">
+        <label for="reportReason">What's the issue?</label>
+        <select id="reportReason" required>
+          <option value="">Select a reason...</option>
+          {% if report_type == "run" %}
+          <option value="invalid_run">Run appears invalid or incomplete</option>
+          <option value="wrong_category">Wrong category selected</option>
+          <option value="wrong_challenge">Wrong challenge type</option>
+          <option value="video_unavailable">Video is unavailable or deleted</option>
+          <option value="cheating_suspected">Cheating or tool assistance suspected</option>
+          {% elsif report_type == "game" %}
+          <option value="incorrect_game_info">Game information is incorrect</option>
+          {% endif %}
+          <option value="spam">Spam or inappropriate content</option>
+          <option value="other">Other issue</option>
+        </select>
+      </div>
+      
+      <div class="report-field">
+        <label for="reportDetails">Additional details (optional)</label>
+        <textarea id="reportDetails" rows="3" placeholder="Please describe the issue..."></textarea>
+      </div>
+      
+      {% if site.turnstile_site_key %}
+      <div class="report-field report-field--captcha">
+        <div 
+          class="cf-turnstile" 
+          id="reportTurnstile"
+          data-sitekey="{{ site.turnstile_site_key }}"
+          data-callback="onReportTurnstileSuccess"
+          data-expired-callback="onReportTurnstileExpired"
+          data-theme="dark"
+        ></div>
+        <input type="hidden" id="reportTurnstileToken" value="">
+      </div>
+      {% endif %}
+      
+      <div id="reportMessage" class="report-message" hidden></div>
+    </div>
+    
+    <div class="report-modal__footer">
+      <button type="button" class="btn btn--muted" onclick="closeReportModal()">Cancel</button>
+      <button type="button" class="btn btn--primary" id="reportSubmitBtn" onclick="submitReport()" {% if site.turnstile_site_key %}disabled{% endif %}>
+        Submit Report
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Report Button */
+  .report-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+  }
+  .report-btn:hover {
+    opacity: 1;
+  }
+  
+  /* Modal Overlay */
+  .report-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .report-modal[hidden] {
+    display: none;
+  }
+  
+  .report-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(2px);
+  }
+  
+  /* Modal Content */
+  .report-modal__content {
+    position: relative;
+    background: var(--bg-card, #1a1a2e);
+    border: 1px solid var(--border, #333);
+    border-radius: 12px;
+    max-width: 480px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  }
+  
+  .report-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border, #333);
+  }
+  
+  .report-modal__header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  
+  .report-modal__close {
+    background: none;
+    border: none;
+    font-size: 1.75rem;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--text-muted, #888);
+    padding: 0;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background 0.2s, color 0.2s;
+  }
+  .report-modal__close:hover {
+    background: var(--bg, #0f0f1a);
+    color: var(--text, #fff);
+  }
+  
+  .report-modal__body {
+    padding: 1.25rem;
+  }
+  
+  .report-modal__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--border, #333);
+  }
+  
+  /* Form Fields */
+  .report-field {
+    margin-bottom: 1rem;
+  }
+  
+  .report-field label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text, #fff);
+  }
+  
+  .report-field select,
+  .report-field textarea {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--border, #444);
+    border-radius: 6px;
+    background: var(--bg, #0f0f1a);
+    color: var(--text, #fff);
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: border-color 0.2s;
+  }
+  
+  .report-field select:focus,
+  .report-field textarea:focus {
+    outline: none;
+    border-color: var(--primary, #6366f1);
+  }
+  
+  .report-field textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+  
+  .report-field--captcha {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.25rem;
+  }
+  
+  /* Message */
+  .report-message {
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    text-align: center;
+  }
+  
+  .report-message--success {
+    background: rgba(46, 204, 113, 0.15);
+    color: #2ecc71;
+    border: 1px solid rgba(46, 204, 113, 0.3);
+  }
+  
+  .report-message--error {
+    background: rgba(231, 76, 60, 0.15);
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+  }
+</style>
+
+<script>
+(function() {
+  var turnstileReady = false;
+  
+  // Turnstile callbacks
+  window.onReportTurnstileSuccess = function(token) {
+    document.getElementById('reportTurnstileToken').value = token;
+    document.getElementById('reportSubmitBtn').disabled = false;
+    turnstileReady = true;
+  };
+  
+  window.onReportTurnstileExpired = function() {
+    document.getElementById('reportTurnstileToken').value = '';
+    document.getElementById('reportSubmitBtn').disabled = true;
+    turnstileReady = false;
+  };
+  
+  // Modal functions
+  window.openReportModal = function() {
+    document.getElementById('reportModal').hidden = false;
+    document.body.style.overflow = 'hidden';
+    
+    // Reset form
+    document.getElementById('reportReason').value = '';
+    document.getElementById('reportDetails').value = '';
+    var msgEl = document.getElementById('reportMessage');
+    msgEl.hidden = true;
+    msgEl.className = 'report-message';
+    
+    // Reset Turnstile
+    if (window.turnstile) {
+      try {
+        turnstile.reset('#reportTurnstile');
+      } catch(e) {}
+    }
+    
+    {% unless site.turnstile_site_key %}
+    // No captcha required
+    document.getElementById('reportSubmitBtn').disabled = false;
+    {% endunless %}
+  };
+  
+  window.closeReportModal = function() {
+    document.getElementById('reportModal').hidden = true;
+    document.body.style.overflow = '';
+  };
+  
+  window.submitReport = async function() {
+    var reason = document.getElementById('reportReason').value;
+    var details = document.getElementById('reportDetails').value.trim();
+    var reportType = document.getElementById('reportType').value;
+    var contentId = document.getElementById('reportContentId').value;
+    var gameId = document.getElementById('reportGameId').value;
+    var turnstileToken = document.getElementById('reportTurnstileToken').value;
+    var submitBtn = document.getElementById('reportSubmitBtn');
+    
+    // Validate
+    if (!reason) {
+      showReportMessage('Please select a reason.', true);
+      return;
+    }
+    
+    {% if site.turnstile_site_key %}
+    if (!turnstileToken) {
+      showReportMessage('Please complete the verification.', true);
+      return;
+    }
+    {% endif %}
+    
+    // Get endpoint
+    var endpoint = {{ site.run_submit_endpoint | default: "" | jsonify }};
+    if (!endpoint) {
+      showReportMessage('Report system not configured.', true);
+      return;
+    }
+    
+    // Submit
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+    
+    try {
+      var response = await fetch(endpoint.replace(/\/$/, '') + '/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          report_type: reportType,
+          content_id: contentId,
+          game_id: gameId,
+          reason: reason,
+          details: details,
+          turnstile_token: turnstileToken
+        })
+      });
+      
+      var data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to submit report');
+      }
+      
+      showReportMessage(data.message || 'Report submitted. Thank you!', false);
+      
+      // Close after delay
+      setTimeout(function() {
+        closeReportModal();
+      }, 2500);
+      
+    } catch (err) {
+      showReportMessage(err.message || 'An error occurred. Please try again.', true);
+      submitBtn.disabled = false;
+    }
+    
+    submitBtn.textContent = 'Submit Report';
+  };
+  
+  function showReportMessage(text, isError) {
+    var el = document.getElementById('reportMessage');
+    el.textContent = text;
+    el.className = 'report-message ' + (isError ? 'report-message--error' : 'report-message--success');
+    el.hidden = false;
+  }
+  
+  // Close on Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      var modal = document.getElementById('reportModal');
+      if (modal && !modal.hidden) {
+        closeReportModal();
+      }
+    }
+  });
+})();
+</script>
