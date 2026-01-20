@@ -301,6 +301,14 @@ document.addEventListener('DOMContentLoaded', function() {
         selectedSet: selectedChallenges,
         onFilter: filterRows
       });
+    } else if (fChallenge && availableChallenges.length > 0) {
+      // Populate legacy select element
+      populateSelect(fChallenge, availableChallenges);
+      fChallenge.addEventListener('change', () => {
+        selectedChallenges.clear();
+        if (fChallenge.value) selectedChallenges.add(norm(fChallenge.value));
+        filterRows();
+      });
     }
 
     // Restrictions filter
@@ -311,6 +319,14 @@ document.addEventListener('DOMContentLoaded', function() {
         items: availableRestrictions,
         selectedSet: selectedRestrictions,
         onFilter: filterRows
+      });
+    } else if (fRestrictions && availableRestrictions.length > 0) {
+      // Populate legacy select element
+      populateSelect(fRestrictions, availableRestrictions);
+      fRestrictions.addEventListener('change', () => {
+        selectedRestrictions.clear();
+        if (fRestrictions.value) selectedRestrictions.add(norm(fRestrictions.value));
+        filterRows();
       });
     }
 
@@ -323,6 +339,14 @@ document.addEventListener('DOMContentLoaded', function() {
         selectedSet: selectedCharacters,
         onFilter: filterRows
       });
+    } else if (fCharacter && availableCharacters.length > 0) {
+      // Populate legacy select element
+      populateSelect(fCharacter, availableCharacters);
+      fCharacter.addEventListener('change', () => {
+        selectedCharacters.clear();
+        if (fCharacter.value) selectedCharacters.add(norm(fCharacter.value));
+        filterRows();
+      });
     }
 
     // Glitch filter (single select, keep as dropdown for now or convert)
@@ -334,6 +358,21 @@ document.addEventListener('DOMContentLoaded', function() {
         filterRows();
       });
     }
+  }
+
+  // Helper to populate a select element with options
+  function populateSelect(selectEl, items) {
+    // Keep the first "All" option
+    const firstOption = selectEl.querySelector('option');
+    selectEl.innerHTML = '';
+    if (firstOption) selectEl.appendChild(firstOption);
+    
+    items.forEach(item => {
+      const opt = document.createElement('option');
+      opt.value = item.id || item;
+      opt.textContent = item.label || item;
+      selectEl.appendChild(opt);
+    });
   }
 
   // ============================================================
@@ -360,8 +399,13 @@ document.addEventListener('DOMContentLoaded', function() {
       selectedCharacters.clear();
       selectedGlitch = '';
       
+      // Reset legacy selects
+      if (fChallenge) fChallenge.value = '';
+      if (fRestrictions) fRestrictions.value = '';
+      if (fCharacter) fCharacter.value = '';
       if (fGlitch) fGlitch.value = '';
       
+      // Refresh typeahead displays (if they exist)
       if (challengeFilter) challengeFilter.refresh();
       if (restrictionsFilter) restrictionsFilter.refresh();
       if (characterFilter) characterFilter.refresh();
