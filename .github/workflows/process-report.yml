@@ -58,13 +58,11 @@ jobs:
           REPORT_TYPE: ${{ github.event.client_payload.report_type || inputs.report_type }}
           GAME_ID: ${{ github.event.client_payload.game_id || inputs.game_id }}
         run: |
-          # GM complaints go only to admins (private)
           if [ "$REPORT_TYPE" = "gm_complaint" ]; then
             echo "assignees=GaryAsher" >> "$GITHUB_OUTPUT"
             echo "labels=report,gm-complaint,confidential" >> "$GITHUB_OUTPUT"
             echo "private=true" >> "$GITHUB_OUTPUT"
           else
-            # Regular reports can be assigned to game GMs
             if [ -n "$GAME_ID" ] && [ -f "_data/game-moderators.yml" ]; then
               ASSIGNEES=$(node -e "
                 const yaml = require('js-yaml');
@@ -122,42 +120,48 @@ jobs:
             *) TITLE="📢 Report: ${CONTENT_ID}" ;;
           esac
           
-          # Build body
-          BODY="## Content Report
-
-**Type:** ${REPORT_TYPE}
-**Content:** \`${CONTENT_ID}\`
-**Game:** ${GAME_ID:-N/A}
-**Reason:** ${REASON_TEXT}
-
-### Details
-
-${DETAILS:-_No additional details provided._}
-
----
-
-### Moderator Actions
-
-- [ ] Review the reported content
-- [ ] Take appropriate action
-- [ ] Close this issue when resolved
-
----
-*This report was submitted anonymously.*"
-
-          # Add confidential note for GM complaints
+          # Build body using a temp file to avoid heredoc issues
+          BODY_FILE=$(mktemp)
+          
+          echo "## Content Report" > "$BODY_FILE"
+          echo "" >> "$BODY_FILE"
+          echo "**Type:** ${REPORT_TYPE}" >> "$BODY_FILE"
+          echo "**Content:** \`${CONTENT_ID}\`" >> "$BODY_FILE"
+          echo "**Game:** ${GAME_ID:-N/A}" >> "$BODY_FILE"
+          echo "**Reason:** ${REASON_TEXT}" >> "$BODY_FILE"
+          echo "" >> "$BODY_FILE"
+          echo "### Details" >> "$BODY_FILE"
+          echo "" >> "$BODY_FILE"
+          if [ -n "${DETAILS:-}" ]; then
+            echo "${DETAILS}" >> "$BODY_FILE"
+          else
+            echo "_No additional details provided._" >> "$BODY_FILE"
+          fi
+          echo "" >> "$BODY_FILE"
+          echo "---" >> "$BODY_FILE"
+          echo "" >> "$BODY_FILE"
+          echo "### Moderator Actions" >> "$BODY_FILE"
+          echo "" >> "$BODY_FILE"
+          echo "- [ ] Review the reported content" >> "$BODY_FILE"
+          echo "- [ ] Take appropriate action" >> "$BODY_FILE"
+          echo "- [ ] Close this issue when resolved" >> "$BODY_FILE"
+          echo "" >> "$BODY_FILE"
+          echo "---" >> "$BODY_FILE"
+          echo "*This report was submitted anonymously.*" >> "$BODY_FILE"
+          
           if [ "$IS_PRIVATE" = "true" ]; then
-            BODY="${BODY}
-
-> ⚠️ **CONFIDENTIAL**: This is a GM complaint. Do not discuss publicly or with the reported GM."
+            echo "" >> "$BODY_FILE"
+            echo "> ⚠️ **CONFIDENTIAL**: This is a GM complaint. Do not discuss publicly or with the reported GM." >> "$BODY_FILE"
           fi
           
           # Create issue
           gh issue create \
             --title "$TITLE" \
-            --body "$BODY" \
+            --body-file "$BODY_FILE" \
             --label "$LABELS" \
             --assignee "$ASSIGNEES"
+          
+          rm -f "$BODY_FILE"
 
       - name: Notify admin (GM complaints only)
         if: steps.route.outputs.private == 'true' && env.DISCORD_ADMIN_WEBHOOK != ''
