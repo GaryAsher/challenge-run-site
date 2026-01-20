@@ -127,7 +127,15 @@
           <select class="rule-builder__select" id="rb-challenge">
             <option value="" data-description="">-- Add Challenge --</option>
             {% for ch in game.challenges_data %}
-              <option value="{{ ch.slug }}" data-label="{{ ch.label }}" data-description="{{ ch.description | escape }}">{{ ch.label }}</option>
+            <!-- If the game's challenge has no description, fall back to global _data/challenges.yml -->
+              {% assign ch_desc = ch.description %}
+              {% if ch_desc == nil or ch_desc == "" or ch_desc == blank %}
+                {% assign global_challenge = site.data.challenges[ch.slug] %}
+                {% if global_challenge and global_challenge.description %}
+                  {% assign ch_desc = global_challenge.description %}
+                {% endif %}
+              {% endif %}
+              <option value="{{ ch.slug }}" data-label="{{ ch.label }}" data-description="{{ ch_desc | escape }}">{{ ch.label }}</option>
             {% endfor %}
           </select>
           <div class="rule-builder__selected" id="rb-selected-challenges"></div>
@@ -353,16 +361,27 @@
       <div class="accordion-content">
         <div class="accordion">
           {% for ch in game.challenges_data %}
+            <!-- If the game's challenge has no description, fall back to global _data/challenges.yml -->
+            {% assign ch_desc = ch.description %}
+            {% if ch_desc == nil or ch_desc == "" or ch_desc == blank %}
+              {% assign global_challenge = site.data.challenges[ch.slug] %}
+              {% if global_challenge and global_challenge.description %}
+                {% assign ch_desc = global_challenge.description %}
+              {% endif %}
+            {% endif %}
+            
             <details class="accordion-item">
               <summary class="accordion-header">
                 <span class="accordion-title">{{ ch.label }}</span>
                 <span class="accordion-icon">▼</span>
               </summary>
               <div class="accordion-content">
-                {% if ch.description %}
-                  {% include md.html text=ch.description %}
+                {% if ch_desc and ch_desc != "" and ch_desc != blank %}
+                  <div class="md">
+                    {{ ch_desc | markdownify }}
+                  </div>
                 {% else %}
-                  <p class="muted">See resources for detailed rules.</p>
+                  <p class="muted">No specific rules defined for this challenge type.</p>
                 {% endif %}
               </div>
             </details>
@@ -454,6 +473,41 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   const gameId = '{{ game_id }}';
+
+  // Simple markdown parser for rule descriptions
+  function parseMarkdown(text) {
+    if (!text) return '';
+    let html = text
+      // Escape HTML first
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      // Headers (### Header)
+      .replace(/^### (.+)$/gm, '<h4>$1</h4>')
+      .replace(/^## (.+)$/gm, '<h3>$1</h3>')
+      .replace(/^# (.+)$/gm, '<h2>$1</h2>')
+      // Bold (**text** or __text__)
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/__(.+?)__/g, '<strong>$1</strong>')
+      // Italic (*text* or _text_)
+      .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+      .replace(/_([^_]+)_/g, '<em>$1</em>')
+      // Code (`text`)
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      // Line breaks
+      .replace(/\n/g, '<br>');
+    
+    // Handle bullet lists: lines starting with "- "
+    html = html.replace(/(<br>)?- (.+?)(?=<br>|$)/g, function(match, br, content) {
+      return (br || '') + '<li>' + content + '</li>';
+    });
+    // Wrap consecutive <li> elements in <ul>
+    html = html.replace(/(<li>.+?<\/li>)+/g, '<ul>$&</ul>');
+    // Clean up any <br> right before <ul>
+    html = html.replace(/<br><ul>/g, '<ul>');
+    
+    return html;
+  }
 
   // DOM elements
   const rbCard = document.getElementById('rule-builder-card');
@@ -744,54 +798,48 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update rules summary panel (plain text)
     if (summaryDiv && summaryContent) {
       if (hasContent) {
-        let summaryHtml = '<ul class="rule-builder__rules-list">';
+        let summaryHtml = '<div class="rule-builder__rules-content">';
 
         if (selectedCategory) {
-          summaryHtml += `<li><strong>Category:</strong> ${selectedCategory.label}`;
-          if (selectedCategory.description) summaryHtml += `<br><span class="muted">${selectedCategory.description}</span>`;
-          summaryHtml += '</li>';
+          summaryHtml += `<p class="rule-builder__rule-item"><strong>Category:</strong> ${selectedCategory.label}</p>`;
+          if (selectedCategory.description) summaryHtml += `<div class="rule-builder__rule-desc md">${parseMarkdown(selectedCategory.description)}</div>`;
         }
 
         if (selectedCommunityChallenge) {
-          summaryHtml += `<li><strong>Community Challenge:</strong> ${selectedCommunityChallenge.label}`;
-          if (selectedCommunityChallenge.description) summaryHtml += `<br><span class="muted">${selectedCommunityChallenge.description}</span>`;
-          summaryHtml += '</li>';
+          summaryHtml += `<p class="rule-builder__rule-item"><strong>Community Challenge:</strong> ${selectedCommunityChallenge.label}</p>`;
+          if (selectedCommunityChallenge.description) summaryHtml += `<div class="rule-builder__rule-desc md">${parseMarkdown(selectedCommunityChallenge.description)}</div>`;
         }
 
         if (selectedCharacter) {
-          summaryHtml += `<li><strong>{{ character_label }}:</strong> ${selectedCharacter.label}`;
-          if (selectedCharacter.description) summaryHtml += `<br><span class="muted">${selectedCharacter.description}</span>`;
-          summaryHtml += '</li>';
+          summaryHtml += `<p class="rule-builder__rule-item"><strong>{{ character_label }}:</strong> ${selectedCharacter.label}</p>`;
+          if (selectedCharacter.description) summaryHtml += `<div class="rule-builder__rule-desc md">${parseMarkdown(selectedCharacter.description)}</div>`;
         }
 
         selectedChallenges.forEach(ch => {
-          summaryHtml += `<li><strong>Challenge:</strong> ${ch.label}`;
-          if (ch.description) summaryHtml += `<br><span class="muted">${ch.description}</span>`;
-          summaryHtml += '</li>';
+          summaryHtml += `<p class="rule-builder__rule-item"><strong>Challenge:</strong> ${ch.label}</p>`;
+          if (ch.description) summaryHtml += `<div class="rule-builder__rule-desc md">${parseMarkdown(ch.description)}</div>`;
         });
 
         selectedRestrictions.forEach(r => {
-          summaryHtml += `<li><strong>Restriction:</strong> ${r.label}`;
-          if (r.description) summaryHtml += `<br><span class="muted">${r.description}</span>`;
-          summaryHtml += '</li>';
+          summaryHtml += `<p class="rule-builder__rule-item"><strong>Restriction:</strong> ${r.label}</p>`;
+          if (r.description) summaryHtml += `<div class="rule-builder__rule-desc md">${parseMarkdown(r.description)}</div>`;
         });
 
         if (selectedGlitch) {
-          summaryHtml += `<li><strong>Glitch Rules:</strong> ${selectedGlitch.label}`;
-          if (selectedGlitch.description) summaryHtml += `<br><span class="muted">${selectedGlitch.description}</span>`;
+          summaryHtml += `<p class="rule-builder__rule-item"><strong>Glitch Rules:</strong> ${selectedGlitch.label}</p>`;
+          if (selectedGlitch.description) summaryHtml += `<div class="rule-builder__rule-desc md">${parseMarkdown(selectedGlitch.description)}</div>`;
           if (selectedGlitch.allowed && selectedGlitch.allowed.length > 0 && selectedGlitch.allowed[0]) {
-            summaryHtml += `<br><span class="text-success">✓ Allowed:</span> ${selectedGlitch.allowed.join(', ')}`;
+            summaryHtml += `<p class="rule-builder__rule-extra"><span class="text-success">✓ Allowed:</span> ${selectedGlitch.allowed.join(', ')}</p>`;
           }
           if (selectedGlitch.banned && selectedGlitch.banned.length > 0 && selectedGlitch.banned[0]) {
-            summaryHtml += `<br><span class="text-danger">✗ Banned:</span> ${selectedGlitch.banned.join(', ')}`;
+            summaryHtml += `<p class="rule-builder__rule-extra"><span class="text-danger">✗ Banned:</span> ${selectedGlitch.banned.join(', ')}</p>`;
           }
           if (selectedGlitch.notes) {
-            summaryHtml += `<br><em class="muted">${selectedGlitch.notes}</em>`;
+            summaryHtml += `<p class="rule-builder__rule-extra"><em class="muted">${selectedGlitch.notes}</em></p>`;
           }
-          summaryHtml += '</li>';
         }
 
-        summaryHtml += '</ul>';
+        summaryHtml += '</div>';
         summaryContent.innerHTML = summaryHtml;
         summaryDiv.style.display = 'block';
       } else {
