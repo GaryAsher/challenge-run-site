@@ -38,7 +38,6 @@ glitches:
     label: "Glitchless"
     description: |
       - No glitches of any kind are allowed.
-      - Gameplay must proceed as the developers intended.
       - Exploiting AI behavior or game mechanics in unintended ways is not allowed.
 
 # =============================================================================
@@ -48,11 +47,11 @@ timing_methods:
   rta:
     label: "RTA (Real Time Attack)"
     description: "Time is measured from gaining control of the character to losing control at the end."
+
+  lrt:
+    label: "LRT (Load-Removed Time)"
+    description: "Real time with loading screens removed. Requires a load remover tool."
   
   igt:
     label: "IGT (In-Game Time)"
     description: "Time is measured using the game's built-in timer."
-  
-  lrt:
-    label: "LRT (Load-Removed Time)"
-    description: "Real time with loading screens removed. Requires a load remover tool."
