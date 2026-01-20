@@ -9,7 +9,7 @@ This document consolidates all reminders, future ideas, and planned features for
 ### New Game Submission form:
 - [ ] Do we ask users to fill out Genres again?
 - [ ] Discord Webhook not working properly
-- [ ] Fix script to change slurs into strings.
+- [ ] Fix script to change slugs into strings.
   - This will fix when people submit 100% as a category.
 
 ### Forms & Submissions
