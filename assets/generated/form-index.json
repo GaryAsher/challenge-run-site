@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-01-20T09:16:04.266Z",
+  "generated_at": "2026-01-20T17:05:33.788Z",
   "games": [
     {
       "game_id": "celeste",
@@ -51,6 +51,67 @@
         }
       ],
       "glitches": [],
+      "restrictions": [],
+      "character_column": {
+        "enabled": false,
+        "label": "Character"
+      },
+      "characters": []
+    },
+    {
+      "game_id": "constance",
+      "title": "Constance",
+      "categories": [
+        {
+          "slug": "any",
+          "name": "Any%"
+        },
+        {
+          "slug": "100",
+          "name": "100%"
+        }
+      ],
+      "standard_challenges": [
+        {
+          "id": "blindfolded",
+          "name": "Blindfolded"
+        },
+        {
+          "id": "damageless",
+          "name": "Damageless"
+        },
+        {
+          "id": "deathless",
+          "name": "Deathless"
+        },
+        {
+          "id": "flawless",
+          "name": "Flawless"
+        },
+        {
+          "id": "hitless",
+          "name": "Hitless"
+        },
+        {
+          "id": "minimalist",
+          "name": "Minimalist"
+        }
+      ],
+      "community_challenges": [],
+      "glitches": [
+        {
+          "id": "unrestricted",
+          "name": "Unrestricted"
+        },
+        {
+          "id": "nmg",
+          "name": "No Major Glitches"
+        },
+        {
+          "id": "glitchless",
+          "name": "Glitchless"
+        }
+      ],
       "restrictions": [],
       "character_column": {
         "enabled": false,
