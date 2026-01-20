@@ -4,14 +4,15 @@ title: "Tiny Rogues - History"
 game_id: tiny-rogues
 ---
 
-{% assign game = site.games | where: "game_id", "tiny-rogues" | first %}
+{% assign game = site.games | where: "game_id", page.game_id | first %}
 {% include game-header-tabs.html game=game active="history" %}
 
 <div class="page-width">
   <div class="game-shell">
-    <div class="card">
-      <h1>History</h1>
-      <p class="muted">Historical records and milestones.</p>
-    </div>
+    <section class="tab-panel active" data-panel="history">
+      <h2 class="mb-3">History</h2>
+      <p class="muted mb-4">Historical records and milestones.</p>
+      {% include game-history.html game=game %}
+    </section>
   </div>
 </div>

@@ -4,11 +4,13 @@ title: "Hades II - Rules"
 game_id: hades-2
 ---
 
-{% assign game = site.games | where: "game_id", "hades-2" | first %}
+{% assign game = site.games | where: "game_id", page.game_id | first %}
 {% include game-header-tabs.html game=game active="rules" %}
 
 <div class="page-width">
   <div class="game-shell">
-    {% include game-rules.html game=game %}
+    <section class="tab-panel active" data-panel="rules">
+      {% include game-rules.html game=game %}
+    </section>
   </div>
 </div>

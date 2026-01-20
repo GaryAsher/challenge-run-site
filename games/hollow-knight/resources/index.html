@@ -4,14 +4,31 @@ title: "Hollow Knight - Resources"
 game_id: hollow-knight
 ---
 
-{% assign game = site.games | where: "game_id", "hollow-knight" | first %}
+{% assign game = site.games | where: "game_id", page.game_id | first %}
 {% include game-header-tabs.html game=game active="resources" %}
 
 <div class="page-width">
   <div class="game-shell">
-    <div class="card">
-      <h1>Resources</h1>
-      <p class="muted">Useful tools, mods, and external resources.</p>
-    </div>
+    <section class="tab-panel active" data-panel="resources">
+      <h2 class="mb-3">Resources</h2>
+      <p class="muted mb-4">Useful tools, mods, and external resources.</p>
+      
+      {% if game.resources and game.resources.size > 0 %}
+        <div class="resources-list">
+          {% for resource in game.resources %}
+            <div class="resource-item">
+              <a href="{{ resource.url }}" target="_blank" rel="noopener">
+                <strong>{{ resource.name }}</strong>
+              </a>
+              {% if resource.description %}
+                <p class="muted">{{ resource.description }}</p>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="muted"><em>No resources have been added yet. Want to contribute? Contact a moderator!</em></p>
+      {% endif %}
+    </section>
   </div>
 </div>

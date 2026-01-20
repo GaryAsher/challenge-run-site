@@ -9,9 +9,10 @@ game_id: constance
 
 <div class="page-width">
   <div class="game-shell">
-    <div class="card">
-      <h1>History</h1>
-      <p class="muted">Historical records and milestones.</p>
-    </div>
+    <section class="tab-panel active" data-panel="history">
+      <h2 class="mb-3">History</h2>
+      <p class="muted mb-4">Historical records and milestones.</p>
+      {% include game-history.html game=game %}
+    </section>
   </div>
 </div>

@@ -4,14 +4,16 @@ title: "Tiny Rogues - Forum"
 game_id: tiny-rogues
 ---
 
-{% assign game = site.games | where: "game_id", "tiny-rogues" | first %}
+{% assign game = site.games | where: "game_id", page.game_id | first %}
 {% include game-header-tabs.html game=game active="forum" %}
 
 <div class="page-width">
   <div class="game-shell">
-    <div class="card">
-      <h1>Forum</h1>
-      <p class="muted">Community discussions and announcements.</p>
-    </div>
+    <section class="tab-panel active" data-panel="forum">
+      <h2 class="mb-3">Forum</h2>
+      <p class="muted mb-4">Community discussions and announcements.</p>
+      
+      <p class="muted"><em>Forum functionality coming soon!</em></p>
+    </section>
   </div>
 </div>
