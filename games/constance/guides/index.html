@@ -1,0 +1,17 @@
+---
+layout: default
+title: "Constance - Guides"
+game_id: constance
+---
+
+{% assign game = site.games | where: "game_id", page.game_id | first %}
+{% include game-header-tabs.html game=game active="guides" %}
+
+<div class="page-width">
+  <div class="game-shell">
+    <div class="card">
+      <h1>Guides</h1>
+      <p class="muted">Strategy guides and tutorials.</p>
+    </div>
+  </div>
+</div>

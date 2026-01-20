@@ -5,7 +5,6 @@ reviewers: []
 
 game_name: Constance
 game_name_aliases: []
-status: "Pending Review"
 
 genres: 
   - Metroidvania
