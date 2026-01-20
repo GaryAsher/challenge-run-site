@@ -50,6 +50,12 @@ layout: default
           <div class="md">
             {{ page.general_rules | markdownify }}
           </div>
+        {% elsif site.data.default-rules.general_rules %}
+          {% comment %} Fall back to global default-rules {% endcomment %}
+          <p class="muted mb-3">Core rules that apply to all runs:</p>
+          <div class="md">
+            {{ site.data.default-rules.general_rules | markdownify }}
+          </div>
         {% else %}
           <p class="muted mb-3">Core rules that apply to all runs:</p>
           <ul>
@@ -69,7 +75,9 @@ layout: default
           <p class="muted mb-3">Challenge types tracked for this game:</p>
           <div class="accordion">
             {% for ch in page.challenges_data %}
-              <!-- If the game's challenge has no description, fall back to global _data/challenges.yml -->
+              {% comment %}
+                If the game's challenge has no description, fall back to global _data/challenges.yml
+              {% endcomment %}
               {% assign ch_desc = ch.description %}
               {% if ch_desc == nil or ch_desc == "" or ch_desc == blank %}
                 {% assign global_challenge = site.data.challenges[ch.slug] %}
@@ -185,18 +193,29 @@ layout: default
             <p class="muted mb-3">Rules for glitches and exploits in runs:</p>
             <div class="accordion">
               {% for gl in page.glitches_data %}
+                {% comment %}
+                  If the game's glitch has no description, fall back to global _data/default-rules.yml
+                {% endcomment %}
+                {% assign gl_desc = gl.description %}
+                {% if gl_desc == nil or gl_desc == "" or gl_desc == blank %}
+                  {% assign global_glitch = site.data.default-rules.glitches[gl.slug] %}
+                  {% if global_glitch and global_glitch.description %}
+                    {% assign gl_desc = global_glitch.description %}
+                  {% endif %}
+                {% endif %}
+                
                 <details class="accordion-item">
                   <summary class="accordion-header">
                     <span class="accordion-title">{{ gl.label }}</span>
                     <span class="accordion-icon">▼</span>
                   </summary>
                   <div class="accordion-content">
-                    {% if gl.description %}
+                    {% if gl_desc and gl_desc != "" and gl_desc != blank %}
                       <div class="md">
-                        {{ gl.description | markdownify }}
+                        {{ gl_desc | markdownify }}
                       </div>
                     {% else %}
-                      <p class="muted">See Rules tab for detailed definition.</p>
+                      <p class="muted">No specific rules defined for this glitch category.</p>
                     {% endif %}
                     {% if gl.allowed and gl.allowed.size > 0 %}
                       <p class="mt-2"><strong>Allowed:</strong> {{ gl.allowed | join: ", " }}</p>
