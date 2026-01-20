@@ -1,10 +1,15 @@
 ---
 layout: default
 ---
-<!-- game.html – Overview page
-     Sections shown:
-     1. Game Description
-     2. General Rules
+
+{% include game-header-tabs.html game=page active="overview" %}
+
+<!-- =========================================================
+     Overview Tab - Clean with accordions
+
+     ORDERING (per spec):
+     1. Game Description (content) - or placeholder if empty
+     2. General Rules (default + game-specific)
      3. Standard Challenge Types
      4. Optional Restrictions
      5. Glitch Categories
@@ -39,12 +44,19 @@ layout: default
            ========================================================= -->
       <div class="card card--compact mt-4" data-section-order="1">
         <h2 class="mb-2">General Rules</h2>
-        {% if page.general_rules %}
+
+        {% if page.general_rules and page.general_rules.size > 0 %}
+          <p class="muted mb-3">Core rules that apply to all {{ page.game_name }} runs:</p>
           <div class="md">
             {{ page.general_rules | markdownify }}
           </div>
         {% else %}
-          <p class="muted">General rules have not been defined for this game yet.</p>
+          <p class="muted mb-3">Core rules that apply to all runs:</p>
+          <ul>
+            <li><strong>Timing Method:</strong> {{ page.timing_method | default: "RTA (Real Time Attack)" }}</li>
+            <li><strong>Video Required:</strong> All submissions must include video proof</li>
+            <li><strong>No Cheats/Mods:</strong> External tools or gameplay-altering mods are not allowed</li>
+          </ul>
         {% endif %}
       </div>
 
@@ -57,16 +69,12 @@ layout: default
           <p class="muted mb-3">Challenge types tracked for this game:</p>
           <div class="accordion">
             {% for ch in page.challenges_data %}
-              {% comment %}
-                Check if challenge has a description, otherwise fall back to global _data/challenges.yml
-              {% endcomment %}
-              {% assign ch_description = ch.description %}
-              {% assign ch_slug = ch.slug %}
-              
-              {% if ch_description == nil or ch_description == "" or ch_description == blank %}
-                {% assign global_ch = site.data.challenges[ch_slug] %}
-                {% if global_ch and global_ch.description %}
-                  {% assign ch_description = global_ch.description %}
+              <!-- If the game's challenge has no description, fall back to global _data/challenges.yml -->
+              {% assign ch_desc = ch.description %}
+              {% if ch_desc == nil or ch_desc == "" or ch_desc == blank %}
+                {% assign global_challenge = site.data.challenges[ch.slug] %}
+                {% if global_challenge and global_challenge.description %}
+                  {% assign ch_desc = global_challenge.description %}
                 {% endif %}
               {% endif %}
               
@@ -76,9 +84,9 @@ layout: default
                   <span class="accordion-icon">▼</span>
                 </summary>
                 <div class="accordion-content">
-                  {% if ch_description and ch_description != "" %}
+                  {% if ch_desc and ch_desc != "" and ch_desc != blank %}
                     <div class="md">
-                      {{ ch_description | markdownify }}
+                      {{ ch_desc | markdownify }}
                     </div>
                   {% else %}
                     <p class="muted">No specific rules defined for this challenge type.</p>
@@ -122,21 +130,24 @@ layout: default
       {% if page.restrictions_data and page.restrictions_data.size > 0 %}
         <div class="card card--compact mt-4" data-section-order="3">
           <h2 class="mb-2">Optional Restrictions</h2>
-          <p class="muted mb-3">Additional modifiers runners can apply to increase difficulty:</p>
+          <p class="muted mb-3">Additional restrictions runners can apply:</p>
           <div class="accordion">
-            {% for rest in page.restrictions_data %}
+            {% for res in page.restrictions_data %}
               <details class="accordion-item">
                 <summary class="accordion-header">
-                  <span class="accordion-title">{{ rest.label }}</span>
+                  <span class="accordion-title">{{ res.label }}</span>
                   <span class="accordion-icon">▼</span>
                 </summary>
                 <div class="accordion-content">
-                  {% if rest.description %}
+                  {% if res.description %}
                     <div class="md">
-                      {{ rest.description | markdownify }}
+                      {{ res.description | markdownify }}
                     </div>
                   {% else %}
-                    <p class="muted">See Rules tab for detailed definition.</p>
+                    <p class="muted">Can be combined with any category.</p>
+                  {% endif %}
+                  {% if res.incompatible_with and res.incompatible_with.size > 0 %}
+                    <p class="mt-2 muted"><em>⚠️ Cannot be combined with: {{ res.incompatible_with | join: ", " }}</em></p>
                   {% endif %}
                 </div>
               </details>
@@ -144,14 +155,23 @@ layout: default
           </div>
         </div>
       {% elsif page.restrictions and page.restrictions.size > 0 %}
+        <!-- Fallback to old format -->
         <div class="card card--compact mt-4" data-section-order="3">
           <h2 class="mb-2">Optional Restrictions</h2>
-          <p class="muted mb-3">Additional modifiers runners can apply to increase difficulty:</p>
-          <ul class="tag-list">
-            {% for r in page.restrictions %}
-              <li class="tag">{{ r }}</li>
+          <p class="muted mb-3">Additional restrictions runners can apply:</p>
+          <div class="accordion">
+            {% for res in page.restrictions %}
+              <details class="accordion-item">
+                <summary class="accordion-header">
+                  <span class="accordion-title">{{ res }}</span>
+                  <span class="accordion-icon">▼</span>
+                </summary>
+                <div class="accordion-content">
+                  <p class="muted">Can be combined with any category.</p>
+                </div>
+              </details>
             {% endfor %}
-          </ul>
+          </div>
         </div>
       {% endif %}
 
@@ -192,12 +212,13 @@ layout: default
               {% endfor %}
             </div>
           </div>
-        {% else %}
+        {% endif %}
+      {% else %}
+        <!-- Glitches not relevant for this game - show notice -->
         <div class="card card--compact mt-4" data-section-order="4">
           <h2 class="mb-2">Glitch Categories</h2>
           <p class="muted">This game does not distinguish between glitch categories. All runs are accepted regardless of glitch usage.</p>
         </div>
-        {% endif %}
       {% endunless %}
 
       <!-- =========================================================
