@@ -1,0 +1,58 @@
+# =============================================================================
+# Global Defaults
+# =============================================================================
+# This file contains default rules and definitions that games can fall back to
+# if they don't define their own. Games can override any of these by defining
+# their own version in their game file.
+
+# =============================================================================
+# DEFAULT GENERAL RULES
+# =============================================================================
+# Applied to all games that don't define their own general_rules
+general_rules: |
+  - **Video Required:** All submissions must include video proof showing the full run.
+  - **No Cheats/Mods:** Gameplay-altering mods, cheats, or external tools are not allowed unless explicitly permitted.
+  - **Unedited Footage:** Video must be unedited and show continuous gameplay.
+  - **Timer Visible:** In-game timer should be visible if available.
+
+# =============================================================================
+# DEFAULT GLITCH CATEGORIES
+# =============================================================================
+# Applied to games that don't define their own glitches_data
+glitches:
+  unrestricted:
+    label: "Unrestricted"
+    description: |
+      - All glitches and exploits are allowed.
+      - Any technique that the game allows is permitted, regardless of developer intent.
+  
+  nmg:
+    label: "No Major Glitches"
+    description: |
+      - No out-of-bounds glitches
+      - No wrong warps or sequence breaks that skip significant portions of the game
+      - No memory manipulation or save corruption
+      - Minor glitches that don't break progression are generally allowed
+  
+  glitchless:
+    label: "Glitchless"
+    description: |
+      - No glitches of any kind are allowed.
+      - Gameplay must proceed as the developers intended.
+      - Exploiting AI behavior or game mechanics in unintended ways is not allowed.
+
+# =============================================================================
+# DEFAULT TIMING METHODS
+# =============================================================================
+timing_methods:
+  rta:
+    label: "RTA (Real Time Attack)"
+    description: "Time is measured from gaining control of the character to losing control at the end."
+  
+  igt:
+    label: "IGT (In-Game Time)"
+    description: "Time is measured using the game's built-in timer."
+  
+  lrt:
+    label: "LRT (Load-Removed Time)"
+    description: "Real time with loading screens removed. Requires a load remover tool."
