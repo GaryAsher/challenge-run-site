@@ -3945,16 +3945,16 @@ a.resource-card:hover {
    Unified Filter System CSS
    ============================================================ */
 /* ============================================================
-   Filter Chip (removable tag with ×)
+   Filter Chip (removable tag with ×) - Pill-shaped style
    ============================================================ */
 .filter-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.3rem 0.5rem 0.3rem 0.65rem;
+  padding: 0.3rem 0.6rem 0.3rem 0.75rem;
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: 999px; /* Pill shape */
   font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -3983,7 +3983,7 @@ a.resource-card:hover {
   height: 18px;
   font-size: 1rem;
   line-height: 1;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.45); /* Lighter than text for differentiation */
   background: transparent;
   border-radius: 50%;
   transition: all 0.15s ease;
@@ -4080,6 +4080,17 @@ a.resource-card:hover {
 
 .filter-suggestion--empty:hover {
   background: transparent;
+}
+
+/* Ensure filter-suggestion works inside tag-suggestions containers (Games page) */
+.tag-suggestions .filter-suggestion {
+  border-radius: var(--radius-sm);
+  margin: 0.1rem 0;
+}
+
+.tag-suggestions .filter-suggestion:hover {
+  background: var(--panel);
+  border-color: var(--border);
 }
 
 /* ============================================================
@@ -4665,4 +4676,9 @@ a.resource-card:hover {
 
 .submit-run-page .filter-suggestion:first-child {
   border-top: none;
+}
+
+/* Make filter-input fields consistent with other inputs on submit page */
+.submit-run-page .filter-input__field {
+  background: var(--surface);
 }
