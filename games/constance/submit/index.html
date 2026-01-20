@@ -1,0 +1,14 @@
+---
+layout: default
+title: "Constance - Submit Run"
+game_id: constance
+---
+
+{% assign game = site.games | where: "game_id", page.game_id | first %}
+{% include game-header-tabs.html game=game active="submit" %}
+
+<div class="page-width">
+  <div class="game-shell">
+    {% include submit-run-form.html game=game %}
+  </div>
+</div>

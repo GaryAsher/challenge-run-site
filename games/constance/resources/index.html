@@ -1,0 +1,17 @@
+---
+layout: default
+title: "Constance - Resources"
+game_id: constance
+---
+
+{% assign game = site.games | where: "game_id", page.game_id | first %}
+{% include game-header-tabs.html game=game active="resources" %}
+
+<div class="page-width">
+  <div class="game-shell">
+    <div class="card">
+      <h1>Resources</h1>
+      <p class="muted">Useful tools, mods, and external resources.</p>
+    </div>
+  </div>
+</div>
