@@ -252,10 +252,10 @@ def main() -> None:
         lines.append("characters_data: []")
     lines.append("")
     
-    # General rules (placeholder)
-    lines.append("general_rules: |")
-    lines.append("  - **Video Required:** All submissions must include video proof showing the full run.")
-    lines.append("  - **No Cheats/Mods:** Gameplay-altering mods are not allowed.")
+    # General rules - leave empty to use global defaults from _data/default-rules.yml
+    lines.append("# General rules - leave empty to use global defaults")
+    lines.append("# Override by adding game-specific rules here")
+    lines.append("general_rules: \"\"")
     lines.append("")
     
     # Standard challenges
@@ -273,25 +273,26 @@ def main() -> None:
     lines.append("community_challenges: []")
     lines.append("")
     
-    # Glitch categories
+    # Glitch categories - use empty descriptions to fall back to global defaults
     lines.append("# =============================================================================")
     lines.append("# GLITCH CATEGORIES")
     lines.append("# =============================================================================")
+    lines.append("# Descriptions fall back to _data/default-rules.yml if empty")
     lines.append("glitches_data:")
     if "no structure" in glitch_structure.lower() or "single" in glitch_structure.lower():
         lines.append("  - slug: any")
         lines.append('    label: "Any"')
-        lines.append('    description: "No glitch restrictions."')
+        lines.append('    description: ""')
     else:
         lines.append("  - slug: unrestricted")
         lines.append('    label: "Unrestricted"')
-        lines.append('    description: "All glitches and exploits are allowed."')
+        lines.append('    description: ""')
         lines.append("  - slug: nmg")
         lines.append('    label: "No Major Glitches"')
-        lines.append('    description: "No out-of-bounds, wrong warps, or major sequence breaks."')
+        lines.append('    description: ""')
         lines.append("  - slug: glitchless")
         lines.append('    label: "Glitchless"')
-        lines.append('    description: "No glitches of any kind."')
+        lines.append('    description: ""')
     lines.append("")
     
     # Glitch documentation
