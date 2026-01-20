@@ -114,14 +114,9 @@ jobs:
         env:
           GAME_ID: ${{ github.event.client_payload.game_id || inputs.game_id }}
         run: |
-          # Extract GM info from game-moderators.yml
           if [ -f "_data/game-moderators.yml" ]; then
-            # Get discord tag for the game
             DISCORD_TAG=$(grep -A3 "^${GAME_ID}:" _data/game-moderators.yml | grep "discord_tag:" | sed 's/.*discord_tag: *"\{0,1\}\([^"]*\)"\{0,1\}/\1/' | head -1 || echo "$GAME_ID")
-            
-            # Get GitHub usernames for PR assignment - fallback to admin
             GITHUB_REVIEWERS="GaryAsher"
-            
             echo "discord_tag=${DISCORD_TAG:-$GAME_ID}" >> "$GITHUB_OUTPUT"
             echo "github_reviewers=$GITHUB_REVIEWERS" >> "$GITHUB_OUTPUT"
           else
@@ -146,10 +141,8 @@ jobs:
         run: |
           set -euo pipefail
           
-          # Create queue directory
           mkdir -p "_queue_runs/${GAME_ID}"
           
-          # Generate filename
           BASENAME="${DATE_COMPLETED}__${GAME_ID}__${RUNNER_ID}__${CATEGORY}"
           COUNTER=1
           while [ -f "_queue_runs/${GAME_ID}/${BASENAME}__$(printf '%02d' $COUNTER).md" ] || \
@@ -160,56 +153,47 @@ jobs:
           FILENAME="${BASENAME}__$(printf '%02d' $COUNTER).md"
           FILEPATH="_queue_runs/${GAME_ID}/${FILENAME}"
           
+          # Build the file using echo statements instead of heredoc
+          echo "---" > "$FILEPATH"
+          echo "layout: run" >> "$FILEPATH"
+          echo "game_id: \"${GAME_ID}\"" >> "$FILEPATH"
+          echo "runner_id: \"${RUNNER_ID}\"" >> "$FILEPATH"
+          echo "category: \"${CATEGORY}\"" >> "$FILEPATH"
+          echo "video_url: \"${VIDEO_URL}\"" >> "$FILEPATH"
+          echo "date: \"${DATE_COMPLETED}\"" >> "$FILEPATH"
+          
           # Build challenges array
-          CHALLENGES_YAML="standard_challenges:"
           if [ -n "${STANDARD_CHALLENGES:-}" ]; then
+            echo "standard_challenges:" >> "$FILEPATH"
             IFS=',' read -ra CHALLENGES <<< "$STANDARD_CHALLENGES"
             for c in "${CHALLENGES[@]}"; do
               c=$(echo "$c" | xargs)
-              [ -n "$c" ] && CHALLENGES_YAML="${CHALLENGES_YAML}
-  - \"$c\""
+              [ -n "$c" ] && echo "  - \"$c\"" >> "$FILEPATH"
             done
           else
-            CHALLENGES_YAML="standard_challenges: []"
+            echo "standard_challenges: []" >> "$FILEPATH"
           fi
           
+          [ -n "${COMMUNITY_CHALLENGE:-}" ] && echo "community_challenge: \"${COMMUNITY_CHALLENGE}\"" >> "$FILEPATH"
+          [ -n "${CHARACTER:-}" ] && echo "character: \"${CHARACTER}\"" >> "$FILEPATH"
+          [ -n "${GLITCH_ID:-}" ] && echo "glitch_id: \"${GLITCH_ID}\"" >> "$FILEPATH"
+          
           # Build restrictions array
-          RESTRICTIONS_YAML="restrictions:"
           if [ -n "${RESTRICTIONS:-}" ]; then
+            echo "restrictions:" >> "$FILEPATH"
             IFS=',' read -ra RESTS <<< "$RESTRICTIONS"
             for r in "${RESTS[@]}"; do
               r=$(echo "$r" | xargs)
-              [ -n "$r" ] && RESTRICTIONS_YAML="${RESTRICTIONS_YAML}
-  - \"$r\""
+              [ -n "$r" ] && echo "  - \"$r\"" >> "$FILEPATH"
             done
           else
-            RESTRICTIONS_YAML="restrictions: []"
+            echo "restrictions: []" >> "$FILEPATH"
           fi
           
-          # Create the run file
-          cat > "$FILEPATH" << ENDOFFILE
----
-layout: run
-game_id: "${GAME_ID}"
-runner_id: "${RUNNER_ID}"
-category: "${CATEGORY}"
-video_url: "${VIDEO_URL}"
-date: "${DATE_COMPLETED}"
-${CHALLENGES_YAML}
-community_challenge: "${COMMUNITY_CHALLENGE:-}"
-character: "${CHARACTER:-}"
-glitch_id: "${GLITCH_ID:-}"
-${RESTRICTIONS_YAML}
-verified: false
-submission_id: "${SUBMISSION_ID}"
-submitted_at: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
----
-ENDOFFILE
-          
-          # Clean up empty optional fields
-          sed -i '/^community_challenge: ""$/d' "$FILEPATH"
-          sed -i '/^character: ""$/d' "$FILEPATH"
-          sed -i '/^glitch_id: ""$/d' "$FILEPATH"
+          echo "verified: false" >> "$FILEPATH"
+          echo "submission_id: \"${SUBMISSION_ID}\"" >> "$FILEPATH"
+          echo "submitted_at: \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"" >> "$FILEPATH"
+          echo "---" >> "$FILEPATH"
           
           echo "filepath=$FILEPATH" >> "$GITHUB_OUTPUT"
           echo "filename=$FILENAME" >> "$GITHUB_OUTPUT"
@@ -229,24 +213,21 @@ ENDOFFILE
           mkdir -p "_data/history"
           HISTORY_FILE="_data/history/${GAME_ID}.yml"
           
-          # Create file if doesn't exist
           if [ ! -f "$HISTORY_FILE" ]; then
             echo "# History log for ${GAME_ID}" > "$HISTORY_FILE"
             echo "# Auto-generated - do not edit manually" >> "$HISTORY_FILE"
             echo "" >> "$HISTORY_FILE"
           fi
           
-          # Append new entry
-          cat >> "$HISTORY_FILE" << ENDOFENTRY
-
-- date: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-  action: run_submitted
-  target: "${FILENAME}"
-  by:
-    discord: "anonymous"
-    github: ""
-  note: "Run submitted by ${RUNNER_ID}, awaiting approval"
-ENDOFENTRY
+          # Use echo instead of heredoc to avoid YAML parsing issues
+          echo "" >> "$HISTORY_FILE"
+          echo "- date: \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"" >> "$HISTORY_FILE"
+          echo "  action: run_submitted" >> "$HISTORY_FILE"
+          echo "  target: \"${FILENAME}\"" >> "$HISTORY_FILE"
+          echo "  by:" >> "$HISTORY_FILE"
+          echo "    discord: \"anonymous\"" >> "$HISTORY_FILE"
+          echo "    github: \"\"" >> "$HISTORY_FILE"
+          echo "  note: \"Run submitted by ${RUNNER_ID}, awaiting approval\"" >> "$HISTORY_FILE"
 
       - name: Create Pull Request
         id: cpr
@@ -321,8 +302,7 @@ ENDOFENTRY
                   {\"name\": \"Video\", \"value\": \"${VIDEO_URL}\", \"inline\": false},
                   {\"name\": \"Review PR\", \"value\": \"[PR #${PR_NUMBER}](${PR_URL})\", \"inline\": false}
                 ],
-                \"footer\": {\"text\": \"Merge PR to approve • Close PR to reject\"},
-                \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+                \"footer\": {\"text\": \"Merge PR to approve • Close PR to reject\"}
               }]
             }" \
             "$DISCORD_WEBHOOK" || echo "Discord notification failed"
