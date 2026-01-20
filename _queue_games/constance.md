@@ -7,7 +7,12 @@ game_name: Constance
 game_name_aliases: []
 status: "Pending Review"
 
-genres: []
+genres: 
+  - Metroidvania
+  - Platformer
+  - 2D
+  - Action
+  - Singleplayer
 platforms:
   - pc-steam
 
