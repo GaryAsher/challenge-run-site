@@ -127,7 +127,9 @@
           <select class="rule-builder__select" id="rb-challenge">
             <option value="" data-description="">-- Add Challenge --</option>
             {% for ch in game.challenges_data %}
-            <!-- If the game's challenge has no description, fall back to global _data/challenges.yml -->
+              {% comment %}
+                If the game's challenge has no description, fall back to global _data/challenges.yml
+              {% endcomment %}
               {% assign ch_desc = ch.description %}
               {% if ch_desc == nil or ch_desc == "" or ch_desc == blank %}
                 {% assign global_challenge = site.data.challenges[ch.slug] %}
@@ -330,7 +332,9 @@
       <div class="accordion-content">
         <div class="accordion">
           {% for ch in game.challenges_data %}
-            <!-- If the game's challenge has no description, fall back to global _data/challenges.yml -->
+            {% comment %}
+              If the game's challenge has no description, fall back to global _data/challenges.yml
+            {% endcomment %}
             {% assign ch_desc = ch.description %}
             {% if ch_desc == nil or ch_desc == "" or ch_desc == blank %}
               {% assign global_challenge = site.data.challenges[ch.slug] %}
@@ -446,15 +450,60 @@ document.addEventListener('DOMContentLoaded', function() {
   // Simple markdown parser for rule descriptions
   function parseMarkdown(text) {
     if (!text) return '';
-    let html = text
-      // Escape HTML first
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      // Headers (### Header)
-      .replace(/^### (.+)$/gm, '<h4>$1</h4>')
-      .replace(/^## (.+)$/gm, '<h3>$1</h3>')
-      .replace(/^# (.+)$/gm, '<h2>$1</h2>')
+    
+    // Trim and normalize line endings
+    let lines = text.trim().split('\n');
+    let html = '';
+    let inList = false;
+    
+    for (let i = 0; i < lines.length; i++) {
+      let line = lines[i];
+      
+      // Escape HTML
+      line = line
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      
+      // Headers
+      if (line.match(/^### (.+)$/)) {
+        if (inList) { html += '</ul>'; inList = false; }
+        html += '<h4>' + line.replace(/^### /, '') + '</h4>';
+        continue;
+      }
+      if (line.match(/^## (.+)$/)) {
+        if (inList) { html += '</ul>'; inList = false; }
+        html += '<h3>' + line.replace(/^## /, '') + '</h3>';
+        continue;
+      }
+      
+      // Bullet points
+      if (line.match(/^- (.+)$/)) {
+        if (!inList) { html += '<ul>'; inList = true; }
+        let content = line.replace(/^- /, '');
+        // Apply inline formatting
+        content = applyInlineFormatting(content);
+        html += '<li>' + content + '</li>';
+        continue;
+      }
+      
+      // Regular line
+      if (inList) { html += '</ul>'; inList = false; }
+      if (line.trim()) {
+        html += applyInlineFormatting(line);
+        // Add <br> only if next line exists and isn't a header/list
+        if (i < lines.length - 1 && !lines[i+1].match(/^(###|##|#|- )/)) {
+          html += '<br>';
+        }
+      }
+    }
+    
+    if (inList) html += '</ul>';
+    return html;
+  }
+  
+  function applyInlineFormatting(text) {
+    return text
       // Bold (**text** or __text__)
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
       .replace(/__(.+?)__/g, '<strong>$1</strong>')
@@ -462,20 +511,7 @@ document.addEventListener('DOMContentLoaded', function() {
       .replace(/\*([^*]+)\*/g, '<em>$1</em>')
       .replace(/_([^_]+)_/g, '<em>$1</em>')
       // Code (`text`)
-      .replace(/`([^`]+)`/g, '<code>$1</code>')
-      // Line breaks
-      .replace(/\n/g, '<br>');
-    
-    // Handle bullet lists: lines starting with "- "
-    html = html.replace(/(<br>)?- (.+?)(?=<br>|$)/g, function(match, br, content) {
-      return (br || '') + '<li>' + content + '</li>';
-    });
-    // Wrap consecutive <li> elements in <ul>
-    html = html.replace(/(<li>.+?<\/li>)+/g, '<ul>$&</ul>');
-    // Clean up any <br> right before <ul>
-    html = html.replace(/<br><ul>/g, '<ul>');
-    
-    return html;
+      .replace(/`([^`]+)`/g, '<code>$1</code>');
   }
 
   // DOM elements
