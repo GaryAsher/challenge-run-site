@@ -135,6 +135,7 @@ jobs:
           echo "game_id=${GAME_ID}" >> "$GITHUB_OUTPUT"
           echo "game_name=${GAME_NAME}" >> "$GITHUB_OUTPUT"
           echo "first_letter=${FIRST_LETTER}" >> "$GITHUB_OUTPUT"
+          echo "submitter=${SUBMITTER}" >> "$GITHUB_OUTPUT"
 
       - name: Create Pull Request
         id: cpr
@@ -151,6 +152,7 @@ jobs:
             **Game:** ${{ steps.generate.outputs.game_name }}
             **Game ID:** `${{ steps.generate.outputs.game_id }}`
             **File:** `_queue_games/${{ steps.generate.outputs.game_id }}.md`
+            **Submitted by:** ${{ steps.generate.outputs.submitter || 'Anonymous' }}
 
             ---
 
@@ -168,3 +170,45 @@ jobs:
           labels: |
             new-game
             needs-review
+
+      - name: Send Discord Notification
+        if: steps.cpr.outputs.pull-request-number
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_NEW_GAME_SUBMISSION }}
+          PR_URL: ${{ steps.cpr.outputs.pull-request-url }}
+          PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
+          GAME_NAME: ${{ steps.generate.outputs.game_name }}
+          GAME_ID: ${{ steps.generate.outputs.game_id }}
+          SUBMITTER: ${{ steps.generate.outputs.submitter }}
+        run: |
+          if [ -z "${DISCORD_WEBHOOK:-}" ]; then
+            echo "No Discord webhook configured, skipping notification"
+            exit 0
+          fi
+          
+          SUBMITTER_TEXT="${SUBMITTER:-Anonymous}"
+          
+          curl -H "Content-Type: application/json" \
+            -d "{
+              \"embeds\": [{
+                \"title\": \"🎮 New Game Submission\",
+                \"color\": 5814783,
+                \"fields\": [
+                  {\"name\": \"Game\", \"value\": \"**${GAME_NAME}**\", \"inline\": true},
+                  {\"name\": \"Game ID\", \"value\": \"\`${GAME_ID}\`\", \"inline\": true},
+                  {\"name\": \"Submitted by\", \"value\": \"${SUBMITTER_TEXT}\", \"inline\": true},
+                  {\"name\": \"Review PR\", \"value\": \"[PR #${PR_NUMBER}](${PR_URL})\", \"inline\": false}
+                ],
+                \"footer\": {\"text\": \"Merge PR to add game • Close PR to reject\"},
+                \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+              }]
+            }" \
+            "$DISCORD_WEBHOOK" || echo "Discord notification failed"
+
+      - name: Summary
+        run: |
+          echo "## Game Submission Created" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Game:** ${{ steps.generate.outputs.game_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**PR:** #${{ steps.cpr.outputs.pull-request-number }}" >> $GITHUB_STEP_SUMMARY
+          echo "**URL:** ${{ steps.cpr.outputs.pull-request-url }}" >> $GITHUB_STEP_SUMMARY
