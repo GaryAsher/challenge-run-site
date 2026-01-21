@@ -4785,9 +4785,9 @@ a.resource-card:hover {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--panel);
-  padding: 20px;
+  padding: 1.25rem 1.5rem;
   display: grid;
-  gap: 16px;
+  gap: 1rem;
   position: relative;
 }
 
@@ -4805,7 +4805,7 @@ a.resource-card:hover {
 
 /* Section titles - prominent headers */
 .submit-run-page .submit-section__title {
-  margin: 0;
+  margin: 0 0 0.25rem 0;
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--accent);
@@ -4825,11 +4825,12 @@ a.resource-card:hover {
 
 /* Section subtitle - more spacing below to separate from form fields */
 .submit-run-page .submit-section__sub {
-  margin: -8px 0 8px 0;
+  margin: 0 0 1rem 0;
   font-size: 0.875rem;
   color: var(--text-muted);
-  padding-bottom: 12px;
+  padding-bottom: 1rem;
   border-bottom: 1px solid rgba(255,255,255,0.06);
+  line-height: 1.5;
 }
 
 /* Actions row */
