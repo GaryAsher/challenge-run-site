@@ -4576,7 +4576,7 @@ a.resource-card:hover {
   margin-top: -2px;
 }
 
-/* Inputs/selects - slightly lighter than panel for visibility */
+/* Inputs/selects - dark background matching Rule Builder style */
 .submit-run-page input[type="text"],
 .submit-run-page input[type="url"],
 .submit-run-page input[type="date"],
@@ -4586,7 +4586,7 @@ a.resource-card:hover {
   padding: 0.6rem 0.75rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  background: var(--surface-2);
+  background: var(--bg);
   color: var(--fg);
   min-height: var(--tap);
   font-size: 0.95rem;
@@ -4611,7 +4611,7 @@ a.resource-card:hover {
 
 .submit-run-page select option,
 .submit-run-page select optgroup {
-  background: var(--surface);
+  background: var(--bg);
   color: var(--fg);
 }
 
@@ -4666,7 +4666,7 @@ a.resource-card:hover {
 
 /* Filter input fields inside submit page - match other inputs */
 .submit-run-page .filter-input__field {
-  background: var(--surface-2);
+  background: var(--bg);
   border-color: var(--border);
 }
 
