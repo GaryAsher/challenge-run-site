@@ -3,7 +3,7 @@ layout: default
 title: Submit a Game
 ---
 
-<div class="page-width">
+<div class="page-width submit-game-page">
   <h1>Submit a Game</h1>
   <p class="muted mb-4">Request a new game to be added to the Challenge Run Community database.</p>
 
@@ -67,6 +67,48 @@ title: Submit a Game
 </div>
 
 <style>
+/* Submit Game Page Styles */
+.submit-game-page h1 {
+  margin-bottom: 0.5rem;
+}
+
+.submit-game-page .card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--panel);
+  padding: 1.5rem;
+}
+
+.submit-game-page .card h2 {
+  color: var(--accent);
+  font-size: 1.25rem;
+  margin: 0 0 0.5rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.submit-game-page .card h3 {
+  color: var(--fg);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.75rem 0;
+}
+
+.submit-game-page .card h4 {
+  color: var(--accent);
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+
+.submit-game-page .card p {
+  margin: 0.5rem 0;
+}
+
+.submit-game-page .card > p.muted {
+  margin-bottom: 1rem;
+}
+
 .btn--large {
   padding: 1rem 2rem;
   font-size: 1.1rem;
@@ -74,7 +116,14 @@ title: Submit a Game
 
 .submit-info {
   text-align: center;
-  padding: 1rem 0;
+  padding: 1.5rem 0;
+  background: var(--surface-2);
+  border-radius: var(--radius-md);
+  margin: 1rem 0;
+}
+
+.submit-info h3 {
+  margin-top: 0;
 }
 
 .submit-info ul {
@@ -83,16 +132,30 @@ title: Submit a Game
   margin-bottom: 1.5rem;
 }
 
+.submit-info li {
+  margin-bottom: 0.35rem;
+}
+
 .submit-requirements {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1.5rem;
+  padding: 1rem;
+}
+
+.requirement-group {
+  background: var(--surface-2);
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
 }
 
 .requirement-group h4 {
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.75rem 0;
   color: var(--accent);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
 }
 
 .requirement-group ul {
@@ -103,6 +166,22 @@ title: Submit a Game
 }
 
 .requirement-group li {
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.35rem;
+}
+
+/* Card within card styling */
+.submit-game-page .card .card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.submit-game-page .card .card h3 {
+  margin-top: 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.submit-game-page .card .card p {
+  margin: 0.75rem 0 0 0;
 }
 </style>
