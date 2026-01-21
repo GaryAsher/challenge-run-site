@@ -14,13 +14,12 @@ This document consolidates all reminders, future ideas, and planned features for
 - /runs/ page
 - [ ] Need a section for "mini-challenges". Basically, the IL of challenge running.
 - /rules/ page
-- [ ] Rule Builder in needs to indent plain text
+- [ ] Rule Builder in needs to indent text that is not bulleted.
 - /history/ page
 - [ ] Needs better filtering. Only show verified runs, community milestones, records broken (if verified), etc.
 - /submit/ page
 - [ ] Need to space headers apart from plain text for easier readability.
 - [ ] Add CSS styling to other areas
-- [ ] Move this tab to the far right corner? If we add "Change Requests", we can have them side by side and it would make sense.
 
 ### Forms & Submissions
 - [ ] Runner profile submission - Self-service profile creation
