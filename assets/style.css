@@ -4634,16 +4634,39 @@ a.resource-card:hover {
 .submit-run-page input[type="text"],
 .submit-run-page input[type="url"],
 .submit-run-page input[type="date"],
+.submit-run-page input.filter-input__field,
 .submit-run-page textarea {
   width: 100%;
   padding: 0.6rem 0.75rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--surface);
+  background-color: var(--surface);
   color: var(--fg);
   min-height: var(--tap);
   font-size: 0.95rem;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
   transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Ensure filter inputs specifically get the right styling */
+.submit-run-page .filter-input__field,
+.submit-run-page #runnerId,
+.submit-run-page #dateCompleted,
+.submit-run-page #videoUrl,
+.submit-run-page #standardChallengeSearch,
+.submit-run-page #restrictionsSearch {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface) !important;
+  background-color: var(--surface) !important;
+  color: var(--fg);
+  min-height: var(--tap);
+  font-size: 0.95rem;
 }
 
 .submit-run-page select,
@@ -4674,7 +4697,8 @@ a.resource-card:hover {
 
 .submit-run-page input:focus,
 .submit-run-page select:focus,
-.submit-run-page textarea:focus {
+.submit-run-page textarea:focus,
+.submit-run-page .filter-input__field:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--focus-2);
@@ -4682,15 +4706,25 @@ a.resource-card:hover {
 
 .submit-run-page input:hover,
 .submit-run-page select:hover,
-.submit-run-page textarea:hover {
-  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+.submit-run-page textarea:hover,
+.submit-run-page .filter-input__field:hover {
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface)) !important;
   border-color: var(--accent);
 }
 
+/* Force options to have solid background - never inherit hover tint */
 .submit-run-page select option,
 .submit-run-page select optgroup {
-  background: var(--surface);
+  background: var(--bg) !important;
+  background-color: var(--bg) !important;
   color: var(--fg);
+}
+
+/* When select is hovered, options still stay solid */
+.submit-run-page select:hover option,
+.submit-run-page select:focus option {
+  background: var(--bg) !important;
+  background-color: var(--bg) !important;
 }
 
 /* Two-up rows where useful */
@@ -4714,6 +4748,19 @@ a.resource-card:hover {
   padding: 16px;
   display: grid;
   gap: 12px;
+  position: relative;
+}
+
+/* Add a separator line between sections */
+.submit-run-page .submit-section + .submit-section::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border) 20%, var(--border) 80%, transparent);
 }
 
 /* Section titles - prominent headers */
@@ -4740,23 +4787,6 @@ a.resource-card:hover {
   margin: -4px 0 4px 0;
   font-size: 0.85rem;
   color: var(--text-muted);
-}
-
-/* Filter input fields inside submit page - match other inputs */
-.submit-run-page .filter-input__field {
-  background: var(--surface);
-  border-color: var(--border);
-  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
-}
-
-.submit-run-page .filter-input__field:hover {
-  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
-  border-color: var(--accent);
-}
-
-.submit-run-page .filter-input__field:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--focus-2);
 }
 
 /* Actions row */
