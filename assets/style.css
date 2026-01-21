@@ -4605,10 +4605,15 @@ a.resource-card:hover {
 
 .submit-run-page h1 {
   margin: 0 0 0.5rem 0;
+  font-size: 1.75rem;
 }
 
 .submit-run-page .submit-lead {
-  margin: 0 0 1rem 0;
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
 /* Form wrapper */
@@ -4631,10 +4636,14 @@ a.resource-card:hover {
 
 /* Field labels - smaller, muted, uppercase to differentiate from section titles */
 .submit-run-page .submit-label {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  color: var(--fg);
+}
+
+.submit-run-page .submit-label.muted {
   color: var(--text-muted);
 }
 
@@ -4642,6 +4651,14 @@ a.resource-card:hover {
   font-size: 0.85rem;
   color: var(--text-dim);
   margin-top: -2px;
+  line-height: 1.4;
+}
+
+.submit-run-page .submit-hint code {
+  background: rgba(255,255,255,0.08);
+  padding: 0.15em 0.4em;
+  border-radius: 3px;
+  font-size: 0.9em;
 }
 
 /* Inputs/selects - consistent styling with site-wide .select class */
@@ -4759,9 +4776,9 @@ a.resource-card:hover {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--panel);
-  padding: 16px;
+  padding: 20px;
   display: grid;
-  gap: 12px;
+  gap: 16px;
   position: relative;
 }
 
@@ -4780,7 +4797,7 @@ a.resource-card:hover {
 /* Section titles - prominent headers */
 .submit-run-page .submit-section__title {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--accent);
   display: flex;
@@ -4797,41 +4814,78 @@ a.resource-card:hover {
   margin-left: 0.5rem;
 }
 
+/* Section subtitle - more spacing below to separate from form fields */
 .submit-run-page .submit-section__sub {
-  margin: -4px 0 4px 0;
-  font-size: 0.85rem;
+  margin: -8px 0 8px 0;
+  font-size: 0.875rem;
   color: var(--text-muted);
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
 /* Actions row */
 .submit-run-page .submit-actions {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
-  margin-top: 6px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.06);
 }
 
 .submit-run-page .submit-actions .btn {
   flex: 0 0 auto;
+  padding: 0.65rem 1.25rem;
+  font-size: 0.95rem;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
 }
 
 .submit-run-page .btn--primary {
   background: var(--accent);
-  border-color: var(--accent);
+  border: 2px solid var(--accent);
   color: var(--bg);
   font-weight: 700;
 }
 
 .submit-run-page .btn--primary:hover {
-  filter: brightness(1.05);
+  background: color-mix(in srgb, var(--accent) 85%, white);
+  border-color: color-mix(in srgb, var(--accent) 85%, white);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 195, 110, 0.25);
+}
+
+.submit-run-page .btn--primary:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* Secondary button styling */
+.submit-run-page .submit-actions .btn:not(.btn--primary) {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--fg);
+}
+
+.submit-run-page .submit-actions .btn:not(.btn--primary):hover {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  border-color: var(--accent);
 }
 
 /* Status message */
 .submit-run-page #msg {
-  padding: 10px 12px;
+  padding: 12px 14px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: rgba(255,255,255,0.02);
+  font-size: 0.9rem;
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+}
+
+.submit-run-page #msg:empty {
+  display: none;
 }
 
 /* Preview payload */
@@ -4839,22 +4893,37 @@ a.resource-card:hover {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--surface);
-  padding: 10px 12px;
+  margin-top: 8px;
 }
 
 .submit-run-page details > summary {
   cursor: pointer;
-  font-weight: 650;
+  font-weight: 600;
+  font-size: 0.9rem;
   user-select: none;
+  padding: 12px 14px;
+  color: var(--text-muted);
+  transition: color 0.15s ease;
+}
+
+.submit-run-page details > summary:hover {
+  color: var(--fg);
+}
+
+.submit-run-page details[open] > summary {
+  border-bottom: 1px solid var(--border);
+  color: var(--fg);
 }
 
 .submit-run-page #preview {
-  margin: 10px 0 0 0;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  margin: 0;
+  border: none;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
   background: var(--bg);
-  padding: 10px 12px;
+  padding: 14px;
   overflow: auto;
+  font-size: 0.85rem;
+  max-height: 300px;
 }
 
 /* ============================================================
@@ -4862,37 +4931,110 @@ a.resource-card:hover {
    ============================================================ */
 .submit-run-page .multi-pick {
   display: grid;
-  gap: 8px;
+  gap: 12px;
 }
 
 .submit-run-page .multi-pick__picked {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  min-height: 1.5rem;
+  min-height: 0;
 }
 
 .submit-run-page .multi-pick__picked:empty {
   display: none;
 }
 
-.submit-run-page .multi-pick__help {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  margin: -2px 0 0 0;
+/* Chip styling */
+.submit-run-page .filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.65rem;
+  background: color-mix(in srgb, var(--accent) 15%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 2rem;
+  font-size: 0.875rem;
+  color: var(--fg);
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-/* Make suggestions list feel consistent with site */
+.submit-run-page .filter-chip:hover {
+  background: color-mix(in srgb, var(--accent) 25%, var(--surface));
+  border-color: var(--accent);
+}
+
+.submit-run-page .filter-chip__text {
+  font-weight: 500;
+}
+
+.submit-run-page .filter-chip__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  font-size: 0.9rem;
+  line-height: 1;
+  transition: background 0.15s ease;
+}
+
+.submit-run-page .filter-chip:hover .filter-chip__close {
+  background: rgba(255,100,100,0.3);
+  color: #ff6b6b;
+}
+
+.submit-run-page .multi-pick__help {
+  font-size: 0.825rem;
+  color: var(--text-dim);
+  font-style: italic;
+  padding-left: 2px;
+}
+
+/* Suggestions dropdown styling */
 .submit-run-page .filter-input__suggestions {
   border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  border: 1px solid var(--border);
+  border-top: none;
+  background: var(--bg);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  max-height: 240px;
+  overflow-y: auto;
 }
 
 .submit-run-page .filter-suggestion {
+  display: block;
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  text-align: left;
+  background: transparent;
+  border: none;
   border-top: 1px solid rgba(255,255,255,0.04);
+  color: var(--fg);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.1s ease;
 }
 
 .submit-run-page .filter-suggestion:first-child {
   border-top: none;
+}
+
+.submit-run-page .filter-suggestion:hover {
+  background: color-mix(in srgb, var(--accent) 15%, var(--bg));
+}
+
+.submit-run-page .filter-suggestion--empty {
+  color: var(--text-dim);
+  font-style: italic;
+  cursor: default;
+}
+
+.submit-run-page .filter-suggestion--empty:hover {
+  background: transparent;
 }
 
 /* ============================================================
