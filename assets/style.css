@@ -4539,6 +4539,68 @@ a.resource-card:hover {
 /* ============================================================
    Submit Run Page (submit-run/index.html)
    ============================================================ */
+
+/* HIGH SPECIFICITY: Target specific form elements by ID */
+#categorySelect,
+#gameSelect,
+#communityChallengeSelect,
+#characterSelect,
+#glitchSelect,
+#runnerId,
+#dateCompleted,
+#videoUrl,
+#standardChallengeSearch,
+#restrictionsSearch {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg) !important;
+  background-color: var(--bg) !important;
+  color: var(--fg);
+  min-height: var(--tap);
+  font-size: 0.95rem;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+#categorySelect,
+#gameSelect,
+#communityChallengeSelect,
+#characterSelect,
+#glitchSelect {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 8L1 3h10z'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.75rem center !important;
+  padding-right: 2.5rem;
+}
+
+#categorySelect:focus,
+#gameSelect:focus,
+#communityChallengeSelect:focus,
+#characterSelect:focus,
+#glitchSelect:focus,
+#runnerId:focus,
+#dateCompleted:focus,
+#videoUrl:focus,
+#standardChallengeSearch:focus,
+#restrictionsSearch:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--focus-2);
+}
+
+#categorySelect option,
+#gameSelect option,
+#communityChallengeSelect option,
+#characterSelect option,
+#glitchSelect option {
+  background: var(--bg);
+  color: var(--fg);
+}
+
 /* Scope everything to the submit-run page */
 .submit-run-page .card {
   max-width: 860px;
