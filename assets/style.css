@@ -3889,6 +3889,7 @@ a.resource-card:hover {
   font-size: 0.9em;
   display: block;
   margin-top: 0.25rem;
+  margin-left: 1.5rem;
 }
 
 /* New rule builder summary content (without bullets) */
