@@ -1663,6 +1663,11 @@ button.tag,
   margin: 0;
 }
 
+/* Push Submit Run tab to the far right */
+.runner-tabs .tab--submit {
+  margin-left: auto;
+}
+
 .page-width + .page-width .table-wrap {
   margin-top: 0.75rem;
 }
@@ -3909,17 +3914,21 @@ a.resource-card:hover {
 }
 
 .rule-builder__rule-desc {
-  margin: 0.25rem 0 0 0;
-  margin-left: 1.5rem;
+  margin: 0.5rem 0 0 0;
+  padding-left: 1.5rem;
   font-size: 0.9em;
   color: var(--text-muted);
+  line-height: 1.6;
 }
 
-/* Plain text should align with bullet text (not bullet markers) */
+/* Plain text should be indented and visually distinct */
 .rule-builder__rule-desc .rule-desc-text {
   display: block;
-  margin-left: 1.25rem;
-  margin-bottom: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  margin: 0.25rem 0;
+  background: rgba(255, 255, 255, 0.02);
+  border-left: 2px solid var(--border);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
 /* Headers inside descriptions - no extra indent */
