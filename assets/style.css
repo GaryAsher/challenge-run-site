@@ -4362,12 +4362,34 @@ a.resource-card:hover {
 
 /* ============================================================
    Runs Advanced Filter - Typeahead Style
+   Supports both .runs-filter-typeahead__* (legacy) and 
+   .filter-typeahead__* (used by JS) class naming
    ============================================================ */
-.runs-filter-typeahead {
+.runs-filter-typeahead,
+.filter-typeahead {
   position: relative;
 }
 
-.runs-filter-typeahead__input {
+.runs-filter-typeahead__picked,
+.filter-typeahead__picked {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.runs-filter-typeahead__picked:empty,
+.filter-typeahead__picked:empty {
+  margin-bottom: 0;
+}
+
+.runs-filter-typeahead__wrap,
+.filter-typeahead__wrap {
+  position: relative;
+}
+
+.runs-filter-typeahead__input,
+.filter-typeahead__input {
   width: 100%;
   min-width: 180px;
   padding: 0.5rem 0.75rem;
@@ -4378,13 +4400,20 @@ a.resource-card:hover {
   border-radius: var(--radius-sm);
 }
 
-.runs-filter-typeahead__input:focus {
+.runs-filter-typeahead__input:focus,
+.filter-typeahead__input:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 2px var(--focus-2);
 }
 
-.runs-filter-typeahead__dropdown {
+.runs-filter-typeahead__input::placeholder,
+.filter-typeahead__input::placeholder {
+  color: var(--placeholder-dim);
+}
+
+.runs-filter-typeahead__dropdown,
+.filter-typeahead__dropdown {
   position: absolute;
   top: 100%;
   left: 0;
@@ -4399,7 +4428,8 @@ a.resource-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.runs-filter-typeahead__option {
+.runs-filter-typeahead__option,
+.filter-typeahead__option {
   display: block;
   width: 100%;
   padding: 0.5rem 0.75rem;
@@ -4409,10 +4439,24 @@ a.resource-card:hover {
   background: transparent;
   border: none;
   cursor: pointer;
+  transition: background 0.1s ease;
 }
 
-.runs-filter-typeahead__option:hover {
+.runs-filter-typeahead__option:hover,
+.filter-typeahead__option:hover {
   background: var(--bg-soft);
+}
+
+.runs-filter-typeahead__option--empty,
+.filter-typeahead__option--empty {
+  color: var(--text-muted);
+  cursor: default;
+  font-style: italic;
+}
+
+.runs-filter-typeahead__option--empty:hover,
+.filter-typeahead__option--empty:hover {
+  background: transparent;
 }
 
 /* ============================================================
@@ -4649,23 +4693,41 @@ a.resource-card:hover {
   margin-top: -2px;
 }
 
-/* Inputs/selects - dark background matching Rule Builder style */
+/* Inputs/selects - consistent styling with site-wide .select class */
 .submit-run-page input[type="text"],
 .submit-run-page input[type="url"],
 .submit-run-page input[type="date"],
-.submit-run-page select,
 .submit-run-page textarea {
   width: 100%;
   padding: 0.6rem 0.75rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  background: var(--bg);
+  background: var(--surface);
+  color: var(--fg);
+  min-height: var(--tap);
+  font-size: 0.95rem;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.submit-run-page select,
+.submit-run-page select.select {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
   color: var(--fg);
   min-height: var(--tap);
   font-size: 0.95rem;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2.5rem;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
 }
 
 .submit-run-page input::placeholder,
@@ -4681,17 +4743,16 @@ a.resource-card:hover {
   box-shadow: 0 0 0 3px var(--focus-2);
 }
 
-.submit-run-page select {
-  cursor: pointer;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.75rem center;
-  padding-right: 2.5rem;
+.submit-run-page input:hover,
+.submit-run-page select:hover,
+.submit-run-page textarea:hover {
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+  border-color: var(--accent);
 }
 
 .submit-run-page select option,
 .submit-run-page select optgroup {
-  background: var(--bg);
+  background: var(--surface);
   color: var(--fg);
 }
 
@@ -4746,8 +4807,14 @@ a.resource-card:hover {
 
 /* Filter input fields inside submit page - match other inputs */
 .submit-run-page .filter-input__field {
-  background: var(--bg);
+  background: var(--surface);
   border-color: var(--border);
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.submit-run-page .filter-input__field:hover {
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+  border-color: var(--accent);
 }
 
 .submit-run-page .filter-input__field:focus {
