@@ -632,6 +632,9 @@
     const video_url_raw = ($("videoUrl")?.value || "").trim();
     const date_completed = $("dateCompleted")?.value || "";
 
+    // Get Turnstile captcha token if present
+    const turnstile_token = ($("turnstileToken")?.value || "").trim();
+
     const v = parseVideo(video_url_raw);
 
     const payload = {
@@ -658,6 +661,11 @@
       submitted_at: new Date().toISOString(),
       source: "site_form"
     };
+
+    // Add turnstile token if available (for captcha verification)
+    if (turnstile_token) {
+      payload.turnstile_token = turnstile_token;
+    }
 
     if (previewEl) previewEl.textContent = JSON.stringify(payload, null, 2);
     return { payload, v };
@@ -704,6 +712,12 @@
 
     if (!hasAnyChallenge) {
       return { valid: false, message: "Pick at least one Standard Challenge and/or a Community Challenge.", firstError };
+    }
+
+    // Check for turnstile token if turnstile widget is present
+    const turnstileWidget = $("turnstile-widget");
+    if (turnstileWidget && !payload.turnstile_token) {
+      return { valid: false, message: "Please complete the verification check.", firstError };
     }
 
     if (firstError) {
