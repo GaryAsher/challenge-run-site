@@ -5,42 +5,33 @@
     "//": "=== SETUP & SYNC ===",
     "sync:git": "git fetch origin && git reset --hard origin/main",
     
-    "//": "=== VALIDATION (Run before committing) ===",
+    "//1": "=== VALIDATION ===",
     "validate": "npm run validate:schema && npm run validate:runs && npm run validate:terms",
     "validate:schema": "node scripts/validate-schema.js",
     "validate:runs": "node scripts/validate-runs.js",
     "validate:terms": "node scripts/check-banned-terms.js",
-    "test-all": "node scripts/test-all.js",
-
-    "//": "=== DIAGNOSTICS ===",
-    "diagnose:game": "node scripts/diagnose-game.js",
-    "check:yaml": "node scripts/check-yaml-syntax.js",
     
-    "//": "=== GENERATION (Run after adding/editing games) ===",
+    "//2": "=== GENERATION ===",
     "generate": "npm run generate:codeowners && npm run generate:game-pages && npm run generate:run-categories && npm run generate:form-index",
     "generate:codeowners": "node scripts/generate-codeowners.js",
     "generate:game-pages": "node scripts/generate-game-pages.js",
     "generate:run-categories": "node scripts/generate-run-category-pages.js",
     "generate:form-index": "node scripts/generate-form-index.js",
     
-    "//": "=== QUICK COMMANDS ===",
+    "//3": "=== QUICK COMMANDS ===",
     "regen": "npm run generate && git add -A && git commit -m 'chore: Regenerate pages' && git push",
     "regen:dry": "npm run generate && git status",
     
-    "//": "=== CHECKS (CI validation - read-only) ===",
+    "//4": "=== CI CHECKS ===",
     "check:all": "npm run check:run-categories && npm run check:codeowners && npm run check:game-pages",
     "check:run-categories": "node scripts/generate-run-category-pages.js --check",
     "check:codeowners": "node scripts/generate-codeowners.js --check",
     "check:game-pages": "node scripts/generate-game-pages.js --check",
     
-    "//": "=== RUN PROMOTION (Moderator workflow) ===",
+    "//5": "=== MODERATION ===",
     "promote:runs": "node scripts/promote-runs.js",
-    "promote:runs:dry": "node scripts/promote-runs.js --dry-run",
+    "promote:runs:dry": "node scripts/promote-runs.js --dry-run"
     
-    "//": "=== BUILD (Production assets) ===",
-    "build": "npm run build:css && npm run build:js",
-    "build:css": "npx clean-css-cli assets/css/style.css -o assets/css/style.min.css",
-    "build:js": "npx terser assets/js/main.js -o assets/js/main.min.js -c -m"
   },
   "dependencies": {
     "js-yaml": "^4.1.0"
