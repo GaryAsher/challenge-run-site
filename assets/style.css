@@ -4565,11 +4565,7 @@ a.resource-card:hover {
 
 /* Make selects match site selects */
 #standardChallengeSelect,
-#restrictionsSelect,
-#communityChallengeSelect,
-#characterSelect,
-#glitchSelect,
-#gameSelect {
+#restrictionsSelect {
   width: 100%;
 }
 
@@ -4582,68 +4578,9 @@ a.resource-card:hover {
 
 /* ============================================================
    Submit Run Page (submit-run/index.html)
+   All form styling is now handled by .submit-run-page selectors
+   below for better maintainability and consistent specificity
    ============================================================ */
-
-/* HIGH SPECIFICITY: Target specific form elements by ID */
-#categorySelect,
-#gameSelect,
-#communityChallengeSelect,
-#characterSelect,
-#glitchSelect,
-#runnerId,
-#dateCompleted,
-#videoUrl,
-#standardChallengeSearch,
-#restrictionsSearch {
-  width: 100%;
-  padding: 0.6rem 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--bg) !important;
-  background-color: var(--bg) !important;
-  color: var(--fg);
-  min-height: var(--tap);
-  font-size: 0.95rem;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-}
-
-#categorySelect,
-#gameSelect,
-#communityChallengeSelect,
-#characterSelect,
-#glitchSelect {
-  cursor: pointer;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 8L1 3h10z'/%3E%3C/svg%3E") !important;
-  background-repeat: no-repeat !important;
-  background-position: right 0.75rem center !important;
-  padding-right: 2.5rem;
-}
-
-#categorySelect:focus,
-#gameSelect:focus,
-#communityChallengeSelect:focus,
-#characterSelect:focus,
-#glitchSelect:focus,
-#runnerId:focus,
-#dateCompleted:focus,
-#videoUrl:focus,
-#standardChallengeSearch:focus,
-#restrictionsSearch:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--focus-2);
-}
-
-#categorySelect option,
-#gameSelect option,
-#communityChallengeSelect option,
-#characterSelect option,
-#glitchSelect option {
-  background: var(--bg);
-  color: var(--fg);
-}
 
 /* Scope everything to the submit-run page */
 .submit-run-page .card {
@@ -4912,4 +4849,240 @@ a.resource-card:hover {
 
 .submit-run-page .filter-suggestion:first-child {
   border-top: none;
+}
+
+/* ============================================================
+   Required Field Markers & Hints
+   ============================================================ */
+.required-marker {
+  color: var(--accent);
+  font-weight: 700;
+  margin-left: 0.15em;
+}
+
+.required-hint {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+/* ============================================================
+   Inline Field Validation Errors
+   ============================================================ */
+.field-error {
+  display: block;
+  margin-top: 0.35rem;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.85rem;
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+  border-left: 3px solid #ff6b6b;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.field-error[hidden] {
+  display: none;
+}
+
+/* Error state for inputs */
+.submit-run-page input.has-error,
+.submit-run-page select.has-error,
+.submit-run-page textarea.has-error {
+  border-color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.05);
+}
+
+.submit-run-page input.has-error:focus,
+.submit-run-page select.has-error:focus,
+.submit-run-page textarea.has-error:focus {
+  border-color: #ff6b6b;
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2);
+}
+
+/* ============================================================
+   Submit Message Styles
+   ============================================================ */
+.submit-message {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  border: 1px solid var(--border);
+  background: var(--panel);
+}
+
+.submit-message--error {
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+  border-color: rgba(255, 107, 107, 0.3);
+}
+
+.submit-message--success {
+  color: var(--accent);
+  background: rgba(59, 195, 110, 0.1);
+  border-color: rgba(59, 195, 110, 0.3);
+}
+
+/* ============================================================
+   Loading State & Spinner
+   ============================================================ */
+.btn.is-loading {
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.btn__loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spinner {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   Improved Mobile Responsiveness
+   ============================================================ */
+@media (max-width: 640px) {
+  /* Stack form sections tighter on mobile */
+  .submit-run-page .submit-grid {
+    gap: 12px;
+  }
+  
+  .submit-run-page .submit-section {
+    padding: 14px;
+  }
+  
+  .submit-run-page .submit-section__title {
+    font-size: 1rem;
+  }
+  
+  /* Full-width suggestion dropdowns on mobile */
+  .submit-run-page .filter-input__suggestions {
+    position: fixed;
+    left: var(--gutter);
+    right: var(--gutter);
+    max-width: none;
+    max-height: 50vh;
+    z-index: 100;
+  }
+  
+  /* Larger touch targets for filter suggestions */
+  .submit-run-page .filter-suggestion {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+  }
+  
+  /* Better touch targets for chips */
+  .submit-run-page .filter-chip {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+  }
+  
+  /* Stack actions vertically on very small screens */
+  .submit-run-page .submit-actions {
+    flex-direction: column;
+  }
+  
+  .submit-run-page .submit-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* Larger inputs for touch */
+  .submit-run-page input,
+  .submit-run-page select,
+  .submit-run-page textarea {
+    font-size: 16px; /* Prevents iOS zoom on focus */
+    min-height: 44px; /* iOS minimum touch target */
+  }
+  
+  /* Full width message */
+  .submit-message {
+    margin-left: -14px;
+    margin-right: -14px;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Even tighter on very small screens */
+  .submit-run-page .submit-row-2 {
+    gap: 12px;
+  }
+  
+  .submit-run-page h1 {
+    font-size: 1.4rem;
+  }
+  
+  .submit-run-page .submit-lead {
+    font-size: 0.9rem;
+  }
+  
+  /* Stack required hint below text */
+  .required-hint {
+    display: block;
+    margin-top: 0.35rem;
+  }
+}
+
+/* ============================================================
+   Improved Focus States for Accessibility
+   ============================================================ */
+.submit-run-page *:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.submit-run-page input:focus-visible,
+.submit-run-page select:focus-visible,
+.submit-run-page textarea:focus-visible,
+.submit-run-page button:focus-visible {
+  outline: none; /* Using box-shadow instead for these */
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .submit-run-page input,
+  .submit-run-page select,
+  .submit-run-page textarea {
+    border-width: 2px;
+  }
+  
+  .required-marker {
+    text-decoration: underline;
+  }
+  
+  .field-error {
+    border-left-width: 4px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+    border-style: dotted;
+  }
+  
+  .submit-run-page input,
+  .submit-run-page select,
+  .submit-run-page textarea,
+  .submit-run-page button {
+    transition: none;
+  }
 }
