@@ -4,6 +4,13 @@
    - Standard Challenges (multi)
    - Restrictions (multi)
 
+   Features:
+   - Inline field validation with error messages
+   - Loading states for submit button
+   - Caching for form-index.json (1 hour)
+   - ARIA attributes for accessibility
+   - Keyboard navigation support
+
    Contract:
    - Clicking a suggestion adds it (and removes it from the dropdown list).
    - Clicking a chip removes it (and returns it to the dropdown list).
@@ -15,13 +22,87 @@
 
   const msgEl = $("msg");
   const previewEl = $("preview");
+  const btnSubmit = $("btnSubmit");
+  const form = $("submitRunForm");
 
-  function setMsg(text, isError = false) {
-    if (!msgEl) return;
-    msgEl.textContent = text;
-    msgEl.style.color = isError ? "var(--danger, #ff6b6b)" : "";
+  // =============================================================================
+  // Loading State Management
+  // =============================================================================
+  function setLoading(isLoading) {
+    if (!btnSubmit) return;
+    
+    const textEl = btnSubmit.querySelector(".btn__text");
+    const loadingEl = btnSubmit.querySelector(".btn__loading");
+    
+    if (isLoading) {
+      btnSubmit.disabled = true;
+      btnSubmit.classList.add("is-loading");
+      if (textEl) textEl.hidden = true;
+      if (loadingEl) loadingEl.hidden = false;
+    } else {
+      btnSubmit.disabled = false;
+      btnSubmit.classList.remove("is-loading");
+      if (textEl) textEl.hidden = false;
+      if (loadingEl) loadingEl.hidden = true;
+    }
   }
 
+  // =============================================================================
+  // Message Display
+  // =============================================================================
+  function setMsg(text, type = "info") {
+    if (!msgEl) return;
+    msgEl.textContent = text;
+    msgEl.className = "submit-message";
+    
+    if (type === "error") {
+      msgEl.classList.add("submit-message--error");
+    } else if (type === "success") {
+      msgEl.classList.add("submit-message--success");
+    }
+  }
+
+  // =============================================================================
+  // Inline Field Validation
+  // =============================================================================
+  function showFieldError(fieldId, message) {
+    const errorEl = $(`${fieldId}-error`);
+    const fieldEl = $(fieldId);
+    
+    if (errorEl) {
+      errorEl.textContent = message;
+      errorEl.hidden = false;
+    }
+    
+    if (fieldEl) {
+      fieldEl.classList.add("has-error");
+      fieldEl.setAttribute("aria-invalid", "true");
+    }
+  }
+
+  function clearFieldError(fieldId) {
+    const errorEl = $(`${fieldId}-error`);
+    const fieldEl = $(fieldId);
+    
+    if (errorEl) {
+      errorEl.textContent = "";
+      errorEl.hidden = true;
+    }
+    
+    if (fieldEl) {
+      fieldEl.classList.remove("has-error");
+      fieldEl.removeAttribute("aria-invalid");
+    }
+  }
+
+  function clearAllFieldErrors() {
+    const errorFields = ["gameSelect", "categorySelect", "runnerId", "dateCompleted", "videoUrl"];
+    errorFields.forEach(clearFieldError);
+  }
+
+  // =============================================================================
+  // URL Utilities
+  // =============================================================================
   function qs(name) {
     const u = new URL(window.location.href);
     return u.searchParams.get(name) || "";
@@ -85,13 +166,52 @@
     }
   }
 
+  // =============================================================================
+  // Data Loading with Caching (1 hour cache)
+  // =============================================================================
+  const CACHE_KEY = "crc_form_index";
+  const CACHE_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
+
   async function loadIndex() {
     const url = window.CRC_FORM_INDEX_URL || "/assets/generated/form-index.json";
-    const res = await fetch(url, { cache: "no-store" });
+    
+    // Try to get from cache first
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const { data, timestamp } = JSON.parse(cached);
+        const age = Date.now() - timestamp;
+        if (age < CACHE_DURATION && data && data.games) {
+          console.log("[CRC] Using cached form index");
+          return data;
+        }
+      }
+    } catch (e) {
+      console.warn("[CRC] Cache read failed:", e);
+    }
+
+    // Fetch fresh data
+    const res = await fetch(url);
     if (!res.ok) throw new Error("Could not load form index JSON.");
-    return res.json();
+    const data = await res.json();
+
+    // Store in cache
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({
+        data,
+        timestamp: Date.now()
+      }));
+      console.log("[CRC] Cached form index");
+    } catch (e) {
+      console.warn("[CRC] Cache write failed:", e);
+    }
+
+    return data;
   }
 
+  // =============================================================================
+  // Select Population Helpers
+  // =============================================================================
   function fillSelect(selectEl, items, getValue, getLabel, includeBlank, blankLabel) {
     if (!selectEl) return;
     selectEl.innerHTML = "";
@@ -133,7 +253,6 @@
     if (!selectEl) return;
     const existing = new Set(Array.from(selectEl.options).map((o) => String(o.value)));
 
-    // Ensure every known item exists as an option so selected state can be synced.
     for (const it of allItems) {
       if (!existing.has(it.id)) {
         const opt = document.createElement("option");
@@ -144,6 +263,9 @@
     }
   }
 
+  // =============================================================================
+  // Typeahead Chip Picker (with ARIA support)
+  // =============================================================================
   function createTypeaheadChipPicker(opts) {
     const {
       kind,
@@ -158,7 +280,7 @@
     } = opts;
 
     let all = [];
-    const selected = new Map(); // id -> item
+    const selected = new Map();
 
     function setItems(items) {
       all = Array.isArray(items) ? items.slice() : [];
@@ -202,6 +324,8 @@
         chip.type = "button";
         chip.className = "filter-chip";
         chip.dataset.id = it.id;
+        chip.setAttribute("role", "listitem");
+        chip.setAttribute("aria-label", `Remove ${it.name}`);
 
         const text = document.createElement("span");
         text.className = "filter-chip__text";
@@ -210,6 +334,7 @@
         const close = document.createElement("span");
         close.className = "filter-chip__close";
         close.textContent = "×";
+        close.setAttribute("aria-hidden", "true");
 
         chip.appendChild(text);
         chip.appendChild(close);
@@ -230,11 +355,13 @@
     function hideSuggestions() {
       if (!suggestionsEl) return;
       suggestionsEl.hidden = true;
+      if (inputEl) inputEl.setAttribute("aria-expanded", "false");
     }
 
     function showSuggestions() {
       if (!suggestionsEl) return;
       suggestionsEl.hidden = false;
+      if (inputEl) inputEl.setAttribute("aria-expanded", "true");
     }
 
     function currentQuery() {
@@ -267,6 +394,8 @@
         btn.className = "filter-suggestion filter-suggestion--empty";
         btn.textContent = noneText;
         btn.disabled = true;
+        btn.setAttribute("role", "option");
+        btn.setAttribute("aria-disabled", "true");
         suggestionsEl.appendChild(btn);
         return;
       }
@@ -277,6 +406,8 @@
         btn.className = "filter-suggestion filter-suggestion--empty";
         btn.textContent = q ? emptyText : noneText;
         btn.disabled = true;
+        btn.setAttribute("role", "option");
+        btn.setAttribute("aria-disabled", "true");
         suggestionsEl.appendChild(btn);
         return;
       }
@@ -287,18 +418,18 @@
         btn.className = "filter-suggestion";
         btn.dataset.id = it.id;
         btn.textContent = it.name;
+        btn.setAttribute("role", "option");
 
         btn.addEventListener("click", () => {
           selected.set(it.id, it);
           ensureHiddenSelectOptions(hiddenSelectEl, all);
           syncHiddenMultiSelect(hiddenSelectEl, getSelectedIds());
 
-          // clear query after add (feels like games filters)
           if (inputEl) inputEl.value = "";
 
           renderChips();
           renderSuggestions();
-          showSuggestions(); // keep open for rapid multi-add
+          showSuggestions();
           onChange && onChange();
         });
 
@@ -322,7 +453,6 @@
         return;
       }
 
-      // Quick add on Enter if only one match
       if (e.key === "Enter") {
         const q = currentQuery();
         const list = getAvailable(q);
@@ -362,7 +492,9 @@
     return { kind, setItems, getSelectedIds, clear };
   }
 
-  // ===== Load index =====
+  // =============================================================================
+  // Main Initialization
+  // =============================================================================
   const index = await loadIndex();
 
   const gameSelect = $("gameSelect");
@@ -374,11 +506,9 @@
   const glitchSelect = $("glitchSelect");
   const characterLabelEl = $("characterLabel");
 
-  // Hidden selects (kept in sync)
   const standardChallengeSelect = $("standardChallengeSelect");
   const restrictionsSelect = $("restrictionsSelect");
 
-  // Typeahead picker DOM
   const standardInput = $("standardChallengeSearch");
   const standardSuggestions = $("standardChallengeSuggestions");
   const standardChips = $("standardChallengePicked");
@@ -387,14 +517,13 @@
   const restrictionsSuggestions = $("restrictionsSuggestions");
   const restrictionsChips = $("restrictionsPicked");
 
-  // Create pickers
   const standardPicker = createTypeaheadChipPicker({
     kind: "standard_challenges",
     inputEl: standardInput,
     suggestionsEl: standardSuggestions,
     chipsEl: standardChips,
     hiddenSelectEl: standardChallengeSelect,
-    placeholder: "Add a standard challenge...",
+    placeholder: "Type to search challenges...",
     noneText: "No standard challenges available",
     emptyText: "No matches",
     onChange: repaint
@@ -406,7 +535,7 @@
     suggestionsEl: restrictionsSuggestions,
     chipsEl: restrictionsChips,
     hiddenSelectEl: restrictionsSelect,
-    placeholder: "Add a restriction...",
+    placeholder: "Type to search restrictions...",
     noneText: "No restrictions available",
     emptyText: "No matches",
     onChange: repaint
@@ -417,11 +546,10 @@
   }
 
   function populateGames(filterText = "") {
-    // If gameSelect is a hidden input, don't try to populate it as a select
     if (!gameSelect || (gameSelect.tagName === "INPUT" && gameSelect.type === "hidden")) {
       return;
     }
-    
+
     const q = filterText.trim().toLowerCase();
     const list = q
       ? index.games.filter((g) => g.title.toLowerCase().includes(q) || g.game_id.toLowerCase().includes(q))
@@ -431,11 +559,11 @@
       gameSelect,
       list,
       (g) => g.game_id,
-      (g) => `${g.title} (${g.game_id})`,
-      false
+      (g) => `${g.title}`,
+      true,
+      "Choose a game..."
     );
 
-    // Check for preset game ID (from window variable or query string)
     const pre = window.CRC_PRESET_GAME_ID || qs("game");
     if (pre) {
       const exists = list.some((g) => g.game_id === pre);
@@ -462,24 +590,25 @@
 
     if (characterLabelEl) characterLabelEl.textContent = cc && cc.label ? cc.label : "Character";
 
-    // Wire multi pickers (chips + typeahead)
     standardPicker.setItems(standard);
     restrictionsPicker.setItems(restrictions);
 
-    fillSelect(communityChallengeSelect, community, (c) => c.id, (c) => c.name, true, "None");
-    fillSelect(glitchSelect, glitches, (c) => c.id, (c) => c.name, true, "None");
+    fillSelect(communityChallengeSelect, community, (c) => c.id, (c) => c.name, true, "None selected");
+    fillSelect(glitchSelect, glitches, (c) => c.id, (c) => c.name, true, "None / Glitchless");
 
     if (cc && cc.enabled) {
       if (characterSelect) {
         characterSelect.disabled = false;
-        if (characterSelect.parentElement) characterSelect.parentElement.style.display = "";
-        fillSelect(characterSelect, chars, (c) => c.id, (c) => c.name, true, "Any");
+        const section = $("characterSection");
+        if (section) section.style.display = "";
+        fillSelect(characterSelect, chars, (c) => c.id, (c) => c.name, true, "Any / Not applicable");
       }
     } else {
       if (characterSelect) {
         characterSelect.value = "";
         characterSelect.disabled = true;
-        if (characterSelect.parentElement) characterSelect.parentElement.style.display = "none";
+        const section = $("characterSection");
+        if (section) section.style.display = "none";
       }
     }
 
@@ -512,9 +641,8 @@
       game_id,
       category_slug,
 
-      // Allow BOTH:
-      standard_challenges: standard_ids, // array
-      community_challenge: community_id, // string or ""
+      standard_challenges: standard_ids,
+      community_challenge: community_id,
 
       character,
       glitch_id,
@@ -535,28 +663,63 @@
     return { payload, v };
   }
 
+  // =============================================================================
+  // Validation with Inline Errors
+  // =============================================================================
   function validatePayload(payload, v) {
-    if (!payload.game_id) return "Missing game.";
-    if (!payload.category_slug) return "Missing category.";
-    if (!payload.runner_id) return "Missing runner id.";
-    if (!payload.video_url) return "Missing video URL.";
-    if (!v.ok) return v.reason || "Invalid video URL.";
-    if (!payload.date_completed) return "Missing completed date.";
+    clearAllFieldErrors();
+    let firstError = null;
+
+    if (!payload.game_id) {
+      showFieldError("gameSelect", "Please select a game.");
+      if (!firstError) firstError = "gameSelect";
+    }
+
+    if (!payload.category_slug) {
+      showFieldError("categorySelect", "Please select a category.");
+      if (!firstError) firstError = "categorySelect";
+    }
+
+    if (!payload.runner_id) {
+      showFieldError("runnerId", "Runner ID is required.");
+      if (!firstError) firstError = "runnerId";
+    }
+
+    if (!payload.video_url) {
+      showFieldError("videoUrl", "Video URL is required.");
+      if (!firstError) firstError = "videoUrl";
+    } else if (!v.ok) {
+      showFieldError("videoUrl", v.reason || "Invalid video URL.");
+      if (!firstError) firstError = "videoUrl";
+    }
+
+    if (!payload.date_completed) {
+      showFieldError("dateCompleted", "Completion date is required.");
+      if (!firstError) firstError = "dateCompleted";
+    }
 
     const hasAnyChallenge =
       (Array.isArray(payload.standard_challenges) && payload.standard_challenges.length > 0) ||
       !!payload.community_challenge;
 
-    if (!hasAnyChallenge) return "Pick at least one Standard Challenge and/or a Community Challenge.";
+    if (!hasAnyChallenge) {
+      return { valid: false, message: "Pick at least one Standard Challenge and/or a Community Challenge.", firstError };
+    }
 
-    return "";
+    if (firstError) {
+      return { valid: false, message: "Please fix the errors above.", firstError };
+    }
+
+    return { valid: true, message: "", firstError: null };
   }
 
   function repaint() {
     buildPayload();
   }
 
-  // Events
+  // =============================================================================
+  // Event Handlers
+  // =============================================================================
   if (gameSearch) {
     gameSearch.addEventListener("input", () => {
       populateGames(gameSearch.value);
@@ -566,19 +729,27 @@
     });
   }
 
-  if (gameSelect) {
+  if (gameSelect && gameSelect.tagName === "SELECT") {
     gameSelect.addEventListener("change", () => {
+      clearFieldError("gameSelect");
       populateCategories();
       populateBoxes();
       repaint();
     });
   }
 
+  // Clear errors on input
   ["categorySelect", "runnerId", "videoUrl", "dateCompleted"].forEach((id) => {
     const el = $(id);
     if (!el) return;
-    el.addEventListener("input", repaint);
-    el.addEventListener("change", repaint);
+    el.addEventListener("input", () => {
+      clearFieldError(id);
+      repaint();
+    });
+    el.addEventListener("change", () => {
+      clearFieldError(id);
+      repaint();
+    });
   });
 
   [communityChallengeSelect, characterSelect, glitchSelect].forEach((el) => {
@@ -589,25 +760,48 @@
 
   $("btnCopy")?.addEventListener("click", async () => {
     const { payload, v } = buildPayload();
-    const err = validatePayload(payload, v);
-    if (err) return setMsg(err, true);
+    const validation = validatePayload(payload, v);
+    
+    if (!validation.valid) {
+      setMsg(validation.message, "error");
+      if (validation.firstError) {
+        $(validation.firstError)?.focus();
+      }
+      return;
+    }
 
-    await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
-    setMsg("Copied payload to clipboard.", false);
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+      setMsg("Copied payload to clipboard!", "success");
+    } catch (e) {
+      setMsg("Failed to copy to clipboard.", "error");
+    }
   });
 
-  $("btnSubmit")?.addEventListener("click", async (e) => {
+  // Form submission handler
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
     const { payload, v } = buildPayload();
-    const err = validatePayload(payload, v);
-    if (err) return setMsg(err, true);
+    const validation = validatePayload(payload, v);
+    
+    if (!validation.valid) {
+      setMsg(validation.message, "error");
+      if (validation.firstError) {
+        $(validation.firstError)?.focus();
+      }
+      return;
+    }
 
     const endpoint = window.CRC_RUN_SUBMIT_ENDPOINT;
 
     if (!endpoint) {
-      setMsg("No submit endpoint configured yet. Copy the payload and submit via your current intake path.", false);
+      setMsg("No submit endpoint configured yet. Copy the payload and submit via your current intake path.", "info");
       return;
     }
+
+    setLoading(true);
+    setMsg("Submitting your run...", "info");
 
     try {
       const res = await fetch(endpoint, {
@@ -621,37 +815,40 @@
         throw new Error(`Submit failed (${res.status}). ${t}`.trim());
       }
 
-      setMsg("Submitted successfully.", false);
+      setMsg("✓ Submitted successfully! Your run will be reviewed shortly.", "success");
     } catch (ex) {
-      setMsg(String(ex.message || ex), true);
+      setMsg(String(ex.message || ex), "error");
+    } finally {
+      setLoading(false);
     }
-  });
+  };
 
-  // Initial paint
-  // Check for preset game (from game-specific submit page)
+  // Attach to both button click and form submit
+  btnSubmit?.addEventListener("click", handleSubmit);
+  form?.addEventListener("submit", handleSubmit);
+
+  // =============================================================================
+  // Initial Setup
+  // =============================================================================
   const presetGameId = window.CRC_PRESET_GAME_ID || qs("game") || "";
-  
-  // If gameSelect is a hidden input (preset mode), just set its value
+
   if (gameSelect && gameSelect.tagName === "INPUT" && gameSelect.type === "hidden") {
-    // Game is preset via hidden input - just populate based on that value
     populateCategories();
     populateBoxes();
   } else {
-    // Normal mode - populate game dropdown
     populateGames("");
-    
-    // If we have a preset game ID, select it
+
     if (presetGameId && gameSelect) {
       const exists = index.games.some((g) => g.game_id === presetGameId);
       if (exists) {
         gameSelect.value = presetGameId;
       }
     }
-    
+
     populateCategories();
     populateBoxes();
   }
-  
+
   repaint();
-  setMsg("Ready.", false);
+  setMsg("Ready to submit.", "info");
 })();
