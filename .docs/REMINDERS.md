@@ -9,8 +9,18 @@ This document consolidates all reminders, future ideas, and planned features for
 ### New Game Submission form:
 - [ ] Do we ask users to fill out Genres again?
 - [ ] Discord Webhook not working properly
-- [ ] Fix script to change slugs into strings.
-  - This will fix when people submit 100% as a category.
+
+### Game Page Tabs
+- /runs/ Page
+- [ ] Need a section for "mini-challenges". Basically, the IL of challenge running.
+- /rules/ Page
+- [ ] Rule Builder in needs to indent plain text
+- /history/
+- [ ] Needs better filtering. Only show verified runs, community milestones, records broken (if verified), etc.
+- /submit/
+- [ ] Need to space headers apart from plain text for easier readability.
+- [ ] Add CSS styling to other areas
+- [ ] Move this tab to the far right corner? If we add "Change Requests", we can have them side by side and it would make sense.
 
 ### Forms & Submissions
 - [ ] Runner profile submission - Self-service profile creation
@@ -49,11 +59,11 @@ featured_runs:
 
 ### Site Features
 - [ ] Add Spanish version
-- [ ] Dark/light mode toggle
 - [ ] Add a "Back to Top" button for long pages
 - [ ] Add keyboard navigation for filter dropdowns (arrow keys)
 - [ ] Add "Copy Link" button for sharing specific filtered views
 - [ ] Show total run count badges on game cards
+- [ ] Dark/light mode toggle
 
 ### Performance Optimizations
 - [ ] Consider lazy-loading game cards on the games index page
