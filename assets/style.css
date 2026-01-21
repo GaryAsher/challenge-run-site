@@ -4576,7 +4576,7 @@ a.resource-card:hover {
   margin-top: -2px;
 }
 
-/* Inputs/selects - consistent dark background */
+/* Inputs/selects - slightly lighter than panel for visibility */
 .submit-run-page input[type="text"],
 .submit-run-page input[type="url"],
 .submit-run-page input[type="date"],
@@ -4586,7 +4586,7 @@ a.resource-card:hover {
   padding: 0.6rem 0.75rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  background: var(--bg);
+  background: var(--surface-2);
   color: var(--fg);
   min-height: var(--tap);
   font-size: 0.95rem;
@@ -4664,9 +4664,9 @@ a.resource-card:hover {
   color: var(--text-muted);
 }
 
-/* Filter input fields inside submit page - match the dark bg */
+/* Filter input fields inside submit page - match other inputs */
 .submit-run-page .filter-input__field {
-  background: var(--bg);
+  background: var(--surface-2);
   border-color: var(--border);
 }
 
@@ -4765,9 +4765,4 @@ a.resource-card:hover {
 
 .submit-run-page .filter-suggestion:first-child {
   border-top: none;
-}
-
-/* Make filter-input fields consistent with other inputs on submit page */
-.submit-run-page .filter-input__field {
-  background: var(--surface);
 }
