@@ -17,33 +17,50 @@
       <h1>Submit a Run</h1>
       <p class="muted submit-lead">
         Select a game to see its specific options, then fill in your run details.
+        <span class="required-hint"><span class="required-marker">*</span> indicates required fields</span>
       </p>
     {% else %}
       <h1>Submit a {{ preset_game.game_name }} Run</h1>
       <p class="muted submit-lead">
         Fill in your run details below. All options are specific to {{ preset_game.game_name }}.
+        <span class="required-hint"><span class="required-marker">*</span> indicates required fields</span>
       </p>
     {% endunless %}
 
-    <div class="submit-form">
+    <form class="submit-form" id="submitRunForm" novalidate>
       <div class="submit-grid">
 
         <!-- =========================
              GAME + CATEGORY
              ========================= -->
         {% unless hide_game_select %}
-        <div class="submit-section">
-          <p class="submit-section__title">Game</p>
+        <div class="submit-section" aria-labelledby="game-section-title">
+          <p id="game-section-title" class="submit-section__title">Game <span class="required-marker">*</span></p>
           <p class="submit-section__sub">Pick the game first so the options below match that game.</p>
 
           <div class="submit-field">
-            <div class="submit-label muted" style="margin-bottom:0;">Search</div>
-            <input id="gameSearch" type="text" placeholder="Search game..." autocomplete="off" />
+            <label for="gameSearch" class="submit-label muted">Search</label>
+            <input 
+              id="gameSearch" 
+              type="text" 
+              placeholder="Type to filter games..." 
+              autocomplete="off"
+              aria-label="Search for a game"
+            />
           </div>
 
           <div class="submit-field">
-            <div class="submit-label muted" style="margin-bottom:0;">Select</div>
-            <select id="gameSelect" class="select"></select>
+            <label for="gameSelect" class="submit-label muted">Select Game <span class="required-marker">*</span></label>
+            <select 
+              id="gameSelect" 
+              class="select" 
+              required
+              aria-label="Select a game"
+              aria-required="true"
+            >
+              <option value="">Choose a game...</option>
+            </select>
+            <span class="field-error" id="gameSelect-error" role="alert" hidden></span>
           </div>
         </div>
         {% else %}
@@ -54,45 +71,74 @@
         </div>
         {% endunless %}
 
-        <div class="submit-section">
-          <p class="submit-section__title">Category</p>
+        <div class="submit-section" aria-labelledby="category-section-title">
+          <p id="category-section-title" class="submit-section__title">Category <span class="required-marker">*</span></p>
           <p class="submit-section__sub">Select the run category.</p>
 
           <div class="submit-field">
-            <div class="submit-label muted" style="margin-bottom:0;">Category</div>
-            <select id="categorySelect" class="select"></select>
+            <label for="categorySelect" class="submit-label muted">Category <span class="required-marker">*</span></label>
+            <select 
+              id="categorySelect" 
+              class="select" 
+              required
+              aria-label="Select run category"
+              aria-required="true"
+            >
+              <option value="">Select category...</option>
+            </select>
+            <span class="field-error" id="categorySelect-error" role="alert" hidden></span>
           </div>
         </div>
 
         <!-- =========================
              RUN DETAILS
              ========================= -->
-        <div class="submit-section">
-          <p class="submit-section__title">Run Details</p>
+        <div class="submit-section" aria-labelledby="run-details-title">
+          <p id="run-details-title" class="submit-section__title">Run Details <span class="required-marker">*</span></p>
           <p class="submit-section__sub">Basic information about your run.</p>
 
           <div class="submit-row-2">
             <div class="submit-field">
-              <div class="submit-label">Runner ID</div>
+              <label for="runnerId" class="submit-label">Runner ID <span class="required-marker">*</span></label>
               <div class="submit-hint">Use your CRC runner id (example: <code>gary-asher</code>).</div>
-              <input id="runnerId" type="text" placeholder="your-runner-id" />
+              <input 
+                id="runnerId" 
+                type="text" 
+                placeholder="your-runner-id" 
+                required
+                aria-required="true"
+                aria-describedby="runnerId-hint"
+                pattern="[a-z0-9\-]+"
+              />
+              <span class="field-error" id="runnerId-error" role="alert" hidden></span>
             </div>
 
             <div class="submit-field">
-              <div class="submit-label">Date Completed</div>
-              <div class="submit-hint">Local date you finished the run.</div>
-              <input id="dateCompleted" type="date" />
+              <label for="dateCompleted" class="submit-label">Date Completed <span class="required-marker">*</span></label>
+              <div class="submit-hint" id="dateCompleted-hint">Local date you finished the run.</div>
+              <input 
+                id="dateCompleted" 
+                type="date" 
+                required
+                aria-required="true"
+                aria-describedby="dateCompleted-hint"
+              />
+              <span class="field-error" id="dateCompleted-error" role="alert" hidden></span>
             </div>
           </div>
 
           <div class="submit-field">
-            <div class="submit-label">Video URL</div>
-            <div class="submit-hint">YouTube, Twitch VOD, or Bilibili are accepted.</div>
+            <label for="videoUrl" class="submit-label">Video URL <span class="required-marker">*</span></label>
+            <div class="submit-hint" id="videoUrl-hint">YouTube, Twitch VOD, or Bilibili are accepted.</div>
             <input
               id="videoUrl"
               type="url"
-              placeholder="https://www.youtube.com/watch?v=...  |  https://www.twitch.tv/videos/...  |  https://www.bilibili.com/video/..."
+              placeholder="https://youtube.com/watch?v=... or https://twitch.tv/videos/..."
+              required
+              aria-required="true"
+              aria-describedby="videoUrl-hint"
             />
+            <span class="field-error" id="videoUrl-error" role="alert" hidden></span>
           </div>
         </div>
 
@@ -103,10 +149,11 @@
           <p id="standard-challenges-title" class="submit-section__title">Standard Challenges</p>
           <p class="submit-section__sub">
             Multi-select. Click a suggestion to add it, click a chip to remove it.
+            <br><em>At least one Standard or Community Challenge is required.</em>
           </p>
 
-          <div class="multi-pick" id="standardChallengePicker" data-kind="standard-challenges">
-            <div class="multi-pick__picked filter-input__picked" id="standardChallengePicked"></div>
+          <div class="multi-pick" id="standardChallengePicker" data-kind="standard-challenges" role="group" aria-labelledby="standard-challenges-title">
+            <div class="multi-pick__picked filter-input__picked" id="standardChallengePicked" role="list" aria-label="Selected standard challenges"></div>
 
             <div class="filter-input">
               <div class="filter-input__wrap">
@@ -114,12 +161,18 @@
                   id="standardChallengeSearch"
                   class="filter-input__field"
                   type="text"
-                  placeholder="Add a standard challenge..."
+                  placeholder="Type to search challenges..."
                   autocomplete="off"
+                  aria-label="Search standard challenges"
+                  aria-autocomplete="list"
+                  aria-controls="standardChallengeSuggestions"
+                  aria-expanded="false"
                 />
                 <div
                   id="standardChallengeSuggestions"
                   class="filter-input__suggestions"
+                  role="listbox"
+                  aria-label="Standard challenge suggestions"
                   hidden
                 ></div>
               </div>
@@ -130,7 +183,7 @@
             </div>
           </div>
 
-          <select id="standardChallengeSelect" multiple hidden></select>
+          <select id="standardChallengeSelect" multiple hidden aria-hidden="true"></select>
         </div>
 
         <!-- =========================
@@ -141,8 +194,14 @@
           <p class="submit-section__sub">Optional. Pick one game-specific community challenge.</p>
 
           <div class="submit-field">
-            <div class="submit-label muted" style="margin-bottom:0;">Community Challenge</div>
-            <select id="communityChallengeSelect" class="select"></select>
+            <label for="communityChallengeSelect" class="submit-label muted">Community Challenge</label>
+            <select 
+              id="communityChallengeSelect" 
+              class="select"
+              aria-label="Select community challenge (optional)"
+            >
+              <option value="">None selected</option>
+            </select>
           </div>
         </div>
 
@@ -156,8 +215,14 @@
           </p>
 
           <div class="submit-field">
-            <div class="submit-label muted" id="characterLabel" style="margin-bottom:0;">Character</div>
-            <select id="characterSelect" class="select"></select>
+            <label for="characterSelect" class="submit-label muted" id="characterLabel">Character</label>
+            <select 
+              id="characterSelect" 
+              class="select"
+              aria-labelledby="characterLabel"
+            >
+              <option value="">Any / Not applicable</option>
+            </select>
           </div>
         </div>
 
@@ -169,8 +234,14 @@
           <p class="submit-section__sub">Optional. Select the glitch ruleset used.</p>
 
           <div class="submit-field">
-            <div class="submit-label muted" style="margin-bottom:0;">Glitch Category</div>
-            <select id="glitchSelect" class="select"></select>
+            <label for="glitchSelect" class="submit-label muted">Glitch Category</label>
+            <select 
+              id="glitchSelect" 
+              class="select"
+              aria-label="Select glitch category (optional)"
+            >
+              <option value="">None / Glitchless</option>
+            </select>
           </div>
         </div>
 
@@ -183,8 +254,8 @@
             Multi-select. Additional restrictions applied to the run.
           </p>
 
-          <div class="multi-pick" id="restrictionsPicker" data-kind="restrictions">
-            <div class="multi-pick__picked filter-input__picked" id="restrictionsPicked"></div>
+          <div class="multi-pick" id="restrictionsPicker" data-kind="restrictions" role="group" aria-labelledby="restrictions-title">
+            <div class="multi-pick__picked filter-input__picked" id="restrictionsPicked" role="list" aria-label="Selected restrictions"></div>
 
             <div class="filter-input">
               <div class="filter-input__wrap">
@@ -192,12 +263,18 @@
                   id="restrictionsSearch"
                   class="filter-input__field"
                   type="text"
-                  placeholder="Add a restriction..."
+                  placeholder="Type to search restrictions..."
                   autocomplete="off"
+                  aria-label="Search restrictions"
+                  aria-autocomplete="list"
+                  aria-controls="restrictionsSuggestions"
+                  aria-expanded="false"
                 />
                 <div
                   id="restrictionsSuggestions"
                   class="filter-input__suggestions"
+                  role="listbox"
+                  aria-label="Restriction suggestions"
                   hidden
                 ></div>
               </div>
@@ -208,7 +285,7 @@
             </div>
           </div>
 
-          <select id="restrictionsSelect" multiple size="10" hidden></select>
+          <select id="restrictionsSelect" multiple size="10" hidden aria-hidden="true"></select>
         </div>
            
         <!-- =========================
@@ -219,25 +296,31 @@
         <!-- =========================
              ACTIONS + OUTPUT
              ========================= -->
-        <div class="submit-section">
-          <p class="submit-section__title">Submit</p>
-          <p class="submit-section__sub">Generate and send the payload.</p>
+        <div class="submit-section" aria-labelledby="submit-section-title">
+          <p id="submit-section-title" class="submit-section__title">Submit</p>
+          <p class="submit-section__sub">Review your information and submit.</p>
 
           <div class="submit-actions">
-            <button id="btnSubmit" class="btn btn--primary" type="button">Submit Run</button>
+            <button id="btnSubmit" class="btn btn--primary" type="submit">
+              <span class="btn__text">Submit Run</span>
+              <span class="btn__loading" hidden>
+                <span class="spinner" aria-hidden="true"></span>
+                Submitting...
+              </span>
+            </button>
             <button id="btnCopy" class="btn" type="button">Copy Payload</button>
           </div>
 
-          <div id="msg" class="muted" aria-live="polite"></div>
+          <div id="msg" class="submit-message muted" aria-live="polite" role="status"></div>
 
-          <details>
+          <details class="submit-details">
             <summary>Preview payload</summary>
             <pre id="preview" style="white-space:pre-wrap;"></pre>
           </details>
         </div>
 
       </div>
-    </div>
+    </form>
   </div>
 </div>
 
