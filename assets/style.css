@@ -3915,15 +3915,17 @@ a.resource-card:hover {
   color: var(--text-muted);
 }
 
-/* Plain text paragraphs should align with bullet text (not bullet markers) */
-.rule-builder__rule-desc > p,
-.rule-builder__rule-desc > br + p {
+/* Plain text should align with bullet text (not bullet markers) */
+.rule-builder__rule-desc .rule-desc-text {
+  display: block;
   margin-left: 1.25rem;
+  margin-bottom: 0.25rem;
 }
 
-/* First paragraph doesn't need top margin */
-.rule-builder__rule-desc > p:first-child {
-  margin-top: 0;
+/* Headers inside descriptions - no extra indent */
+.rule-builder__rule-desc h3,
+.rule-builder__rule-desc h4 {
+  margin-left: 0;
 }
 
 .rule-builder__rule-desc ul {
