@@ -631,6 +631,7 @@
     const runner_id = ($("runnerId")?.value || "").trim();
     const video_url_raw = ($("videoUrl")?.value || "").trim();
     const date_completed = $("dateCompleted")?.value || "";
+    const run_time = ($("runTime")?.value || "").trim();
 
     // Get Turnstile captcha token if present
     const turnstile_token = ($("turnstileToken")?.value || "").trim();
@@ -658,6 +659,7 @@
       video_id: v.ok ? v.id : "",
 
       date_completed,
+      run_time,
       submitted_at: new Date().toISOString(),
       source: "site_form"
     };
