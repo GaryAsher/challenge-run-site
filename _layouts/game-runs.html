@@ -589,7 +589,14 @@ layout: default
                   {% endif %}
 
                   <td data-label="Time">{{ r.time_primary | default: r.time | default: "—" }}</td>
-                  <td data-label="Date">{{ r.date_completed | default: r.date | default: "—" }}</td>
+                  <td data-label="Date">
+                    {% assign run_date = r.date_completed | default: r.date %}
+                    {% if run_date %}
+                      {{ run_date | date: "%Y-%m-%d" }}
+                    {% else %}
+                      —
+                    {% endif %}
+                  </td>
                   <td data-label="Video">
                     {% if video_url %}
                       {% assign video_source = "Link" %}
