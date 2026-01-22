@@ -455,17 +455,23 @@ document.addEventListener('DOMContentLoaded', function() {
     let lines = text.trim().split('\n');
     let html = '';
     let inList = false;
-    let plainTextBuffer = [];
-    
-    function flushPlainText() {
-      if (plainTextBuffer.length > 0) {
-        html += '<span class="rule-desc-text">' + plainTextBuffer.join('<br>') + '</span>';
-        plainTextBuffer = [];
-      }
-    }
+    let inListItem = false;
     
     for (let i = 0; i < lines.length; i++) {
       let line = lines[i];
+      let originalLine = line;
+      
+      // Check if line is indented (starts with spaces)
+      let indentMatch = line.match(/^(\s+)/);
+      let indentLevel = indentMatch ? indentMatch[1].length : 0;
+      
+      // Trim the line for processing
+      line = line.trim();
+      
+      // Skip empty lines
+      if (!line) {
+        continue;
+      }
       
       // Escape HTML
       line = line
@@ -475,38 +481,47 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Headers
       if (line.match(/^### (.+)$/)) {
-        flushPlainText();
+        if (inListItem) { html += '</li>'; inListItem = false; }
         if (inList) { html += '</ul>'; inList = false; }
-        html += '<h4>' + line.replace(/^### /, '') + '</h4>';
+        html += '<h4>' + applyInlineFormatting(line.replace(/^### /, '')) + '</h4>';
         continue;
       }
       if (line.match(/^## (.+)$/)) {
-        flushPlainText();
+        if (inListItem) { html += '</li>'; inListItem = false; }
         if (inList) { html += '</ul>'; inList = false; }
-        html += '<h3>' + line.replace(/^## /, '') + '</h3>';
+        html += '<h3>' + applyInlineFormatting(line.replace(/^## /, '')) + '</h3>';
         continue;
       }
       
-      // Bullet points
+      // Bullet points (top-level: starts with "- ")
       if (line.match(/^- (.+)$/)) {
-        flushPlainText();
-        if (!inList) { html += '<ul>'; inList = true; }
+        if (inListItem) { html += '</li>'; inListItem = false; }
+        if (!inList) { html += '<ul class="rule-list">'; inList = true; }
         let content = line.replace(/^- /, '');
-        // Apply inline formatting
         content = applyInlineFormatting(content);
-        html += '<li>' + content + '</li>';
+        html += '<li>' + content;
+        inListItem = true;
         continue;
       }
       
-      // Regular line
-      if (inList) { html += '</ul>'; inList = false; }
-      if (line.trim()) {
-        plainTextBuffer.push(applyInlineFormatting(line));
+      // Indented content (continuation of previous list item or sub-content)
+      if (indentLevel >= 2 && inListItem) {
+        // This is indented content within a list item
+        let content = applyInlineFormatting(line);
+        html += '<br><span class="rule-indent">' + content + '</span>';
+        continue;
       }
+      
+      // Regular paragraph (not in list)
+      if (inListItem) { html += '</li>'; inListItem = false; }
+      if (inList) { html += '</ul>'; inList = false; }
+      html += '<p class="rule-text">' + applyInlineFormatting(line) + '</p>';
     }
     
-    flushPlainText();
+    // Close any open tags
+    if (inListItem) html += '</li>';
     if (inList) html += '</ul>';
+    
     return html;
   }
   
