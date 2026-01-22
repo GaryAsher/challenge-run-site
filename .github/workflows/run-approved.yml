@@ -1,17 +1,35 @@
 name: Run Approved (PR Merged)
 
 on:
+  # Trigger when PR is merged (closed with merge)
   pull_request:
     types: [closed]
-    paths:
-      - '_queue_runs/**'
+  
+  # Also allow manual trigger to fix any stuck runs
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (don't actually move files)"
+        required: false
+        default: "false"
+        type: boolean
+
+# Queue to prevent conflicts with other workflows
+concurrency:
+  group: run-promotion-queue
+  cancel-in-progress: false
 
 permissions:
   contents: write
 
 jobs:
   process-approval:
-    if: github.event.pull_request.merged == true
+    # Only run if:
+    # 1. PR was merged (not just closed), OR
+    # 2. Manual trigger
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'run-submission'))
     runs-on: ubuntu-latest
     
     steps:
@@ -21,6 +39,10 @@ jobs:
           ref: main
           fetch-depth: 0
 
+      - name: Pull latest changes
+        run: |
+          git pull origin main
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -29,38 +51,82 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Check for queued runs
+        id: check
+        run: |
+          COUNT=$(find _queue_runs -name "*.md" -type f 2>/dev/null | wc -l)
+          echo "queued_count=$COUNT" >> "$GITHUB_OUTPUT"
+          
+          if [ "$COUNT" -gt 0 ]; then
+            echo "Found $COUNT run(s) in queue"
+            find _queue_runs -name "*.md" -type f
+          else
+            echo "No runs in queue"
+          fi
+
       - name: Move runs from queue to live
         id: move
+        if: steps.check.outputs.queued_count != '0'
+        env:
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
         run: |
           MOVED_FILES=""
           GAME_IDS=""
+          RUNNER_IDS=""
+          MOVE_COUNT=0
           
           for file in _queue_runs/*/*.md; do
             if [ -f "$file" ]; then
-              GAME_ID=$(echo "$file" | cut -d'/' -f2)
+              GAME_ID=$(echo "$file" | sed 's|_queue_runs/\([^/]*\)/.*|\1|')
               FILENAME=$(basename "$file")
               
-              mkdir -p "_runs/${GAME_ID}"
-              mv "$file" "_runs/${GAME_ID}/${FILENAME}"
+              # Extract runner_id from filename (format: DATE__GAME__RUNNER__CATEGORY__NN.md)
+              RUNNER_ID=$(echo "$FILENAME" | cut -d'_' -f5)
               
-              echo "Moved: $file -> _runs/${GAME_ID}/${FILENAME}"
+              DEST_DIR="_runs/${GAME_ID}"
+              DEST_FILE="${DEST_DIR}/${FILENAME}"
+              
+              echo "Processing: $file"
+              echo "  Game ID: $GAME_ID"
+              echo "  Runner ID: $RUNNER_ID"
+              echo "  Destination: $DEST_FILE"
+              
+              if [ "$DRY_RUN" = "true" ]; then
+                echo "  [DRY RUN] Would move to $DEST_FILE"
+              else
+                mkdir -p "$DEST_DIR"
+                mv "$file" "$DEST_FILE"
+                echo "  ✓ Moved to $DEST_FILE"
+              fi
               
               MOVED_FILES="${MOVED_FILES}${FILENAME},"
               GAME_IDS="${GAME_IDS}${GAME_ID},"
+              RUNNER_IDS="${RUNNER_IDS}${RUNNER_ID},"
+              MOVE_COUNT=$((MOVE_COUNT + 1))
             fi
           done
           
-          find _queue_runs -type d -empty -delete 2>/dev/null || true
+          # Clean up empty directories
+          if [ "$DRY_RUN" != "true" ]; then
+            find _queue_runs -mindepth 1 -type d -empty -delete 2>/dev/null || true
+          fi
           
           echo "moved_files=${MOVED_FILES}" >> "$GITHUB_OUTPUT"
           echo "game_ids=${GAME_IDS}" >> "$GITHUB_OUTPUT"
+          echo "runner_ids=${RUNNER_IDS}" >> "$GITHUB_OUTPUT"
+          echo "move_count=${MOVE_COUNT}" >> "$GITHUB_OUTPUT"
+          
+          echo ""
+          echo "=== Summary ==="
+          echo "Moved $MOVE_COUNT run(s)"
 
       - name: Log approval to history
+        if: steps.move.outputs.move_count != '0' && steps.move.outputs.move_count != '' && inputs.dry_run != 'true'
         env:
           MOVED_FILES: ${{ steps.move.outputs.moved_files }}
           GAME_IDS: ${{ steps.move.outputs.game_ids }}
-          APPROVER: ${{ github.event.pull_request.merged_by.login }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
+          APPROVER: ${{ github.event.pull_request.merged_by.login || github.actor }}
+          PR_NUMBER: ${{ github.event.pull_request.number || 'manual' }}
         run: |
           IFS=',' read -ra FILES <<< "$MOVED_FILES"
           IFS=',' read -ra GAMES <<< "$GAME_IDS"
@@ -75,9 +141,9 @@ jobs:
               
               if [ ! -f "$HISTORY_FILE" ]; then
                 echo "# History log for ${GAME}" > "$HISTORY_FILE"
+                echo "# Auto-generated - do not edit manually" >> "$HISTORY_FILE"
               fi
               
-              # Use echo instead of heredoc to avoid YAML parsing issues
               echo "" >> "$HISTORY_FILE"
               echo "- date: \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"" >> "$HISTORY_FILE"
               echo "  action: run_approved" >> "$HISTORY_FILE"
@@ -85,42 +151,82 @@ jobs:
               echo "  by:" >> "$HISTORY_FILE"
               echo "    github: \"${APPROVER}\"" >> "$HISTORY_FILE"
               echo "  note: \"Approved via PR #${PR_NUMBER}\"" >> "$HISTORY_FILE"
+              
+              echo "Logged approval for $FILE to $HISTORY_FILE"
             fi
           done
 
       - name: Commit changes
+        if: steps.move.outputs.move_count != '0' && steps.move.outputs.move_count != '' && inputs.dry_run != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
           git add _runs/ _data/history/
-          git rm -rf _queue_runs/ 2>/dev/null || true
+          git add _queue_runs/ || true
           
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "feat: Approve runs from PR #${{ github.event.pull_request.number }}"
+            git commit -m "feat: Approve runs from PR #${{ github.event.pull_request.number || 'manual' }}
+
+Moved ${{ steps.move.outputs.move_count }} run(s) from queue to live."
             git push
+            echo "✓ Changes committed and pushed"
           fi
 
-      - name: Notify Discord
-        if: env.DISCORD_WEBHOOK != ''
+      - name: Send Discord Notification
+        if: steps.move.outputs.move_count != '0' && steps.move.outputs.move_count != '' && inputs.dry_run != 'true'
         env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_NEW_RUN_SUBMISSION }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_RUN_APPROVED }}
           MOVED_FILES: ${{ steps.move.outputs.moved_files }}
           GAME_IDS: ${{ steps.move.outputs.game_ids }}
-          APPROVER: ${{ github.event.pull_request.merged_by.login }}
+          RUNNER_IDS: ${{ steps.move.outputs.runner_ids }}
+          MOVE_COUNT: ${{ steps.move.outputs.move_count }}
+          APPROVER: ${{ github.event.pull_request.merged_by.login || github.actor }}
         run: |
+          if [ -z "${DISCORD_WEBHOOK:-}" ]; then
+            echo "No Discord webhook configured, skipping notification"
+            exit 0
+          fi
+          
+          # Build a list of approved runs
+          IFS=',' read -ra FILES <<< "$MOVED_FILES"
+          IFS=',' read -ra GAMES <<< "$GAME_IDS"
+          IFS=',' read -ra RUNNERS <<< "$RUNNER_IDS"
+          
+          RUNS_LIST=""
+          for i in "${!FILES[@]}"; do
+            if [ -n "${FILES[$i]}" ]; then
+              RUNS_LIST+="• ${GAMES[$i]} - ${RUNNERS[$i]}\\n"
+            fi
+          done
+          
           curl -H "Content-Type: application/json" \
             -d "{
               \"embeds\": [{
-                \"title\": \"✅ Run Approved\",
+                \"title\": \"✅ Run(s) Approved!\",
                 \"color\": 3066993,
-                \"description\": \"A run has been approved and is now live!\",
+                \"description\": \"${MOVE_COUNT} run(s) have been approved and are now live!\\n\\n${RUNS_LIST}\",
                 \"fields\": [
-                  {\"name\": \"Approved by\", \"value\": \"@${APPROVER}\", \"inline\": true}
+                  {\"name\": \"Approved by\", \"value\": \"${APPROVER}\", \"inline\": true}
                 ],
-                \"footer\": {\"text\": \"The run is now visible on the site\"}
+                \"footer\": {\"text\": \"The run(s) are now visible on challengerun.net\"}
               }]
             }" \
-            "$DISCORD_WEBHOOK" || true
+            "$DISCORD_WEBHOOK" || echo "Discord notification failed (non-fatal)"
+
+      - name: Summary
+        run: |
+          echo "## Run Approval Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.move.outputs.move_count }}" != "0" ] && [ -n "${{ steps.move.outputs.move_count }}" ]; then
+            echo "✅ **${{ steps.move.outputs.move_count }}** run(s) approved and moved to live" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Runs Processed" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            echo "${{ steps.move.outputs.moved_files }}" | tr ',' '\n' | grep -v '^$' >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "ℹ️ No runs were in the queue to process" >> $GITHUB_STEP_SUMMARY
+          fi
