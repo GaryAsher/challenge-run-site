@@ -117,7 +117,8 @@ Live on site
 ### Auto-Regenerate (`auto-regenerate.yml`)
 - Triggers on `_games/`, `_data/`, `_runners/` changes
 - Regenerates all pages
-- Commits directly to main
+- **Creates PR** instead of direct push (respects branch protection)
+- Auto-merge enabled when checks pass
 
 ### Promote Game (`promote-game.yml`)
 - Moves game from `_queue_games/` to `_games/`
@@ -192,3 +193,37 @@ bundle exec jekyll build  # Build site
 - Keep images under 200KB
 - Consider pagination at 500+ runs/game
 - Use incremental builds in development
+
+---
+
+## File Organization Notes
+
+### Layouts vs Includes
+
+**Layouts** (`_layouts/`) are page templates that wrap content:
+- `default.html` - Base template for all pages
+- `game.html` - Game overview (main landing page)
+- `game-runs.html` - Runs listing with filters
+- `runner.html` - Runner profile pages
+- `team.html` - Team profile pages (future use)
+- `post.html` - News articles
+
+**Includes** (`_includes/`) are reusable components:
+- `header.html` / `footer.html` - Site-wide navigation
+- `game-header-tabs.html` - Game page tab navigation
+- `game-rules.html` - Rules display component
+- `game-history.html` - History timeline component
+- `submit-run-form.html` - Full run submission form
+- `turnstile.html` - Captcha verification
+- `report-modal.html` - Report functionality (prepared for future)
+- `md.html` - Markdown content wrapper
+
+### SCSS Files
+
+The `assets/scss/` directory contains CSS files that use plain CSS syntax (no SCSS features currently). The main stylesheet is `assets/style.css` which is what Jekyll uses. The SCSS files are legacy/backup.
+
+### Prepared but Unused
+
+Some files are prepared for future functionality:
+- `_includes/report-modal.html` - Reporting system (not yet integrated)
+- `_layouts/team.html` - Team profiles (teams collection not populated)
