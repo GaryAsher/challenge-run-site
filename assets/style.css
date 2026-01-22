@@ -3924,6 +3924,7 @@ a.resource-card:hover {
 /* Plain text paragraphs */
 .rule-builder__rule-desc .rule-text {
   margin: 0.5rem 0;
+  padding-left: 1.25rem;
 }
 
 /* Indented content within list items */
