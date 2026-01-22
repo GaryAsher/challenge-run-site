@@ -1,13 +1,16 @@
 ---
 layout: game
 game_id: hades-2
+status: "Active"
 reviewers: []
 
+# =============================================================================
+# GAME INFO
+# =============================================================================
 game_name: "Hades II"
 game_name_aliases:
   - "Hades 2"
   - "Hades2"
-status: "Active"
 
 genres:
   - action
@@ -15,84 +18,25 @@ genres:
   - roguelite
   - hack-and-slash
   - mythology
+
 platforms:
   - pc-steam
   - pc-epic-games
   - nintendo-switch
   - nintendo-switch-2
 
-cover: /assets/img/games/h/hades-2.jpg
-cover_position: center
-
-timing_method: IGT
-
+# =============================================================================
+# TABS
+# =============================================================================
 tabs:
   overview: true
   runs: true
+  rules: true
   history: true
   resources: true
   forum: true
   extra_1: false
   extra_2: false
-
-character_column:
-  enabled: true
-  label: "Weapon / Aspect"
-
-characters_data:
-  - slug: witchs-staff-melinoe-aspect
-    label: "Witch's Staff / Melinoë Aspect"
-  - slug: witchs-staff-circe-aspect
-    label: "Witch's Staff / Circe Aspect"
-  - slug: witchs-staff-momus-aspect
-    label: "Witch's Staff / Momus Aspect"
-  - slug: witchs-staff-anubis-aspect
-    label: "Witch's Staff / Anubis Aspect"
-    
-  - slug: sister-blades-melinoe-aspect
-    label: "Sister Blades / Melinoë Aspect"
-  - slug: sister-blades-artemis-aspect
-    label: "Sister Blades / Artemis Aspect"
-  - slug: sister-blades-pan-aspect
-    label: "Sister Blades / Pan Aspect"
-  - slug: sister-blades-morrigan-aspect
-    label: "Sister Blades / Morrigan Aspect"
-  
-  - slug: umbral-flames-melinoe-aspect
-    label: "Umbral Flames / Melinoë Aspect"
-  - slug: umbral-flames-moros-aspect
-    label: "Umbral Flames / Moros Aspect"
-  - slug: umbral-flames-eos-aspect
-    label: "Umbral Flames / Eos Aspect"
-  - slug: umbral-flames-supay-aspect
-    label: "Umbral Flames / Supay Aspect"
-    
-  - slug: moonstone-axe-melinoe-aspect
-    label: "Moonstone Axe / Melinoë Aspect"
-  - slug: moonstone-axe-charon-aspect
-    label: "Moonstone Axe / Charon Aspect"
-  - slug: moonstone-axe-thanatos-aspect
-    label: "Moonstone Axe / Thanatos Aspect"
-  - slug: moonstone-axe-nergal-aspect
-    label: "Moonstone Axe / Nergal Aspect"  
-    
-  - slug: argent-skull-melinoe-aspect
-    label: "Argent Skull / Melinoë Aspect"
-  - slug: argent-skull-medea-aspect
-    label: "Argent Skull / Medea Aspect"
-  - slug: argent-skull-persephone-aspect
-    label: "Argent Skull / Persephone Aspect"
-  - slug: argent-skull-hel-aspect
-    label: "Argent Skull / Hel Aspect"
-
-  - slug: black-coat-melinoe-aspect
-    label: "Black Coat / Melinoë Aspect"
-  - slug: black-coat-selene-aspect
-    label: "Black Coat / Selene Aspect"
-  - slug: black-coat-nyx-aspect
-    label: "Black Coat / Nyx Aspect"
-  - slug: black-coat-shiva-aspect
-    label: "Black Coat / Shiva Aspect"    
 
 # =============================================================================
 # GENERAL RULES
@@ -150,23 +94,6 @@ community_challenges:
       - Do not utilize any boons from any god. You may pick up a boon from a god so long as you do not benefit it in any way.
 
 # =============================================================================
-# GLITCH CATEGORIES
-# =============================================================================
-glitches_data:
-  - slug: unrestricted
-    label: "Unrestricted"
-    description: |
-      - All glitches and exploits are allowed.
-  - slug: nmg
-    label: "No Major Glitches"
-    description: |
-      - No out-of-bounds, wrong warps, AI/encounter breaks, or item/RNG manipulation.
-  - slug: glitchless
-    label: "Glitchless"
-    description: |
-      - No glitches of any kind.
-
-# =============================================================================
 # OPTIONAL RESTRICTIONS
 # =============================================================================
 restrictions_data:
@@ -175,10 +102,35 @@ restrictions_data:
     description: |
       - Complete a run with no Arcana Cards selected or Vow of Void(4) selected in the Oath of the Unseen.
       - Do not activate Arcana Cards in any way.
+
   - slug: no-hexes
     label: "No Hexes"
     description: |
       - Complete a run without activating any hexes from Selene. You may pick a hex so long as you do not benefit it in any way.
+
+  - slug: hestia-only
+    label: "Hestia Only"
+    description: |
+      - Only utilize boons from Hestia. You may pick up a boon from another god so long as you do not benefit from it in any way.
+
+# =============================================================================
+# GLITCH CATEGORIES
+# =============================================================================
+glitches_data:
+  - slug: unrestricted
+    label: "Unrestricted"
+    description: |
+      - All glitches and exploits are allowed.
+
+  - slug: nmg
+    label: "No Major Glitches"
+    description: |
+      - No out-of-bounds, wrong warps, AI/encounter breaks, or item/RNG manipulation.
+
+  - slug: glitchless
+    label: "Glitchless"
+    description: |
+      - No glitches of any kind.
 
 # =============================================================================
 # RUN CATEGORIES
@@ -187,15 +139,19 @@ categories_data:
   - slug: underworld-any
     label: "Underworld Any%"
     description: "Complete the Underworld route with any amount of Fear."
+
   - slug: surface-any
     label: "Surface Any%"
     description: "Complete the Surface route with any amount of Fear."
+
   - slug: underworld-vor4
     label: "Underworld VoR4"
     description: "Complete the Underworld route with Vow of Rivals(4) selected in the Oath of the Unseen."
+
   - slug: surface-vor4
     label: "Surface VoR4"
     description: "Complete the Surface route with Vow of Rivals(4) selected in the Oath of the Unseen."
+
   - slug: chaos-trials
     label: "Chaos Trials"
     description: "Complete one of the 15 Chaos Trials."
@@ -230,6 +186,79 @@ categories_data:
         label: "Trial of Doom"
       - slug: trial-of-destiny
         label: "Trial of Destiny"
+
+# =============================================================================
+# TIMING METHOD
+# =============================================================================
+timing_method: IGT
+
+# =============================================================================
+# CHARACTER OPTIONS
+# =============================================================================
+character_column:
+  enabled: true
+  label: "Weapon / Aspect"
+
+characters_data:
+  - slug: witchs-staff-melinoe-aspect
+    label: "Witch's Staff / Melinoë Aspect"
+  - slug: witchs-staff-circe-aspect
+    label: "Witch's Staff / Circe Aspect"
+  - slug: witchs-staff-momus-aspect
+    label: "Witch's Staff / Momus Aspect"
+  - slug: witchs-staff-anubis-aspect
+    label: "Witch's Staff / Anubis Aspect"
+    
+  - slug: sister-blades-melinoe-aspect
+    label: "Sister Blades / Melinoë Aspect"
+  - slug: sister-blades-artemis-aspect
+    label: "Sister Blades / Artemis Aspect"
+  - slug: sister-blades-pan-aspect
+    label: "Sister Blades / Pan Aspect"
+  - slug: sister-blades-morrigan-aspect
+    label: "Sister Blades / Morrigan Aspect"
+  
+  - slug: umbral-flames-melinoe-aspect
+    label: "Umbral Flames / Melinoë Aspect"
+  - slug: umbral-flames-moros-aspect
+    label: "Umbral Flames / Moros Aspect"
+  - slug: umbral-flames-eos-aspect
+    label: "Umbral Flames / Eos Aspect"
+  - slug: umbral-flames-supay-aspect
+    label: "Umbral Flames / Supay Aspect"
+    
+  - slug: moonstone-axe-melinoe-aspect
+    label: "Moonstone Axe / Melinoë Aspect"
+  - slug: moonstone-axe-charon-aspect
+    label: "Moonstone Axe / Charon Aspect"
+  - slug: moonstone-axe-thanatos-aspect
+    label: "Moonstone Axe / Thanatos Aspect"
+  - slug: moonstone-axe-nergal-aspect
+    label: "Moonstone Axe / Nergal Aspect"  
+    
+  - slug: argent-skull-melinoe-aspect
+    label: "Argent Skull / Melinoë Aspect"
+  - slug: argent-skull-medea-aspect
+    label: "Argent Skull / Medea Aspect"
+  - slug: argent-skull-persephone-aspect
+    label: "Argent Skull / Persephone Aspect"
+  - slug: argent-skull-hel-aspect
+    label: "Argent Skull / Hel Aspect"
+
+  - slug: black-coat-melinoe-aspect
+    label: "Black Coat / Melinoë Aspect"
+  - slug: black-coat-selene-aspect
+    label: "Black Coat / Selene Aspect"
+  - slug: black-coat-nyx-aspect
+    label: "Black Coat / Nyx Aspect"
+  - slug: black-coat-shiva-aspect
+    label: "Black Coat / Shiva Aspect"
+
+# =============================================================================
+# COVER / DISPLAY
+# =============================================================================
+cover: /assets/img/games/h/hades-2.jpg
+cover_position: center
 ---
 
 Hades II is an action roguelike from Supergiant Games, the sequel to the award-winning Hades. Play as Melinoë, Princess of the Underworld, as she battles through the realms to defeat the Titan of Time.
