@@ -4640,7 +4640,7 @@ a.resource-card:hover {
 /* Field blocks */
 .submit-run-page .submit-field {
   display: grid;
-  gap: 6px;
+  gap: 0.5rem;
 }
 
 /* Field labels - smaller, muted, uppercase to differentiate from section titles */
@@ -4650,6 +4650,7 @@ a.resource-card:hover {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--fg);
+  margin-bottom: 0.125rem;
 }
 
 .submit-run-page .submit-label.muted {
@@ -4659,7 +4660,7 @@ a.resource-card:hover {
 .submit-run-page .submit-hint {
   font-size: 0.85rem;
   color: var(--text-dim);
-  margin-top: -2px;
+  margin-top: 0.25rem;
   line-height: 1.4;
 }
 
@@ -4744,11 +4745,16 @@ a.resource-card:hover {
   box-shadow: 0 0 0 3px var(--focus-2);
 }
 
+/* Hover effect only on the closed select box */
 .submit-run-page input:hover,
-.submit-run-page select:hover,
 .submit-run-page textarea:hover,
 .submit-run-page .filter-input__field:hover {
   background: color-mix(in srgb, var(--accent) 8%, var(--surface)) !important;
+  border-color: var(--accent);
+}
+
+/* Select hover - only border change, no background tint to avoid option inheritance */
+.submit-run-page select:hover {
   border-color: var(--accent);
 }
 
@@ -4760,7 +4766,7 @@ a.resource-card:hover {
   color: var(--fg);
 }
 
-/* When select is hovered, options still stay solid */
+/* When select is hovered/focused, options still stay solid */
 .submit-run-page select:hover option,
 .submit-run-page select:focus option {
   background: var(--bg) !important;
@@ -4785,9 +4791,9 @@ a.resource-card:hover {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--panel);
-  padding: 1.25rem 1.5rem;
+  padding: 1.5rem;
   display: grid;
-  gap: 1rem;
+  gap: 1.25rem;
   position: relative;
 }
 
@@ -4805,8 +4811,8 @@ a.resource-card:hover {
 
 /* Section titles - prominent headers */
 .submit-run-page .submit-section__title {
-  margin: 0 0 0.25rem 0;
-  font-size: 1.1rem;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.15rem;
   font-weight: 700;
   color: var(--accent);
   display: flex;
@@ -4825,11 +4831,11 @@ a.resource-card:hover {
 
 /* Section subtitle - more spacing below to separate from form fields */
 .submit-run-page .submit-section__sub {
-  margin: 0 0 1rem 0;
-  font-size: 0.875rem;
+  margin: -0.25rem 0 0.75rem 0;
+  font-size: 0.9rem;
   color: var(--text-muted);
   padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
   line-height: 1.5;
 }
 
