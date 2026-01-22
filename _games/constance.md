@@ -70,13 +70,16 @@ community_challenges: []
 glitches_data:
   - slug: unrestricted
     label: "Unrestricted"
-    description: "All glitches and exploits are allowed."
+    description: |
+      All glitches and exploits are allowed.
   - slug: nmg
     label: "No Major Glitches"
-    description: "No out-of-bounds, wrong warps, or major sequence breaks."
+    description: |
+      No out-of-bounds, wrong warps, or major sequence breaks.
   - slug: glitchless
     label: "Glitchless"
-    description: "No glitches of any kind."
+    description: |
+      No glitches of any kind.
 
 # =============================================================================
 # OPTIONAL RESTRICTIONS
