@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-01-22T21:16:00.700Z",
+  "generated_at": "2026-01-22T21:54:19.497Z",
   "games": [
     {
       "game_id": "celeste",
@@ -376,6 +376,10 @@
           "name": "True Ending"
         },
         {
+          "slug": "106-te",
+          "name": "106% TE"
+        },
+        {
           "slug": "107-ab",
           "name": "107% AB"
         },
@@ -386,6 +390,14 @@
         {
           "slug": "low-percent",
           "name": "Low%"
+        },
+        {
+          "slug": "all-bosses",
+          "name": "All Bosses"
+        },
+        {
+          "slug": "godhome-ending",
+          "name": "Godhome Ending"
         },
         {
           "slug": "pantheons",
@@ -412,12 +424,12 @@
           "name": "Pantheons: Pantheon of Hallownest"
         },
         {
-          "slug": "boss-rush",
-          "name": "Boss Rush"
+          "slug": "hall-of-gods",
+          "name": "Hall of Gods"
         },
         {
-          "slug": "boss-rush/hall-of-gods",
-          "name": "Boss Rush: Hall of Gods"
+          "slug": "hall-of-gods/gruz-mother",
+          "name": "Hall of Gods: Gruz Mother"
         }
       ],
       "standard_challenges": [

@@ -19,6 +19,21 @@ This script reads from ENVIRONMENT VARIABLES (set by GitHub Actions):
 Usage:
   # Set env vars then run:
   python3 scripts/generate-game-file.py
+
+Section Order (matches website navigation):
+  1. Header (layout, game_id, status, reviewers)
+  2. Game Info (name, aliases, genres, platforms)
+  3. Tabs
+  4. General Rules
+  5. Standard Challenges
+  6. Community Challenges
+  7. Restrictions
+  8. Glitch Categories
+  9. Run Categories
+  10. Timing Method
+  11. Character Options
+  12. Cover/Display
+  13. Submission Metadata
 """
 
 from __future__ import annotations
@@ -90,6 +105,16 @@ def yaml_quote(s: str) -> str:
     return s
 
 
+def section_header(title: str) -> List[str]:
+    """Generate a section header comment."""
+    return [
+        "",
+        "# =============================================================================",
+        f"# {title}",
+        "# =============================================================================",
+    ]
+
+
 def build_yaml_list(items: List[str], indent: int = 0) -> List[str]:
     """Build YAML list lines."""
     sp = "  " * indent
@@ -108,6 +133,7 @@ def build_categories_yaml(categories: List[str]) -> List[str]:
         lines.append(f"  - slug: {yaml_quote(slug)}")
         lines.append(f"    label: {yaml_quote(cat)}")
         lines.append(f'    description: ""')
+        lines.append("")
     return lines
 
 
@@ -121,6 +147,7 @@ def build_challenges_yaml(challenges: List[str]) -> List[str]:
         lines.append(f"  - slug: {yaml_quote(slug)}")
         lines.append(f"    label: {yaml_quote(ch)}")
         lines.append(f'    description: ""')
+        lines.append("")
     return lines
 
 
@@ -149,7 +176,6 @@ def main() -> None:
     if not categories_raw:
         print("ERROR: CATEGORIES is required", file=sys.stderr)
         sys.exit(1)
-    # CHALLENGES is optional - some games may not have standard challenge types
     if not out_file:
         print("ERROR: OUT_FILE is required", file=sys.stderr)
         sys.exit(1)
@@ -181,15 +207,25 @@ def main() -> None:
     character_options_raw = details.get("character_options", "")
     character_options = parse_newline_list(character_options_raw) if character_options_raw else []
 
-    # Build the file content
+    # =========================================================================
+    # BUILD THE FILE CONTENT
+    # =========================================================================
     lines = ["---"]
+    
+    # -------------------------------------------------------------------------
+    # HEADER
+    # -------------------------------------------------------------------------
     lines.append("layout: game")
     lines.append(f"game_id: {yaml_quote(game_id)}")
+    lines.append('status: "Pending Review"')
     lines.append("reviewers: []")
-    lines.append("")
+    
+    # -------------------------------------------------------------------------
+    # GAME INFO
+    # -------------------------------------------------------------------------
+    lines.extend(section_header("GAME INFO"))
     lines.append(f"game_name: {yaml_quote(game_name)}")
     
-    # Aliases
     if aliases:
         lines.append("game_name_aliases:")
         for alias in aliases:
@@ -197,13 +233,10 @@ def main() -> None:
     else:
         lines.append("game_name_aliases: []")
     
-    lines.append('status: "Pending Review"')
+    lines.append("")
+    lines.append("genres: []  # To be filled during review")
     lines.append("")
     
-    # Genres (empty for now, to be filled in review)
-    lines.append("genres: []")
-    
-    # Platforms
     if platforms:
         lines.append("platforms:")
         for p in platforms:
@@ -211,72 +244,64 @@ def main() -> None:
     else:
         lines.append("platforms: []")
     
-    lines.append("")
-    lines.append(f"cover: /assets/img/games/{game_id[0]}/{game_id}.jpg")
-    lines.append("cover_position: center")
-    lines.append("")
-    
-    # Timing
-    timing_method = "RTA"
-    if "IGT" in timing_primary.upper():
-        timing_method = "IGT"
-    lines.append(f"timing_method: {timing_method}")
-    lines.append("")
-    
-    # Tabs
+    # -------------------------------------------------------------------------
+    # TABS
+    # -------------------------------------------------------------------------
+    lines.extend(section_header("TABS"))
     lines.append("tabs:")
     lines.append("  overview: true")
     lines.append("  runs: true")
+    lines.append("  rules: true")
     lines.append("  history: true")
     lines.append("  resources: true")
     lines.append("  forum: false")
     lines.append("  extra_1: false")
     lines.append("  extra_2: false")
-    lines.append("")
     
-    # Character column
-    lines.append("character_column:")
-    lines.append(f"  enabled: {'true' if char_enabled else 'false'}")
-    lines.append(f"  label: {yaml_quote(char_label)}")
-    lines.append("")
-    
-    # Characters data
-    if char_enabled and character_options:
-        lines.append("characters_data:")
-        for ch in character_options:
-            ch_slug = slugify(ch)
-            if ch_slug:
-                lines.append(f"  - slug: {yaml_quote(ch_slug)}")
-                lines.append(f"    label: {yaml_quote(ch)}")
-    else:
-        lines.append("characters_data: []")
-    lines.append("")
-    
-    # General rules - leave empty to use global defaults from _data/default-rules.yml
-    lines.append("# General rules - leave empty to use global defaults")
+    # -------------------------------------------------------------------------
+    # GENERAL RULES
+    # -------------------------------------------------------------------------
+    lines.extend(section_header("GENERAL RULES"))
+    lines.append("# Leave empty to use global defaults from _data/default-rules.yml")
     lines.append("# Override by adding game-specific rules here")
-    lines.append("general_rules: \"\"")
-    lines.append("")
+    lines.append('general_rules: ""')
     
-    # Standard challenges
-    lines.append("# =============================================================================")
-    lines.append("# STANDARD CHALLENGE TYPES")
-    lines.append("# =============================================================================")
+    # -------------------------------------------------------------------------
+    # STANDARD CHALLENGES
+    # -------------------------------------------------------------------------
+    lines.extend(section_header("STANDARD CHALLENGE TYPES"))
     lines.append("challenges_data:")
     if challenges:
         lines.extend(build_challenges_yaml(challenges))
     else:
         lines.append("  []")
-    lines.append("")
     
-    # Community challenges (empty for now)
+    # -------------------------------------------------------------------------
+    # COMMUNITY CHALLENGES
+    # -------------------------------------------------------------------------
+    lines.extend(section_header("COMMUNITY CHALLENGES"))
     lines.append("community_challenges: []")
-    lines.append("")
     
-    # Glitch categories - use empty descriptions to fall back to global defaults
-    lines.append("# =============================================================================")
-    lines.append("# GLITCH CATEGORIES")
-    lines.append("# =============================================================================")
+    # -------------------------------------------------------------------------
+    # RESTRICTIONS
+    # -------------------------------------------------------------------------
+    lines.extend(section_header("OPTIONAL RESTRICTIONS"))
+    lines.append("restrictions_data:")
+    if restrictions:
+        for r in restrictions:
+            r_slug = slugify(r)
+            if r_slug:
+                lines.append(f"  - slug: {yaml_quote(r_slug)}")
+                lines.append(f"    label: {yaml_quote(r)}")
+                lines.append('    description: ""')
+                lines.append("")
+    else:
+        lines.append("  []")
+    
+    # -------------------------------------------------------------------------
+    # GLITCH CATEGORIES
+    # -------------------------------------------------------------------------
+    lines.extend(section_header("GLITCH CATEGORIES"))
     lines.append("# Descriptions fall back to _data/default-rules.yml if empty")
     lines.append("glitches_data:")
     if "no structure" in glitch_structure.lower() or "single" in glitch_structure.lower():
@@ -287,58 +312,80 @@ def main() -> None:
         lines.append("  - slug: unrestricted")
         lines.append('    label: "Unrestricted"')
         lines.append('    description: ""')
+        lines.append("")
         lines.append("  - slug: nmg")
         lines.append('    label: "No Major Glitches"')
         lines.append('    description: ""')
+        lines.append("")
         lines.append("  - slug: glitchless")
         lines.append('    label: "Glitchless"')
         lines.append('    description: ""')
-    lines.append("")
     
-    # Glitch documentation
+    # Glitch documentation as comments
     if glitch_docs:
+        lines.append("")
         lines.append("# Glitch documentation links:")
         for doc_line in parse_newline_list(glitch_docs):
             lines.append(f"# - {doc_line}")
-        lines.append("")
     
-    # Restrictions
-    lines.append("# =============================================================================")
-    lines.append("# OPTIONAL RESTRICTIONS")
-    lines.append("# =============================================================================")
-    lines.append("restrictions_data:")
-    if restrictions:
-        for r in restrictions:
-            r_slug = slugify(r)
-            if r_slug:
-                lines.append(f"  - slug: {yaml_quote(r_slug)}")
-                lines.append(f"    label: {yaml_quote(r)}")
-                lines.append('    description: ""')
-    else:
-        lines.append("  []")
-    lines.append("")
-    
-    # Categories
-    lines.append("# =============================================================================")
-    lines.append("# RUN CATEGORIES")
-    lines.append("# =============================================================================")
+    # -------------------------------------------------------------------------
+    # RUN CATEGORIES
+    # -------------------------------------------------------------------------
+    lines.extend(section_header("RUN CATEGORIES"))
     lines.append("categories_data:")
     if categories:
         lines.extend(build_categories_yaml(categories))
     else:
         lines.append("  []")
+    
+    # -------------------------------------------------------------------------
+    # TIMING METHOD
+    # -------------------------------------------------------------------------
+    lines.extend(section_header("TIMING METHOD"))
+    timing_method = "RTA"
+    if "IGT" in timing_primary.upper():
+        timing_method = "IGT"
+    lines.append(f"timing_method: {timing_method}")
+    
+    # -------------------------------------------------------------------------
+    # CHARACTER OPTIONS
+    # -------------------------------------------------------------------------
+    lines.extend(section_header("CHARACTER OPTIONS"))
+    lines.append("character_column:")
+    lines.append(f"  enabled: {'true' if char_enabled else 'false'}")
+    lines.append(f"  label: {yaml_quote(char_label)}")
     lines.append("")
     
-    # Submission metadata
-    lines.append("# =============================================================================")
-    lines.append("# SUBMISSION METADATA")
-    lines.append("# =============================================================================")
+    if char_enabled and character_options:
+        lines.append("characters_data:")
+        for ch in character_options:
+            ch_slug = slugify(ch)
+            if ch_slug:
+                lines.append(f"  - slug: {yaml_quote(ch_slug)}")
+                lines.append(f"    label: {yaml_quote(ch)}")
+    else:
+        lines.append("characters_data: []")
+    
+    # -------------------------------------------------------------------------
+    # COVER / DISPLAY
+    # -------------------------------------------------------------------------
+    lines.extend(section_header("COVER / DISPLAY"))
+    lines.append(f"cover: /assets/img/games/{game_id[0]}/{game_id}.jpg")
+    lines.append("cover_position: center")
+    
+    # -------------------------------------------------------------------------
+    # SUBMISSION METADATA
+    # -------------------------------------------------------------------------
+    lines.extend(section_header("SUBMISSION METADATA"))
     if submitter:
         lines.append(f"submitted_by: {yaml_quote(submitter)}")
     else:
         lines.append('submitted_by: "Anonymous"')
     lines.append(f"credit_requested: {'true' if credit_requested else 'false'}")
     
+    # -------------------------------------------------------------------------
+    # END FRONT MATTER + CONTENT
+    # -------------------------------------------------------------------------
     lines.append("---")
     lines.append("")
     lines.append(f"# {game_name}")
