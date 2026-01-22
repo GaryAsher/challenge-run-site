@@ -41,10 +41,24 @@ character_column:
   label: "Character"
 
 challenges_data:
-  - blindfolded
-  - damageless
-  - hitless
-  - minimalist
+  - slug: blindfolded
+    label: Blindfolded
+    description: ""
+  - slug: damageless
+    label: Damageless
+    description: ""
+  - slug: deathless
+    label: Deathless
+    description: ""
+  - slug: flawless
+    label: Flawless
+    description: ""
+  - slug: hitless
+    label: Hitless
+    description: ""
+  - slug: minimalist
+    label: Minimalist
+    description: ""
 
 restrictions_data: []
 
