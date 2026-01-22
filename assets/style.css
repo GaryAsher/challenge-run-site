@@ -3921,10 +3921,11 @@ a.resource-card:hover {
   line-height: 1.6;
 }
 
-/* Plain text paragraphs */
+/* Plain text paragraphs - add visual indent indicator */
 .rule-builder__rule-desc .rule-text {
-  margin: 0.5rem 0;
-  padding-left: 1.25rem;
+  margin: 0.25rem 0;
+  padding: 0.35rem 0 0.35rem 0.75rem;
+  border-left: 2px solid var(--border);
 }
 
 /* Indented content within list items */
