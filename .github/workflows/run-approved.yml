@@ -156,21 +156,27 @@ jobs:
             fi
           done
 
+      - name: Regenerate form-index
+        if: steps.move.outputs.move_count != '0' && steps.move.outputs.move_count != '' && inputs.dry_run != 'true'
+        run: |
+          npm run generate:form-index || true
+
       - name: Commit changes
         if: steps.move.outputs.move_count != '0' && steps.move.outputs.move_count != '' && inputs.dry_run != 'true'
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number || 'manual' }}
+          MOVE_COUNT: ${{ steps.move.outputs.move_count }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          git add _runs/ _data/history/
+          git add _runs/ _data/history/ assets/generated/
           git add _queue_runs/ || true
           
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "feat: Approve runs from PR #${{ github.event.pull_request.number || 'manual' }}
-
-Moved ${{ steps.move.outputs.move_count }} run(s) from queue to live."
+            git commit -m "feat: Approve runs from PR #${PR_NUMBER} - Moved ${MOVE_COUNT} run(s) from queue to live"
             git push
             echo "✓ Changes committed and pushed"
           fi
