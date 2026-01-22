@@ -527,7 +527,7 @@ layout: default
                     {% if show_character %}data-character="{{ r.character | default: '' | escape }}"{% endif %}
                     data-restrictions="{{ r_texts | join: '||' | escape }}"
                     {% if show_glitches %}data-glitch="{{ r.glitch_id | default: '' | escape }}"{% endif %}
-                    data-date="{{ r.date_completed | default: '' | escape }}"
+                    data-date="{{ r.date_completed | default: r.date | default: '' | escape }}"
                     data-time="{{ r.time_primary | default: r.time | default: '' | escape }}">
                   <td data-label="Runner">
                     {% if r.runner_id %}
@@ -589,7 +589,7 @@ layout: default
                   {% endif %}
 
                   <td data-label="Time">{{ r.time_primary | default: r.time | default: "—" }}</td>
-                  <td data-label="Date">{{ r.date_completed | default: "—" }}</td>
+                  <td data-label="Date">{{ r.date_completed | default: r.date | default: "—" }}</td>
                   <td data-label="Video">
                     {% if video_url %}
                       {% assign video_source = "Link" %}
