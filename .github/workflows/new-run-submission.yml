@@ -117,7 +117,7 @@ jobs:
         env:
           VIDEO_URL: ${{ github.event.client_payload.video_url || inputs.video_url }}
         run: |
-          EXISTING=$(grep -rl "$VIDEO_URL" _runs/ _queue_runs/ 2>/dev/null | head -1 || true)
+          EXISTING=$(grep -rl "$VIDEO_URL" _runs/ 2>/dev/null | head -1 || true)
           
           if [ -n "$EXISTING" ]; then
             echo "duplicate=true" >> "$GITHUB_OUTPUT"
@@ -182,17 +182,16 @@ jobs:
         run: |
           set -euo pipefail
           
-          mkdir -p "_queue_runs/${GAME_ID}"
+          mkdir -p "_runs/${GAME_ID}"
           
           BASENAME="${DATE_COMPLETED}__${GAME_ID}__${RUNNER_ID}__${CATEGORY}"
           COUNTER=1
-          while [ -f "_queue_runs/${GAME_ID}/${BASENAME}__$(printf '%02d' $COUNTER).md" ] || \
-                [ -f "_runs/${GAME_ID}/${BASENAME}__$(printf '%02d' $COUNTER).md" ]; do
+          while [ -f "_runs/${GAME_ID}/${BASENAME}__$(printf '%02d' $COUNTER).md" ]; do
             COUNTER=$((COUNTER + 1))
           done
           
           FILENAME="${BASENAME}__$(printf '%02d' $COUNTER).md"
-          FILEPATH="_queue_runs/${GAME_ID}/${FILENAME}"
+          FILEPATH="_runs/${GAME_ID}/${FILENAME}"
           
           # Build the file using echo statements instead of heredoc
           echo "---" > "$FILEPATH"
@@ -283,7 +282,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           add-paths: |
-            _queue_runs/**
+            _runs/**
             _data/history/**
           commit-message: "feat: New run submission - ${{ steps.create.outputs.game_id }} by ${{ steps.create.outputs.runner_id }}"
           title: "🏃 [${{ steps.create.outputs.game_id }}] Run by ${{ steps.create.outputs.runner_id }}"
@@ -302,7 +301,7 @@ jobs:
             | **Character** | ${{ steps.create.outputs.character || '(none)' }} |
             | **Glitch Category** | ${{ steps.create.outputs.glitch_id || '(none)' }} |
             | **Restrictions** | ${{ steps.create.outputs.restrictions || '(none)' }} |
-            | **File** | `_queue_runs/${{ steps.create.outputs.game_id }}/${{ steps.create.outputs.filename }}` |
+            | **File** | `_runs/${{ steps.create.outputs.game_id }}/${{ steps.create.outputs.filename }}` |
             
             ---
             
