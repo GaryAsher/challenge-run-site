@@ -230,16 +230,12 @@ categories_data:
         label: "Pantheon of Hallownest"
         description: "42 bosses, ends with Absolute Radiance."
 
-  - slug: boss-rush
-    label: "Boss Rush"
+  - slug: hall-of-gods
+    label: "Hall of Gods"
     description: "Hall of Gods challenges - defeat bosses under specific conditions."
     children:
-      - slug: hall-of-gods
-        label: "Hall of Gods"
-        description: "Complete Hall of Gods challenges."
-      - slug: all-radiant
-        label: "All Radiant"
-        description: "Defeat all bosses on Radiant difficulty in the Hall of Gods."
+      - slug: gruz-mother
+        label: "Gruz Mother"
 
 # =============================================================================
 # TIMING METHOD
