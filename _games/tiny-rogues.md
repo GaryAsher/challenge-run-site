@@ -1,12 +1,15 @@
 ---
 layout: game
 game_id: tiny-rogues
+status: "Active"
 reviewers: []
 
+# =============================================================================
+# GAME INFO
+# =============================================================================
 game_name: "Tiny Rogues"
 game_name_aliases:
   - "TR"
-status: "Active"
 
 genres:
   - action
@@ -14,26 +17,22 @@ genres:
   - bullet-hell
   - replay-value
   - difficult
+
 platforms:
   - pc-steam
 
-cover: /assets/img/games/t/tiny-rogues.jpg
-cover_position: center
-
-timing_method: "IGT (In-Game Time)"
-
+# =============================================================================
+# TABS
+# =============================================================================
 tabs:
   overview: true
   runs: true
+  rules: true
   history: true
   resources: true
   forum: true
   extra_1: false
   extra_2: false
-
-character_column:
-  enabled: true
-  label: "Class"
 
 # =============================================================================
 # GENERAL RULES
@@ -70,12 +69,14 @@ challenges_data:
     label: "No-Hit / No-Damage"
     description: |
       Follow both Hitless and Damageless rules.
-      
-# Glitches not relevant for this game
-glitches_relevant: false
 
 # =============================================================================
-# RESTRICTIONS
+# COMMUNITY CHALLENGES
+# =============================================================================
+community_challenges: []
+
+# =============================================================================
+# OPTIONAL RESTRICTIONS
 # =============================================================================
 restrictions_data:
   - slug: companions-only
@@ -84,9 +85,16 @@ restrictions_data:
       - This restriction starts after the Floor 1 boss.
       - Deal damage only through companions.
       - Attacks/Abilities/Items from the player after Floor 1 are not allowed.
-      
+
 # =============================================================================
-# CATEGORIES
+# GLITCH CATEGORIES
+# =============================================================================
+# Glitches not relevant for this game
+glitches_relevant: false
+glitches_data: []
+
+# =============================================================================
+# RUN CATEGORIES
 # =============================================================================
 categories_data:
   - slug: any
@@ -108,6 +116,26 @@ categories_data:
     label: "Quest Cinder 16"
     description: |
       Beat a Quest with all 16 Cinder modifiers active.
+
+# =============================================================================
+# TIMING METHOD
+# =============================================================================
+timing_method: IGT
+
+# =============================================================================
+# CHARACTER OPTIONS
+# =============================================================================
+character_column:
+  enabled: true
+  label: "Class"
+
+characters_data: []
+
+# =============================================================================
+# COVER / DISPLAY
+# =============================================================================
+cover: /assets/img/games/t/tiny-rogues.jpg
+cover_position: center
 
 # =============================================================================
 # CREDITS
