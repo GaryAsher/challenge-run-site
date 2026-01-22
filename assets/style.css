@@ -4674,25 +4674,28 @@ a.resource-card:hover {
   gap: 0.5rem;
 }
 
-/* Field labels - smaller, muted, uppercase to differentiate from section titles */
+/* Field labels - IMPROVED: better spacing and visual hierarchy */
 .submit-run-page .submit-label {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--fg);
-  margin-bottom: 0.125rem;
+  margin-bottom: 0.35rem;
+  display: block;
 }
 
 .submit-run-page .submit-label.muted {
   color: var(--text-muted);
 }
 
+/* Improve hint text visibility */
 .submit-run-page .submit-hint {
   font-size: 0.85rem;
-  color: var(--text-dim);
-  margin-top: 0.25rem;
-  line-height: 1.4;
+  color: var(--text-muted);
+  margin-top: 0.35rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.45;
 }
 
 .submit-run-page .submit-hint code {
@@ -4840,9 +4843,9 @@ a.resource-card:hover {
   background: linear-gradient(90deg, transparent, var(--border) 20%, var(--border) 80%, transparent);
 }
 
-/* Section titles - prominent headers */
+/* Section titles - prominent headers with better spacing */
 .submit-run-page .submit-section__title {
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.75rem 0;
   font-size: 1.15rem;
   font-weight: 700;
   color: var(--accent);
@@ -4860,13 +4863,13 @@ a.resource-card:hover {
   margin-left: 0.5rem;
 }
 
-/* Section subtitle - more spacing below to separate from form fields */
+/* Section subtitle - IMPROVED: more spacing from title and form fields */
 .submit-run-page .submit-section__sub {
-  margin: -0.25rem 0 0.75rem 0;
+  margin: 0 0 1.25rem 0;
   font-size: 0.9rem;
   color: var(--text-muted);
-  padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
   line-height: 1.5;
 }
 
@@ -5082,6 +5085,21 @@ a.resource-card:hover {
 
 .submit-run-page .filter-suggestion--empty:hover {
   background: transparent;
+}
+
+/* ============================================================
+   Turnstile Captcha Styling (moved from inline to main CSS)
+   ============================================================ */
+.submit-run-page .turnstile-field {
+  margin: 0;
+}
+
+.submit-run-page .turnstile-field .submit-label {
+  color: var(--fg);
+}
+
+.submit-run-page .cf-turnstile {
+  margin-top: 0.75rem;
 }
 
 /* ============================================================
