@@ -440,6 +440,12 @@ layout: default
                     {% assign meta = site.data.challenges[ch_id] %}
                     {% assign ch_label = ch_id %}
                     {% if meta and meta.label %}{% assign ch_label = meta.label %}{% endif %}
+                    {% comment %} Also check game-specific challenges_data {% endcomment %}
+                    {% for gc in game.challenges_data %}
+                      {% if gc.slug == ch_id %}
+                        {% assign ch_label = gc.label %}
+                      {% endif %}
+                    {% endfor %}
                     {% assign challenge_labels = challenge_labels | push: ch_label %}
                     {% assign challenge_ids = challenge_ids | push: ch_id %}
                     {% if meta and meta.aliases %}
@@ -452,7 +458,13 @@ layout: default
                 
                 {% comment %} Process community_challenge (single string) {% endcomment %}
                 {% if r.community_challenge and r.community_challenge != "" %}
-                  {% assign challenge_labels = challenge_labels | push: r.community_challenge %}
+                  {% assign cc_label = r.community_challenge %}
+                  {% for cc in game.community_challenges %}
+                    {% if cc.slug == r.community_challenge %}
+                      {% assign cc_label = cc.label %}
+                    {% endif %}
+                  {% endfor %}
+                  {% assign challenge_labels = challenge_labels | push: cc_label %}
                   {% assign challenge_ids = challenge_ids | push: r.community_challenge %}
                 {% endif %}
                 
@@ -526,7 +538,15 @@ layout: default
                   </td>
 
                   {% if show_character %}
-                    <td data-label="{{ character_label }}">{{ r.character | default: "—" }}</td>
+                    {% assign char_display = r.character | default: "—" %}
+                    {% if r.character and r.character != "" %}
+                      {% for char in game.characters_data %}
+                        {% if char.slug == r.character %}
+                          {% assign char_display = char.label %}
+                        {% endif %}
+                      {% endfor %}
+                    {% endif %}
+                    <td data-label="{{ character_label }}">{{ char_display }}</td>
                   {% endif %}
 
                   <td data-label="Challenge">
@@ -537,7 +557,17 @@ layout: default
 
                   <td data-label="Restrictions">
                     {% if r_texts and r_texts.size > 0 %}
-                      <div class="cell-tags">{% for rr in r_texts %}<span class="tag">{{ rr }}</span>{% endfor %}</div>
+                      <div class="cell-tags">
+                        {% for rr in r_texts %}
+                          {% assign rest_label = rr %}
+                          {% for rest in game.restrictions_data %}
+                            {% if rest.slug == rr %}
+                              {% assign rest_label = rest.label %}
+                            {% endif %}
+                          {% endfor %}
+                          <span class="tag">{{ rest_label }}</span>
+                        {% endfor %}
+                      </div>
                     {% else %}—{% endif %}
                   </td>
 
