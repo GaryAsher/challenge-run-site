@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-01-22T06:44:07.267Z",
+  "generated_at": "2026-01-22T08:54:35.419Z",
   "games": [
     {
       "game_id": "celeste",
@@ -503,7 +503,32 @@
           "name": "100%"
         }
       ],
-      "standard_challenges": [],
+      "standard_challenges": [
+        {
+          "id": "blindfolded",
+          "name": "Blindfolded"
+        },
+        {
+          "id": "damageless",
+          "name": "Damageless"
+        },
+        {
+          "id": "deathless",
+          "name": "Deathless"
+        },
+        {
+          "id": "flawless",
+          "name": "Flawless"
+        },
+        {
+          "id": "hitless",
+          "name": "Hitless"
+        },
+        {
+          "id": "minimalist",
+          "name": "Minimalist"
+        }
+      ],
       "community_challenges": [],
       "glitches": [
         {
