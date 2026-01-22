@@ -25,6 +25,10 @@ on:
         description: "Date completed (YYYY-MM-DD)"
         required: true
         type: string
+      run_time:
+        description: "Run time (HH:MM:SS or MM:SS)"
+        required: false
+        type: string
       challenges:
         description: "Challenges (format: standard1,standard2|community)"
         required: false
@@ -173,6 +177,7 @@ jobs:
           CATEGORY: ${{ github.event.client_payload.category || inputs.category }}
           VIDEO_URL: ${{ github.event.client_payload.video_url || inputs.video_url }}
           DATE_COMPLETED: ${{ github.event.client_payload.date_completed || inputs.date_completed }}
+          RUN_TIME: ${{ github.event.client_payload.run_time || inputs.run_time || '' }}
           STANDARD_CHALLENGES: ${{ steps.parse.outputs.standard_challenges }}
           COMMUNITY_CHALLENGE: ${{ steps.parse.outputs.community_challenge }}
           CHARACTER: ${{ steps.parse.outputs.character }}
@@ -200,7 +205,8 @@ jobs:
           echo "runner_id: \"${RUNNER_ID}\"" >> "$FILEPATH"
           echo "category: \"${CATEGORY}\"" >> "$FILEPATH"
           echo "video_url: \"${VIDEO_URL}\"" >> "$FILEPATH"
-          echo "date: \"${DATE_COMPLETED}\"" >> "$FILEPATH"
+          echo "date_completed: \"${DATE_COMPLETED}\"" >> "$FILEPATH"
+          [ -n "${RUN_TIME:-}" ] && echo "time_primary: \"${RUN_TIME}\"" >> "$FILEPATH"
           
           # Build challenges array
           if [ -n "${STANDARD_CHALLENGES:-}" ]; then
