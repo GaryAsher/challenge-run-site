@@ -174,7 +174,7 @@ jobs:
           GAME_ID: ${{ github.event.client_payload.game_id || inputs.game_id }}
           GAME_NAME: ${{ steps.validate_game.outputs.game_name }}
           RUNNER_ID: ${{ github.event.client_payload.runner_id || inputs.runner_id }}
-          CATEGORY: ${{ github.event.client_payload.category || inputs.category }}
+          CATEGORY_SLUG: ${{ github.event.client_payload.category || inputs.category }}
           VIDEO_URL: ${{ github.event.client_payload.video_url || inputs.video_url }}
           DATE_COMPLETED: ${{ github.event.client_payload.date_completed || inputs.date_completed }}
           RUN_TIME: ${{ github.event.client_payload.run_time || inputs.run_time || '' }}
@@ -189,7 +189,7 @@ jobs:
           
           mkdir -p "_runs/${GAME_ID}"
           
-          BASENAME="${DATE_COMPLETED}__${GAME_ID}__${RUNNER_ID}__${CATEGORY}"
+          BASENAME="${DATE_COMPLETED}__${GAME_ID}__${RUNNER_ID}__${CATEGORY_SLUG}"
           COUNTER=1
           while [ -f "_runs/${GAME_ID}/${BASENAME}__$(printf '%02d' $COUNTER).md" ]; do
             COUNTER=$((COUNTER + 1))
@@ -203,7 +203,7 @@ jobs:
           echo "layout: run" >> "$FILEPATH"
           echo "game_id: \"${GAME_ID}\"" >> "$FILEPATH"
           echo "runner_id: \"${RUNNER_ID}\"" >> "$FILEPATH"
-          echo "category: \"${CATEGORY}\"" >> "$FILEPATH"
+          echo "category_slug: \"${CATEGORY_SLUG}\"" >> "$FILEPATH"
           echo "video_url: \"${VIDEO_URL}\"" >> "$FILEPATH"
           echo "date_completed: \"${DATE_COMPLETED}\"" >> "$FILEPATH"
           [ -n "${RUN_TIME:-}" ] && echo "time_primary: \"${RUN_TIME}\"" >> "$FILEPATH"
@@ -246,7 +246,7 @@ jobs:
           echo "game_id=$GAME_ID" >> "$GITHUB_OUTPUT"
           echo "game_name=$GAME_NAME" >> "$GITHUB_OUTPUT"
           echo "runner_id=$RUNNER_ID" >> "$GITHUB_OUTPUT"
-          echo "category=$CATEGORY" >> "$GITHUB_OUTPUT"
+          echo "category_slug=$CATEGORY_SLUG" >> "$GITHUB_OUTPUT"
           echo "video_url=$VIDEO_URL" >> "$GITHUB_OUTPUT"
           echo "date_completed=$DATE_COMPLETED" >> "$GITHUB_OUTPUT"
           echo "standard_challenges=$STANDARD_CHALLENGES" >> "$GITHUB_OUTPUT"
@@ -299,7 +299,7 @@ jobs:
             |-------|-------|
             | **Game** | ${{ steps.create.outputs.game_name }} (`${{ steps.create.outputs.game_id }}`) |
             | **Runner** | `${{ steps.create.outputs.runner_id }}` |
-            | **Category** | `${{ steps.create.outputs.category }}` |
+            | **Category** | `${{ steps.create.outputs.category_slug }}` |
             | **Date Completed** | ${{ steps.create.outputs.date_completed }} |
             | **Video** | ${{ steps.create.outputs.video_url }} |
             | **Standard Challenges** | ${{ steps.create.outputs.standard_challenges || '(none)' }} |
@@ -341,7 +341,7 @@ jobs:
           GAME_ID: ${{ steps.create.outputs.game_id }}
           GAME_NAME: ${{ steps.create.outputs.game_name }}
           RUNNER_ID: ${{ steps.create.outputs.runner_id }}
-          CATEGORY: ${{ steps.create.outputs.category }}
+          CATEGORY_SLUG: ${{ steps.create.outputs.category_slug }}
           VIDEO_URL: ${{ steps.create.outputs.video_url }}
           DATE_COMPLETED: ${{ steps.create.outputs.date_completed }}
           STANDARD_CHALLENGES: ${{ steps.create.outputs.standard_challenges }}
@@ -359,7 +359,7 @@ jobs:
           
           # Build description with all fields
           DESCRIPTION="**Runner:** \`${RUNNER_ID}\`\\n"
-          DESCRIPTION+="**Category:** \`${CATEGORY}\`\\n"
+          DESCRIPTION+="**Category:** \`${CATEGORY_SLUG}\`\\n"
           DESCRIPTION+="**Date:** ${DATE_COMPLETED}\\n"
           DESCRIPTION+="**Video:** ${VIDEO_URL}\\n\\n"
           
@@ -409,5 +409,5 @@ jobs:
           echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
           echo "| Game | ${{ steps.create.outputs.game_name }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Runner | ${{ steps.create.outputs.runner_id }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Category | ${{ steps.create.outputs.category }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Category | ${{ steps.create.outputs.category_slug }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Challenges | ${{ steps.create.outputs.standard_challenges }} |" >> $GITHUB_STEP_SUMMARY
