@@ -1,11 +1,14 @@
 ---
 layout: game
 game_id: celeste
+status: "Active"
 reviewers: []
 
+# =============================================================================
+# GAME INFO
+# =============================================================================
 game_name: "Celeste"
 game_name_aliases: []
-status: "Active"
 
 genres:
   - precision-platformer
@@ -13,6 +16,7 @@ genres:
   - great-soundtrack
   - indie
   - 2d
+
 platforms:
   - pc-steam
   - pc-epic-games
@@ -20,28 +24,21 @@ platforms:
   - playstation-4
   - xbox-one
 
-cover: /assets/img/games/c/celeste.jpg
-cover_position: center
-
-timing_method: "IGT (In-Game Time)"
-
+# =============================================================================
+# TABS
+# =============================================================================
 tabs:
   overview: true
   runs: true
+  rules: true
   history: true
   resources: true
   forum: true
   extra_1: false
   extra_2: false
 
-character_column:
-  enabled: false
-  label: "Character"
-
 # =============================================================================
 # GENERAL RULES
-# Game-specific general rules (overrides defaults if present)
-# Use | for multi-line descriptions with bullet points
 # =============================================================================
 general_rules: |
   - **Video Required:** All submissions must include video proof showing the full run.
@@ -51,7 +48,6 @@ general_rules: |
 
 # =============================================================================
 # STANDARD CHALLENGE TYPES
-# Use | for multi-line descriptions with bullet points
 # =============================================================================
 challenges_data:
   - slug: blindfolded
@@ -67,18 +63,30 @@ challenges_data:
       - Death counter must remain at 0.
       - Assist Mode is not allowed.
 
-# Game-specific community challenges
+# =============================================================================
+# COMMUNITY CHALLENGES
+# =============================================================================
 community_challenges:
   - slug: modded-levels
     label: "Modded Levels"
     description: |
-      - "Challenge runs on community-created mod levels. Specify the mod name in submission."
+      - Challenge runs on community-created mod levels. Specify the mod name in submission.
 
-# Glitches not relevant for this game
-glitches_relevant: false
-
+# =============================================================================
+# OPTIONAL RESTRICTIONS
+# =============================================================================
 restrictions_data: []
 
+# =============================================================================
+# GLITCH CATEGORIES
+# =============================================================================
+# Glitches not relevant for this game
+glitches_relevant: false
+glitches_data: []
+
+# =============================================================================
+# RUN CATEGORIES
+# =============================================================================
 categories_data:
   - slug: any
     label: "Any%"
@@ -118,11 +126,28 @@ categories_data:
     description: |
       - Complete all chapters, collect all 175 red berries, and collect the moon berry from a new file.
 
+# =============================================================================
+# TIMING METHOD
+# =============================================================================
+timing_method: IGT
 
+# =============================================================================
+# CHARACTER OPTIONS
+# =============================================================================
+character_column:
+  enabled: false
+  label: "Character"
+
+characters_data: []
+
+# =============================================================================
+# COVER / DISPLAY
+# =============================================================================
+cover: /assets/img/games/c/celeste.jpg
+cover_position: center
 
 # =============================================================================
 # CREDITS
-# People who helped set up this game's page
 # =============================================================================
 credits:
   - name: "personname1"
