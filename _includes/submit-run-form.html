@@ -127,6 +127,25 @@
             </div>
           </div>
 
+          <div class="submit-row-2">
+            <div class="submit-field">
+              <label for="runTime" class="submit-label">Run Time</label>
+              <div class="submit-hint" id="runTime-hint">Format: HH:MM:SS or MM:SS (optional)</div>
+              <input 
+                id="runTime" 
+                type="text" 
+                placeholder="12:34:56"
+                aria-describedby="runTime-hint"
+                pattern="^(\d{1,2}:)?\d{1,2}:\d{2}$"
+              />
+              <span class="field-error" id="runTime-error" role="alert" hidden></span>
+            </div>
+
+            <div class="submit-field">
+              <!-- Empty field for alignment, or could add another optional field -->
+            </div>
+          </div>
+
           <div class="submit-field">
             <label for="videoUrl" class="submit-label">Video URL <span class="required-marker">*</span></label>
             <div class="submit-hint" id="videoUrl-hint">YouTube, Twitch VOD, or Bilibili are accepted.</div>
