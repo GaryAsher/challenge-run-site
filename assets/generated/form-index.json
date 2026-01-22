@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-01-22T20:24:22.576Z",
+  "generated_at": "2026-01-22T21:13:39.340Z",
   "games": [
     {
       "game_id": "celeste",
@@ -250,6 +250,10 @@
         {
           "id": "no-hexes",
           "name": "No Hexes"
+        },
+        {
+          "id": "hestia-only",
+          "name": "Hestia Only"
         }
       ],
       "character_column": {
