@@ -25,24 +25,12 @@ on:
         description: "Date completed (YYYY-MM-DD)"
         required: true
         type: string
-      standard_challenges:
-        description: "Standard challenges (comma-separated slugs)"
+      challenges:
+        description: "Challenges (format: standard1,standard2|community)"
         required: false
         type: string
-      community_challenge:
-        description: "Community challenge slug"
-        required: false
-        type: string
-      character:
-        description: "Character/weapon slug"
-        required: false
-        type: string
-      glitch_id:
-        description: "Glitch category slug"
-        required: false
-        type: string
-      restrictions:
-        description: "Restrictions (comma-separated slugs)"
+      modifiers:
+        description: "Modifiers (format: character|glitch_id|restriction1,restriction2)"
         required: false
         type: string
       submission_id:
@@ -50,8 +38,10 @@ on:
         required: false
         type: string
 
+# GLOBAL QUEUE: Only one run submission processes at a time
+# This prevents race conditions and ensures runs are processed in order
 concurrency:
-  group: run-submission-${{ github.event.client_payload.submission_id || inputs.submission_id || github.run_id }}
+  group: run-submission-queue
   cancel-in-progress: false
 
 permissions:
@@ -71,6 +61,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # Fetch latest to avoid conflicts with other queued submissions
+          fetch-depth: 0
+
+      - name: Pull latest changes
+        run: |
+          git pull origin main --rebase || git pull origin main
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -79,6 +76,41 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Parse combined fields
+        id: parse
+        env:
+          CHALLENGES_RAW: ${{ github.event.client_payload.challenges || inputs.challenges || '' }}
+          MODIFIERS_RAW: ${{ github.event.client_payload.modifiers || inputs.modifiers || '' }}
+        run: |
+          # Parse challenges: "standard1,standard2|community"
+          # Split on pipe - first part is standard challenges, second is community
+          STANDARD_CHALLENGES="${CHALLENGES_RAW%%|*}"
+          COMMUNITY_CHALLENGE="${CHALLENGES_RAW#*|}"
+          # If no pipe was found, community will equal the whole string - clear it
+          if [ "$COMMUNITY_CHALLENGE" = "$CHALLENGES_RAW" ]; then
+            COMMUNITY_CHALLENGE=""
+          fi
+          
+          # Parse modifiers: "character|glitch_id|restrictions"
+          # Split on pipe
+          IFS='|' read -r CHARACTER GLITCH_ID RESTRICTIONS <<< "$MODIFIERS_RAW"
+          
+          # Output parsed values
+          echo "standard_challenges=${STANDARD_CHALLENGES}" >> "$GITHUB_OUTPUT"
+          echo "community_challenge=${COMMUNITY_CHALLENGE}" >> "$GITHUB_OUTPUT"
+          echo "character=${CHARACTER:-}" >> "$GITHUB_OUTPUT"
+          echo "glitch_id=${GLITCH_ID:-}" >> "$GITHUB_OUTPUT"
+          echo "restrictions=${RESTRICTIONS:-}" >> "$GITHUB_OUTPUT"
+          
+          # Debug output
+          echo "Parsed challenges:"
+          echo "  Standard: $STANDARD_CHALLENGES"
+          echo "  Community: $COMMUNITY_CHALLENGE"
+          echo "Parsed modifiers:"
+          echo "  Character: $CHARACTER"
+          echo "  Glitch ID: $GLITCH_ID"
+          echo "  Restrictions: $RESTRICTIONS"
 
       - name: Check for duplicates
         id: dedup
@@ -101,6 +133,7 @@ jobs:
           exit 1
 
       - name: Validate game exists
+        id: validate_game
         env:
           GAME_ID: ${{ github.event.client_payload.game_id || inputs.game_id }}
         run: |
@@ -108,6 +141,13 @@ jobs:
             echo "::error::Game not found: ${GAME_ID}"
             exit 1
           fi
+          
+          # Extract game name from front matter
+          GAME_NAME=$(grep -m1 "^game_name:" "_games/${GAME_ID}.md" | sed 's/game_name: *"\{0,1\}\([^"]*\)"\{0,1\}/\1/' || echo "$GAME_ID")
+          if [ -z "$GAME_NAME" ]; then
+            GAME_NAME=$(grep -m1 "^name:" "_games/${GAME_ID}.md" | sed 's/name: *"\{0,1\}\([^"]*\)"\{0,1\}/\1/' || echo "$GAME_ID")
+          fi
+          echo "game_name=${GAME_NAME:-$GAME_ID}" >> "$GITHUB_OUTPUT"
 
       - name: Get game moderators
         id: gm
@@ -128,15 +168,16 @@ jobs:
         id: create
         env:
           GAME_ID: ${{ github.event.client_payload.game_id || inputs.game_id }}
+          GAME_NAME: ${{ steps.validate_game.outputs.game_name }}
           RUNNER_ID: ${{ github.event.client_payload.runner_id || inputs.runner_id }}
           CATEGORY: ${{ github.event.client_payload.category || inputs.category }}
           VIDEO_URL: ${{ github.event.client_payload.video_url || inputs.video_url }}
           DATE_COMPLETED: ${{ github.event.client_payload.date_completed || inputs.date_completed }}
-          STANDARD_CHALLENGES: ${{ github.event.client_payload.standard_challenges || inputs.standard_challenges }}
-          COMMUNITY_CHALLENGE: ${{ github.event.client_payload.community_challenge || inputs.community_challenge }}
-          CHARACTER: ${{ github.event.client_payload.character || inputs.character }}
-          GLITCH_ID: ${{ github.event.client_payload.glitch_id || inputs.glitch_id }}
-          RESTRICTIONS: ${{ github.event.client_payload.restrictions || inputs.restrictions }}
+          STANDARD_CHALLENGES: ${{ steps.parse.outputs.standard_challenges }}
+          COMMUNITY_CHALLENGE: ${{ steps.parse.outputs.community_challenge }}
+          CHARACTER: ${{ steps.parse.outputs.character }}
+          GLITCH_ID: ${{ steps.parse.outputs.glitch_id }}
+          RESTRICTIONS: ${{ steps.parse.outputs.restrictions }}
           SUBMISSION_ID: ${{ github.event.client_payload.submission_id || inputs.submission_id || github.run_id }}
         run: |
           set -euo pipefail
@@ -198,9 +239,16 @@ jobs:
           echo "filepath=$FILEPATH" >> "$GITHUB_OUTPUT"
           echo "filename=$FILENAME" >> "$GITHUB_OUTPUT"
           echo "game_id=$GAME_ID" >> "$GITHUB_OUTPUT"
+          echo "game_name=$GAME_NAME" >> "$GITHUB_OUTPUT"
           echo "runner_id=$RUNNER_ID" >> "$GITHUB_OUTPUT"
           echo "category=$CATEGORY" >> "$GITHUB_OUTPUT"
           echo "video_url=$VIDEO_URL" >> "$GITHUB_OUTPUT"
+          echo "date_completed=$DATE_COMPLETED" >> "$GITHUB_OUTPUT"
+          echo "standard_challenges=$STANDARD_CHALLENGES" >> "$GITHUB_OUTPUT"
+          echo "community_challenge=$COMMUNITY_CHALLENGE" >> "$GITHUB_OUTPUT"
+          echo "character=$CHARACTER" >> "$GITHUB_OUTPUT"
+          echo "glitch_id=$GLITCH_ID" >> "$GITHUB_OUTPUT"
+          echo "restrictions=$RESTRICTIONS" >> "$GITHUB_OUTPUT"
           
           cat "$FILEPATH"
 
@@ -244,10 +292,16 @@ jobs:
             
             | Field | Value |
             |-------|-------|
-            | **Game** | `${{ steps.create.outputs.game_id }}` |
+            | **Game** | ${{ steps.create.outputs.game_name }} (`${{ steps.create.outputs.game_id }}`) |
             | **Runner** | `${{ steps.create.outputs.runner_id }}` |
             | **Category** | `${{ steps.create.outputs.category }}` |
+            | **Date Completed** | ${{ steps.create.outputs.date_completed }} |
             | **Video** | ${{ steps.create.outputs.video_url }} |
+            | **Standard Challenges** | ${{ steps.create.outputs.standard_challenges || '(none)' }} |
+            | **Community Challenge** | ${{ steps.create.outputs.community_challenge || '(none)' }} |
+            | **Character** | ${{ steps.create.outputs.character || '(none)' }} |
+            | **Glitch Category** | ${{ steps.create.outputs.glitch_id || '(none)' }} |
+            | **Restrictions** | ${{ steps.create.outputs.restrictions || '(none)' }} |
             | **File** | `_queue_runs/${{ steps.create.outputs.game_id }}/${{ steps.create.outputs.filename }}` |
             
             ---
@@ -255,14 +309,14 @@ jobs:
             ### 📋 Moderator Checklist
             
             Before approving, please verify:
-            - [ ] Video is accessible
-            - [ ] Run appears complete
-            - [ ] Category and challenges are correct
+            - [ ] Video is accessible and shows the complete run
+            - [ ] Run matches the claimed category and challenges
             - [ ] No obvious rule violations
+            - [ ] Runner information is correct
             
             ### Actions
-            - **Approve**: Merge this PR
-            - **Reject**: Close this PR with a comment explaining why
+            - **✅ Approve**: Merge this PR to add the run to the site
+            - **❌ Reject**: Close this PR with a comment explaining why
             
             ---
             *Game Moderators: @${{ steps.gm.outputs.github_reviewers }}*
@@ -273,39 +327,70 @@ jobs:
             needs-review
             game/${{ steps.create.outputs.game_id }}
 
-      - name: Send Discord Notification
+      - name: Send Discord Forum Notification
         if: steps.cpr.outputs.pull-request-number
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_NEW_RUN_SUBMISSION }}
           PR_URL: ${{ steps.cpr.outputs.pull-request-url }}
           PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
           GAME_ID: ${{ steps.create.outputs.game_id }}
-          GAME_TAG: ${{ steps.gm.outputs.discord_tag }}
+          GAME_NAME: ${{ steps.create.outputs.game_name }}
           RUNNER_ID: ${{ steps.create.outputs.runner_id }}
           CATEGORY: ${{ steps.create.outputs.category }}
           VIDEO_URL: ${{ steps.create.outputs.video_url }}
+          DATE_COMPLETED: ${{ steps.create.outputs.date_completed }}
+          STANDARD_CHALLENGES: ${{ steps.create.outputs.standard_challenges }}
+          COMMUNITY_CHALLENGE: ${{ steps.create.outputs.community_challenge }}
+          CHARACTER: ${{ steps.create.outputs.character }}
+          GLITCH_ID: ${{ steps.create.outputs.glitch_id }}
+          RESTRICTIONS: ${{ steps.create.outputs.restrictions }}
+          # Forum tag ID for "Needs Review" or similar
+          FORUM_TAG_ID: "1463724226644152362"
         run: |
           if [ -z "${DISCORD_WEBHOOK:-}" ]; then
             echo "No Discord webhook configured, skipping notification"
             exit 0
           fi
           
+          # Build description with all fields
+          DESCRIPTION="**Runner:** \`${RUNNER_ID}\`\\n"
+          DESCRIPTION+="**Category:** \`${CATEGORY}\`\\n"
+          DESCRIPTION+="**Date:** ${DATE_COMPLETED}\\n"
+          DESCRIPTION+="**Video:** ${VIDEO_URL}\\n\\n"
+          
+          if [ -n "${STANDARD_CHALLENGES:-}" ]; then
+            DESCRIPTION+="**Standard Challenges:** ${STANDARD_CHALLENGES}\\n"
+          fi
+          if [ -n "${COMMUNITY_CHALLENGE:-}" ]; then
+            DESCRIPTION+="**Community Challenge:** ${COMMUNITY_CHALLENGE}\\n"
+          fi
+          if [ -n "${CHARACTER:-}" ]; then
+            DESCRIPTION+="**Character:** ${CHARACTER}\\n"
+          fi
+          if [ -n "${GLITCH_ID:-}" ]; then
+            DESCRIPTION+="**Glitch Category:** ${GLITCH_ID}\\n"
+          fi
+          if [ -n "${RESTRICTIONS:-}" ]; then
+            DESCRIPTION+="**Restrictions:** ${RESTRICTIONS}\\n"
+          fi
+          
+          DESCRIPTION+="\\n---\\n[Review PR #${PR_NUMBER}](${PR_URL})"
+          
+          # Discord Forum webhook requires thread_name to create a new forum post
+          # and applied_tags array for forum tags
           curl -H "Content-Type: application/json" \
             -d "{
+              \"thread_name\": \"New run submission for ${GAME_NAME} - ${RUNNER_ID}\",
+              \"applied_tags\": [\"${FORUM_TAG_ID}\"],
+              \"content\": \"\",
               \"embeds\": [{
-                \"title\": \"🏃 New Run Submission\",
+                \"title\": \"🏃 Run Submission Details\",
+                \"description\": \"${DESCRIPTION}\",
                 \"color\": 3447003,
-                \"fields\": [
-                  {\"name\": \"Game\", \"value\": \"**${GAME_TAG}**\", \"inline\": true},
-                  {\"name\": \"Runner\", \"value\": \"\`${RUNNER_ID}\`\", \"inline\": true},
-                  {\"name\": \"Category\", \"value\": \"\`${CATEGORY}\`\", \"inline\": true},
-                  {\"name\": \"Video\", \"value\": \"${VIDEO_URL}\", \"inline\": false},
-                  {\"name\": \"Review PR\", \"value\": \"[PR #${PR_NUMBER}](${PR_URL})\", \"inline\": false}
-                ],
                 \"footer\": {\"text\": \"Merge PR to approve • Close PR to reject\"}
               }]
             }" \
-            "$DISCORD_WEBHOOK" || echo "Discord notification failed"
+            "$DISCORD_WEBHOOK" || echo "Discord notification failed (this is non-fatal)"
 
       - name: Summary
         run: |
@@ -313,3 +398,11 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**PR:** #${{ steps.cpr.outputs.pull-request-number }}" >> $GITHUB_STEP_SUMMARY
           echo "**URL:** ${{ steps.cpr.outputs.pull-request-url }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Submission Details" >> $GITHUB_STEP_SUMMARY
+          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Game | ${{ steps.create.outputs.game_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Runner | ${{ steps.create.outputs.runner_id }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Category | ${{ steps.create.outputs.category }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Challenges | ${{ steps.create.outputs.standard_challenges }} |" >> $GITHUB_STEP_SUMMARY
