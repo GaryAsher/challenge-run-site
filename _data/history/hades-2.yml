@@ -28,11 +28,3 @@
     discord: "318918826983161858"
     github: "GaryAsher"
   note: "Verified - watched full VOD"
-
-- date: "2026-01-22T02:19:10Z"
-  action: run_submitted
-  target: "2026-01-20__hades-2__gary-asher__surface-vor4__01.md"
-  by:
-    discord: "anonymous"
-    github: ""
-  note: "Run submitted by gary-asher, awaiting approval"
