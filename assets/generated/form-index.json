@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-01-22T21:13:39.340Z",
+  "generated_at": "2026-01-22T21:16:51.795Z",
   "games": [
     {
       "game_id": "celeste",
@@ -376,6 +376,10 @@
           "name": "True Ending"
         },
         {
+          "slug": "106-te",
+          "name": "106% TE"
+        },
+        {
           "slug": "107-ab",
           "name": "107% AB"
         },
@@ -386,6 +390,14 @@
         {
           "slug": "low-percent",
           "name": "Low%"
+        },
+        {
+          "slug": "all-bosses",
+          "name": "All Bosses"
+        },
+        {
+          "slug": "godhome-ending",
+          "name": "Godhome Ending"
         },
         {
           "slug": "pantheons",
@@ -418,6 +430,10 @@
         {
           "slug": "boss-rush/hall-of-gods",
           "name": "Boss Rush: Hall of Gods"
+        },
+        {
+          "slug": "boss-rush/all-radiant",
+          "name": "Boss Rush: All Radiant"
         }
       ],
       "standard_challenges": [
