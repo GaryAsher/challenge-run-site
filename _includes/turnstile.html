@@ -2,18 +2,21 @@
 <!-- Cloudflare Turnstile -->
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
-<div class="submit-field turnstile-field">
-  <div class="submit-label">Verification</div>
-  <div class="submit-hint">Please complete this check to submit.</div>
-  <div 
-    class="cf-turnstile" 
-    id="turnstile-widget"
-    data-sitekey="{{ site.turnstile_site_key }}"
-    data-callback="onTurnstileSuccess"
-    data-expired-callback="onTurnstileExpired"
-    data-theme="auto"
-  ></div>
-  <input type="hidden" id="turnstileToken" value="" />
+<div class="submit-section" aria-labelledby="verification-title">
+  <p id="verification-title" class="submit-section__title">Verification</p>
+  <p class="submit-section__sub">Please complete this check to submit your run.</p>
+  
+  <div class="submit-field turnstile-field">
+    <div 
+      class="cf-turnstile" 
+      id="turnstile-widget"
+      data-sitekey="{{ site.turnstile_site_key }}"
+      data-callback="onTurnstileSuccess"
+      data-expired-callback="onTurnstileExpired"
+      data-theme="auto"
+    ></div>
+    <input type="hidden" id="turnstileToken" value="" />
+  </div>
 </div>
 
 <script>
@@ -40,15 +43,6 @@
     }
   });
 </script>
-
-<style>
-  .turnstile-field {
-    margin: 1rem 0;
-  }
-  .cf-turnstile {
-    margin-top: 0.5rem;
-  }
-</style>
 {% else %}
 <!-- Turnstile not configured - no captcha protection -->
 {% endif %}
