@@ -3921,6 +3921,35 @@ a.resource-card:hover {
   line-height: 1.6;
 }
 
+/* Plain text paragraphs */
+.rule-builder__rule-desc .rule-text {
+  margin: 0.5rem 0;
+}
+
+/* Indented content within list items */
+.rule-builder__rule-desc .rule-indent {
+  display: block;
+  margin-top: 0.35rem;
+  padding-left: 0.5rem;
+  color: var(--text-muted);
+}
+
+/* Rule lists */
+.rule-builder__rule-desc .rule-list {
+  margin: 0.25rem 0 0 0;
+  padding-left: 1.25rem;
+  list-style-type: disc;
+}
+
+.rule-builder__rule-desc .rule-list li {
+  margin: 0.25rem 0;
+  line-height: 1.5;
+}
+
+.rule-builder__rule-desc .rule-list li:last-child {
+  margin-bottom: 0;
+}
+
 /* Plain text should be indented and visually distinct */
 .rule-builder__rule-desc .rule-desc-text {
   display: block;
