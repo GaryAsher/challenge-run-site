@@ -8,11 +8,17 @@ on:
       - "scripts/generate-form-index.js"
       - "assets/generated/form-index.json"
 
+permissions:
+  contents: write
+
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-node@v4
         with:
@@ -23,10 +29,15 @@ jobs:
       - name: Regenerate form index
         run: npm run generate:form-index
 
-      - name: Fail if changed
+      - name: Commit if changed
         run: |
-          git status --porcelain
           if [ -n "$(git status --porcelain)" ]; then
-            echo "Generated files are out of date. Run: npm run generate:form-index"
-            exit 1
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add assets/generated/form-index.json
+            git commit -m "chore: regenerate form-index.json [skip ci]"
+            git push
+            echo "✅ form-index.json was out of date and has been regenerated."
+          else
+            echo "✅ form-index.json is up to date."
           fi

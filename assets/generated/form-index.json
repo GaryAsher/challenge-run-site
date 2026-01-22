@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-01-22T21:16:51.795Z",
+  "generated_at": "2026-01-22T21:54:19.497Z",
   "games": [
     {
       "game_id": "celeste",
@@ -424,16 +424,12 @@
           "name": "Pantheons: Pantheon of Hallownest"
         },
         {
-          "slug": "boss-rush",
-          "name": "Boss Rush"
+          "slug": "hall-of-gods",
+          "name": "Hall of Gods"
         },
         {
-          "slug": "boss-rush/hall-of-gods",
-          "name": "Boss Rush: Hall of Gods"
-        },
-        {
-          "slug": "boss-rush/all-radiant",
-          "name": "Boss Rush: All Radiant"
+          "slug": "hall-of-gods/gruz-mother",
+          "name": "Hall of Gods: Gruz Mother"
         }
       ],
       "standard_challenges": [
