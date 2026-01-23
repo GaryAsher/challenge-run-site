@@ -19,6 +19,7 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ### /rules/ page
 - [ ] Run Categories drop-down accordion below uses old variables. Update to 3-tiered category system.
+- [ ] Rule Builder initial highlight color needs to be accent color, not green color.
 
 ### /history/ page
 - [ ] Needs better filtering. Only show verified runs, community milestones, records broken (if verified), etc.
