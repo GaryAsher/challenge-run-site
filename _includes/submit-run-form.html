@@ -73,20 +73,36 @@
 
         <div class="submit-section" aria-labelledby="category-section-title">
           <p id="category-section-title" class="submit-section__title">Category <span class="required-marker">*</span></p>
-          <p class="submit-section__sub">Select the run category.</p>
+          <p class="submit-section__sub">Select the tier and category for your run.</p>
 
-          <div class="submit-field">
-            <label for="categorySelect" class="submit-label muted">Category <span class="required-marker">*</span></label>
-            <select 
-              id="categorySelect" 
-              class="select" 
-              required
-              aria-label="Select run category"
-              aria-required="true"
-            >
-              <option value="">Select category...</option>
-            </select>
-            <span class="field-error" id="categorySelect-error" role="alert" hidden></span>
+          <div class="submit-row-2">
+            <div class="submit-field">
+              <label for="tierSelect" class="submit-label muted">Category Tier <span class="required-marker">*</span></label>
+              <select 
+                id="tierSelect" 
+                class="select" 
+                required
+                aria-label="Select category tier"
+                aria-required="true"
+              >
+                <option value="">Select tier...</option>
+              </select>
+              <span class="field-error" id="tierSelect-error" role="alert" hidden></span>
+            </div>
+
+            <div class="submit-field">
+              <label for="categorySelect" class="submit-label muted">Category <span class="required-marker">*</span></label>
+              <select 
+                id="categorySelect" 
+                class="select" 
+                required
+                aria-label="Select run category"
+                aria-required="true"
+              >
+                <option value="">Select category...</option>
+              </select>
+              <span class="field-error" id="categorySelect-error" role="alert" hidden></span>
+            </div>
           </div>
         </div>
 
