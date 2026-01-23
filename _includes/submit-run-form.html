@@ -130,13 +130,11 @@
             </div>
 
             <div class="submit-field">
-              <label for="dateCompleted" class="submit-label">Date Completed <span class="required-marker">*</span></label>
-              <div class="submit-hint" id="dateCompleted-hint">Local date you finished the run.</div>
+              <label for="dateCompleted" class="submit-label">Date Completed</label>
+              <div class="submit-hint" id="dateCompleted-hint">Local date you finished the run (optional).</div>
               <input 
                 id="dateCompleted" 
                 type="date" 
-                required
-                aria-required="true"
                 aria-describedby="dateCompleted-hint"
               />
               <span class="field-error" id="dateCompleted-error" role="alert" hidden></span>
@@ -164,7 +162,7 @@
 
           <div class="submit-field">
             <label for="videoUrl" class="submit-label">Video URL <span class="required-marker">*</span></label>
-            <div class="submit-hint" id="videoUrl-hint">YouTube, Twitch VOD, or Bilibili are accepted.</div>
+            <div class="submit-hint" id="videoUrl-hint">YouTube, Twitch Highlight, or Bilibili are accepted.</div>
             <input
               id="videoUrl"
               type="url"
@@ -275,7 +273,7 @@
               class="select"
               aria-label="Select glitch category (optional)"
             >
-              <option value="">None / Glitchless</option>
+              <option value="">N/A</option>
             </select>
           </div>
         </div>
