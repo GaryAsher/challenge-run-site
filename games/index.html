@@ -147,10 +147,11 @@ title: Games
         class="game-card game-item card-lift"
         href="{{ g.url | relative_url }}"
         data-name="{{ g.name | downcase }}"
+        data-name-aliases="{% if g.game_name_aliases %}{{ g.game_name_aliases | join: ',' | downcase }}{% endif %}"
         data-letter="{{ g.name | strip | slice: 0, 1 | upcase }}"
         data-genres="{{ g.genres | join: ',' | downcase }}"
         data-platforms="{{ g.platforms | default: empty | join: ',' | downcase }}"
-        data-challenges="{{ g.challenges | default: empty | join: ',' | downcase }}"
+        data-challenges="{% for ch in g.challenges_data %}{{ ch.slug }}{% unless forloop.last %},{% endunless %}{% endfor %}"
       >
         {% assign game_cover = g.cover | default: "/assets/img/site/default-game.jpg" %}
         <div class="game-card__bg" style="background-image: url('{{ game_cover | relative_url }}');"></div>
@@ -288,6 +289,7 @@ title: Games
     for (var i = 0; i < items.length; i++) {
       var el = items[i];
       var name = el.dataset.name || '';
+      var nameAliases = el.dataset.nameAliases || '';
       var nameExpanded = expandRomanNumerals(name);
       var genres = (el.dataset.genres || '').split(',').map(norm).filter(Boolean);
       var platforms = (el.dataset.platforms || '').split(',').map(norm).filter(Boolean);
@@ -296,7 +298,7 @@ title: Games
       var letter = (el.dataset.letter || '').toUpperCase();
 
       var okHash = F.matchesHashFilter(letter, hashMode);
-      var nameMatch = !q || name.includes(q) || nameExpanded.includes(qExpanded);
+      var nameMatch = !q || name.includes(q) || nameExpanded.includes(qExpanded) || nameAliases.includes(q);
 
       var okGenres = Array.from(activeGenres).every(function(g) { return genres.includes(g); });
       var okPlatforms = Array.from(activePlatforms).every(function(p) { return platforms.includes(p); });
