@@ -37,6 +37,9 @@ const STATUS_SET = new Set(['pending', 'approved', 'rejected']);
 /** Valid timing method values */
 const TIMING_SET = new Set(['RTA', 'IGT', 'LRT']);
 
+/** Valid category tier values */
+const TIER_SET = new Set(['full_runs', 'mini_challenges', 'player_made']);
+
 module.exports = {
   ID_RE,
   CATEGORY_SLUG_RE,
@@ -45,4 +48,5 @@ module.exports = {
   RUN_FILENAME_RE,
   STATUS_SET,
   TIMING_SET,
+  TIER_SET,
 };
