@@ -29,6 +29,7 @@ const {
 const {
   ID_RE,
   CATEGORY_SLUG_RE,
+  TIER_SET,
 } = require('./lib/validators/constants');
 
 const {
@@ -279,7 +280,128 @@ function validateCategoriesData(fileRel, fm) {
 }
 
 /**
- * Build an index of allowed category slugs per game_id from _games/*.md categories_data.
+ * Validate a single tier's category array (full_runs, mini_challenges, player_made)
+ * @param {string} fileRel - Relative file path for error messages
+ * @param {string} tierKey - Tier key (e.g., "full_runs")
+ * @param {Array} tierData - Array of category objects
+ * @param {Set} globalSeen - Set of all category slugs seen across all tiers (for duplicate detection)
+ */
+function validateTierCategoryArray(fileRel, tierKey, tierData, globalSeen) {
+  if (tierData == null) return;
+
+  if (!Array.isArray(tierData)) {
+    die(`${fileRel}: ${tierKey} must be a YAML list`);
+  }
+
+  const parentSeen = new Set();
+
+  for (const [idx, cat] of tierData.entries()) {
+    if (!cat || typeof cat !== 'object' || Array.isArray(cat)) {
+      die(`${fileRel}: ${tierKey}[${idx}] must be an object`);
+    }
+
+    if (typeof cat.slug !== 'string' || !cat.slug.trim()) {
+      die(`${fileRel}: ${tierKey}[${idx}].slug is required`);
+    }
+    const pslug = cat.slug.trim();
+
+    if (pslug.includes('/')) {
+      die(`${fileRel}: ${tierKey}[${idx}].slug must be a top-level slug only (no "/"): ${JSON.stringify(pslug)}`);
+    }
+
+    mustCategorySlug(fileRel, `${tierKey}[${idx}].slug`, pslug);
+
+    if (cat.label != null) {
+      if (typeof cat.label !== 'string' || !cat.label.trim()) {
+        die(`${fileRel}: ${tierKey}[${idx}].label must be a non-empty string if provided`);
+      }
+    }
+
+    if (parentSeen.has(pslug)) {
+      die(`${fileRel}: duplicate ${tierKey} parent slug: ${pslug}`);
+    }
+    parentSeen.add(pslug);
+
+    if (globalSeen.has(pslug)) {
+      die(`${fileRel}: duplicate category slug across tiers: ${pslug}`);
+    }
+    globalSeen.add(pslug);
+
+    // Validate player_made specific fields
+    if (tierKey === 'player_made') {
+      if (cat.creator != null && (typeof cat.creator !== 'string' || !cat.creator.trim())) {
+        die(`${fileRel}: ${tierKey}[${idx}].creator must be a non-empty string if provided`);
+      }
+    }
+
+    // Validate children (nested categories)
+    if (cat.children == null) continue;
+
+    if (!Array.isArray(cat.children)) {
+      die(`${fileRel}: ${tierKey}[${idx}].children must be a YAML list`);
+    }
+
+    const childSeen = new Set();
+
+    for (const [cidx, ch] of cat.children.entries()) {
+      if (!ch || typeof ch !== 'object' || Array.isArray(ch)) {
+        die(`${fileRel}: ${tierKey}[${idx}].children[${cidx}] must be an object`);
+      }
+
+      if (typeof ch.slug !== 'string' || !ch.slug.trim()) {
+        die(`${fileRel}: ${tierKey}[${idx}].children[${cidx}].slug is required`);
+      }
+      const cslug = ch.slug.trim();
+
+      if (cslug.includes('/')) {
+        die(`${fileRel}: ${tierKey}[${idx}].children[${cidx}].slug must be a single segment (no "/"): ${JSON.stringify(cslug)}`);
+      }
+
+      mustCategorySlug(fileRel, `${tierKey}[${idx}].children[${cidx}].slug`, cslug);
+
+      if (ch.label != null) {
+        if (typeof ch.label !== 'string' || !ch.label.trim()) {
+          die(`${fileRel}: ${tierKey}[${idx}].children[${cidx}].label must be a non-empty string if provided`);
+        }
+      }
+
+      if (childSeen.has(cslug)) {
+        die(`${fileRel}: duplicate child slug under ${pslug}: ${cslug}`);
+      }
+      childSeen.add(cslug);
+
+      const full = `${pslug}/${cslug}`;
+      if (globalSeen.has(full)) {
+        die(`${fileRel}: duplicate full category slug across tiers: ${full}`);
+      }
+      globalSeen.add(full);
+    }
+  }
+}
+
+/**
+ * Validate tiered category structure (full_runs, mini_challenges, player_made)
+ */
+function validateTieredCategories(fileRel, fm) {
+  const hasTieredStructure = fm.full_runs != null || fm.mini_challenges != null || fm.player_made != null;
+  
+  if (!hasTieredStructure) return;
+
+  // Warn if both old and new structure exist
+  if (fm.categories_data != null) {
+    warn(`${fileRel}: has both categories_data (legacy) and tiered categories. Consider removing categories_data.`);
+  }
+
+  const globalSeen = new Set();
+
+  validateTierCategoryArray(fileRel, 'full_runs', fm.full_runs, globalSeen);
+  validateTierCategoryArray(fileRel, 'mini_challenges', fm.mini_challenges, globalSeen);
+  validateTierCategoryArray(fileRel, 'player_made', fm.player_made, globalSeen);
+}
+
+/**
+ * Build an index of allowed category slugs per game_id from _games/*.md
+ * Supports both legacy categories_data and new tiered structure (full_runs, mini_challenges, player_made)
  */
 function buildGameCategoryIndex() {
   const dir = path.join(ROOT, '_games');
@@ -292,36 +414,100 @@ function buildGameCategoryIndex() {
     .filter(f => f.endsWith('.md') && f !== 'README.md')
     .map(f => path.join(dir, f));
 
+  /**
+   * Helper to extract slugs from a category array (works for any tier or categories_data)
+   */
+  function extractSlugsFromArray(catArray, exact, prefixes) {
+    if (!Array.isArray(catArray)) return;
+    
+    for (const cat of catArray) {
+      if (!cat || typeof cat !== 'object') continue;
+      const parent = typeof cat.slug === 'string' ? cat.slug.trim() : '';
+      if (!parent) continue;
+
+      exact.add(parent);
+      prefixes.push(`${parent}/`);
+
+      if (Array.isArray(cat.children)) {
+        for (const ch of cat.children) {
+          if (!ch || typeof ch !== 'object') continue;
+          const child = typeof ch.slug === 'string' ? ch.slug.trim() : '';
+          if (!child) continue;
+
+          const full = `${parent}/${child}`;
+          exact.add(full);
+          prefixes.push(`${full}/`);
+        }
+      }
+    }
+  }
+
   for (const p of files) {
     const content = readText(p);
     const { data: fm } = parseFrontMatter(content);
     const gameId = typeof fm.game_id === 'string' ? fm.game_id.trim() : '';
     if (!gameId) continue;
 
+    const hasTieredStructure = fm.full_runs != null || fm.mini_challenges != null || fm.player_made != null;
+    const hasLegacyCategories = Array.isArray(fm.categories_data) && fm.categories_data.length > 0;
+
     const entry = {
-      hasCategoriesData: Array.isArray(fm.categories_data) && fm.categories_data.length > 0,
+      hasCategoriesData: hasTieredStructure || hasLegacyCategories,
+      hasTieredStructure,
       exact: new Set(),
       prefixes: [],
+      // Map tier -> Set of slugs for tier-aware validation
+      tierSlugs: {
+        full_runs: new Set(),
+        mini_challenges: new Set(),
+        player_made: new Set(),
+      },
     };
 
-    if (entry.hasCategoriesData) {
+    // Extract from tiered structure
+    if (hasTieredStructure) {
+      for (const tierKey of ['full_runs', 'mini_challenges', 'player_made']) {
+        const tierData = fm[tierKey];
+        if (Array.isArray(tierData)) {
+          extractSlugsFromArray(tierData, entry.exact, entry.prefixes);
+          // Also track which slugs belong to which tier
+          for (const cat of tierData) {
+            if (!cat || typeof cat !== 'object') continue;
+            const parent = typeof cat.slug === 'string' ? cat.slug.trim() : '';
+            if (parent) {
+              entry.tierSlugs[tierKey].add(parent);
+              if (Array.isArray(cat.children)) {
+                for (const ch of cat.children) {
+                  if (!ch || typeof ch !== 'object') continue;
+                  const child = typeof ch.slug === 'string' ? ch.slug.trim() : '';
+                  if (child) {
+                    entry.tierSlugs[tierKey].add(`${parent}/${child}`);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Extract from legacy categories_data (treat as full_runs)
+    if (hasLegacyCategories && !hasTieredStructure) {
+      extractSlugsFromArray(fm.categories_data, entry.exact, entry.prefixes);
+      // Legacy categories are considered full_runs
       for (const cat of fm.categories_data) {
         if (!cat || typeof cat !== 'object') continue;
         const parent = typeof cat.slug === 'string' ? cat.slug.trim() : '';
-        if (!parent) continue;
-
-        entry.exact.add(parent);
-        entry.prefixes.push(`${parent}/`);
-
-        if (Array.isArray(cat.children)) {
-          for (const ch of cat.children) {
-            if (!ch || typeof ch !== 'object') continue;
-            const child = typeof ch.slug === 'string' ? ch.slug.trim() : '';
-            if (!child) continue;
-
-            const full = `${parent}/${child}`;
-            entry.exact.add(full);
-            entry.prefixes.push(`${full}/`);
+        if (parent) {
+          entry.tierSlugs.full_runs.add(parent);
+          if (Array.isArray(cat.children)) {
+            for (const ch of cat.children) {
+              if (!ch || typeof ch !== 'object') continue;
+              const child = typeof ch.slug === 'string' ? ch.slug.trim() : '';
+              if (child) {
+                entry.tierSlugs.full_runs.add(`${parent}/${child}`);
+              }
+            }
           }
         }
       }
@@ -366,6 +552,7 @@ function validateGames({ genresResolver, challengeResolver, platformResolver }) 
     }
 
     validateCategoriesData(fileRel, fm);
+    validateTieredCategories(fileRel, fm);
 
     if (gameIds.has(fm.game_id)) die(`${fileRel}: duplicate game_id ${fm.game_id}`);
     gameIds.add(fm.game_id);
@@ -569,9 +756,38 @@ function validateRuns({ gameIds, runnerIds, challengeResolver, gameCategoryIndex
       if (!okExact && !okPrefix) {
         const allowedPreview = Array.from(idx.exact).sort().slice(0, 20).join(', ');
         die(
-          `${fileRel}: category_slug "${slug}" is not defined by _games/${fm.game_id}.md categories_data. ` +
+          `${fileRel}: category_slug "${slug}" is not defined by _games/${fm.game_id}.md categories. ` +
             `Allowed include: ${allowedPreview}${idx.exact.size > 20 ? ', ...' : ''}`
         );
+      }
+
+      // Validate category_tier if present and game uses tiered structure
+      const tier = fm.category_tier;
+      if (tier != null && tier !== '') {
+        const tierStr = String(tier).trim();
+        
+        // Validate tier value
+        if (!TIER_SET.has(tierStr)) {
+          die(`${fileRel}: category_tier must be one of: full_runs, mini_challenges, player_made. Got: ${tier}`);
+        }
+
+        // If game has tiered structure, validate that slug belongs to the specified tier
+        if (idx.hasTieredStructure && idx.tierSlugs) {
+          const tierSlugs = idx.tierSlugs[tierStr];
+          if (tierSlugs && !tierSlugs.has(slug)) {
+            // Check if slug exists in a different tier
+            let actualTier = null;
+            for (const [t, slugs] of Object.entries(idx.tierSlugs)) {
+              if (slugs.has(slug)) {
+                actualTier = t;
+                break;
+              }
+            }
+            if (actualTier) {
+              warn(`${fileRel}: category_tier is "${tierStr}" but category_slug "${slug}" belongs to "${actualTier}"`);
+            }
+          }
+        }
       }
     }
 
