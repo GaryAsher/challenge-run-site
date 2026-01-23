@@ -4672,21 +4672,19 @@ a.resource-card:hover {
    ============================================================ */
 
 /* Tier Navigation Tabs */
-.tier-tabs {
-  padding: 0.75rem 1rem;
-}
-
 .tier-nav {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
 }
 
 .tier-tab {
   display: inline-flex;
   align-items: center;
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.95rem;
   font-weight: 500;
   color: var(--text-muted);
   text-decoration: none;
@@ -4712,46 +4710,110 @@ a.resource-card:hover {
 .tier-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
+  gap: 1.25rem;
+  margin-top: 1.5rem;
 }
 
 .tier-card {
   display: flex;
   flex-direction: column;
-  padding: 1.5rem;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
+  padding: 1.75rem;
+  background: var(--panel);
+  border: 2px solid var(--border);
   border-radius: var(--radius);
   text-decoration: none;
   color: var(--fg);
   transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.tier-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--border);
+  transition: background 0.2s ease;
 }
 
 .tier-card:hover {
   border-color: var(--accent);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.tier-card:hover::before {
+  background: var(--accent);
+}
+
+/* Tier-specific accent colors */
+.tier-card--full-runs:hover::before {
+  background: #4ade80; /* green */
+}
+
+.tier-card--mini-challenges:hover::before {
+  background: #facc15; /* yellow */
+}
+
+.tier-card--player-made:hover::before {
+  background: #c084fc; /* purple */
 }
 
 .tier-card__title {
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   font-weight: 600;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.75rem 0;
   color: var(--fg);
 }
 
 .tier-card__desc {
-  font-size: 0.9rem;
-  margin: 0 0 1rem 0;
+  font-size: 0.95rem;
+  margin: 0 0 1.25rem 0;
   flex: 1;
+  line-height: 1.5;
 }
 
 .tier-card__count {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
+  font-weight: 500;
   color: var(--text-muted);
-  padding-top: 0.75rem;
+  padding-top: 1rem;
   border-top: 1px solid var(--border);
+}
+
+/* Category Picker (for tier index page) */
+.category-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.category-picker label {
+  font-size: 0.9rem;
+}
+
+.category-picker__select {
+  min-width: 200px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+/* Runs Header with left/right split */
+.runs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.runs-header__left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 /* Category Cards (for tier index pages) */
@@ -4803,6 +4865,19 @@ a.resource-card:hover {
   margin-top: 0.25rem;
 }
 
+/* Breadcrumb styling */
+.breadcrumb-nav {
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Empty state styling */
+.empty-state {
+  background: var(--panel);
+  border-radius: var(--radius);
+  border: 1px dashed var(--border);
+}
+
 /* Responsive adjustments */
 @media (max-width: 600px) {
   .tier-nav {
@@ -4816,5 +4891,19 @@ a.resource-card:hover {
   .tier-cards,
   .category-cards {
     grid-template-columns: 1fr;
+  }
+  
+  .category-picker {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .category-picker__select {
+    width: 100%;
+  }
+  
+  .runs-header {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
