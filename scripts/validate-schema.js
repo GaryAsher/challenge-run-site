@@ -725,13 +725,29 @@ function validateRuns({ gameIds, runnerIds, challengeResolver, gameCategoryIndex
       die(`${fileRel}: Missing YAML front matter (--- ... ---).`);
     }
 
+    // Required slug fields
     mustSlug(fileRel, 'game_id', fm.game_id);
     mustSlug(fileRel, 'runner_id', fm.runner_id);
     mustCategorySlug(fileRel, 'category_slug', fm.category_slug);
 
-    mustString(fileRel, 'runner', fm.runner);
-    mustString(fileRel, 'category', fm.category);
-    mustDate(fileRel, 'date_completed', fm.date_completed);
+    // Date field - accept either date_completed or date (legacy)
+    const hasDate = fm.date_completed || fm.date;
+    if (!hasDate) {
+      die(`${fileRel}: date_completed (or date) is required`);
+    }
+
+    // Human-readable fields are optional (can be derived from slugs)
+    // Only validate if present
+    if (fm.runner !== undefined && fm.runner !== null && fm.runner !== '') {
+      if (typeof fm.runner !== 'string') {
+        die(`${fileRel}: runner must be a string if provided`);
+      }
+    }
+    if (fm.category !== undefined && fm.category !== null && fm.category !== '') {
+      if (typeof fm.category !== 'string') {
+        die(`${fileRel}: category must be a string if provided`);
+      }
+    }
 
     if (!gameIds.has(fm.game_id)) die(`${fileRel}: unknown game_id: ${fm.game_id}`);
     if (!runnerIds.has(fm.runner_id)) die(`${fileRel}: unknown runner_id: ${fm.runner_id}`);
