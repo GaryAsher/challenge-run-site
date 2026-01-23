@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
   let selectedChallenges = new Set();
   let selectedRestrictions = new Set();
   let selectedCharacters = new Set();
-  let selectedGlitch = '';
+  let selectedGlitches = new Set();
 
   // Available options (built from data)
   let availableChallenges = [];
@@ -342,16 +342,24 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
 
-    // Glitch filter (single select, keep as dropdown for now or convert)
-    // For consistency, we could make this typeahead too but single-select
-    if (fGlitch) {
-      // Keep legacy dropdown behavior
+    // Glitch filter (typeahead style)
+    if (fGlitchContainer && availableGlitches.length > 0) {
+      glitchFilter = createTypeaheadFilter({
+        container: fGlitchContainer,
+        placeholder: 'Type a glitch category...',
+        items: availableGlitches,
+        selectedSet: selectedGlitches,
+        onFilter: filterRows
+      });
+    } else if (fGlitch && availableGlitches.length > 0) {
+      // Populate legacy select element
+      populateSelect(fGlitch, availableGlitches);
       fGlitch.addEventListener('change', () => {
-        selectedGlitch = fGlitch.value;
+        selectedGlitches.clear();
+        if (fGlitch.value) selectedGlitches.add(norm(fGlitch.value));
         filterRows();
       });
     }
-  }
 
   // Helper to populate a select element with options
   function populateSelect(selectEl, items) {
@@ -390,7 +398,7 @@ document.addEventListener('DOMContentLoaded', function() {
       selectedChallenges.clear();
       selectedRestrictions.clear();
       selectedCharacters.clear();
-      selectedGlitch = '';
+      selectedGlitches.clear();
       
       // Reset legacy selects
       if (fChallenge) fChallenge.value = '';
@@ -402,6 +410,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (challengeFilter) challengeFilter.refresh();
       if (restrictionsFilter) restrictionsFilter.refresh();
       if (characterFilter) characterFilter.refresh();
+      if (glitchFilter) glitchFilter.refresh();
       
       filterRows();
     });
@@ -478,9 +487,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!selectedCharacters.has(rowChar)) show = false;
       }
 
-      // Glitch filter
-      if (show && selectedGlitch && row.dataset.glitch !== selectedGlitch) {
-        show = false;
+      // Glitch filter (any match)
+      if (show && selectedGlitches.size > 0) {
+        const rowGlitch = norm(row.dataset.glitch);
+        if (!selectedGlitches.has(rowGlitch)) show = false;
       }
 
       row.style.display = show ? '' : 'none';
@@ -575,13 +585,12 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       
       if (filterData.glitch) {
-        selectedGlitch = filterData.glitch;
-        if (fGlitch) fGlitch.value = filterData.glitch;
+        filterData.glitch.forEach(id => selectedGlitches.add(norm(id)));
       }
       
       // Open advanced filters if we have any
       if (selectedChallenges.size > 0 || selectedRestrictions.size > 0 || 
-          selectedCharacters.size > 0 || selectedGlitch) {
+          selectedCharacters.size > 0 || selectedGlitches) {
         if (advancedFilters && filterToggle) {
           advancedFilters.hidden = false;
           filterToggle.setAttribute('aria-expanded', 'true');
