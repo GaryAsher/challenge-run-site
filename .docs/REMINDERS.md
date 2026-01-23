@@ -4,7 +4,7 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ---
 
-## Priority Roadmap
+# Priority Roadmap
 
 ## Games Page
 - [ ] Filter by challenges" is filtering by old variable. Needs to be updated.
