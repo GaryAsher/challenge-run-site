@@ -6,19 +6,18 @@ This document consolidates all reminders, future ideas, and planned features for
 
 # Priority Roadmap
 
-## Games Page
-- [ ] Letter is not searching filtered games.
-
 ## Game Page Tabs
 
 ### /runs/ page
-- [ ] Fix CSS for Advanced Filters.
+- [ ] Advanced Filter does not have proper CSS for Challenge, Restrictions, Character.
+- [ ] Remove the "Submit a Run" button and the "Showing runs in: <category>" text. Move everything else up.
 - [ ] Fix Mini-Challenges:
       - When a Parent Category is picked, leave it at the top, but let user sort via child categories below. Default is to show all within the mini.
+            - This works, but the subcategories cannot be selected for some reason.      
 - [ ] Fix top container to be flush with game tabs.
 
 ### /rules/ page
-- [ ] Run Categories uses old variables. Update to 3-tiered category system.
+- [ ] Run Categories drop-down accordion below uses old variables. Update to 3-tiered category system.
 
 ### /history/ page
 - [ ] Needs better filtering. Only show verified runs, community milestones, records broken (if verified), etc.
@@ -28,7 +27,6 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Update logic to require character selection for Hades 2. This needs to be category specific, as it is not relevant for Chaos Trials.
 - [ ] Update the order of the form to mirror the payload.
 - [ ] Produce "error message" if user-id does not exist.
-- [ ] Show Video name when put into URL?
 - [ ] Update Date Completed format to be YYYY/MM/DD
 - [ ] Update Run Time to say the primary_timing_method.
 - [ ] Add placeholder next to Run Time that is secondary_timing_method.
