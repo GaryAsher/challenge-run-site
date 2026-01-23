@@ -410,12 +410,6 @@ layout: default
             {% endfor %}
           {% endif %}
 
-          <!-- Header with Submit button -->
-          <div class="runs-header" style="margin-top: 1rem;">
-            <p class="muted mt-0 mb-0">Showing runs in: <strong>{{ active_cat_label }}</strong></p>
-            <a href="{{ game_base }}submit/" class="btn btn--primary btn--submit">+ Submit a Run</a>
-          </div>
-
           <!-- Filters -->
           <div class="filters-wrap">
             <div class="filters-bar">
@@ -432,37 +426,37 @@ layout: default
 
             <div class="advanced-filters" id="advanced-filters" hidden>
               <div class="filter-groups">
+                <!-- Challenge Filter (typeahead style) -->
                 <div class="filter-group" id="f-challenge-container">
                   <label class="filter-group__label">Challenge</label>
-                  <select id="f-challenge" class="filter-select" multiple size="4">
-                    <option value="">All Challenges</option>
-                    {% for ch in game.challenges_data %}
-                      <option value="{{ ch.slug }}">{{ ch.label }}</option>
-                    {% endfor %}
-                  </select>
+                  <div class="filter-input__picked" id="f-challenge-picked"></div>
+                  <div class="filter-input__wrap">
+                    <input type="text" id="f-challenge-search" class="filter-input__field" placeholder="Type a challenge..." autocomplete="off" />
+                    <div class="filter-input__suggestions" id="f-challenge-suggestions" hidden></div>
+                  </div>
                 </div>
 
                 {% if game.restrictions_data and game.restrictions_data.size > 0 %}
+                <!-- Restrictions Filter (typeahead style) -->
                 <div class="filter-group" id="f-restrictions-container">
                   <label class="filter-group__label">Restrictions</label>
-                  <select id="f-restrictions" class="filter-select" multiple size="4">
-                    <option value="">All Restrictions</option>
-                    {% for res in game.restrictions_data %}
-                      <option value="{{ res.slug }}">{{ res.label }}</option>
-                    {% endfor %}
-                  </select>
+                  <div class="filter-input__picked" id="f-restrictions-picked"></div>
+                  <div class="filter-input__wrap">
+                    <input type="text" id="f-restrictions-search" class="filter-input__field" placeholder="Type a restriction..." autocomplete="off" />
+                    <div class="filter-input__suggestions" id="f-restrictions-suggestions" hidden></div>
+                  </div>
                 </div>
                 {% endif %}
 
                 {% if show_character and game.characters_data %}
+                <!-- Character Filter (typeahead style) -->
                 <div class="filter-group" id="f-character-container">
                   <label class="filter-group__label">{{ character_label }}</label>
-                  <select id="f-character" class="filter-select">
-                    <option value="">All {{ character_label }}s</option>
-                    {% for char in game.characters_data %}
-                      <option value="{{ char.slug }}">{{ char.label }}</option>
-                    {% endfor %}
-                  </select>
+                  <div class="filter-input__picked" id="f-character-picked"></div>
+                  <div class="filter-input__wrap">
+                    <input type="text" id="f-character-search" class="filter-input__field" placeholder="Type a {{ character_label | downcase }}..." autocomplete="off" />
+                    <div class="filter-input__suggestions" id="f-character-suggestions" hidden></div>
+                  </div>
                 </div>
                 {% endif %}
 
