@@ -681,11 +681,16 @@
 
     if (characterLabelEl) characterLabelEl.textContent = cc && cc.label ? cc.label : "Character";
 
-    // Update timing method label
+    // Update timing method labels
     const runTimeMethodEl = $("runTimeMethod");
+    const runTimeSecondaryEl = $("runTimeSecondary");
     if (runTimeMethodEl) {
       const timingMethod = game && game.timing_method ? game.timing_method : "";
       runTimeMethodEl.textContent = timingMethod ? `(${timingMethod})` : "";
+    }
+    if (runTimeSecondaryEl) {
+      const secondaryMethod = game && game.timing_method_secondary ? game.timing_method_secondary : "";
+      runTimeSecondaryEl.textContent = secondaryMethod ? `Secondary: ${secondaryMethod}` : "";
     }
 
     standardPicker.setItems(standard);
@@ -798,6 +803,13 @@
     if (!payload.runner_id) {
       showFieldError("runnerId", "Runner ID is required.");
       if (!firstError) firstError = "runnerId";
+    } else {
+      // Check if runner ID exists in our runners list (if available)
+      const runnerExists = index.runners ? index.runners.some(r => r.id === payload.runner_id) : true;
+      if (!runnerExists) {
+        showFieldError("runnerId", "Runner ID not found. Please check your runner ID or create a profile first.");
+        if (!firstError) firstError = "runnerId";
+      }
     }
 
     if (!payload.video_url) {
@@ -808,12 +820,28 @@
       if (!firstError) firstError = "videoUrl";
     }
 
-    // Date is optional, but if provided, validate the year
+    // Date is optional, but if provided, validate the format and year
     if (payload.date_completed) {
-      const year = parseInt(payload.date_completed.split("-")[0], 10);
-      if (year < 1970) {
-        showFieldError("dateCompleted", "Year must be 1970 or later.");
+      // Expected format: YYYY/MM/DD
+      const dateMatch = payload.date_completed.match(/^(\d{4})\/(\d{2})\/(\d{2})$/);
+      if (!dateMatch) {
+        showFieldError("dateCompleted", "Please use format: YYYY/MM/DD (e.g., 2025/01/15).");
         if (!firstError) firstError = "dateCompleted";
+      } else {
+        const year = parseInt(dateMatch[1], 10);
+        const month = parseInt(dateMatch[2], 10);
+        const day = parseInt(dateMatch[3], 10);
+        
+        if (year < 1970) {
+          showFieldError("dateCompleted", "Year must be 1970 or later.");
+          if (!firstError) firstError = "dateCompleted";
+        } else if (month < 1 || month > 12) {
+          showFieldError("dateCompleted", "Month must be between 01 and 12.");
+          if (!firstError) firstError = "dateCompleted";
+        } else if (day < 1 || day > 31) {
+          showFieldError("dateCompleted", "Day must be between 01 and 31.");
+          if (!firstError) firstError = "dateCompleted";
+        }
       }
     }
 
