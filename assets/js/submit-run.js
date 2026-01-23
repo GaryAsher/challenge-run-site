@@ -160,10 +160,33 @@
         return { ok: false, reason: "bilibili link must look like bilibili.com/video/<BV... or av...>." };
       }
 
-      return { ok: false, reason: "Only YouTube, Twitch VODs, and bilibili are allowed right now." };
+      return { ok: false, reason: "Only YouTube, Twitch Highlights, and bilibili are allowed right now." };
     } catch {
       return { ok: false, reason: "Invalid URL." };
     }
+  }
+
+  // =============================================================================
+  // Fetch Video Title (using oEmbed APIs)
+  // =============================================================================
+  async function fetchVideoTitle(videoInfo) {
+    if (!videoInfo || !videoInfo.ok) return null;
+    
+    try {
+      if (videoInfo.host === "youtube") {
+        // YouTube oEmbed API (no API key required)
+        const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(videoInfo.canonical_url)}&format=json`;
+        const response = await fetch(oembedUrl);
+        if (response.ok) {
+          const data = await response.json();
+          return data.title || null;
+        }
+      }
+      // Twitch and Bilibili would require API keys, so we skip those for now
+    } catch (e) {
+      console.warn("Could not fetch video title:", e);
+    }
+    return null;
   }
 
   // =============================================================================
@@ -861,7 +884,7 @@
   }
 
   // Clear errors on input
-  ["categorySelect", "runnerId", "videoUrl", "dateCompleted"].forEach((id) => {
+  ["categorySelect", "runnerId", "dateCompleted"].forEach((id) => {
     const el = $(id);
     if (!el) return;
     el.addEventListener("input", () => {
@@ -873,6 +896,41 @@
       repaint();
     });
   });
+
+  // Video URL handler with title fetching
+  const videoUrlEl = $("videoUrl");
+  const videoTitleEl = $("videoTitle");
+  let videoTitleTimeout = null;
+
+  if (videoUrlEl) {
+    videoUrlEl.addEventListener("input", () => {
+      clearFieldError("videoUrl");
+      repaint();
+      
+      // Debounced video title fetch
+      if (videoTitleTimeout) clearTimeout(videoTitleTimeout);
+      if (videoTitleEl) videoTitleEl.hidden = true;
+      
+      videoTitleTimeout = setTimeout(async () => {
+        const url = videoUrlEl.value.trim();
+        if (!url) return;
+        
+        const videoInfo = parseVideo(url);
+        if (videoInfo.ok) {
+          const title = await fetchVideoTitle(videoInfo);
+          if (title && videoTitleEl) {
+            videoTitleEl.textContent = `📹 ${title}`;
+            videoTitleEl.hidden = false;
+          }
+        }
+      }, 500);
+    });
+    
+    videoUrlEl.addEventListener("change", () => {
+      clearFieldError("videoUrl");
+      repaint();
+    });
+  }
 
   [communityChallengeSelect, characterSelect, glitchSelect].forEach((el) => {
     if (!el) return;
