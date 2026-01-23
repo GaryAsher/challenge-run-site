@@ -7,6 +7,7 @@
      - "See runners" button at bottom right with spacing
      - Highlight animation on first visit
      - Credits section support
+     - Supports both tiered categories (full_runs, mini_challenges, player_made) and legacy categories_data
      ========================================================= -->
 {% assign game = include.game %}
 {% assign game_id = game.game_id %}
@@ -22,8 +23,31 @@
 {% assign has_character = false %}
 {% assign character_label = "Character" %}
 
-{% if game.categories_data and game.categories_data.size > 0 %}
+<!-- Check for tiered categories (new structure) -->
+{% assign all_categories = "" | split: "" %}
+{% if game.full_runs and game.full_runs.size > 0 %}
   {% assign has_categories = true %}
+  {% for cat in game.full_runs %}
+    {% assign all_categories = all_categories | push: cat %}
+  {% endfor %}
+{% endif %}
+{% if game.mini_challenges and game.mini_challenges.size > 0 %}
+  {% assign has_categories = true %}
+  {% for cat in game.mini_challenges %}
+    {% assign all_categories = all_categories | push: cat %}
+  {% endfor %}
+{% endif %}
+{% if game.player_made and game.player_made.size > 0 %}
+  {% assign has_categories = true %}
+  {% for cat in game.player_made %}
+    {% assign all_categories = all_categories | push: cat %}
+  {% endfor %}
+{% endif %}
+
+<!-- Fallback to legacy categories_data -->
+{% if has_categories == false and game.categories_data and game.categories_data.size > 0 %}
+  {% assign has_categories = true %}
+  {% assign all_categories = game.categories_data %}
 {% endif %}
 
 {% if game.challenges_data and game.challenges_data.size > 0 %}
@@ -82,7 +106,7 @@
           <label class="rule-builder__label">Run Category</label>
           <select class="rule-builder__select" id="rb-category">
             <option value="" data-description="">-- Select Category --</option>
-            {% for cat in game.categories_data %}
+            {% for cat in all_categories %}
               <option value="{{ cat.slug }}" data-label="{{ cat.label }}" data-description="{{ cat.description | escape }}">{{ cat.label }}</option>
               {% if cat.children %}
                 {% for child in cat.children %}
