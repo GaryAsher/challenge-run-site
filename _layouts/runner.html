@@ -21,11 +21,11 @@ layout: default
       <div
         class="runner-avatar"
         data-bg="{{ avatar | relative_url }}"
-        aria-label="{{ page.name }} profile picture"
+        aria-label="{{ page.runner_name }} profile picture"
       ></div>
 
       <div class="runner-name">
-        <h1>{{ page.name }}</h1>
+        <h1>{{ page.runner_name }}</h1>
         {% if page.status %}
           <p class="muted runner-status">{{ page.status }}</p>
         {% endif %}
