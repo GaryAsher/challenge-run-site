@@ -10,7 +10,7 @@ socials:
   youtube: https://www.youtube.com/@gary_asher
   discord:
   steam_id:
-  twitter/x:
+  twitter:
   bluesky:
   other_gaming_profile1:
   other_gaming_profile2:
