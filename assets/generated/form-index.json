@@ -1,37 +1,78 @@
 {
-  "generated_at": "2026-01-23T00:58:33.065Z",
+  "generated_at": "2026-01-23T01:28:07.382Z",
   "games": [
     {
       "game_id": "celeste",
       "title": "Celeste",
+      "category_tiers": {
+        "full_runs": [
+          {
+            "slug": "any",
+            "name": "Any%"
+          },
+          {
+            "slug": "all-red-berries",
+            "name": "All Red Berries"
+          },
+          {
+            "slug": "true-ending",
+            "name": "True Ending"
+          },
+          {
+            "slug": "all-b-sides",
+            "name": "All B-Sides"
+          },
+          {
+            "slug": "all-c-sides",
+            "name": "All C-Sides"
+          },
+          {
+            "slug": "all-hearts",
+            "name": "All Hearts"
+          },
+          {
+            "slug": "100",
+            "name": "100%"
+          }
+        ],
+        "mini_challenges": [],
+        "player_made": []
+      },
       "categories": [
         {
           "slug": "any",
-          "name": "Any%"
+          "name": "Any%",
+          "tier": "full_runs"
         },
         {
           "slug": "all-red-berries",
-          "name": "All Red Berries"
+          "name": "All Red Berries",
+          "tier": "full_runs"
         },
         {
           "slug": "true-ending",
-          "name": "True Ending"
+          "name": "True Ending",
+          "tier": "full_runs"
         },
         {
           "slug": "all-b-sides",
-          "name": "All B-Sides"
+          "name": "All B-Sides",
+          "tier": "full_runs"
         },
         {
           "slug": "all-c-sides",
-          "name": "All C-Sides"
+          "name": "All C-Sides",
+          "tier": "full_runs"
         },
         {
           "slug": "all-hearts",
-          "name": "All Hearts"
+          "name": "All Hearts",
+          "tier": "full_runs"
         },
         {
           "slug": "100",
-          "name": "100%"
+          "name": "100%",
+          "tier": "full_runs"
         }
       ],
       "standard_challenges": [
@@ -42,12 +83,6 @@
         {
           "id": "deathless",
           "name": "Deathless"
-        }
-      ],
-      "community_challenges": [
-        {
-          "id": "modded-levels",
-          "name": "Modded Levels"
         }
       ],
       "glitches": [],
@@ -61,14 +96,30 @@
     {
       "game_id": "constance",
       "title": "Constance",
+      "category_tiers": {
+        "full_runs": [
+          {
+            "slug": "any",
+            "name": "Any%"
+          },
+          {
+            "slug": "100",
+            "name": "100%"
+          }
+        ],
+        "mini_challenges": [],
+        "player_made": []
+      },
       "categories": [
         {
           "slug": "any",
-          "name": "Any%"
+          "name": "Any%",
+          "tier": "full_runs"
         },
         {
           "slug": "100",
-          "name": "100%"
+          "name": "100%",
+          "tier": "full_runs"
         }
       ],
       "standard_challenges": [
@@ -97,7 +148,6 @@
           "name": "Minimalist"
         }
       ],
-      "community_challenges": [],
       "glitches": [
         {
           "id": "unrestricted",
@@ -122,7 +172,195 @@
     {
       "game_id": "hades-2",
       "title": "Hades II",
-      "categories": [],
+      "category_tiers": {
+        "full_runs": [
+          {
+            "slug": "underworld-any",
+            "name": "Underworld Any%"
+          },
+          {
+            "slug": "surface-any",
+            "name": "Surface Any%"
+          },
+          {
+            "slug": "underworld-vor4",
+            "name": "Underworld VoR4"
+          },
+          {
+            "slug": "surface-vor4",
+            "name": "Surface VoR4"
+          }
+        ],
+        "mini_challenges": [
+          {
+            "slug": "chaos-trials",
+            "name": "Chaos Trials"
+          },
+          {
+            "slug": "chaos-trials/trial-of-origin",
+            "name": "Chaos Trials: Trial of Origin"
+          },
+          {
+            "slug": "chaos-trials/trial-of-salt",
+            "name": "Chaos Trials: Trial of Salt"
+          },
+          {
+            "slug": "chaos-trials/trial-of-humility",
+            "name": "Chaos Trials: Trial of Humility"
+          },
+          {
+            "slug": "chaos-trials/trial-of-vengeance",
+            "name": "Chaos Trials: Trial of Vengeance"
+          },
+          {
+            "slug": "chaos-trials/trial-of-moon",
+            "name": "Chaos Trials: Trial of Moon"
+          },
+          {
+            "slug": "chaos-trials/trial-of-vigor",
+            "name": "Chaos Trials: Trial of Vigor"
+          },
+          {
+            "slug": "chaos-trials/trial-of-flame",
+            "name": "Chaos Trials: Trial of Flame"
+          },
+          {
+            "slug": "chaos-trials/trial-of-gold",
+            "name": "Chaos Trials: Trial of Gold"
+          },
+          {
+            "slug": "chaos-trials/trial-of-fury",
+            "name": "Chaos Trials: Trial of Fury"
+          },
+          {
+            "slug": "chaos-trials/trial-of-precarity",
+            "name": "Chaos Trials: Trial of Precarity"
+          },
+          {
+            "slug": "chaos-trials/trial-of-heartache",
+            "name": "Chaos Trials: Trial of Heartache"
+          },
+          {
+            "slug": "chaos-trials/trial-of-haste",
+            "name": "Chaos Trials: Trial of Haste"
+          },
+          {
+            "slug": "chaos-trials/trial-of-blood",
+            "name": "Chaos Trials: Trial of Blood"
+          },
+          {
+            "slug": "chaos-trials/trial-of-doom",
+            "name": "Chaos Trials: Trial of Doom"
+          },
+          {
+            "slug": "chaos-trials/trial-of-destiny",
+            "name": "Chaos Trials: Trial of Destiny"
+          }
+        ],
+        "player_made": []
+      },
+      "categories": [
+        {
+          "slug": "underworld-any",
+          "name": "Underworld Any%",
+          "tier": "full_runs"
+        },
+        {
+          "slug": "surface-any",
+          "name": "Surface Any%",
+          "tier": "full_runs"
+        },
+        {
+          "slug": "underworld-vor4",
+          "name": "Underworld VoR4",
+          "tier": "full_runs"
+        },
+        {
+          "slug": "surface-vor4",
+          "name": "Surface VoR4",
+          "tier": "full_runs"
+        },
+        {
+          "slug": "chaos-trials",
+          "name": "Chaos Trials",
+          "tier": "mini_challenges"
+        },
+        {
+          "slug": "chaos-trials/trial-of-origin",
+          "name": "Chaos Trials: Trial of Origin",
+          "tier": "mini_challenges"
+        },
+        {
+          "slug": "chaos-trials/trial-of-salt",
+          "name": "Chaos Trials: Trial of Salt",
+          "tier": "mini_challenges"
+        },
+        {
+          "slug": "chaos-trials/trial-of-humility",
+          "name": "Chaos Trials: Trial of Humility",
+          "tier": "mini_challenges"
+        },
+        {
+          "slug": "chaos-trials/trial-of-vengeance",
+          "name": "Chaos Trials: Trial of Vengeance",
+          "tier": "mini_challenges"
+        },
+        {
+          "slug": "chaos-trials/trial-of-moon",
+          "name": "Chaos Trials: Trial of Moon",
+          "tier": "mini_challenges"
+        },
+        {
+          "slug": "chaos-trials/trial-of-vigor",
+          "name": "Chaos Trials: Trial of Vigor",
+          "tier": "mini_challenges"
+        },
+        {
+          "slug": "chaos-trials/trial-of-flame",
+          "name": "Chaos Trials: Trial of Flame",
+          "tier": "mini_challenges"
+        },
+        {
+          "slug": "chaos-trials/trial-of-gold",
+          "name": "Chaos Trials: Trial of Gold",
+          "tier": "mini_challenges"
+        },
+        {
+          "slug": "chaos-trials/trial-of-fury",
+          "name": "Chaos Trials: Trial of Fury",
+          "tier": "mini_challenges"
+        },
+        {
+          "slug": "chaos-trials/trial-of-precarity",
+          "name": "Chaos Trials: Trial of Precarity",
+          "tier": "mini_challenges"
+        },
+        {
+          "slug": "chaos-trials/trial-of-heartache",
+          "name": "Chaos Trials: Trial of Heartache",
+          "tier": "mini_challenges"
+        },
+        {
+          "slug": "chaos-trials/trial-of-haste",
+          "name": "Chaos Trials: Trial of Haste",
+          "tier": "mini_challenges"
+        },
+        {
+          "slug": "chaos-trials/trial-of-blood",
+          "name": "Chaos Trials: Trial of Blood",
+          "tier": "mini_challenges"
+        },
+        {
+          "slug": "chaos-trials/trial-of-doom",
+          "name": "Chaos Trials: Trial of Doom",
+          "tier": "mini_challenges"
+        },
+        {
+          "slug": "chaos-trials/trial-of-destiny",
+          "name": "Chaos Trials: Trial of Destiny",
+          "tier": "mini_challenges"
+        }
+      ],
       "standard_challenges": [
         {
           "id": "damageless",
@@ -137,7 +375,6 @@
           "name": "No-Hit / No-Damage"
         }
       ],
-      "community_challenges": [],
       "glitches": [
         {
           "id": "unrestricted",
@@ -280,74 +517,165 @@
     {
       "game_id": "hollow-knight",
       "title": "Hollow Knight",
+      "category_tiers": {
+        "full_runs": [
+          {
+            "slug": "any",
+            "name": "Any%"
+          },
+          {
+            "slug": "all-skills",
+            "name": "All Skills"
+          },
+          {
+            "slug": "true-ending",
+            "name": "True Ending"
+          },
+          {
+            "slug": "106-te",
+            "name": "106% TE"
+          },
+          {
+            "slug": "107-ab",
+            "name": "107% AB"
+          },
+          {
+            "slug": "112-apb",
+            "name": "112% APB"
+          },
+          {
+            "slug": "low-percent",
+            "name": "Low%"
+          },
+          {
+            "slug": "all-bosses",
+            "name": "All Bosses"
+          },
+          {
+            "slug": "godhome-ending",
+            "name": "Godhome Ending"
+          },
+          {
+            "slug": "pantheons",
+            "name": "Pantheons"
+          },
+          {
+            "slug": "pantheons/pantheon-1",
+            "name": "Pantheons: Pantheon of the Master"
+          },
+          {
+            "slug": "pantheons/pantheon-2",
+            "name": "Pantheons: Pantheon of the Artist"
+          },
+          {
+            "slug": "pantheons/pantheon-3",
+            "name": "Pantheons: Pantheon of the Sage"
+          },
+          {
+            "slug": "pantheons/pantheon-4",
+            "name": "Pantheons: Pantheon of the Knight"
+          },
+          {
+            "slug": "pantheons/pantheon-5",
+            "name": "Pantheons: Pantheon of Hallownest"
+          },
+          {
+            "slug": "hall-of-gods",
+            "name": "Hall of Gods"
+          },
+          {
+            "slug": "hall-of-gods/gruz-mother",
+            "name": "Hall of Gods: Gruz Mother"
+          }
+        ],
+        "mini_challenges": [],
+        "player_made": []
+      },
       "categories": [
         {
           "slug": "any",
-          "name": "Any%"
+          "name": "Any%",
+          "tier": "full_runs"
         },
         {
           "slug": "all-skills",
-          "name": "All Skills"
+          "name": "All Skills",
+          "tier": "full_runs"
         },
         {
           "slug": "true-ending",
-          "name": "True Ending"
+          "name": "True Ending",
+          "tier": "full_runs"
         },
         {
           "slug": "106-te",
-          "name": "106% TE"
+          "name": "106% TE",
+          "tier": "full_runs"
         },
         {
           "slug": "107-ab",
-          "name": "107% AB"
+          "name": "107% AB",
+          "tier": "full_runs"
         },
         {
           "slug": "112-apb",
-          "name": "112% APB"
+          "name": "112% APB",
+          "tier": "full_runs"
         },
         {
           "slug": "low-percent",
-          "name": "Low%"
+          "name": "Low%",
+          "tier": "full_runs"
         },
         {
           "slug": "all-bosses",
-          "name": "All Bosses"
+          "name": "All Bosses",
+          "tier": "full_runs"
         },
         {
           "slug": "godhome-ending",
-          "name": "Godhome Ending"
+          "name": "Godhome Ending",
+          "tier": "full_runs"
         },
         {
           "slug": "pantheons",
-          "name": "Pantheons"
+          "name": "Pantheons",
+          "tier": "full_runs"
         },
         {
           "slug": "pantheons/pantheon-1",
-          "name": "Pantheons: Pantheon of the Master"
+          "name": "Pantheons: Pantheon of the Master",
+          "tier": "full_runs"
         },
         {
           "slug": "pantheons/pantheon-2",
-          "name": "Pantheons: Pantheon of the Artist"
+          "name": "Pantheons: Pantheon of the Artist",
+          "tier": "full_runs"
         },
         {
           "slug": "pantheons/pantheon-3",
-          "name": "Pantheons: Pantheon of the Sage"
+          "name": "Pantheons: Pantheon of the Sage",
+          "tier": "full_runs"
         },
         {
           "slug": "pantheons/pantheon-4",
-          "name": "Pantheons: Pantheon of the Knight"
+          "name": "Pantheons: Pantheon of the Knight",
+          "tier": "full_runs"
         },
         {
           "slug": "pantheons/pantheon-5",
-          "name": "Pantheons: Pantheon of Hallownest"
+          "name": "Pantheons: Pantheon of Hallownest",
+          "tier": "full_runs"
         },
         {
           "slug": "hall-of-gods",
-          "name": "Hall of Gods"
+          "name": "Hall of Gods",
+          "tier": "full_runs"
         },
         {
           "slug": "hall-of-gods/gruz-mother",
-          "name": "Hall of Gods: Gruz Mother"
+          "name": "Hall of Gods: Gruz Mother",
+          "tier": "full_runs"
         }
       ],
       "standard_challenges": [
@@ -370,12 +698,6 @@
         {
           "id": "no-hit-no-damage",
           "name": "No-Hit / No-Damage"
-        }
-      ],
-      "community_challenges": [
-        {
-          "id": "radiant-bosses",
-          "name": "Radiant Bosses"
         }
       ],
       "glitches": [
@@ -427,14 +749,30 @@
     {
       "game_id": "the-legend-of-zelda-ocarina-of-time",
       "title": "The Legend of Zelda: Ocarina of Time",
+      "category_tiers": {
+        "full_runs": [
+          {
+            "slug": "any",
+            "name": "Any%"
+          },
+          {
+            "slug": "100",
+            "name": "100%"
+          }
+        ],
+        "mini_challenges": [],
+        "player_made": []
+      },
       "categories": [
         {
           "slug": "any",
-          "name": "Any%"
+          "name": "Any%",
+          "tier": "full_runs"
         },
         {
           "slug": "100",
-          "name": "100%"
+          "name": "100%",
+          "tier": "full_runs"
         }
       ],
       "standard_challenges": [
@@ -463,7 +801,6 @@
           "name": "Minimalist"
         }
       ],
-      "community_challenges": [],
       "glitches": [
         {
           "id": "unrestricted",
@@ -488,22 +825,48 @@
     {
       "game_id": "tiny-rogues",
       "title": "Tiny Rogues",
+      "category_tiers": {
+        "full_runs": [
+          {
+            "slug": "any",
+            "name": "Any%"
+          },
+          {
+            "slug": "cinder-16",
+            "name": "Cinder 16"
+          },
+          {
+            "slug": "quest-any",
+            "name": "Quest Any%"
+          },
+          {
+            "slug": "quest-cinder-16",
+            "name": "Quest Cinder 16"
+          }
+        ],
+        "mini_challenges": [],
+        "player_made": []
+      },
       "categories": [
         {
           "slug": "any",
-          "name": "Any%"
+          "name": "Any%",
+          "tier": "full_runs"
         },
         {
           "slug": "cinder-16",
-          "name": "Cinder 16"
+          "name": "Cinder 16",
+          "tier": "full_runs"
         },
         {
           "slug": "quest-any",
-          "name": "Quest Any%"
+          "name": "Quest Any%",
+          "tier": "full_runs"
         },
         {
           "slug": "quest-cinder-16",
-          "name": "Quest Cinder 16"
+          "name": "Quest Cinder 16",
+          "tier": "full_runs"
         }
       ],
       "standard_challenges": [
@@ -520,7 +883,6 @@
           "name": "No-Hit / No-Damage"
         }
       ],
-      "community_challenges": [],
       "glitches": [],
       "restrictions": [
         {
