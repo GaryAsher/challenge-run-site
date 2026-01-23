@@ -3,9 +3,9 @@ layout: default
 ---
 
 <!-- ============================================================
-     Runner Avatar Source (fallback if cover is missing)
+     Runner Avatar Source (fallback if avatar is missing)
      ============================================================ -->
-{% assign avatar = page.cover | default: "/assets/img/site/default-runner.png" %}
+{% assign avatar = page.avatar | default: "/assets/img/site/default-runner.png" %}
 
 <!-- ============================================================
      Runner Page Content
@@ -87,7 +87,7 @@ layout: default
             {% assign g = site.games | where: "game_id", gid | first %}
             {% if g %}
               <a href="{{ g.url | relative_url }}" class="game-card card-lift">
-                <div class="game-card__bg" data-bg="{{ g.cover | relative_url }}"></div>
+                <div class="game-card__bg" data-bg="{{ g.avatar | relative_url }}"></div>
                 <div class="game-card__overlay">
                   <div class="game-card__title">{{ g.game_name }}</div>
                 </div>
