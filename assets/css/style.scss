@@ -4874,6 +4874,54 @@ a.resource-card:hover {
   color: var(--text-muted);
 }
 
+/* Filter group typeahead inputs */
+.filter-group .filter-input__picked {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.filter-group .filter-input__picked:empty {
+  display: none;
+  margin-bottom: 0;
+}
+
+.filter-group .filter-input__wrap {
+  position: relative;
+}
+
+.filter-group .filter-input__field {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--fg);
+}
+
+.filter-group .filter-input__field:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--focus-2);
+}
+
+.filter-group .filter-input__suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  max-height: 200px;
+  overflow-y: auto;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
 .filter-select {
   padding: 0.5rem;
   background: var(--card-bg);
@@ -5069,4 +5117,24 @@ a.resource-card:hover {
   background: var(--panel);
   border-radius: var(--radius-sm);
   border-left: 3px solid var(--accent);
+}
+
+/* Input with secondary label */
+.input-with-secondary {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.input-with-secondary input {
+  flex: 1;
+}
+
+.input-secondary-label {
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.input-secondary-label:empty {
+  display: none;
 }
