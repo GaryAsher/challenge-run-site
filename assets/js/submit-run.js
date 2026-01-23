@@ -96,7 +96,7 @@
   }
 
   function clearAllFieldErrors() {
-    const errorFields = ["gameSelect", "categorySelect", "runnerId", "dateCompleted", "videoUrl"];
+    const errorFields = ["gameSelect", "tierSelect", "categorySelect", "runnerId", "dateCompleted", "videoUrl"];
     errorFields.forEach(clearFieldError);
   }
 
@@ -498,6 +498,7 @@
   const index = await loadIndex();
 
   const gameSelect = $("gameSelect");
+  const tierSelect = $("tierSelect");
   const categorySelect = $("categorySelect");
   const gameSearch = $("gameSearch");
 
@@ -571,9 +572,76 @@
     }
   }
 
+  // Tier configuration - matches the keys used in form-index.json
+  const TIER_CONFIG = {
+    full_runs: { slug: "full_runs", label: "Full Runs" },
+    mini_challenges: { slug: "mini_challenges", label: "Mini-Challenges" },
+    player_made: { slug: "player_made", label: "Player-Made" }
+  };
+
+  function populateTiers() {
+    if (!tierSelect) return;
+    
+    const game = getGameById(gameSelect?.value);
+    const tiers = game?.category_tiers || null;
+    
+    tierSelect.innerHTML = "";
+    
+    // Add blank option
+    const blankOpt = document.createElement("option");
+    blankOpt.value = "";
+    blankOpt.textContent = "Select tier...";
+    tierSelect.appendChild(blankOpt);
+    
+    if (!tiers) {
+      // Legacy game without tiered categories - show "Full Runs" as only option
+      // and auto-select it
+      const opt = document.createElement("option");
+      opt.value = "full_runs";
+      opt.textContent = "Full Runs";
+      tierSelect.appendChild(opt);
+      tierSelect.value = "full_runs";
+      return;
+    }
+    
+    // Add tiers that have categories
+    for (const [tierKey, tierConfig] of Object.entries(TIER_CONFIG)) {
+      const tierCats = tiers[tierKey];
+      if (tierCats && tierCats.length > 0) {
+        const opt = document.createElement("option");
+        opt.value = tierKey;
+        opt.textContent = tierConfig.label;
+        tierSelect.appendChild(opt);
+      }
+    }
+    
+    // Auto-select if only one tier available (besides blank)
+    if (tierSelect.options.length === 2) {
+      tierSelect.value = tierSelect.options[1].value;
+    }
+  }
+
   function populateCategories() {
-    const game = getGameById(gameSelect.value);
-    const cats = game && Array.isArray(game.categories) ? game.categories : [];
+    const game = getGameById(gameSelect?.value);
+    const selectedTier = tierSelect?.value || "";
+    
+    let cats = [];
+    
+    if (game) {
+      // Check for new tiered structure
+      if (game.category_tiers) {
+        const tierCats = game.category_tiers[selectedTier];
+        if (tierCats && Array.isArray(tierCats)) {
+          cats = tierCats;
+        }
+      } else if (Array.isArray(game.categories)) {
+        // Legacy: use flat categories list (treat as full_runs)
+        if (selectedTier === "full_runs" || selectedTier === "") {
+          cats = game.categories;
+        }
+      }
+    }
+    
     fillSelect(categorySelect, cats, (c) => c.slug, (c) => c.name, true, "Select category...");
   }
 
@@ -618,6 +686,7 @@
 
   function buildPayload() {
     const game_id = (gameSelect?.value || "").trim();
+    const category_tier = (tierSelect?.value || "full_runs").trim();
     const category_slug = (categorySelect?.value || "").trim();
 
     const standard_ids = standardPicker.getSelectedIds();
@@ -640,9 +709,10 @@
 
     const payload = {
       kind: "run_submission",
-      schema_version: 5,
+      schema_version: 6,
 
       game_id,
+      category_tier,
       category_slug,
 
       standard_challenges: standard_ids,
@@ -683,6 +753,11 @@
     if (!payload.game_id) {
       showFieldError("gameSelect", "Please select a game.");
       if (!firstError) firstError = "gameSelect";
+    }
+
+    if (!payload.category_tier) {
+      showFieldError("tierSelect", "Please select a category tier.");
+      if (!firstError) firstError = "tierSelect";
     }
 
     if (!payload.category_slug) {
@@ -739,6 +814,7 @@
   if (gameSearch) {
     gameSearch.addEventListener("input", () => {
       populateGames(gameSearch.value);
+      populateTiers();
       populateCategories();
       populateBoxes();
       repaint();
@@ -748,8 +824,18 @@
   if (gameSelect && gameSelect.tagName === "SELECT") {
     gameSelect.addEventListener("change", () => {
       clearFieldError("gameSelect");
+      populateTiers();
       populateCategories();
       populateBoxes();
+      repaint();
+    });
+  }
+
+  // Tier selection change - update categories
+  if (tierSelect) {
+    tierSelect.addEventListener("change", () => {
+      clearFieldError("tierSelect");
+      populateCategories();
       repaint();
     });
   }
@@ -849,6 +935,7 @@
   const presetGameId = window.CRC_PRESET_GAME_ID || qs("game") || "";
 
   if (gameSelect && gameSelect.tagName === "INPUT" && gameSelect.type === "hidden") {
+    populateTiers();
     populateCategories();
     populateBoxes();
   } else {
@@ -861,6 +948,7 @@
       }
     }
 
+    populateTiers();
     populateCategories();
     populateBoxes();
   }
