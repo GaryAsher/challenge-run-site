@@ -11,9 +11,10 @@ date_submitted: YYYY-MM-DD
 # =========================================================
 game_id: GAME-ID
 runner_id: runner-id
+category_tier: full_runs            # full_runs | mini_challenges | player_made
 category_slug: category-slug
 standard_challenges: []            # Array of challenge slugs (e.g., ["hitless", "damageless"])
-community_challenge: ""            # Single community challenge slug or ""
+community_challenge: ""            # DEPRECATED - use restrictions instead
 glitch_id: ""                      # unrestricted | nmg | glitchless | ""
 
 # =========================================================
