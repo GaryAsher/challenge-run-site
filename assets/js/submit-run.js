@@ -96,7 +96,7 @@
   }
 
   function clearAllFieldErrors() {
-    const errorFields = ["gameSelect", "tierSelect", "categorySelect", "runnerId", "dateCompleted", "videoUrl"];
+    const errorFields = ["gameSelect", "tierSelect", "categorySelect", "runnerId", "dateCompleted", "videoUrl", "characterSelect"];
     errorFields.forEach(clearFieldError);
   }
 
@@ -658,11 +658,18 @@
 
     if (characterLabelEl) characterLabelEl.textContent = cc && cc.label ? cc.label : "Character";
 
+    // Update timing method label
+    const runTimeMethodEl = $("runTimeMethod");
+    if (runTimeMethodEl) {
+      const timingMethod = game && game.timing_method ? game.timing_method : "";
+      runTimeMethodEl.textContent = timingMethod ? `(${timingMethod})` : "";
+    }
+
     standardPicker.setItems(standard);
     restrictionsPicker.setItems(restrictions);
 
     fillSelect(communityChallengeSelect, community, (c) => c.id, (c) => c.name, true, "None selected");
-    fillSelect(glitchSelect, glitches, (c) => c.id, (c) => c.name, true, "None / Glitchless");
+    fillSelect(glitchSelect, glitches, (c) => c.id, (c) => c.name, true, "N/A");
 
     if (cc && cc.enabled) {
       if (characterSelect) {
@@ -793,6 +800,15 @@
 
     if (!hasAnyChallenge) {
       return { valid: false, message: "Pick at least one Standard Challenge and/or a Community Challenge.", firstError };
+    }
+
+    // Check if character is required for this game/category
+    // Hades 2 requires character selection except for Chaos Trials (mini_challenges tier)
+    if (payload.game_id === "hades-2" && payload.category_tier !== "mini_challenges") {
+      if (!payload.character) {
+        showFieldError("characterSelect", "Weapon / Aspect selection is required for this category.");
+        if (!firstError) firstError = "characterSelect";
+      }
     }
 
     // Check for turnstile token if turnstile widget is present
