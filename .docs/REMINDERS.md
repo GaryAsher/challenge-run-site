@@ -9,12 +9,9 @@ This document consolidates all reminders, future ideas, and planned features for
 ## Game Page Tabs
 
 ### /runs/ page
-- [ ] Advanced Filter does not have proper CSS for Challenge, Restrictions, Character.
-- [ ] Remove the "Submit a Run" button and the "Showing runs in: <category>" text. Move everything else up.
-- [ ] Fix Mini-Challenges:
-      - When a Parent Category is picked, leave it at the top, but let user sort via child categories below. Default is to show all within the mini.
-            - This works, but the subcategories cannot be selected for some reason.      
-- [ ] Fix top container to be flush with game tabs.
+- [ ] Advanced Filter for Glitch Category needs to match how Challenge, Restrictions, and Weapon / Aspect are.
+- [ ] Mini-Challenges, clicking on subcategories need to go to the subcategories page.  
+- [ ] Fix the top-most container (holding Full Runs and Mini-Challenges) to be flush with game tabs header.
 
 ### /rules/ page
 - [ ] Run Categories drop-down accordion below uses old variables. Update to 3-tiered category system.
@@ -25,11 +22,9 @@ This document consolidates all reminders, future ideas, and planned features for
 ### /submit/ page
 - [ ] Fix js selector to only appear when hovering drop-down. Currently allows selection when on top of text.
 - [ ] Update logic to require character selection for Hades 2. This needs to be category specific, as it is not relevant for Chaos Trials.
-- [ ] Update the order of the form to mirror the payload.
 - [ ] Produce "error message" if user-id does not exist.
 - [ ] Update Date Completed format to be YYYY/MM/DD
-- [ ] Update Run Time to say the primary_timing_method.
-- [ ] Add placeholder next to Run Time that is secondary_timing_method.
+      - Have the / limit characters, and clickable. revert to MM/DD/YYYY if needed.
 
 ## Forms & Submissions
 
