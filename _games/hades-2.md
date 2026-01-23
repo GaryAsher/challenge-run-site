@@ -80,20 +80,6 @@ challenges_data:
       - Do not block any attacks.
 
 # =============================================================================
-# COMMUNITY CHALLENGES
-# =============================================================================
-community_challenges:
-  - slug: one-god-only
-    label: "One God Only"
-    description: |
-      - Only utilize boons from one god. You may pick up a boon from a god so long as you do not benefit it in any way.
-
-  - slug: boonless
-    label: "Boonless"
-    description: |
-      - Do not utilize any boons from any god. You may pick up a boon from a god so long as you do not benefit it in any way.
-
-# =============================================================================
 # OPTIONAL RESTRICTIONS
 # =============================================================================
 restrictions_data:
@@ -112,6 +98,16 @@ restrictions_data:
     label: "Hestia Only"
     description: |
       - Only utilize boons from Hestia. You may pick up a boon from another god so long as you do not benefit from it in any way.
+
+  - slug: one-god-only
+    label: "One God Only"
+    description: |
+      - Only utilize boons from one god. You may pick up a boon from a god so long as you do not benefit it in any way.
+
+  - slug: boonless
+    label: "Boonless"
+    description: |
+      - Do not utilize any boons from any god. You may pick up a boon from a god so long as you do not benefit it in any way.
 
 # =============================================================================
 # GLITCH CATEGORIES
@@ -133,9 +129,10 @@ glitches_data:
       - No glitches of any kind.
 
 # =============================================================================
-# RUN CATEGORIES
+# FULL RUNS
+# Require reaching some kind of ending
 # =============================================================================
-categories_data:
+full_runs:
   - slug: underworld-any
     label: "Underworld Any%"
     description: "Complete the Underworld route with any amount of Fear."
@@ -152,6 +149,11 @@ categories_data:
     label: "Surface VoR4"
     description: "Complete the Surface route with Vow of Rivals(4) selected in the Oath of the Unseen."
 
+# =============================================================================
+# MINI-CHALLENGES
+# In-game challenges that exist without requiring an ending
+# =============================================================================
+mini_challenges:
   - slug: chaos-trials
     label: "Chaos Trials"
     description: "Complete one of the 15 Chaos Trials."
@@ -186,6 +188,20 @@ categories_data:
         label: "Trial of Doom"
       - slug: trial-of-destiny
         label: "Trial of Destiny"
+
+# =============================================================================
+# PLAYER-MADE CHALLENGES
+# Community-created challenges with arbitrary goals
+# Promoted from forum when popular enough
+# =============================================================================
+player_made: []
+# Example:
+#   - slug: no-dash
+#     label: "No Dash"
+#     description: "Complete a run without using the dash ability."
+#     creator: runner-slug
+#     created_date: 2026-01-15
+#     promoted_from_forum: true
 
 # =============================================================================
 # TIMING METHOD
