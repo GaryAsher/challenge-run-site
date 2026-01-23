@@ -778,9 +778,13 @@
       if (!firstError) firstError = "videoUrl";
     }
 
-    if (!payload.date_completed) {
-      showFieldError("dateCompleted", "Completion date is required.");
-      if (!firstError) firstError = "dateCompleted";
+    // Date is optional, but if provided, validate the year
+    if (payload.date_completed) {
+      const year = parseInt(payload.date_completed.split("-")[0], 10);
+      if (year < 1970) {
+        showFieldError("dateCompleted", "Year must be 1970 or later.");
+        if (!firstError) firstError = "dateCompleted";
+      }
     }
 
     const hasAnyChallenge =
