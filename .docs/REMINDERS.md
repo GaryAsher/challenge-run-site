@@ -8,6 +8,7 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ## Games Page
 - [ ] Filter by challenges" is filtering by old variable. Needs to be updated.
+- [ ] "Search by game name." not finding game. likely using old variable.
 
 ## Game Page Tabs
 
