@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-01-22T21:54:19.497Z",
+  "generated_at": "2026-01-23T00:58:33.065Z",
   "games": [
     {
       "game_id": "celeste",
@@ -122,88 +122,7 @@
     {
       "game_id": "hades-2",
       "title": "Hades II",
-      "categories": [
-        {
-          "slug": "underworld-any",
-          "name": "Underworld Any%"
-        },
-        {
-          "slug": "surface-any",
-          "name": "Surface Any%"
-        },
-        {
-          "slug": "underworld-vor4",
-          "name": "Underworld VoR4"
-        },
-        {
-          "slug": "surface-vor4",
-          "name": "Surface VoR4"
-        },
-        {
-          "slug": "chaos-trials",
-          "name": "Chaos Trials"
-        },
-        {
-          "slug": "chaos-trials/trial-of-origin",
-          "name": "Chaos Trials: Trial of Origin"
-        },
-        {
-          "slug": "chaos-trials/trial-of-salt",
-          "name": "Chaos Trials: Trial of Salt"
-        },
-        {
-          "slug": "chaos-trials/trial-of-humility",
-          "name": "Chaos Trials: Trial of Humility"
-        },
-        {
-          "slug": "chaos-trials/trial-of-vengeance",
-          "name": "Chaos Trials: Trial of Vengeance"
-        },
-        {
-          "slug": "chaos-trials/trial-of-moon",
-          "name": "Chaos Trials: Trial of Moon"
-        },
-        {
-          "slug": "chaos-trials/trial-of-vigor",
-          "name": "Chaos Trials: Trial of Vigor"
-        },
-        {
-          "slug": "chaos-trials/trial-of-flame",
-          "name": "Chaos Trials: Trial of Flame"
-        },
-        {
-          "slug": "chaos-trials/trial-of-gold",
-          "name": "Chaos Trials: Trial of Gold"
-        },
-        {
-          "slug": "chaos-trials/trial-of-fury",
-          "name": "Chaos Trials: Trial of Fury"
-        },
-        {
-          "slug": "chaos-trials/trial-of-precarity",
-          "name": "Chaos Trials: Trial of Precarity"
-        },
-        {
-          "slug": "chaos-trials/trial-of-heartache",
-          "name": "Chaos Trials: Trial of Heartache"
-        },
-        {
-          "slug": "chaos-trials/trial-of-haste",
-          "name": "Chaos Trials: Trial of Haste"
-        },
-        {
-          "slug": "chaos-trials/trial-of-blood",
-          "name": "Chaos Trials: Trial of Blood"
-        },
-        {
-          "slug": "chaos-trials/trial-of-doom",
-          "name": "Chaos Trials: Trial of Doom"
-        },
-        {
-          "slug": "chaos-trials/trial-of-destiny",
-          "name": "Chaos Trials: Trial of Destiny"
-        }
-      ],
+      "categories": [],
       "standard_challenges": [
         {
           "id": "damageless",
@@ -218,16 +137,7 @@
           "name": "No-Hit / No-Damage"
         }
       ],
-      "community_challenges": [
-        {
-          "id": "one-god-only",
-          "name": "One God Only"
-        },
-        {
-          "id": "boonless",
-          "name": "Boonless"
-        }
-      ],
+      "community_challenges": [],
       "glitches": [
         {
           "id": "unrestricted",
@@ -254,6 +164,14 @@
         {
           "id": "hestia-only",
           "name": "Hestia Only"
+        },
+        {
+          "id": "one-god-only",
+          "name": "One God Only"
+        },
+        {
+          "id": "boonless",
+          "name": "Boonless"
         }
       ],
       "character_column": {
