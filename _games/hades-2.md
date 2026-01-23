@@ -89,25 +89,25 @@ restrictions_data:
       - Complete a run with no Arcana Cards selected or Vow of Void(4) selected in the Oath of the Unseen.
       - Do not activate Arcana Cards in any way.
 
-  - slug: no-hexes
-    label: "No Hexes"
+  - slug: boonless
+    label: "Boonless"
     description: |
-      - Complete a run without activating any hexes from Selene. You may pick a hex so long as you do not benefit it in any way.
+      - Do not utilize any boons from any god. You may pick up a boon from a god so long as you do not benefit it in any way.
 
   - slug: hestia-only
     label: "Hestia Only"
     description: |
       - Only utilize boons from Hestia. You may pick up a boon from another god so long as you do not benefit from it in any way.
 
+  - slug: no-hexes
+    label: "No Hexes"
+    description: |
+      - Complete a run without activating any hexes from Selene. You may pick a hex so long as you do not benefit it in any way.
+
   - slug: one-god-only
     label: "One God Only"
     description: |
       - Only utilize boons from one god. You may pick up a boon from a god so long as you do not benefit it in any way.
-
-  - slug: boonless
-    label: "Boonless"
-    description: |
-      - Do not utilize any boons from any god. You may pick up a boon from a god so long as you do not benefit it in any way.
 
 # =============================================================================
 # GLITCH CATEGORIES
