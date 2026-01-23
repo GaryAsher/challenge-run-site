@@ -4666,3 +4666,155 @@ a.resource-card:hover {
 .submit-run-page .filter-suggestion:first-child {
   border-top: none;
 }
+
+/* ============================================================
+   Category Tier System Styles
+   ============================================================ */
+
+/* Tier Navigation Tabs */
+.tier-tabs {
+  padding: 0.75rem 1rem;
+}
+
+.tier-nav {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tier-tab {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+}
+
+.tier-tab:hover {
+  color: var(--fg);
+  background: var(--bg-hover);
+  border-color: var(--border-hover);
+}
+
+.tier-tab.is-active {
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.1);
+  border-color: var(--accent);
+}
+
+/* Tier Cards (for tier picker page) */
+.tier-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.tier-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--fg);
+  transition: all 0.2s ease;
+}
+
+.tier-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.tier-card__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: var(--fg);
+}
+
+.tier-card__desc {
+  font-size: 0.9rem;
+  margin: 0 0 1rem 0;
+  flex: 1;
+}
+
+.tier-card__count {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+/* Category Cards (for tier index pages) */
+.category-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.category-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--fg);
+  transition: all 0.2s ease;
+}
+
+.category-card:hover {
+  border-color: var(--accent);
+  background: var(--bg-hover);
+}
+
+.category-card__title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: var(--fg);
+}
+
+.category-card__desc {
+  font-size: 0.85rem;
+  margin: 0 0 0.75rem 0;
+  flex: 1;
+  line-height: 1.4;
+}
+
+.category-card__children,
+.category-card__creator {
+  font-size: 0.8rem;
+  display: block;
+}
+
+.category-card__creator {
+  margin-top: 0.25rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .tier-nav {
+    flex-direction: column;
+  }
+  
+  .tier-tab {
+    justify-content: center;
+  }
+  
+  .tier-cards,
+  .category-cards {
+    grid-template-columns: 1fr;
+  }
+}
