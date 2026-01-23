@@ -12,7 +12,6 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] "Credits" need to be listed at the bottom of every page. If there are no credits listed, then it can be empty.
 
 ### /runs/ page
-- [ ] Advanced Filter for Glitch Category needs to match how Challenge, Restrictions, and Weapon / Aspect are.
 - [ ] Mini-Challenges, clicking on subcategories need to go to the subcategories page.  
 - [ ] Fix the top-most container (holding Full Runs and Mini-Challenges) to be flush with game tabs header.
 - [ ] Challenge showing concatenation of Rule Builder? Why Does Challenge show "Hitless" , "Damageless" , and "boonless" ?
