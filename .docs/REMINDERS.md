@@ -6,18 +6,11 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ## Priority Roadmap
 
-### New Game Submission form:
-- [ ] Do we ask users to fill out Genres again?
-    - [ ] Can we find a list of every genre ever?
-    - [ ] Do we create a script that finds genres, and validates user-submitted info?
-- [ ] Check Discord Webhook. Previously not working, but updated recently.
-- [ ] Update form to use 3-tier category system.
-    - Update Google Apps Script, Google Sheet, and Google Form accordingly.
-
 ## Games Page
 - [ ] Filter by challenges" is filtering by old variable. Needs to be updated.
 
 ## Game Page Tabs
+
 ### /runs/ page
 - [ ] Fix CSS for Advanced Filters.
 - [ ] Fix Mini-Challenges:
@@ -49,10 +42,22 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Add placeholder next to Run Time that is secondary_timing_method.
 
 ## Forms & Submissions
+
+### New Game Submission form:
+- [ ] Do we ask users to fill out Genres again?
+    - [ ] Can we find a list of every genre ever?
+    - [ ] Do we create a script that finds genres, and validates user-submitted info?
+- [ ] Check Discord Webhook. Previously not working, but updated recently.
+- [ ] Update form to use 3-tier category system.
+    - Update Google Apps Script, Google Sheet, and Google Form accordingly.
+
+### Mini-Challenges and Player-Made Challenges
+- [ ] Make separate form for mini challenges? or do we put it in the new game submission form?
+- [ ] Let users make Player-Made Challenges on the game's respective forum. Forum needs massive overhaul to accomodate for this, including backend support.
+
+### New Runner Profile form:  
 - [ ] Runner profile submission - Self-service profile creation
-- [ ] Make separate form for community challenges
-- [ ] Make separate form for custom player challenges?
-  - Users can list their own rules
+- [ ] Enhanced Runner Profiles first.
 
 ## Enhanced Runner Profiles
 - [ ] Add social links (YouTube, Twitch, Twitter, Discord)
