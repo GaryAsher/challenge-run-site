@@ -28,6 +28,7 @@ const {
   TIME_RE,
   STATUS_SET,
   TIMING_SET,
+  TIER_SET,
 } = require('./lib/validators/constants');
 
 const { parseRunFilename } = require('./lib/validators/field-validators');
@@ -148,6 +149,15 @@ function validateOne(filePath) {
   }
   if (!CATEGORY_SLUG_RE.test(String(data.category_slug))) {
     fail(fileRel, `category_slug must be a slug (lowercase, hyphen). Got: ${data.category_slug}`);
+  }
+
+  // Validate category_tier (optional but must be valid if present)
+  const tier = data.category_tier;
+  if (tier !== undefined && tier !== null && tier !== '') {
+    const tierStr = String(tier).trim();
+    if (!TIER_SET.has(tierStr)) {
+      fail(fileRel, `category_tier must be one of: full_runs, mini_challenges, player_made. Got: ${tier}`);
+    }
   }
 
   // Status
