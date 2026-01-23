@@ -360,7 +360,7 @@ document.addEventListener('DOMContentLoaded', function() {
         filterRows();
       });
     }
-
+  }
   // Helper to populate a select element with options
   function populateSelect(selectEl, items) {
     // Keep the first "All" option
@@ -585,12 +585,17 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       
       if (filterData.glitch) {
-        filterData.glitch.forEach(id => selectedGlitches.add(norm(id)));
+        selectedGlitches.clear();
+        if (Array.isArray(filterData.glitch)) {
+          filterData.glitch.forEach(id => selectedGlitches.add(norm(id)));
+        } else {
+          selectedGlitches.add(norm(filterData.glitch));
+        }
       }
       
       // Open advanced filters if we have any
       if (selectedChallenges.size > 0 || selectedRestrictions.size > 0 || 
-          selectedCharacters.size > 0 || selectedGlitches) {
+          selectedCharacters.size > 0 || selectedGlitches.size > 0) {
         if (advancedFilters && filterToggle) {
           advancedFilters.hidden = false;
           filterToggle.setAttribute('aria-expanded', 'true');
