@@ -1,10 +1,25 @@
 #!/usr/bin/env node
 /**
- * Generate nested run category pages from _games/<game>.md categories_data.
+ * Generate nested run category pages from _games/<game>.md tiered categories.
+ *
+ * Supports both:
+ *   - New tiered structure: full_runs, mini_challenges, player_made
+ *   - Legacy structure: categories_data (treated as full_runs)
  *
  * Creates:
- *   games/<game_id>/runs/<parent>/index.html               (if missing)
- *   games/<game_id>/runs/<parent>/<child>/index.html       (for each child)
+ *   games/<game_id>/runs/index.html                                    (tier picker landing)
+ *   games/<game_id>/runs/<tier>/index.html                             (tier index)
+ *   games/<game_id>/runs/<tier>/<category>/index.html                  (category leaderboard)
+ *   games/<game_id>/runs/<tier>/<parent>/<child>/index.html            (nested category)
+ *
+ * URL Structure:
+ *   /games/hades-2/runs/                                    → Tier picker
+ *   /games/hades-2/runs/full-runs/                          → Full Runs list
+ *   /games/hades-2/runs/full-runs/underworld-any/           → Leaderboard
+ *   /games/hades-2/runs/mini-challenges/                    → Mini-Challenges list
+ *   /games/hades-2/runs/mini-challenges/chaos-trials/       → Parent category
+ *   /games/hades-2/runs/mini-challenges/chaos-trials/trial-of-blood/ → Child leaderboard
+ *   /games/hades-2/runs/player-made/                        → Player-Made list
  *
  * Usage:
  *   node scripts/generate-run-category-pages.js                 (all games)
@@ -25,6 +40,25 @@ const {
 } = require('./lib');
 
 const ROOT = process.cwd();
+
+// Tier configuration
+const TIERS = {
+  full_runs: {
+    slug: 'full-runs',
+    label: 'Full Runs',
+    description: 'Categories that require reaching an ending',
+  },
+  mini_challenges: {
+    slug: 'mini-challenges',
+    label: 'Mini-Challenges',
+    description: 'In-game challenges that exist without requiring an ending',
+  },
+  player_made: {
+    slug: 'player-made',
+    label: 'Player-Made',
+    description: 'Community-created challenges with arbitrary goals',
+  },
+};
 
 // ============================================================
 // CLI argument parsing
@@ -51,25 +85,72 @@ function parseGameId(data) {
   return data.game_id || null;
 }
 
-function parseCategoriesData(data) {
-  if (!Array.isArray(data.categories_data)) return [];
+/**
+ * Parse categories from a tier array
+ * @param {Array} tierArray - Array of category objects
+ * @returns {Array} Normalized category objects with children
+ */
+function parseTierCategories(tierArray) {
+  if (!Array.isArray(tierArray)) return [];
 
-  return data.categories_data
+  return tierArray
     .map(cat => {
       if (!cat || typeof cat !== 'object') return null;
 
       return {
         slug: cat.slug || '',
         label: cat.label || cat.slug || '',
+        description: cat.description || '',
+        creator: cat.creator || null,
+        created_date: cat.created_date || null,
         children: Array.isArray(cat.children)
           ? cat.children.map(ch => ({
               slug: ch.slug || '',
               label: ch.label || ch.slug || '',
+              description: ch.description || '',
             }))
           : [],
       };
     })
-    .filter(Boolean);
+    .filter(Boolean)
+    .filter(cat => cat.slug);
+}
+
+/**
+ * Parse all category tiers from game data
+ * Supports both new tiered structure and legacy categories_data
+ * @param {Object} data - Game front matter data
+ * @returns {Object} Tiers object with full_runs, mini_challenges, player_made arrays
+ */
+function parseCategoryTiers(data) {
+  const tiers = {
+    full_runs: [],
+    mini_challenges: [],
+    player_made: [],
+  };
+
+  // Check for new tiered structure
+  if (data.full_runs || data.mini_challenges || data.player_made) {
+    tiers.full_runs = parseTierCategories(data.full_runs);
+    tiers.mini_challenges = parseTierCategories(data.mini_challenges);
+    tiers.player_made = parseTierCategories(data.player_made);
+  } else if (Array.isArray(data.categories_data)) {
+    // Legacy: treat all categories_data as full_runs
+    tiers.full_runs = parseTierCategories(data.categories_data);
+  }
+
+  return tiers;
+}
+
+/**
+ * Check if any tier has categories
+ */
+function hasAnyCategories(tiers) {
+  return (
+    tiers.full_runs.length > 0 ||
+    tiers.mini_challenges.length > 0 ||
+    tiers.player_made.length > 0
+  );
 }
 
 function slugToTitle(slug) {
@@ -83,9 +164,50 @@ function slugToTitle(slug) {
 }
 
 // ============================================================
-// Page generation
+// Page content generators
 // ============================================================
-function pageContent({ title, gameId, categorySlug }) {
+
+/**
+ * Generate content for the main runs index page (tier picker)
+ */
+function runsIndexContent({ gameId, gameName }) {
+  const q = (v) => JSON.stringify(String(v ?? ""));
+
+  return `---
+layout: game-runs
+title: ${q(`${gameName} - Runs`)}
+game_id: ${gameId}
+category_slug: ""
+category_tier: ""
+page_type: "tier_picker"
+permalink: /games/${gameId}/runs/
+---
+`;
+}
+
+/**
+ * Generate content for a tier index page
+ */
+function tierIndexContent({ gameId, gameName, tierKey, tierConfig }) {
+  const q = (v) => JSON.stringify(String(v ?? ""));
+
+  return `---
+layout: game-runs
+title: ${q(`${gameName} - ${tierConfig.label}`)}
+game_id: ${gameId}
+category_slug: ""
+category_tier: ${q(tierKey)}
+tier_slug: ${q(tierConfig.slug)}
+page_type: "tier_index"
+permalink: /games/${gameId}/runs/${tierConfig.slug}/
+---
+`;
+}
+
+/**
+ * Generate content for a category leaderboard page
+ */
+function categoryPageContent({ title, gameId, tierKey, tierSlug, categorySlug }) {
   const q = (v) => JSON.stringify(String(v ?? ""));
 
   return `---
@@ -93,11 +215,17 @@ layout: game-runs
 title: ${q(title)}
 game_id: ${gameId}
 category_slug: ${q(categorySlug)}
-permalink: /games/${gameId}/runs/${categorySlug}/
+category_tier: ${q(tierKey)}
+tier_slug: ${q(tierSlug)}
+page_type: "category"
+permalink: /games/${gameId}/runs/${tierSlug}/${categorySlug}/
 ---
 `;
 }
 
+// ============================================================
+// File listing
+// ============================================================
 function listGameFiles() {
   const dir = path.join(ROOT, '_games');
   if (!fs.existsSync(dir)) return [];
@@ -110,6 +238,9 @@ function listGameFiles() {
     .map(f => path.join(dir, f));
 }
 
+// ============================================================
+// Page generation
+// ============================================================
 function generateForGameFile(gameMdPath, { check, explicitGameId }) {
   const md = readText(gameMdPath);
   const data = extractFrontMatterData(md);
@@ -125,50 +256,98 @@ function generateForGameFile(gameMdPath, { check, explicitGameId }) {
     return { created: [], changed: [], skipped: true };
   }
 
-  const cats = parseCategoriesData(data);
+  const gameName = data.game_name || data.name || data.title || slugToTitle(gameId);
+  const tiers = parseCategoryTiers(data);
 
-  if (!cats.length) {
-    if (explicitGameId) die(`No categories_data found in ${gameMdPath}`);
+  if (!hasAnyCategories(tiers)) {
+    if (explicitGameId) die(`No categories found in ${gameMdPath}`);
     return { created: [], changed: [], skipped: true };
   }
 
   const created = [];
   const changed = [];
 
-  cats.forEach(c => {
-    const parentSlug = c.slug;
+  // 1. Generate main runs index page (tier picker)
+  const runsIndexPath = path.join(ROOT, 'games', gameId, 'runs', 'index.html');
+  const runsIndexRes = writeFileIfChanged(
+    runsIndexPath,
+    runsIndexContent({ gameId, gameName }),
+    check
+  );
+  if (runsIndexRes.changed) {
+    (runsIndexRes.created ? created : changed).push(runsIndexPath);
+  }
 
-    // Parent page
-    const parentDir = path.join(ROOT, 'games', gameId, 'runs', parentSlug);
-    const parentIndex = path.join(parentDir, 'index.html');
-    const parentTitle = slugToTitle(c.label || parentSlug);
+  // 2. Generate pages for each tier
+  for (const [tierKey, tierConfig] of Object.entries(TIERS)) {
+    const tierCategories = tiers[tierKey];
+    
+    // Skip empty tiers
+    if (!tierCategories || tierCategories.length === 0) continue;
 
-    const parentRes = writeFileIfChanged(
-      parentIndex,
-      pageContent({ title: parentTitle, gameId, categorySlug: parentSlug }),
+    // 2a. Tier index page
+    const tierIndexPath = path.join(ROOT, 'games', gameId, 'runs', tierConfig.slug, 'index.html');
+    const tierIndexRes = writeFileIfChanged(
+      tierIndexPath,
+      tierIndexContent({ gameId, gameName, tierKey, tierConfig }),
       check
     );
-    if (parentRes.changed) {
-      (parentRes.created ? created : changed).push(parentIndex);
+    if (tierIndexRes.changed) {
+      (tierIndexRes.created ? created : changed).push(tierIndexPath);
     }
 
-    // Children pages
-    (c.children || []).forEach(ch => {
-      const childSlug = `${parentSlug}/${ch.slug}`;
-      const childDir = path.join(ROOT, 'games', gameId, 'runs', parentSlug, ch.slug);
-      const childIndex = path.join(childDir, 'index.html');
-      const childTitle = `${c.label || slugToTitle(parentSlug)} — ${ch.label || slugToTitle(ch.slug)}`;
+    // 2b. Category pages within this tier
+    for (const cat of tierCategories) {
+      const catSlug = cat.slug;
+      const catLabel = cat.label || slugToTitle(catSlug);
 
-      const childRes = writeFileIfChanged(
-        childIndex,
-        pageContent({ title: childTitle, gameId, categorySlug: childSlug }),
+      // Parent category page
+      const catDir = path.join(ROOT, 'games', gameId, 'runs', tierConfig.slug, catSlug);
+      const catIndex = path.join(catDir, 'index.html');
+      const catTitle = `${gameName} - ${catLabel}`;
+
+      const catRes = writeFileIfChanged(
+        catIndex,
+        categoryPageContent({
+          title: catTitle,
+          gameId,
+          tierKey,
+          tierSlug: tierConfig.slug,
+          categorySlug: catSlug,
+        }),
         check
       );
-      if (childRes.changed) {
-        (childRes.created ? created : changed).push(childIndex);
+      if (catRes.changed) {
+        (catRes.created ? created : changed).push(catIndex);
       }
-    });
-  });
+
+      // Child category pages (if any)
+      if (cat.children && cat.children.length > 0) {
+        for (const child of cat.children) {
+          const childSlug = `${catSlug}/${child.slug}`;
+          const childLabel = child.label || slugToTitle(child.slug);
+          const childDir = path.join(ROOT, 'games', gameId, 'runs', tierConfig.slug, catSlug, child.slug);
+          const childIndex = path.join(childDir, 'index.html');
+          const childTitle = `${gameName} - ${catLabel}: ${childLabel}`;
+
+          const childRes = writeFileIfChanged(
+            childIndex,
+            categoryPageContent({
+              title: childTitle,
+              gameId,
+              tierKey,
+              tierSlug: tierConfig.slug,
+              categorySlug: childSlug,
+            }),
+            check
+          );
+          if (childRes.changed) {
+            (childRes.created ? created : changed).push(childIndex);
+          }
+        }
+      }
+    }
+  }
 
   return { created, changed, skipped: false, gameId };
 }
@@ -224,7 +403,7 @@ function main() {
   allChanged.forEach(p => console.log('  updated  ' + path.relative(ROOT, p)));
 
   if (skippedGames.length) {
-    console.log(`Skipped (no categories_data/front matter): ${skippedGames.length}`);
+    console.log(`Skipped (no categories/front matter): ${skippedGames.length}`);
     skippedGames.forEach(x => console.log('  skipped  ' + x));
   }
 }
