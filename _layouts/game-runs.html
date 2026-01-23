@@ -417,11 +417,11 @@ layout: default
           <div class="filters-wrap">
             <div class="filters-bar">
               <div class="filter-input">
-                <label for="filter-input" class="sr-only">Filter runs</label>
-                <input type="text" id="filter-input" class="filter-input__field" placeholder="Type to filter by runner, challenge, etc." />
+                <label for="q" class="sr-only">Filter runs</label>
+                <input type="text" id="q" class="filter-input__field" placeholder="Type to filter by runner, challenge, etc." />
               </div>
 
-              <button class="btn btn--filter-toggle" id="advanced-toggle" type="button" aria-expanded="false" aria-controls="advanced-filters">
+              <button class="btn btn--filter-toggle" id="filter-toggle" type="button" aria-expanded="false" aria-controls="advanced-filters">
                 <span class="filter-toggle__icon">▼</span>
                 <span class="filter-toggle__text">Advanced Filters</span>
               </button>
@@ -429,9 +429,9 @@ layout: default
 
             <div class="advanced-filters" id="advanced-filters" hidden>
               <div class="filter-groups">
-                <div class="filter-group">
+                <div class="filter-group" id="f-challenge-container">
                   <label class="filter-group__label">Challenge</label>
-                  <select id="filter-challenge" class="filter-select" multiple size="4">
+                  <select id="f-challenge" class="filter-select" multiple size="4">
                     <option value="">All Challenges</option>
                     {% for ch in game.challenges_data %}
                       <option value="{{ ch.slug }}">{{ ch.label }}</option>
@@ -440,9 +440,9 @@ layout: default
                 </div>
 
                 {% if game.restrictions_data and game.restrictions_data.size > 0 %}
-                <div class="filter-group">
+                <div class="filter-group" id="f-restrictions-container">
                   <label class="filter-group__label">Restrictions</label>
-                  <select id="filter-restriction" class="filter-select" multiple size="4">
+                  <select id="f-restrictions" class="filter-select" multiple size="4">
                     <option value="">All Restrictions</option>
                     {% for res in game.restrictions_data %}
                       <option value="{{ res.slug }}">{{ res.label }}</option>
@@ -452,9 +452,9 @@ layout: default
                 {% endif %}
 
                 {% if show_character and game.characters_data %}
-                <div class="filter-group">
+                <div class="filter-group" id="f-character-container">
                   <label class="filter-group__label">{{ character_label }}</label>
-                  <select id="filter-character" class="filter-select">
+                  <select id="f-character" class="filter-select">
                     <option value="">All {{ character_label }}s</option>
                     {% for char in game.characters_data %}
                       <option value="{{ char.slug }}">{{ char.label }}</option>
@@ -464,9 +464,9 @@ layout: default
                 {% endif %}
 
                 {% if show_glitches %}
-                <div class="filter-group">
+                <div class="filter-group" id="f-glitch-container">
                   <label class="filter-group__label">Glitch Category</label>
-                  <select id="filter-glitch" class="filter-select">
+                  <select id="f-glitch" class="filter-select">
                     <option value="">All Glitch Categories</option>
                     {% for gl in game.glitches_data %}
                       <option value="{{ gl.slug }}">{{ gl.label }}</option>
@@ -478,6 +478,10 @@ layout: default
             </div>
 
             <div class="active-filters" id="active-filters"></div>
+            
+            <button type="button" id="reset-filters" class="btn btn--secondary" style="display: none; margin-top: 0.5rem;">
+              Reset All Filters
+            </button>
           </div>
 
           <div class="results-status" id="results-status">
