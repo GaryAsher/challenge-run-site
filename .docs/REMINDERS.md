@@ -18,14 +18,12 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Fix top container to be flush with game tabs.
 
 ### /rules/ page
-- [ ] For Rule Builder's filters, add 'unpickable' headers that separates categories by tiers
 - [ ] Run Categories uses old variables. Update to 3-tiered category system.
 
 ### /history/ page
 - [ ] Needs better filtering. Only show verified runs, community milestones, records broken (if verified), etc.
 
 ### /submit/ page
-- [ ] Move tab to far right of container.
 - [ ] Fix js selector to only appear when hovering drop-down. Currently allows selection when on top of text.
 - [ ] Update logic to require character selection for Hades 2. This needs to be category specific, as it is not relevant for Chaos Trials.
 - [ ] Update the order of the form to mirror the payload.
