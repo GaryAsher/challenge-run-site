@@ -4671,39 +4671,106 @@ a.resource-card:hover {
    Category Tier System Styles
    ============================================================ */
 
-/* Tier Navigation Tabs */
-.tier-nav {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+/* Tier Navigation Container */
+.tier-nav-container {
   padding-bottom: 1rem;
+  margin-bottom: 1rem;
   border-bottom: 1px solid var(--border);
 }
 
-.tier-tab {
+/* Tier Navigation (styled like game tabs) */
+.tier-nav {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.tier-nav__tab {
   display: inline-flex;
   align-items: center;
-  padding: 0.6rem 1.25rem;
+  padding: 0.65rem 1.25rem;
   font-size: 0.95rem;
   font-weight: 500;
   color: var(--text-muted);
   text-decoration: none;
   background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
   transition: all 0.15s ease;
 }
 
-.tier-tab:hover {
+.tier-nav__tab:hover {
   color: var(--fg);
   background: var(--bg-hover);
   border-color: var(--border-hover);
 }
 
-.tier-tab.is-active {
+.tier-nav__tab.is-active {
   color: var(--accent);
   background: rgba(var(--accent-rgb), 0.1);
   border-color: var(--accent);
+  font-weight: 600;
+}
+
+/* Category Pills Navigation */
+.category-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: var(--panel);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.category-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.category-pill:hover {
+  color: var(--fg);
+  background: var(--bg-hover);
+  border-color: var(--border-hover);
+}
+
+.category-pill.is-active {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.category-pill--sub {
+  font-size: 0.8rem;
+  padding: 0.4rem 0.8rem;
+}
+
+/* Subcategory Pills Section */
+.subcategory-pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+}
+
+.subcategory-label {
+  font-size: 0.8rem;
+  margin-right: 0.25rem;
 }
 
 /* Tier Cards (for tier picker page) */
@@ -4816,61 +4883,6 @@ a.resource-card:hover {
   gap: 1rem;
 }
 
-/* Category Cards (for tier index pages) */
-.category-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.category-card {
-  display: flex;
-  flex-direction: column;
-  padding: 1.25rem;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  text-decoration: none;
-  color: var(--fg);
-  transition: all 0.2s ease;
-}
-
-.category-card:hover {
-  border-color: var(--accent);
-  background: var(--bg-hover);
-}
-
-.category-card__title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin: 0 0 0.5rem 0;
-  color: var(--fg);
-}
-
-.category-card__desc {
-  font-size: 0.85rem;
-  margin: 0 0 0.75rem 0;
-  flex: 1;
-  line-height: 1.4;
-}
-
-.category-card__children,
-.category-card__creator {
-  font-size: 0.8rem;
-  display: block;
-}
-
-.category-card__creator {
-  margin-top: 0.25rem;
-}
-
-/* Breadcrumb styling */
-.breadcrumb-nav {
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border);
-}
-
 /* Empty state styling */
 .empty-state {
   background: var(--panel);
@@ -4884,22 +4896,21 @@ a.resource-card:hover {
     flex-direction: column;
   }
   
-  .tier-tab {
+  .tier-nav__tab {
     justify-content: center;
   }
   
-  .tier-cards,
-  .category-cards {
+  .tier-cards {
     grid-template-columns: 1fr;
   }
   
-  .category-picker {
-    flex-direction: column;
-    align-items: flex-start;
+  .category-pills {
+    gap: 0.4rem;
   }
   
-  .category-picker__select {
-    width: 100%;
+  .category-pill {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.75rem;
   }
   
   .runs-header {
