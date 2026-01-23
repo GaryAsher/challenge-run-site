@@ -203,12 +203,11 @@ layout: default
      ========================================================= -->
 <div class="page-width">
   <div class="game-shell">
-
-    <!-- =========================================================
-         Tier Sub-Navigation (show if more than one tier has content)
-         ========================================================= -->
-    {% if tier_count > 0 %}
-      <div class="tier-tabs card card--compact" style="margin-bottom: 1rem;">
+    <div class="card">
+      <!-- =========================================================
+           Tier Sub-Navigation (always show if tiers exist)
+           ========================================================= -->
+      {% if tier_count > 0 %}
         <nav class="tier-nav" aria-label="Category tiers">
           {% if has_full_runs %}
             {% assign is_active_tier = false %}
@@ -238,158 +237,342 @@ layout: default
             </a>
           {% endif %}
         </nav>
-      </div>
-    {% endif %}
+      {% endif %}
 
-    <!-- =========================================================
-         Breadcrumb Navigation (for category pages)
-         ========================================================= -->
-    {% if page_type == "category" and active_cat_slug != "" %}
-      <div class="card card--compact" style="margin-bottom: 1rem;">
-        <p class="muted" style="margin: 0;">
-          <a href="{{ runs_base }}{{ active_tier_slug }}/">← Back to {{ active_tier | replace: "_", " " | capitalize }}</a>
+      <!-- =========================================================
+           TIER PICKER PAGE (runs/index.html)
+           ========================================================= -->
+      {% if page_type == "tier_picker" %}
+        <section class="tab-panel active" data-panel="runs">
+          <div class="runs-header" style="margin-top: 1rem;">
+            <p class="muted mt-0 mb-0">Select a category type to browse runs for {{ game.game_name }}.</p>
+            <a href="{{ game_base }}submit/" class="btn btn--primary btn--submit">+ Submit a Run</a>
+          </div>
 
-          {% assign parts = active_cat_slug | split: "/" %}
-          {% assign cur = "" %}
-          {% for seg in parts %}
-            {% assign seg_clean = seg | strip %}
-            {% if seg_clean == "" %}{% continue %}{% endif %}
-
-            {% if cur == "" %}
-              {% assign cur = seg_clean %}
-            {% else %}
-              {% assign cur = cur | append: "/" | append: seg_clean %}
+          <div class="tier-cards">
+            {% if has_full_runs %}
+              <a href="{{ runs_base }}full-runs/" class="tier-card tier-card--full-runs">
+                <h3 class="tier-card__title">🏁 Full Runs</h3>
+                <p class="tier-card__desc muted">Categories that require reaching an ending</p>
+                <span class="tier-card__count">
+                  {% assign count = 0 %}
+                  {% if game.full_runs %}{% assign count = game.full_runs.size %}
+                  {% elsif game.categories_data %}{% assign count = game.categories_data.size %}{% endif %}
+                  {{ count }} categor{% if count == 1 %}y{% else %}ies{% endif %}
+                </span>
+              </a>
             {% endif %}
 
-            {% assign crumb_label = "" %}
-            {% for p in category_pairs %}
-              {% assign kv = p | split: "||" %}
-              {% assign s = kv[0] | strip %}
-              {% if s == cur %}
-                {% assign crumb_label = kv[1] | default: cur | strip %}
-                {% break %}
+            {% if has_mini_challenges %}
+              <a href="{{ runs_base }}mini-challenges/" class="tier-card tier-card--mini-challenges">
+                <h3 class="tier-card__title">⚡ Mini-Challenges</h3>
+                <p class="tier-card__desc muted">In-game challenges without requiring an ending</p>
+                <span class="tier-card__count">
+                  {{ game.mini_challenges.size }} categor{% if game.mini_challenges.size == 1 %}y{% else %}ies{% endif %}
+                </span>
+              </a>
+            {% endif %}
+
+            {% if has_player_made %}
+              <a href="{{ runs_base }}player-made/" class="tier-card tier-card--player-made">
+                <h3 class="tier-card__title">🎨 Player-Made</h3>
+                <p class="tier-card__desc muted">Community-created challenges with arbitrary goals</p>
+                <span class="tier-card__count">
+                  {{ game.player_made.size }} categor{% if game.player_made.size == 1 %}y{% else %}ies{% endif %}
+                </span>
+              </a>
+            {% endif %}
+
+            {% if tier_count == 0 %}
+              <div class="card">
+                <p class="muted">No categories have been set up for this game yet.</p>
+              </div>
+            {% endif %}
+          </div>
+        </section>
+
+      <!-- =========================================================
+           TIER INDEX PAGE (runs/full-runs/index.html, etc.)
+           Shows runs table directly with category filter at top
+           ========================================================= -->
+      {% elsif page_type == "tier_index" %}
+        <section class="tab-panel active" data-panel="runs">
+          <div class="runs-header" style="margin-top: 1rem;">
+            <div class="runs-header__left">
+              <!-- Category picker dropdown -->
+              {% if current_tier_categories and current_tier_categories.size > 0 %}
+                <div class="category-picker">
+                  <label for="category-filter" class="muted">Category:</label>
+                  <select id="category-filter" class="select category-picker__select" onchange="filterByCategory(this.value)">
+                    <option value="">All {{ active_tier | replace: "_", " " | capitalize }}</option>
+                    {% for cat in current_tier_categories %}
+                      <option value="{{ cat.slug }}">{{ cat.label }}</option>
+                      {% if cat.children and cat.children.size > 0 %}
+                        {% for child in cat.children %}
+                          <option value="{{ cat.slug }}/{{ child.slug }}">  ↳ {{ child.label }}</option>
+                        {% endfor %}
+                      {% endif %}
+                    {% endfor %}
+                  </select>
+                </div>
               {% endif %}
-            {% endfor %}
-            {% if crumb_label == "" %}
-              {% assign crumb_label = seg_clean %}
+            </div>
+            <a href="{{ game_base }}submit/" class="btn btn--primary btn--submit">+ Submit a Run</a>
+          </div>
+
+          <!-- Column flags for runs table -->
+          {% assign show_character = false %}
+          {% assign character_label = "Character" %}
+          {% if game.character_column and game.character_column.enabled %}
+            {% assign show_character = true %}
+            {% if game.character_column.label %}
+              {% assign character_label = game.character_column.label %}
             {% endif %}
-
-            <span class="muted"> / </span>
-
-            {% if forloop.last %}
-              <span>{{ crumb_label }}</span>
-            {% else %}
-              <a href="{{ runs_base }}{{ active_tier_slug }}/{{ cur | url_encode }}/">{{ crumb_label }}</a>
-            {% endif %}
-          {% endfor %}
-        </p>
-      </div>
-    {% endif %}
-
-    <!-- =========================================================
-         TIER PICKER PAGE (runs/index.html)
-         ========================================================= -->
-    {% if page_type == "tier_picker" %}
-      <section class="tab-panel active" data-panel="runs">
-        <div class="runs-header">
-          <p class="muted mt-0 mb-0">Select a category type to browse runs for {{ game.game_name }}.</p>
-          <a href="{{ game_base }}submit/" class="btn btn--primary btn--submit">+ Submit a Run</a>
-        </div>
-
-        <div class="tier-cards">
-          {% if has_full_runs %}
-            <a href="{{ runs_base }}full-runs/" class="tier-card">
-              <h3 class="tier-card__title">Full Runs</h3>
-              <p class="tier-card__desc muted">Categories that require reaching an ending</p>
-              <span class="tier-card__count">
-                {% assign count = 0 %}
-                {% if game.full_runs %}{% assign count = game.full_runs.size %}
-                {% elsif game.categories_data %}{% assign count = game.categories_data.size %}{% endif %}
-                {{ count }} categor{% if count == 1 %}y{% else %}ies{% endif %}
-              </span>
-            </a>
           {% endif %}
 
-          {% if has_mini_challenges %}
-            <a href="{{ runs_base }}mini-challenges/" class="tier-card">
-              <h3 class="tier-card__title">Mini-Challenges</h3>
-              <p class="tier-card__desc muted">In-game challenges without requiring an ending</p>
-              <span class="tier-card__count">
-                {{ game.mini_challenges.size }} categor{% if game.mini_challenges.size == 1 %}y{% else %}ies{% endif %}
-              </span>
-            </a>
+          {% assign show_glitches = false %}
+          {% if game.glitches_data and game.glitches_data.size > 0 %}
+            {% assign show_glitches = true %}
           {% endif %}
 
-          {% if has_player_made %}
-            <a href="{{ runs_base }}player-made/" class="tier-card">
-              <h3 class="tier-card__title">Player-Made</h3>
-              <p class="tier-card__desc muted">Community-created challenges with arbitrary goals</p>
-              <span class="tier-card__count">
-                {{ game.player_made.size }} categor{% if game.player_made.size == 1 %}y{% else %}ies{% endif %}
-              </span>
-            </a>
-          {% endif %}
+          <!-- Runs table for tier index -->
+          {% if runs and runs.size > 0 %}
+            <div class="table-wrap" style="margin-top: 1rem;">
+              <table class="runs-table" id="tier-runs-table">
+                <thead>
+                  <tr>
+                    <th>Runner</th>
+                    <th>Category</th>
+                    {% if show_character %}<th>{{ character_label }}</th>{% endif %}
+                    <th>Challenge</th>
+                    <th>Restrictions</th>
+                    {% if show_glitches %}<th>Glitches Used</th>{% endif %}
+                    <th class="th-filter th-time">
+                      <div class="th-title"><span>Time{% if game.timing_method %} ({{ game.timing_method }}){% endif %}</span></div>
+                    </th>
+                    <th class="th-filter th-date">
+                      <div class="th-title"><span>Date</span></div>
+                    </th>
+                    <th>Video</th>
+                  </tr>
+                </thead>
+                <tbody id="runs-body">
+                  {% for r in runs %}
+                    {% comment %} Build challenge labels {% endcomment %}
+                    {% assign challenge_labels = "" | split: "" %}
+                    {% assign challenge_ids = "" | split: "" %}
+                    
+                    {% if r.standard_challenges and r.standard_challenges.size > 0 %}
+                      {% for ch_id in r.standard_challenges %}
+                        {% assign meta = site.data.challenges[ch_id] %}
+                        {% assign ch_label = ch_id %}
+                        {% if meta and meta.label %}{% assign ch_label = meta.label %}{% endif %}
+                        {% for gc in game.challenges_data %}
+                          {% if gc.slug == ch_id %}{% assign ch_label = gc.label %}{% endif %}
+                        {% endfor %}
+                        {% assign challenge_labels = challenge_labels | push: ch_label %}
+                        {% assign challenge_ids = challenge_ids | push: ch_id %}
+                      {% endfor %}
+                    {% endif %}
+                    
+                    {% if r.community_challenge and r.community_challenge != "" %}
+                      {% assign cc_label = r.community_challenge %}
+                      {% for cc in game.community_challenges %}
+                        {% if cc.slug == r.community_challenge %}{% assign cc_label = cc.label %}{% endif %}
+                      {% endfor %}
+                      {% assign challenge_labels = challenge_labels | push: cc_label %}
+                      {% assign challenge_ids = challenge_ids | push: r.community_challenge %}
+                    {% endif %}
+                    
+                    {% if challenge_ids.size == 0 and r.challenge_id %}
+                      {% assign meta = site.data.challenges[r.challenge_id] %}
+                      {% assign ch_label = r.challenge_id %}
+                      {% if meta and meta.label %}{% assign ch_label = meta.label %}{% endif %}
+                      {% assign challenge_labels = challenge_labels | push: ch_label %}
+                      {% assign challenge_ids = challenge_ids | push: r.challenge_id %}
+                    {% endif %}
+                    
+                    {% assign runner_label = r.runner | default: r.runner_id | default: "—" | replace: "_", " " %}
 
-          {% if tier_count == 0 %}
-            <div class="card">
-              <p class="muted">No categories have been set up for this game yet.</p>
+                    {% comment %} Get category label {% endcomment %}
+                    {% assign cat_label = r.category | default: "" | strip %}
+                    {% if cat_label == "" %}
+                      {% assign s = r.category_slug | default: "" | strip %}
+                      {% if s != "" %}
+                        {% for p in category_pairs %}
+                          {% assign parts = p | split: "||" %}
+                          {% if parts[0] == s %}
+                            {% assign cat_label = parts[1] | default: s | strip %}
+                            {% break %}
+                          {% endif %}
+                        {% endfor %}
+                        {% if cat_label == "" %}{% assign cat_label = s %}{% endif %}
+                      {% endif %}
+                    {% endif %}
+                    {% if cat_label == "" %}{% assign cat_label = "—" %}{% endif %}
+
+                    {% assign r_texts = "" | split: "" %}
+                    {% if r.restrictions and r.restrictions != empty %}
+                      {% if r.restrictions.first %}
+                        {% assign r_texts = r.restrictions %}
+                      {% elsif r.restrictions != "[]" and r.restrictions != "" %}
+                        {% assign r_texts = r.restrictions | split: "," %}
+                      {% endif %}
+                    {% endif %}
+                    {% assign r_clean = "" | split: "" %}
+                    {% for rr in r_texts %}
+                      {% assign t = rr | strip %}
+                      {% if t != "" and t != "[]" %}{% assign r_clean = r_clean | push: t %}{% endif %}
+                    {% endfor %}
+                    {% assign r_texts = r_clean | uniq %}
+
+                    {% assign video_url = r.video_url | default: r.video %}
+
+                    <tr class="run-row"
+                        data-category-slug="{{ r.category_slug | default: '' | escape }}">
+                      <td data-label="Runner">
+                        {% if r.runner_id %}
+                          <a href="{{ '/runners/' | relative_url }}{{ r.runner_id }}/">{{ runner_label }}</a>
+                        {% else %}
+                          {{ runner_label }}
+                        {% endif %}
+                      </td>
+
+                      <td data-label="Category">
+                        <a href="{{ runs_base }}{{ active_tier_slug }}/{{ r.category_slug }}/">{{ cat_label }}</a>
+                      </td>
+
+                      {% if show_character %}
+                        {% assign char_display = r.character | default: "—" %}
+                        {% if r.character and r.character != "" %}
+                          {% for char in game.characters_data %}
+                            {% if char.slug == r.character %}{% assign char_display = char.label %}{% endif %}
+                          {% endfor %}
+                        {% endif %}
+                        <td data-label="{{ character_label }}">{{ char_display }}</td>
+                      {% endif %}
+
+                      <td data-label="Challenge">
+                        {% if challenge_labels and challenge_labels.size > 0 %}
+                          <div class="cell-tags">{% for ch in challenge_labels %}<span class="tag">{{ ch }}</span>{% endfor %}</div>
+                        {% else %}—{% endif %}
+                      </td>
+
+                      <td data-label="Restrictions">
+                        {% if r_texts and r_texts.size > 0 %}
+                          <div class="cell-tags">
+                            {% for rr in r_texts %}
+                              {% assign rest_label = rr %}
+                              {% for rest in game.restrictions_data %}
+                                {% if rest.slug == rr %}{% assign rest_label = rest.label %}{% endif %}
+                              {% endfor %}
+                              <span class="tag">{{ rest_label }}</span>
+                            {% endfor %}
+                          </div>
+                        {% else %}—{% endif %}
+                      </td>
+
+                      {% if show_glitches %}
+                        <td data-label="Glitches">
+                          {% assign glitch_label = r.glitch_id | default: "" %}
+                          {% if glitch_label != "" %}
+                            {% for gl in game.glitches_data %}
+                              {% if gl.slug == r.glitch_id %}{% assign glitch_label = gl.label %}{% endif %}
+                              {% if gl.children %}
+                                {% for child in gl.children %}
+                                  {% if child.slug == r.glitch_id %}{% assign glitch_label = child.label %}{% endif %}
+                                {% endfor %}
+                              {% endif %}
+                            {% endfor %}
+                            <span class="tag">{{ glitch_label }}</span>
+                          {% else %}—{% endif %}
+                        </td>
+                      {% endif %}
+
+                      <td data-label="Time">{{ r.time_primary | default: r.time | default: "—" }}</td>
+                      <td data-label="Date">
+                        {% assign run_date = r.date_completed | default: r.date %}
+                        {% if run_date %}{{ run_date | date: "%Y-%m-%d" }}{% else %}—{% endif %}
+                      </td>
+                      <td data-label="Video">
+                        {% if video_url %}
+                          {% assign video_source = "Link" %}
+                          {% if video_url contains "youtube.com" or video_url contains "youtu.be" %}{% assign video_source = "YouTube" %}
+                          {% elsif video_url contains "twitch.tv" %}{% assign video_source = "Twitch" %}
+                          {% elsif video_url contains "bilibili.com" %}{% assign video_source = "Bilibili" %}
+                          {% elsif video_url contains "vimeo.com" %}{% assign video_source = "Vimeo" %}{% endif %}
+                          <a class="video-link" href="{{ video_url }}" target="_blank" rel="noopener">{{ video_source }}</a>
+                        {% else %}—{% endif %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="empty-state" style="margin-top: 1rem; padding: 2rem; text-align: center;">
+              <p class="muted">No runs recorded yet in this tier.</p>
             </div>
           {% endif %}
-        </div>
-      </section>
+        </section>
 
-    <!-- =========================================================
-         TIER INDEX PAGE (runs/full-runs/index.html, etc.)
-         ========================================================= -->
-    {% elsif page_type == "tier_index" %}
-      <section class="tab-panel active" data-panel="runs">
-        <div class="runs-header">
-          <p class="muted mt-0 mb-0">
-            {% if active_tier == "full_runs" %}
-              Full run categories for {{ game.game_name }}. These require reaching an ending.
-            {% elsif active_tier == "mini_challenges" %}
-              Mini-challenge categories for {{ game.game_name }}. In-game challenges without requiring an ending.
-            {% elsif active_tier == "player_made" %}
-              Player-made challenges for {{ game.game_name }}. Community-created with arbitrary goals.
-            {% endif %}
-          </p>
-          <a href="{{ game_base }}submit/" class="btn btn--primary btn--submit">+ Submit a Run</a>
-        </div>
+        <script>
+        function filterByCategory(slug) {
+          if (slug) {
+            window.location.href = '{{ runs_base }}{{ active_tier_slug }}/' + slug + '/';
+          }
+        }
+        </script>
 
-        <!-- Category Cards -->
-        {% if current_tier_categories and current_tier_categories.size > 0 %}
-          <div class="category-cards">
-            {% for cat in current_tier_categories %}
-              <a href="{{ runs_base }}{{ active_tier_slug }}/{{ cat.slug }}/" class="category-card">
-                <h3 class="category-card__title">{{ cat.label }}</h3>
-                {% if cat.description and cat.description != "" %}
-                  <p class="category-card__desc muted">{{ cat.description | truncate: 100 }}</p>
+      <!-- =========================================================
+           Breadcrumb Navigation (for category pages)
+           ========================================================= -->
+      {% elsif page_type == "category" %}
+        <div class="breadcrumb-nav" style="margin-top: 1rem; margin-bottom: 1rem;">
+          <p class="muted" style="margin: 0;">
+            <a href="{{ runs_base }}{{ active_tier_slug }}/">← Back to {{ active_tier | replace: "_", " " | capitalize }}</a>
+
+            {% assign parts = active_cat_slug | split: "/" %}
+            {% assign cur = "" %}
+            {% for seg in parts %}
+              {% assign seg_clean = seg | strip %}
+              {% if seg_clean == "" %}{% continue %}{% endif %}
+
+              {% if cur == "" %}
+                {% assign cur = seg_clean %}
+              {% else %}
+                {% assign cur = cur | append: "/" | append: seg_clean %}
+              {% endif %}
+
+              {% assign crumb_label = "" %}
+              {% for p in category_pairs %}
+                {% assign kv = p | split: "||" %}
+                {% assign s = kv[0] | strip %}
+                {% if s == cur %}
+                  {% assign crumb_label = kv[1] | default: cur | strip %}
+                  {% break %}
                 {% endif %}
-                {% if cat.children and cat.children.size > 0 %}
-                  <span class="category-card__children muted">{{ cat.children.size }} subcategor{% if cat.children.size == 1 %}y{% else %}ies{% endif %}</span>
-                {% endif %}
-                {% if active_tier == "player_made" and cat.creator %}
-                  <span class="category-card__creator muted">by @{{ cat.creator }}</span>
-                {% endif %}
-              </a>
+              {% endfor %}
+              {% if crumb_label == "" %}
+                {% assign crumb_label = seg_clean %}
+              {% endif %}
+
+              <span class="muted"> / </span>
+
+              {% if forloop.last %}
+                <span>{{ crumb_label }}</span>
+              {% else %}
+                <a href="{{ runs_base }}{{ active_tier_slug }}/{{ cur | url_encode }}/">{{ crumb_label }}</a>
+              {% endif %}
             {% endfor %}
-          </div>
-        {% else %}
-          <div class="card">
-            <p class="muted">No categories in this tier yet.</p>
-          </div>
-        {% endif %}
-      </section>
-
-    <!-- =========================================================
-         CATEGORY PAGE (leaderboard view)
-         ========================================================= -->
-    {% elsif page_type == "category" %}
-      <section class="tab-panel active" data-panel="runs">
-        <div class="runs-header">
-          <p class="muted mt-0 mb-0">Showing runs in: <strong>{{ active_cat_label }}</strong></p>
-          <a href="{{ game_base }}submit/" class="btn btn--primary btn--submit">+ Submit a Run</a>
+          </p>
         </div>
+
+        <section class="tab-panel active" data-panel="runs">
+          <div class="runs-header">
+            <p class="muted mt-0 mb-0">Showing runs in: <strong>{{ active_cat_label }}</strong></p>
+            <a href="{{ game_base }}submit/" class="btn btn--primary btn--submit">+ Submit a Run</a>
+          </div>
 
         <!-- Subcategory picker (if this category has children) -->
         {% if child_pairs and child_pairs.size > 0 %}
@@ -681,13 +864,14 @@ layout: default
             </table>
           </div>
         {% else %}
-          <div class="card">
+          <div class="empty-state" style="padding: 2rem; text-align: center;">
             <p class="muted">No runs recorded yet for this category.</p>
           </div>
         {% endif %}
       </section>
     {% endif %}
 
+    </div><!-- /.card -->
   </div>
 </div>
 
