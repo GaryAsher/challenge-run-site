@@ -4817,19 +4817,6 @@ a.resource-card:hover {
   background: var(--accent);
 }
 
-/* Tier-specific accent colors */
-.tier-card--full-runs:hover::before {
-  background: #4ade80; /* green */
-}
-
-.tier-card--mini-challenges:hover::before {
-  background: #facc15; /* yellow */
-}
-
-.tier-card--player-made:hover::before {
-  background: #c084fc; /* purple */
-}
-
 .tier-card__title {
   font-size: 1.35rem;
   font-weight: 600;
