@@ -334,6 +334,9 @@ function main() {
 
     const character_column = normalizeCharacterColumn(data);
     const characters = normalizeSlugList(data.characters_data);
+    
+    // Timing method (IGT, RTA, LRT, etc.)
+    const timing_method = String(data.timing_method || "").trim();
 
     games.push({
       game_id,
@@ -344,7 +347,8 @@ function main() {
       glitches,
       restrictions,
       character_column,
-      characters
+      characters,
+      timing_method
     });
   }
 
