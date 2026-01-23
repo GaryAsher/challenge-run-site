@@ -5,6 +5,17 @@
 
      If game is provided, the form will be pre-configured for that game
      and the game selector will be hidden.
+     
+     FORM ORDER (matches payload):
+     1. Game + Category
+     2. Standard Challenges
+     3. Community Challenge
+     4. Character
+     5. Glitch Category
+     6. Restrictions
+     7. Run Details (runner_id, video_url, date_completed, run_time)
+     8. Captcha
+     9. Submit
      ========================= -->
 
 {% if preset_game and preset_game.game_id %}
@@ -31,7 +42,7 @@
       <div class="submit-grid">
 
         <!-- =========================
-             GAME + CATEGORY
+             1. GAME + CATEGORY
              ========================= -->
         {% unless hide_game_select %}
         <div class="submit-section" aria-labelledby="game-section-title">
@@ -107,77 +118,7 @@
         </div>
 
         <!-- =========================
-             RUN DETAILS
-             ========================= -->
-        <div class="submit-section" aria-labelledby="run-details-title">
-          <p id="run-details-title" class="submit-section__title">Run Details <span class="required-marker">*</span></p>
-          <p class="submit-section__sub">Basic information about your run.</p>
-
-          <div class="submit-row-2">
-            <div class="submit-field">
-              <label for="runnerId" class="submit-label">Runner ID <span class="required-marker">*</span></label>
-              <div class="submit-hint">Use your CRC runner id (example: <code>gary-asher</code>).</div>
-              <input 
-                id="runnerId" 
-                type="text" 
-                placeholder="your-runner-id" 
-                required
-                aria-required="true"
-                aria-describedby="runnerId-hint"
-                pattern="[a-z0-9\-]+"
-              />
-              <span class="field-error" id="runnerId-error" role="alert" hidden></span>
-            </div>
-
-            <div class="submit-field">
-              <label for="dateCompleted" class="submit-label">Date Completed</label>
-              <div class="submit-hint" id="dateCompleted-hint">Local date you finished the run (optional).</div>
-              <input 
-                id="dateCompleted" 
-                type="date" 
-                aria-describedby="dateCompleted-hint"
-              />
-              <span class="field-error" id="dateCompleted-error" role="alert" hidden></span>
-            </div>
-          </div>
-
-          <div class="submit-row-2">
-            <div class="submit-field">
-              <label for="runTime" class="submit-label">Run Time <span id="runTimeMethod" class="muted"></span></label>
-              <div class="submit-hint" id="runTime-hint">Format: HH:MM:SS or MM:SS (optional)</div>
-              <input 
-                id="runTime" 
-                type="text" 
-                placeholder="12:34:56"
-                aria-describedby="runTime-hint"
-                pattern="^(\d{1,2}:)?\d{1,2}:\d{2}$"
-              />
-              <span class="field-error" id="runTime-error" role="alert" hidden></span>
-            </div>
-
-            <div class="submit-field">
-              <!-- Empty field for alignment, or could add another optional field -->
-            </div>
-          </div>
-
-          <div class="submit-field">
-            <label for="videoUrl" class="submit-label">Video URL <span class="required-marker">*</span></label>
-            <div class="submit-hint" id="videoUrl-hint">YouTube, Twitch Highlight, or Bilibili are accepted.</div>
-            <input
-              id="videoUrl"
-              type="url"
-              placeholder="https://youtube.com/watch?v=... or https://twitch.tv/videos/..."
-              required
-              aria-required="true"
-              aria-describedby="videoUrl-hint"
-            />
-            <span class="field-error" id="videoUrl-error" role="alert" hidden></span>
-            <div id="videoTitle" class="video-title-preview" hidden></div>
-          </div>
-        </div>
-
-        <!-- =========================
-             STANDARD CHALLENGES
+             2. STANDARD CHALLENGES
              ========================= -->
         <div class="submit-section" aria-labelledby="standard-challenges-title">
           <p id="standard-challenges-title" class="submit-section__title">Standard Challenges</p>
@@ -221,7 +162,7 @@
         </div>
 
         <!-- =========================
-             COMMUNITY CHALLENGE
+             3. COMMUNITY CHALLENGE
              ========================= -->
         <div class="submit-section" aria-labelledby="community-challenges-title">
           <p id="community-challenges-title" class="submit-section__title">Community Challenge</p>
@@ -240,7 +181,7 @@
         </div>
 
         <!-- =========================
-             CHARACTER / WEAPON / CLASS
+             4. CHARACTER / WEAPON / CLASS
              ========================= -->
         <div class="submit-section" aria-labelledby="character-title" id="characterSection">
           <p id="character-title" class="submit-section__title">Character</p>
@@ -262,7 +203,7 @@
         </div>
 
         <!-- =========================
-             GLITCH CATEGORY
+             5. GLITCH CATEGORY
              ========================= -->
         <div class="submit-section" aria-labelledby="glitch-title" id="glitchSection">
           <p id="glitch-title" class="submit-section__title">Glitch Category</p>
@@ -281,7 +222,7 @@
         </div>
 
         <!-- =========================
-             RESTRICTIONS
+             6. RESTRICTIONS
              ========================= -->
         <div class="submit-section" aria-labelledby="restrictions-title">
           <p id="restrictions-title" class="submit-section__title">Restrictions</p>
@@ -322,14 +263,83 @@
 
           <select id="restrictionsSelect" multiple size="10" hidden aria-hidden="true"></select>
         </div>
+
+        <!-- =========================
+             7. RUN DETAILS
+             ========================= -->
+        <div class="submit-section" aria-labelledby="run-details-title">
+          <p id="run-details-title" class="submit-section__title">Run Details <span class="required-marker">*</span></p>
+          <p class="submit-section__sub">Runner information, video proof, and timing.</p>
+
+          <div class="submit-field">
+            <label for="runnerId" class="submit-label">Runner ID <span class="required-marker">*</span></label>
+            <div class="submit-hint">Use your CRC runner id (example: <code>gary-asher</code>).</div>
+            <input 
+              id="runnerId" 
+              type="text" 
+              placeholder="your-runner-id" 
+              required
+              aria-required="true"
+              aria-describedby="runnerId-hint"
+              pattern="[a-z0-9\-]+"
+            />
+            <span class="field-error" id="runnerId-error" role="alert" hidden></span>
+          </div>
+
+          <div class="submit-field">
+            <label for="videoUrl" class="submit-label">Video URL <span class="required-marker">*</span></label>
+            <div class="submit-hint" id="videoUrl-hint">YouTube, Twitch Highlight, or Bilibili are accepted.</div>
+            <input
+              id="videoUrl"
+              type="url"
+              placeholder="https://youtube.com/watch?v=... or https://twitch.tv/videos/..."
+              required
+              aria-required="true"
+              aria-describedby="videoUrl-hint"
+            />
+            <span class="field-error" id="videoUrl-error" role="alert" hidden></span>
+            <div id="videoTitle" class="video-title-preview" hidden></div>
+          </div>
+
+          <div class="submit-row-2">
+            <div class="submit-field">
+              <label for="dateCompleted" class="submit-label">Date Completed</label>
+              <div class="submit-hint" id="dateCompleted-hint">Format: YYYY/MM/DD (optional).</div>
+              <input 
+                id="dateCompleted" 
+                type="text" 
+                placeholder="2025/01/15"
+                aria-describedby="dateCompleted-hint"
+                pattern="\d{4}/\d{2}/\d{2}"
+              />
+              <span class="field-error" id="dateCompleted-error" role="alert" hidden></span>
+            </div>
+
+            <div class="submit-field">
+              <label for="runTime" class="submit-label">Run Time <span id="runTimeMethod" class="muted"></span></label>
+              <div class="submit-hint" id="runTime-hint">Format: HH:MM:SS or MM:SS (optional)</div>
+              <div class="input-with-secondary">
+                <input 
+                  id="runTime" 
+                  type="text" 
+                  placeholder="12:34:56"
+                  aria-describedby="runTime-hint"
+                  pattern="^(\d{1,2}:)?\d{1,2}:\d{2}$"
+                />
+                <span id="runTimeSecondary" class="input-secondary-label muted"></span>
+              </div>
+              <span class="field-error" id="runTime-error" role="alert" hidden></span>
+            </div>
+          </div>
+        </div>
            
         <!-- =========================
-             CAPTCHA VERIFICATION
+             8. CAPTCHA VERIFICATION
              ========================= -->
         {% include turnstile.html %}
            
         <!-- =========================
-             ACTIONS + OUTPUT
+             9. ACTIONS + OUTPUT
              ========================= -->
         <div class="submit-section" aria-labelledby="submit-section-title">
           <p id="submit-section-title" class="submit-section__title">Submit</p>
