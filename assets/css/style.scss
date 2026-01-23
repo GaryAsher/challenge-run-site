@@ -1666,6 +1666,11 @@ button.tag,
   margin: 0;
 }
 
+/* Push Submit Run tab to far right */
+.runner-tabs.game-tabs .tab--submit {
+  margin-left: auto;
+}
+
 .page-width + .page-width .table-wrap {
   margin-top: 0.75rem;
 }
