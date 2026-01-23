@@ -230,12 +230,6 @@ document.addEventListener('DOMContentLoaded', function() {
     };
   }
 
-  function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str || '';
-    return div.innerHTML;
-  }
-
   // ============================================================
   // Build Options from Row Data
   // ============================================================
