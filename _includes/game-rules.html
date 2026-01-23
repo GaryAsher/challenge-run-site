@@ -100,20 +100,59 @@
     <div class="rule-builder-content" id="rule-builder-content" hidden>
       <div class="rule-builder__selections">
 
-        <!-- 1. Run Category Dropdown -->
+        <!-- 1. Run Category Dropdown with Tier Headers -->
         {% if has_categories %}
         <div class="rule-builder__group" data-rb-order="1">
           <label class="rule-builder__label">Run Category</label>
           <select class="rule-builder__select" id="rb-category">
             <option value="" data-description="">-- Select Category --</option>
-            {% for cat in all_categories %}
-              <option value="{{ cat.slug }}" data-label="{{ cat.label }}" data-description="{{ cat.description | escape }}">{{ cat.label }}</option>
-              {% if cat.children %}
-                {% for child in cat.children %}
-                  <option value="{{ cat.slug }}/{{ child.slug }}" data-label="{{ child.label }}" data-description="{{ child.description | escape }}">  ↳ {{ child.label }}</option>
+            {% if game.full_runs and game.full_runs.size > 0 %}
+              <optgroup label="Full Runs">
+                {% for cat in game.full_runs %}
+                  <option value="{{ cat.slug }}" data-label="{{ cat.label }}" data-description="{{ cat.description | escape }}" data-tier="full_runs">{{ cat.label }}</option>
+                  {% if cat.children %}
+                    {% for child in cat.children %}
+                      <option value="{{ cat.slug }}/{{ child.slug }}" data-label="{{ child.label }}" data-description="{{ child.description | escape }}" data-tier="full_runs">  ↳ {{ child.label }}</option>
+                    {% endfor %}
+                  {% endif %}
                 {% endfor %}
-              {% endif %}
-            {% endfor %}
+              </optgroup>
+            {% endif %}
+            {% if game.mini_challenges and game.mini_challenges.size > 0 %}
+              <optgroup label="Mini-Challenges">
+                {% for cat in game.mini_challenges %}
+                  <option value="{{ cat.slug }}" data-label="{{ cat.label }}" data-description="{{ cat.description | escape }}" data-tier="mini_challenges">{{ cat.label }}</option>
+                  {% if cat.children %}
+                    {% for child in cat.children %}
+                      <option value="{{ cat.slug }}/{{ child.slug }}" data-label="{{ child.label }}" data-description="{{ child.description | escape }}" data-tier="mini_challenges">  ↳ {{ child.label }}</option>
+                    {% endfor %}
+                  {% endif %}
+                {% endfor %}
+              </optgroup>
+            {% endif %}
+            {% if game.player_made and game.player_made.size > 0 %}
+              <optgroup label="Player-Made">
+                {% for cat in game.player_made %}
+                  <option value="{{ cat.slug }}" data-label="{{ cat.label }}" data-description="{{ cat.description | escape }}" data-tier="player_made">{{ cat.label }}</option>
+                  {% if cat.children %}
+                    {% for child in cat.children %}
+                      <option value="{{ cat.slug }}/{{ child.slug }}" data-label="{{ child.label }}" data-description="{{ child.description | escape }}" data-tier="player_made">  ↳ {{ child.label }}</option>
+                    {% endfor %}
+                  {% endif %}
+                {% endfor %}
+              </optgroup>
+            {% endif %}
+            {% comment %} Legacy fallback for games without tiered structure {% endcomment %}
+            {% if game.full_runs.size == 0 and game.mini_challenges.size == 0 and game.player_made.size == 0 %}
+              {% for cat in game.categories_data %}
+                <option value="{{ cat.slug }}" data-label="{{ cat.label }}" data-description="{{ cat.description | escape }}">{{ cat.label }}</option>
+                {% if cat.children %}
+                  {% for child in cat.children %}
+                    <option value="{{ cat.slug }}/{{ child.slug }}" data-label="{{ child.label }}" data-description="{{ child.description | escape }}">  ↳ {{ child.label }}</option>
+                  {% endfor %}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
           </select>
         </div>
         {% endif %}
@@ -634,7 +673,8 @@ document.addEventListener('DOMContentLoaded', function() {
       selectedCategory = option.value ? {
         slug: option.value,
         label: option.dataset.label || option.text.trim(),
-        description: option.dataset.description || ''
+        description: option.dataset.description || '',
+        tier: option.dataset.tier || 'full_runs'
       } : null;
       updateRuleBuilder();
     });
@@ -902,15 +942,34 @@ document.addEventListener('DOMContentLoaded', function() {
     if (validationDiv) validationDiv.style.display = 'none';
 
     if (findRunnersBtn) {
-      if (hasContent) {
+      if (hasContent && selectedCategory) {
+        // Build the tier-based URL
+        const tier = selectedCategory.tier || 'full-runs';
+        const tierSlug = tier.replace(/_/g, '-'); // Convert full_runs to full-runs
+        const categorySlug = selectedCategory.slug;
+        
+        // Build filter data for any additional filters
         const filterData = {
           challenges: selectedChallenges.map(c => c.label),
           restrictions: selectedRestrictions.map(r => r.label),
           glitch: selectedGlitch ? selectedGlitch.slug : '',
           character: selectedCharacter ? selectedCharacter.label : ''
         };
-        const hashData = encodeURIComponent(JSON.stringify(filterData));
-        findRunnersBtn.href = '/games/' + gameId + '/runs/#filters=' + hashData;
+        
+        // Only add hash if there are filters beyond the category
+        let url = '/games/' + gameId + '/runs/' + tierSlug + '/' + categorySlug + '/';
+        
+        const hasFilters = filterData.challenges.length > 0 || 
+                          filterData.restrictions.length > 0 || 
+                          filterData.glitch || 
+                          filterData.character;
+        
+        if (hasFilters) {
+          const hashData = encodeURIComponent(JSON.stringify(filterData));
+          url += '#filters=' + hashData;
+        }
+        
+        findRunnersBtn.href = url;
         findRunnersBtn.style.display = 'inline-block';
       } else {
         findRunnersBtn.style.display = 'none';
