@@ -5057,3 +5057,16 @@ a.resource-card:hover {
     align-items: flex-start;
   }
 }
+
+/* ============================================================
+   Video Title Preview (Submit Form)
+   ============================================================ */
+.video-title-preview {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  background: var(--panel);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--accent);
+}
