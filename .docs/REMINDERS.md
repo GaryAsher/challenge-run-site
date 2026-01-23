@@ -12,7 +12,6 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] "Credits" need to be listed at the bottom of every page. If there are no credits listed, then it can be empty.
 
 ### /runs/ page
-- [ ] /runs/ page that shows "full runs" and "mini-challenges", has green top border on top of Full Runs and yellow top border for Mini-Challenges.
 - [ ] Advanced Filter for Glitch Category needs to match how Challenge, Restrictions, and Weapon / Aspect are.
 - [ ] Mini-Challenges, clicking on subcategories need to go to the subcategories page.  
 - [ ] Fix the top-most container (holding Full Runs and Mini-Challenges) to be flush with game tabs header.
