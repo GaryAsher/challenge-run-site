@@ -393,13 +393,16 @@ layout: default
           {% if is_child_page == false %}
             {% for c in current_tier_categories %}
               {% if c.slug == active_cat_slug and c.children and c.children.size > 0 %}
-                <div class="subcategory-pills">
-                  <span class="muted subcategory-label">Subcategories:</span>
+                <div class="subcategory-pills" id="subcategory-filter">
+                  <span class="muted subcategory-label">Filter by:</span>
+                  <button type="button" class="category-pill category-pill--sub is-active" data-subcat="">
+                    All
+                  </button>
                   {% for ch in c.children %}
                     {% assign child_full = c.slug | append: "/" | append: ch.slug %}
-                    <a class="category-pill category-pill--sub" href="{{ runs_base }}{{ active_tier_slug }}/{{ child_full }}/">
+                    <button type="button" class="category-pill category-pill--sub" data-subcat="{{ child_full }}">
                       {{ ch.label | default: ch.slug }}
-                    </a>
+                    </button>
                   {% endfor %}
                 </div>
                 {% break %}
@@ -583,14 +586,19 @@ layout: default
 
                     <tr class="run-row"
                         data-runner="{{ runner_label | escape }}"
+                        data-runner-name="{{ runner_label | escape }}"
+                        data-challenge-label="{{ challenge_labels | join: ', ' | escape }}"
+                        data-challenge-id="{{ challenge_ids | first | escape }}"
+                        data-challenge-aliases="{{ all_aliases | join: ',' | escape }}"
                         data-challenges="{{ challenge_labels | join: ',' | escape }}"
                         data-challenge-ids="{{ challenge_ids | join: ',' | escape }}"
                         data-aliases="{{ all_aliases | join: ',' | escape }}"
-                        data-restrictions="{{ r_texts | join: ',' | escape }}"
+                        data-restrictions="{{ r_texts | join: '||' | escape }}"
                         data-character="{{ r.character | default: '' | escape }}"
                         data-glitch="{{ r.glitch_id | default: '' | escape }}"
                         data-time="{{ r.time_primary | default: r.time | default: '' }}"
-                        data-date="{{ r.date_completed | default: r.date | date: '%Y-%m-%d' }}">
+                        data-date="{{ r.date_completed | default: r.date | date: '%Y-%m-%d' }}"
+                        data-category-slug="{{ r.category_slug | default: '' | escape }}">
                       <td data-label="Runner">
                         {% if r.runner_id %}
                           <a href="{{ '/runners/' | relative_url }}{{ r.runner_id }}/">{{ runner_label }}</a>
