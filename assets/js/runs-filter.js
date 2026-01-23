@@ -108,42 +108,28 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ============================================================
-  // Typeahead Filter Component
+  // Typeahead Filter Component (uses existing HTML structure)
   // ============================================================
   function createTypeaheadFilter(config) {
     const { container, placeholder, items, selectedSet, onFilter, labelKey = 'label', idKey = 'id' } = config;
     
     if (!container) return null;
-    container.innerHTML = '';
-    container.className = 'filter-typeahead';
 
-    // Picked chips area
-    const pickedEl = document.createElement('div');
-    pickedEl.className = 'filter-typeahead__picked';
-    container.appendChild(pickedEl);
+    // Find existing elements in the container
+    const pickedEl = container.querySelector('.filter-input__picked');
+    const inputWrap = container.querySelector('.filter-input__wrap');
+    const input = container.querySelector('input[type="text"]');
+    const sugEl = container.querySelector('.filter-input__suggestions');
 
-    // Input wrapper
-    const inputWrap = document.createElement('div');
-    inputWrap.className = 'filter-typeahead__wrap';
-    container.appendChild(inputWrap);
-
-    // Text input
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.className = 'filter-typeahead__input';
-    input.placeholder = placeholder;
-    input.autocomplete = 'off';
-    inputWrap.appendChild(input);
-
-    // Suggestions dropdown
-    const sugEl = document.createElement('div');
-    sugEl.className = 'filter-typeahead__dropdown';
-    sugEl.hidden = true;
-    inputWrap.appendChild(sugEl);
+    if (!input || !sugEl) {
+      console.warn('Typeahead filter missing required elements:', container.id);
+      return null;
+    }
 
     let isOpen = false;
 
     function renderPicked() {
+      if (!pickedEl) return;
       pickedEl.innerHTML = '';
       selectedSet.forEach(id => {
         const item = items.find(x => norm(x[idKey] || x) === norm(id));
@@ -178,27 +164,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
       if (!show.length) {
         const empty = document.createElement('div');
-        empty.className = 'filter-typeahead__option filter-typeahead__option--empty';
-        empty.textContent = available.length ? 'No matches' : 'All selected';
+        empty.className = 'filter-suggestion filter-suggestion--empty';
+        empty.textContent = available.length ? 'No matches.' : 'All options selected.';
         sugEl.appendChild(empty);
         sugEl.hidden = false;
         return;
       }
 
       show.forEach(item => {
-        const label = item[labelKey] || item;
-        const id = item[idKey] || item;
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'filter-typeahead__option';
-        btn.textContent = label;
+        btn.className = 'filter-suggestion';
+        btn.textContent = item[labelKey] || item;
+        btn.dataset.id = item[idKey] || item;
+        
         btn.addEventListener('click', () => {
-          selectedSet.add(norm(id));
+          selectedSet.add(norm(btn.dataset.id));
           input.value = '';
           renderPicked();
           renderSuggestions('');
           onFilter();
         });
+        
         sugEl.appendChild(btn);
       });
 
@@ -241,6 +228,12 @@ document.addEventListener('DOMContentLoaded', function() {
         renderPicked();
       }
     };
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
   }
 
   // ============================================================
