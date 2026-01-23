@@ -4675,11 +4675,14 @@ a.resource-card:hover {
    Category Tier System Styles
    ============================================================ */
 
-/* Tier Navigation Container */
+/* Tier Navigation Container - flush with card edges */
 .tier-nav-container {
+  margin: calc(-1 * var(--space-4)) calc(-1 * var(--space-4)) 0 calc(-1 * var(--space-4));
+  padding: var(--space-4);
   padding-bottom: 1rem;
-  margin-bottom: 1rem;
   border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 
 /* Tier Navigation (styled like game tabs) */
@@ -4775,6 +4778,133 @@ a.resource-card:hover {
 .subcategory-label {
   font-size: 0.8rem;
   margin-right: 0.25rem;
+}
+
+/* ============================================================
+   Advanced Filters Section (Runs Page)
+   ============================================================ */
+.filters-wrap {
+  margin-top: 1rem;
+}
+
+.filters-bar {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filters-bar .filter-input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.filters-bar .filter-input__field {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.95rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--fg);
+}
+
+.filters-bar .filter-input__field:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--focus-2);
+}
+
+.btn--filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn--filter-toggle:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-hover);
+  color: var(--fg);
+}
+
+.btn--filter-toggle[aria-expanded="true"] .filter-toggle__icon {
+  transform: rotate(180deg);
+}
+
+.filter-toggle__icon {
+  font-size: 0.75rem;
+  transition: transform 0.15s ease;
+}
+
+.advanced-filters {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.filter-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-group__label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.filter-select {
+  padding: 0.5rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--fg);
+  font-size: 0.9rem;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.filter-select[multiple] {
+  min-height: 100px;
+}
+
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.active-filters:empty {
+  display: none;
+}
+
+.results-status {
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.results-status__text {
+  color: var(--text-muted);
 }
 
 /* Tier Cards (for tier picker page) */
