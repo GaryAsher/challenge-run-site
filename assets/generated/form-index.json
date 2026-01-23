@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-01-23T09:29:44.028Z",
+  "generated_at": "2026-01-23T10:09:54.769Z",
   "games": [
     {
       "game_id": "celeste",
@@ -395,20 +395,20 @@
           "name": "Arcanaless"
         },
         {
-          "id": "no-hexes",
-          "name": "No Hexes"
+          "id": "boonless",
+          "name": "Boonless"
         },
         {
           "id": "hestia-only",
           "name": "Hestia Only"
         },
         {
-          "id": "one-god-only",
-          "name": "One God Only"
+          "id": "no-hexes",
+          "name": "No Hexes"
         },
         {
-          "id": "boonless",
-          "name": "Boonless"
+          "id": "one-god-only",
+          "name": "One God Only"
         }
       ],
       "character_column": {
