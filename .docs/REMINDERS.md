@@ -8,16 +8,28 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ### New Game Submission form:
 - [ ] Do we ask users to fill out Genres again?
+    - [ ] Can we find a list of every genre ever?
+    - [ ] Do we create a script that finds genres, and validates user-submitted info?
 - [ ] Discord Webhook not working properly
+
+### Games Page
+- [ ] Fix Filters not having proper CSS
 
 ### Game Page Tabs
 - /runs/ page
-- [ ] Need a section for "mini-challenges". Basically, the IL of challenge running.
+- [ ] Change the default /runs/ page to /runs/full-runs/ (/runs/ redirect as well)
+- [ ] Make the /runs/full-runs/ page show the excel grid
+- [ ] Add Spacing and Boxes for Full Runs, Mini-Challenges, and Player-Made Challenges
+- [ ] Make container for Category Tiers cover all items
+- [ ] Add Accordion-Style drop-down for All runs 
+
 - /rules/ page
-- [ ] Rule Builder in needs to indent text that is not bulleted.
+- [ ] Figure out why Rule Builder is not showing for Hades-2
+
 - /history/ page
 - [ ] Needs better filtering. Only show verified runs, community milestones, records broken (if verified), etc.
 - /submit/ page
+
 - [ ] Need to space headers apart from plain text for easier readability.
 - [ ] Add CSS styling to other areas
 
