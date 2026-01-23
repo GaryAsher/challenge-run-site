@@ -3,8 +3,9 @@ layout: run
 game_id: "hades-2"
 runner_id: "test-run"
 category_slug: "underworld-vor4"
+category_tier: "full_runs"
 video_url: "https://www.youtube.com/watch?v=N_1su-dOUNw"
-date: "2025-12-30"
+date_completed: "2025-12-30"
 standard_challenges:
   - "damageless"
   - "no-hit-no-damage"
