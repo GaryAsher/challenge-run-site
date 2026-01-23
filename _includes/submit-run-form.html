@@ -143,7 +143,7 @@
 
           <div class="submit-row-2">
             <div class="submit-field">
-              <label for="runTime" class="submit-label">Run Time</label>
+              <label for="runTime" class="submit-label">Run Time <span id="runTimeMethod" class="muted"></span></label>
               <div class="submit-hint" id="runTime-hint">Format: HH:MM:SS or MM:SS (optional)</div>
               <input 
                 id="runTime" 
@@ -256,6 +256,7 @@
             >
               <option value="">Any / Not applicable</option>
             </select>
+            <span class="field-error" id="characterSelect-error" role="alert" hidden></span>
           </div>
         </div>
 
