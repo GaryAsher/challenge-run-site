@@ -17,6 +17,11 @@ on:
         description: "Category slug"
         required: true
         type: string
+      category_tier:
+        description: "Category tier (full_runs, mini_challenges, player_made)"
+        required: false
+        type: string
+        default: "full_runs"
       video_url:
         description: "Video URL"
         required: true
@@ -175,6 +180,7 @@ jobs:
           GAME_NAME: ${{ steps.validate_game.outputs.game_name }}
           RUNNER_ID: ${{ github.event.client_payload.runner_id || inputs.runner_id }}
           CATEGORY_SLUG: ${{ github.event.client_payload.category || inputs.category }}
+          CATEGORY_TIER: ${{ github.event.client_payload.category_tier || inputs.category_tier || 'full_runs' }}
           VIDEO_URL: ${{ github.event.client_payload.video_url || inputs.video_url }}
           DATE_COMPLETED: ${{ github.event.client_payload.date_completed || inputs.date_completed }}
           RUN_TIME: ${{ github.event.client_payload.run_time || inputs.run_time || '' }}
@@ -204,6 +210,7 @@ jobs:
           echo "game_id: \"${GAME_ID}\"" >> "$FILEPATH"
           echo "runner_id: \"${RUNNER_ID}\"" >> "$FILEPATH"
           echo "category_slug: \"${CATEGORY_SLUG}\"" >> "$FILEPATH"
+          echo "category_tier: \"${CATEGORY_TIER}\"" >> "$FILEPATH"
           echo "video_url: \"${VIDEO_URL}\"" >> "$FILEPATH"
           echo "date_completed: \"${DATE_COMPLETED}\"" >> "$FILEPATH"
           [ -n "${RUN_TIME:-}" ] && echo "time_primary: \"${RUN_TIME}\"" >> "$FILEPATH"
@@ -247,6 +254,7 @@ jobs:
           echo "game_name=$GAME_NAME" >> "$GITHUB_OUTPUT"
           echo "runner_id=$RUNNER_ID" >> "$GITHUB_OUTPUT"
           echo "category_slug=$CATEGORY_SLUG" >> "$GITHUB_OUTPUT"
+          echo "category_tier=$CATEGORY_TIER" >> "$GITHUB_OUTPUT"
           echo "video_url=$VIDEO_URL" >> "$GITHUB_OUTPUT"
           echo "date_completed=$DATE_COMPLETED" >> "$GITHUB_OUTPUT"
           echo "standard_challenges=$STANDARD_CHALLENGES" >> "$GITHUB_OUTPUT"
@@ -300,6 +308,7 @@ jobs:
             | **Game** | ${{ steps.create.outputs.game_name }} (`${{ steps.create.outputs.game_id }}`) |
             | **Runner** | `${{ steps.create.outputs.runner_id }}` |
             | **Category** | `${{ steps.create.outputs.category_slug }}` |
+            | **Category Tier** | `${{ steps.create.outputs.category_tier }}` |
             | **Date Completed** | ${{ steps.create.outputs.date_completed }} |
             | **Video** | ${{ steps.create.outputs.video_url }} |
             | **Standard Challenges** | ${{ steps.create.outputs.standard_challenges || '(none)' }} |
