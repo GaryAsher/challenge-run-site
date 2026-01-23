@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-01-23T10:41:56.464Z",
+  "generated_at": "2026-01-23T19:00:54.927Z",
   "games": [
     {
       "game_id": "celeste",
@@ -92,7 +92,8 @@
         "label": "Character"
       },
       "characters": [],
-      "timing_method": "IGT"
+      "timing_method": "IGT",
+      "timing_method_secondary": ""
     },
     {
       "game_id": "constance",
@@ -169,7 +170,8 @@
         "label": "Character"
       },
       "characters": [],
-      "timing_method": "IGT"
+      "timing_method": "IGT",
+      "timing_method_secondary": ""
     },
     {
       "game_id": "hades-2",
@@ -515,7 +517,8 @@
           "name": "Black Coat / Shiva Aspect"
         }
       ],
-      "timing_method": "IGT"
+      "timing_method": "IGT",
+      "timing_method_secondary": ""
     },
     {
       "game_id": "hollow-knight",
@@ -748,7 +751,8 @@
         "label": "Character"
       },
       "characters": [],
-      "timing_method": "LRT"
+      "timing_method": "LRT",
+      "timing_method_secondary": ""
     },
     {
       "game_id": "the-legend-of-zelda-ocarina-of-time",
@@ -825,7 +829,8 @@
         "label": "Character"
       },
       "characters": [],
-      "timing_method": "LRT"
+      "timing_method": "LRT",
+      "timing_method_secondary": ""
     },
     {
       "game_id": "tiny-rogues",
@@ -900,7 +905,8 @@
         "label": "Class"
       },
       "characters": [],
-      "timing_method": "IGT"
+      "timing_method": "IGT",
+      "timing_method_secondary": ""
     }
   ],
   "challenges": [
@@ -948,6 +954,11 @@
       "id": "no-hit-no-damage",
       "name": "No-Hit / No-Damage",
       "group": "Challenges"
+    }
+  ],
+  "runners": [
+    {
+      "id": "gary-asher"
     }
   ]
 }
