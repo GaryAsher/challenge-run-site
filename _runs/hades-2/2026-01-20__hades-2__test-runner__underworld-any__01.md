@@ -1,7 +1,7 @@
 ---
 layout: run
 game_id: "hades-2"
-runner_id: "test-runner"
+runner_id: "gary-asher"
 category_slug: "underworld-any"
 video_url: "https://www.youtube.com/watch?v=8ctGgtWvscQ"
 date: "2026-01-20"
