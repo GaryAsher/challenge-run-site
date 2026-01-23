@@ -6,6 +6,11 @@ markdown: kramdown
 # For RSS feed
 author: Challenge Run Community
 
+# Sass/SCSS configuration
+sass:
+  sass_dir: assets/scss
+  style: compressed
+
 collections:
   games:
     output: true
