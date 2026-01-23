@@ -2,7 +2,7 @@
 layout: run
 game_id: "hades-2"
 runner_id: "test-run"
-category: "underworld-vor4"
+category_slug: "underworld-vor4"
 video_url: "https://www.youtube.com/watch?v=N_1su-dOUNw"
 date: "2025-12-30"
 standard_challenges:
