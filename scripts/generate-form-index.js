@@ -335,8 +335,9 @@ function main() {
     const character_column = normalizeCharacterColumn(data);
     const characters = normalizeSlugList(data.characters_data);
     
-    // Timing method (IGT, RTA, LRT, etc.)
+    // Timing methods (IGT, RTA, LRT, etc.)
     const timing_method = String(data.timing_method || "").trim();
+    const timing_method_secondary = String(data.timing_method_secondary || "").trim();
 
     games.push({
       game_id,
@@ -348,22 +349,38 @@ function main() {
       restrictions,
       character_column,
       characters,
-      timing_method
+      timing_method,
+      timing_method_secondary
     });
   }
 
   games.sort((a, b) => a.title.localeCompare(b.title));
+
+  // Load runners
+  const RUNNERS_DIR = path.join(ROOT, "_runners");
+  const runners = [];
+  if (fs.existsSync(RUNNERS_DIR)) {
+    for (const file of listMarkdownFiles(RUNNERS_DIR)) {
+      const md = readFile(file);
+      const { data } = parseFrontMatter(md);
+      const runner_id = String(data.runner_id || path.basename(file, ".md") || "").trim();
+      if (runner_id) {
+        runners.push({ id: runner_id });
+      }
+    }
+  }
 
   safeMkdir(OUT_DIR);
 
   const payload = {
     generated_at: new Date().toISOString(),
     games,
-    challenges: globalChallenges
+    challenges: globalChallenges,
+    runners
   };
 
   fs.writeFileSync(OUT_FILE, JSON.stringify(payload, null, 2) + "\n", "utf8");
-  console.log(`Wrote ${path.relative(ROOT, OUT_FILE)} (${games.length} games)`);
+  console.log(`Wrote ${path.relative(ROOT, OUT_FILE)} (${games.length} games, ${runners.length} runners)`);
 }
 
 main();
