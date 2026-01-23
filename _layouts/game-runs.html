@@ -460,16 +460,16 @@ layout: default
                 {% endif %}
 
                 {% if show_glitches %}
+                <!-- Glitch Category Filter (typeahead style) -->
                 <div class="filter-group" id="f-glitch-container">
                   <label class="filter-group__label">Glitch Category</label>
-                  <select id="f-glitch" class="filter-select">
-                    <option value="">All Glitch Categories</option>
-                    {% for gl in game.glitches_data %}
-                      <option value="{{ gl.slug }}">{{ gl.label }}</option>
-                    {% endfor %}
-                  </select>
-                </div>
-                {% endif %}
+                  <div class="filter-input__picked" id="f-glitch-picked"></div>
+                  <div class="filter-input__wrap">
+                    <input type="text" id="f-glitch-search" class="filter-input__field" placeholder="Type a glitch category..." autocomplete="off" />
+                    <div class="filter-input__suggestions" id="f-glitch-suggestions" hidden></div>
+                 </div>
+               </div>
+               {% endif %}
               </div>
             </div>
 
