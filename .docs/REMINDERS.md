@@ -7,9 +7,7 @@ This document consolidates all reminders, future ideas, and planned features for
 # Priority Roadmap
 
 ## Games Page
-- [ ] Filter by challenges" is filtering by old variable. Needs to be updated.
-- [ ] Letter is not filtered games.
-- [ ] "Search by game name." not finding game. likely using old variable.
+- [ ] Letter is not searching filtered games.
 
 ## Game Page Tabs
 
@@ -20,7 +18,6 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Fix top container to be flush with game tabs.
 
 ### /rules/ page
-- [ ] "Show other runners who have completed this" is not redirecting properly.
 - [ ] For Rule Builder's filters, add 'unpickable' headers that separates categories by tiers
 - [ ] Run Categories uses old variables. Update to 3-tiered category system.
 
@@ -30,16 +27,11 @@ This document consolidates all reminders, future ideas, and planned features for
 ### /submit/ page
 - [ ] Move tab to far right of container.
 - [ ] Fix js selector to only appear when hovering drop-down. Currently allows selection when on top of text.
-- [ ] Change text to say Twitch Highlight, NOT Twitch VOD.
 - [ ] Update logic to require character selection for Hades 2. This needs to be category specific, as it is not relevant for Chaos Trials.
-- [ ] Update Glitch Category empty text to say "N/A" instead of "None / Glitchless"
-- [ ] Alphabetize restrictions in game file itself.
 - [ ] Update the order of the form to mirror the payload.
 - [ ] Produce "error message" if user-id does not exist.
 - [ ] Show Video name when put into URL?
-- [ ] Update Date Completed to have an error when the year is before 1970
 - [ ] Update Date Completed format to be YYYY/MM/DD
-- [ ] Update Date Completed to be optional. Appearing as "" if user submits nothing.
 - [ ] Update Run Time to say the primary_timing_method.
 - [ ] Add placeholder next to Run Time that is secondary_timing_method.
 
