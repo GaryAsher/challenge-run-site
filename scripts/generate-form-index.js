@@ -10,9 +10,9 @@
  *   _data/challenges.yml (optional global fallback)
  *
  * Exports per game (stable keys expected by submit-run.js):
- *   - categories: [{slug,name}]
+ *   - category_tiers: { full_runs: [...], mini_challenges: [...], player_made: [...] }
+ *   - categories: [{slug,name,tier}] (flattened list for backward compatibility)
  *   - standard_challenges: [{id,name}]
- *   - community_challenges: [{id,name}]
  *   - glitches: [{id,name}] (empty if glitches_relevant: false)
  *   - restrictions: [{id,name}]
  *   - character_column: {enabled,label}
@@ -84,7 +84,72 @@ function loadGlobalChallenges() {
     .filter((c) => c.id);
 }
 
-function normalizeCategories(game) {
+/**
+ * Normalize categories from a single tier array.
+ * Returns array of {slug, name} with children flattened.
+ */
+function normalizeTierCategories(tierArray) {
+  if (!Array.isArray(tierArray)) return [];
+
+  const out = [];
+
+  function walk(node, parentSlug = "", parentLabel = "") {
+    const slug = String(node?.slug || node?.category_slug || "").trim();
+    if (!slug) return;
+
+    const label = String(node?.label || node?.name || node?.title || slug).trim();
+
+    const fullSlug = parentSlug ? `${parentSlug}/${slug}` : slug;
+    const fullLabel = parentLabel ? `${parentLabel}: ${label}` : label;
+
+    out.push({ slug: fullSlug, name: fullLabel });
+
+    if (Array.isArray(node.children)) {
+      for (const child of node.children) {
+        walk(child, fullSlug, fullLabel);
+      }
+    }
+  }
+
+  for (const item of tierArray) {
+    if (!item) continue;
+    walk(item);
+  }
+
+  return out;
+}
+
+/**
+ * Build tiered categories structure from game data.
+ * Supports both new structure (full_runs, mini_challenges, player_made)
+ * and legacy structure (categories_data) for backward compatibility.
+ */
+function normalizeCategoryTiers(game) {
+  const tiers = {
+    full_runs: [],
+    mini_challenges: [],
+    player_made: []
+  };
+
+  // Check for new tiered structure first
+  if (game.full_runs || game.mini_challenges || game.player_made) {
+    tiers.full_runs = normalizeTierCategories(game.full_runs);
+    tiers.mini_challenges = normalizeTierCategories(game.mini_challenges);
+    tiers.player_made = normalizeTierCategories(game.player_made);
+  } else {
+    // Legacy: treat all categories_data as full_runs
+    const legacyCategories = normalizeLegacyCategories(game);
+    tiers.full_runs = legacyCategories;
+  }
+
+  return tiers;
+}
+
+/**
+ * Legacy category normalization for backward compatibility.
+ * Used when game file still has categories_data instead of tiered structure.
+ */
+function normalizeLegacyCategories(game) {
   const buckets = [
     game.categories_data,
     game.categories,
@@ -156,6 +221,29 @@ function normalizeCategories(game) {
   });
 }
 
+/**
+ * Flatten tiered categories into a single list with tier info.
+ * For backward compatibility with existing code.
+ */
+function flattenCategoryTiers(tiers) {
+  const out = [];
+  const seen = new Set();
+
+  function addFromTier(tierName, tierCategories) {
+    for (const cat of tierCategories) {
+      if (seen.has(cat.slug)) continue;
+      seen.add(cat.slug);
+      out.push({ slug: cat.slug, name: cat.name, tier: tierName });
+    }
+  }
+
+  addFromTier("full_runs", tiers.full_runs);
+  addFromTier("mini_challenges", tiers.mini_challenges);
+  addFromTier("player_made", tiers.player_made);
+
+  return out;
+}
+
 function normalizeSlugList(list) {
   if (!Array.isArray(list)) return [];
 
@@ -207,15 +295,7 @@ function normalizeCharacterColumn(game) {
   return { enabled: false, label: "Character" };
 }
 
-function pickCommunityChallenges(data) {
-  // Support BOTH spellings in your repo
-  return (
-    data.community_challenges ||
-    data["community-challenges"] ||
-    data["communityChallenges"] ||
-    []
-  );
-}
+// community_challenges has been deprecated - now part of restrictions_data
 
 function main() {
   if (!fs.existsSync(GAMES_DIR)) {
@@ -234,12 +314,14 @@ function main() {
     if (!game_id) continue;
 
     const title = String(data.game_name || data.name || data.title || game_id).trim();
-    const categories = normalizeCategories(data);
+    
+    // Build tiered categories structure
+    const category_tiers = normalizeCategoryTiers(data);
+    
+    // Flatten for backward compatibility
+    const categories = flattenCategoryTiers(category_tiers);
 
     const standard_challenges = normalizeSlugList(data.challenges_data);
-
-    const communityRaw = pickCommunityChallenges(data);
-    const community_challenges = normalizeSlugList(communityRaw);
 
     const glitchesRelevant = data.glitches_relevant;
     const hasGlitches = glitchesRelevant === false ? false : true;
@@ -256,9 +338,9 @@ function main() {
     games.push({
       game_id,
       title,
+      category_tiers,
       categories,
       standard_challenges,
-      community_challenges,
       glitches,
       restrictions,
       character_column,
