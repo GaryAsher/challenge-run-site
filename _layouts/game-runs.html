@@ -370,6 +370,7 @@ layout: default
                 {% endif %}
               {% endfor %}
             {% else %}
+               
               {% comment %} Show all top-level categories as pills {% endcomment %}
               {% for cat in current_tier_categories %}
                 {% assign cat_slug = cat.slug | default: "" | strip %}
@@ -394,14 +395,21 @@ layout: default
               {% if c.slug == active_cat_slug and c.children and c.children.size > 0 %}
                 <div class="subcategory-pills" id="subcategory-filter">
                   <span class="muted subcategory-label">Filter by:</span>
-                  <button type="button" class="category-pill category-pill--sub is-active" data-subcat="">
+                     
+                  {%- comment -%} "All" goes to the parent category page {%- endcomment -%}
+                  <a class="category-pill category-pill--sub is-active"
+                     href="{{ runs_base }}{{ active_tier_slug }}/{{ c.slug }}/"
+                     aria-current="page">
                     All
-                  </button>
+                  </a>
+          
+                  {%- comment -%} Children pills go to their own pages {%- endcomment -%}
                   {% for ch in c.children %}
                     {% assign child_full = c.slug | append: "/" | append: ch.slug %}
-                    <button type="button" class="category-pill category-pill--sub" data-subcat="{{ child_full }}">
+                    <a class="category-pill category-pill--sub"
+                       href="{{ runs_base }}{{ active_tier_slug }}/{{ child_full }}/">
                       {{ ch.label | default: ch.slug }}
-                    </button>
+                    </a>
                   {% endfor %}
                 </div>
                 {% break %}
