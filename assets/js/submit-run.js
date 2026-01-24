@@ -992,10 +992,24 @@
     repaint();
   }
 
-  function handleDateSegmentInput(e, nextEl, maxLen) {
+  function handleDateSegmentInput(e, nextEl, maxLen, fieldType) {
     const input = e.target;
     // Only allow digits
     input.value = input.value.replace(/\D/g, "");
+    
+    // Validate and clamp month values (01-12)
+    if (fieldType === "month" && input.value.length === 2) {
+      const monthNum = parseInt(input.value, 10);
+      if (monthNum < 1) input.value = "01";
+      else if (monthNum > 12) input.value = "12";
+    }
+    
+    // Validate and clamp day values (01-31)
+    if (fieldType === "day" && input.value.length === 2) {
+      const dayNum = parseInt(input.value, 10);
+      if (dayNum < 1) input.value = "01";
+      else if (dayNum > 31) input.value = "31";
+    }
     
     // Auto-advance to next field when max length reached
     if (input.value.length >= maxLen && nextEl) {
@@ -1051,19 +1065,19 @@
   }
 
   if (dateYearEl) {
-    dateYearEl.addEventListener("input", (e) => handleDateSegmentInput(e, dateMonthEl, 4));
+    dateYearEl.addEventListener("input", (e) => handleDateSegmentInput(e, dateMonthEl, 4, "year"));
     dateYearEl.addEventListener("keydown", (e) => handleDateSegmentKeydown(e, null, dateMonthEl));
     dateYearEl.addEventListener("blur", updateHiddenDateField);
   }
 
   if (dateMonthEl) {
-    dateMonthEl.addEventListener("input", (e) => handleDateSegmentInput(e, dateDayEl, 2));
+    dateMonthEl.addEventListener("input", (e) => handleDateSegmentInput(e, dateDayEl, 2, "month"));
     dateMonthEl.addEventListener("keydown", (e) => handleDateSegmentKeydown(e, dateYearEl, dateDayEl));
     dateMonthEl.addEventListener("blur", updateHiddenDateField);
   }
 
   if (dateDayEl) {
-    dateDayEl.addEventListener("input", (e) => handleDateSegmentInput(e, null, 2));
+    dateDayEl.addEventListener("input", (e) => handleDateSegmentInput(e, null, 2, "day"));
     dateDayEl.addEventListener("keydown", (e) => handleDateSegmentKeydown(e, dateMonthEl, null));
     dateDayEl.addEventListener("blur", updateHiddenDateField);
   }
