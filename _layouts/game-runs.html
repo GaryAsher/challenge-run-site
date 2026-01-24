@@ -397,7 +397,7 @@ layout: default
                 {% for ch in c.children %}
                   {% assign child_full = c.slug | append: "/" | append: ch.slug %}
                   <a class="category-pill category-pill--sub{% if active_cat_slug == child_full %} is-active{% endif %}"
-                     href="{{ runs_base }}{{ active_tier_slug }}/{{ child_full | url_encode }}/"
+                     href="{{ runs_base }}{{ active_tier_slug }}/{{ child_full }}/"
                      {% if active_cat_slug == child_full %}aria-current="page"{% endif %}>
                     {{ ch.label | default: ch.slug }}
                   </a>
