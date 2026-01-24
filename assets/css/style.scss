@@ -4683,11 +4683,7 @@ a.resource-card:hover {
 /* Tier Navigation Container - flush with card edges */
 .tier-nav-container {
   margin: 0;
-  padding: var(--space-4);
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface-2);
-  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  padding: 0 var(--space-4) 1rem;
 }
 
 /* Tier Navigation (styled like game tabs) */
