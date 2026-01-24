@@ -390,32 +390,30 @@ layout: default
           </div>
 
           <!-- Subcategory Pills (if this category has children and we're on the parent) -->
-          {% if is_child_page == false %}
-            {% for c in current_tier_categories %}
-              {% if c.slug == active_cat_slug and c.children and c.children.size > 0 %}
-                <div class="subcategory-pills" id="subcategory-filter">
-                  <span class="muted subcategory-label">Filter by:</span>
-                     
-                  {%- comment -%} "All" goes to the parent category page {%- endcomment -%}
-                  <a class="category-pill category-pill--sub is-active"
-                     href="{{ runs_base }}{{ active_tier_slug }}/{{ c.slug }}/"
-                     aria-current="page">
-                    All
-                  </a>
+          {% for c in current_tier_categories %}
+            {% if c.slug == parent_slug and c.children and c.children.size > 0 %}
+              <div class="subcategory-pills" id="subcategory-filter">
+                <span class="muted subcategory-label">Browse:</span>
           
-                  {%- comment -%} Children pills go to their own pages {%- endcomment -%}
-                  {% for ch in c.children %}
-                    {% assign child_full = c.slug | append: "/" | append: ch.slug %}
-                    <a class="category-pill category-pill--sub"
-                       href="{{ runs_base }}{{ active_tier_slug }}/{{ child_full }}/">
-                      {{ ch.label | default: ch.slug }}
-                    </a>
-                  {% endfor %}
-                </div>
-                {% break %}
-              {% endif %}
-            {% endfor %}
-          {% endif %}
+                {% assign parent_full = c.slug %}
+                <a class="category-pill category-pill--sub{% if active_cat_slug == parent_full %} is-active{% endif %}"
+                   href="{{ runs_base }}{{ active_tier_slug }}/{{ parent_full }}/"
+                   {% if active_cat_slug == parent_full %}aria-current="page"{% endif %}>
+                  All
+                </a>
+          
+                {% for ch in c.children %}
+                  {% assign child_full = c.slug | append: "/" | append: ch.slug %}
+                  <a class="category-pill category-pill--sub{% if active_cat_slug == child_full %} is-active{% endif %}"
+                     href="{{ runs_base }}{{ active_tier_slug }}/{{ child_full }}/"
+                     {% if active_cat_slug == child_full %}aria-current="page"{% endif %}>
+                    {{ ch.label | default: ch.slug }}
+                  </a>
+                {% endfor %}
+              </div>
+              {% break %}
+            {% endif %}
+          {% endfor %}
 
           <!-- Filters -->
           <div class="filters-wrap">
