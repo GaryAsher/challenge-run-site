@@ -12,9 +12,8 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] "Credits" need to be listed at the bottom of every page. If there are no credits listed, then it can be empty.
 
 ### /runs/ page
-- [ ] Mini-Challenges, clicking on subcategories need to go to the subcategories page.  
-- [ ] Fix the top-most container (holding Full Runs and Mini-Challenges) to be flush with game tabs header.
 - [ ] Challenge showing concatenation of Rule Builder? Why Does Challenge show "Hitless" , "Damageless" , and "boonless" ?
+- [ ] Fix Advanced Search to show all options available, not just what is in the grid below.
 
 ### /rules/ page
 - [ ] Run Categories drop-down accordion below uses old variables. Update to 3-tiered category system.
