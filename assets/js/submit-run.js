@@ -78,6 +78,14 @@
       fieldEl.classList.add("has-error");
       fieldEl.setAttribute("aria-invalid", "true");
     }
+    
+    // Special handling for segmented date input
+    if (fieldId === "dateCompleted") {
+      const segmentedWrapper = $("dateInputSegmented");
+      if (segmentedWrapper) {
+        segmentedWrapper.classList.add("has-error");
+      }
+    }
   }
 
   function clearFieldError(fieldId) {
@@ -92,6 +100,14 @@
     if (fieldEl) {
       fieldEl.classList.remove("has-error");
       fieldEl.removeAttribute("aria-invalid");
+    }
+    
+    // Special handling for segmented date input
+    if (fieldId === "dateCompleted") {
+      const segmentedWrapper = $("dateInputSegmented");
+      if (segmentedWrapper) {
+        segmentedWrapper.classList.remove("has-error");
+      }
     }
   }
 
@@ -496,18 +512,39 @@
 
     function onDocClick(e) {
       const t = e.target;
-      const inBox =
-        (inputEl && (t === inputEl || inputEl.contains(t))) ||
-        (suggestionsEl && (t === suggestionsEl || suggestionsEl.contains(t))) ||
-        (chipsEl && (t === chipsEl || chipsEl.contains(t)));
+      // Only keep suggestions open if clicking inside the input field or suggestions dropdown
+      // Clicking on chips or other areas should close the suggestions
+      const inInput = inputEl && (t === inputEl || inputEl.contains(t));
+      const inSuggestions = suggestionsEl && (t === suggestionsEl || suggestionsEl.contains(t));
 
-      if (!inBox) hideSuggestions();
+      if (!inInput && !inSuggestions) hideSuggestions();
+    }
+
+    // Handle mouse enter/leave for the suggestions dropdown to improve hover behavior
+    function onSuggestionsMouseLeave(e) {
+      // Only hide if we're not focused on the input
+      if (inputEl && document.activeElement !== inputEl) {
+        hideSuggestions();
+      }
     }
 
     if (inputEl) {
       inputEl.addEventListener("input", onInput);
       inputEl.addEventListener("focus", onFocus);
       inputEl.addEventListener("keydown", onKeyDown);
+      // Hide suggestions when input loses focus (with small delay to allow clicking suggestions)
+      inputEl.addEventListener("blur", () => {
+        setTimeout(() => {
+          if (document.activeElement !== inputEl && 
+              !suggestionsEl?.contains(document.activeElement)) {
+            hideSuggestions();
+          }
+        }, 150);
+      });
+    }
+
+    if (suggestionsEl) {
+      suggestionsEl.addEventListener("mouseleave", onSuggestionsMouseLeave);
     }
 
     document.addEventListener("click", onDocClick);
@@ -912,7 +949,7 @@
   }
 
   // Clear errors on input
-  ["categorySelect", "runnerId", "dateCompleted"].forEach((id) => {
+  ["categorySelect", "runnerId"].forEach((id) => {
     const el = $(id);
     if (!el) return;
     el.addEventListener("input", () => {
@@ -924,6 +961,112 @@
       repaint();
     });
   });
+
+  // =============================================================================
+  // Segmented Date Input Handler (YYYY/MM/DD)
+  // =============================================================================
+  const dateYearEl = $("dateYear");
+  const dateMonthEl = $("dateMonth");
+  const dateDayEl = $("dateDay");
+  const dateCompletedEl = $("dateCompleted");
+  const dateInputSegmented = $("dateInputSegmented");
+
+  function updateHiddenDateField() {
+    const year = (dateYearEl?.value || "").trim();
+    const month = (dateMonthEl?.value || "").trim();
+    const day = (dateDayEl?.value || "").trim();
+
+    // Only set value if at least one segment has content
+    if (year || month || day) {
+      const paddedMonth = month.padStart(2, "0");
+      const paddedDay = day.padStart(2, "0");
+      dateCompletedEl.value = `${year}/${paddedMonth}/${paddedDay}`;
+    } else {
+      dateCompletedEl.value = "";
+    }
+    
+    clearFieldError("dateCompleted");
+    if (dateInputSegmented) {
+      dateInputSegmented.classList.remove("has-error");
+    }
+    repaint();
+  }
+
+  function handleDateSegmentInput(e, nextEl, maxLen) {
+    const input = e.target;
+    // Only allow digits
+    input.value = input.value.replace(/\D/g, "");
+    
+    // Auto-advance to next field when max length reached
+    if (input.value.length >= maxLen && nextEl) {
+      nextEl.focus();
+      nextEl.select();
+    }
+    
+    updateHiddenDateField();
+  }
+
+  function handleDateSegmentKeydown(e, prevEl, nextEl) {
+    const input = e.target;
+    
+    // Handle backspace - move to previous field if empty
+    if (e.key === "Backspace" && input.value === "" && prevEl) {
+      e.preventDefault();
+      prevEl.focus();
+      // Select all text in previous field
+      prevEl.setSelectionRange(prevEl.value.length, prevEl.value.length);
+    }
+    
+    // Handle left arrow at start of field
+    if (e.key === "ArrowLeft" && input.selectionStart === 0 && prevEl) {
+      e.preventDefault();
+      prevEl.focus();
+      prevEl.setSelectionRange(prevEl.value.length, prevEl.value.length);
+    }
+    
+    // Handle right arrow at end of field
+    if (e.key === "ArrowRight" && input.selectionStart === input.value.length && nextEl) {
+      e.preventDefault();
+      nextEl.focus();
+      nextEl.setSelectionRange(0, 0);
+    }
+    
+    // Handle / key to advance to next field
+    if (e.key === "/" && nextEl) {
+      e.preventDefault();
+      nextEl.focus();
+      nextEl.select();
+    }
+  }
+
+  // Make date separators clickable to focus appropriate field
+  if (dateInputSegmented) {
+    const separators = dateInputSegmented.querySelectorAll(".date-separator");
+    if (separators[0]) {
+      separators[0].addEventListener("click", () => dateMonthEl?.focus());
+    }
+    if (separators[1]) {
+      separators[1].addEventListener("click", () => dateDayEl?.focus());
+    }
+  }
+
+  if (dateYearEl) {
+    dateYearEl.addEventListener("input", (e) => handleDateSegmentInput(e, dateMonthEl, 4));
+    dateYearEl.addEventListener("keydown", (e) => handleDateSegmentKeydown(e, null, dateMonthEl));
+    dateYearEl.addEventListener("blur", updateHiddenDateField);
+  }
+
+  if (dateMonthEl) {
+    dateMonthEl.addEventListener("input", (e) => handleDateSegmentInput(e, dateDayEl, 2));
+    dateMonthEl.addEventListener("keydown", (e) => handleDateSegmentKeydown(e, dateYearEl, dateDayEl));
+    dateMonthEl.addEventListener("blur", updateHiddenDateField);
+  }
+
+  if (dateDayEl) {
+    dateDayEl.addEventListener("input", (e) => handleDateSegmentInput(e, null, 2));
+    dateDayEl.addEventListener("keydown", (e) => handleDateSegmentKeydown(e, dateMonthEl, null));
+    dateDayEl.addEventListener("blur", updateHiddenDateField);
+  }
 
   // Video URL handler with title fetching
   const videoUrlEl = $("videoUrl");
@@ -973,7 +1116,7 @@
     if (!validation.valid) {
       setMsg(validation.message, "error");
       if (validation.firstError) {
-        $(validation.firstError)?.focus();
+        focusField(validation.firstError);
       }
       return;
     }
@@ -986,6 +1129,19 @@
     }
   });
 
+  // Helper to focus a field, handling special cases like segmented date input
+  function focusField(fieldId) {
+    if (fieldId === "dateCompleted") {
+      // Focus the year segment of the segmented date input
+      const yearEl = $("dateYear");
+      if (yearEl) {
+        yearEl.focus();
+        return;
+      }
+    }
+    $(fieldId)?.focus();
+  }
+
   // Form submission handler
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -996,7 +1152,7 @@
     if (!validation.valid) {
       setMsg(validation.message, "error");
       if (validation.firstError) {
-        $(validation.firstError)?.focus();
+        focusField(validation.firstError);
       }
       return;
     }
