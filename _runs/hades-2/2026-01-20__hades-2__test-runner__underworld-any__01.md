@@ -9,11 +9,12 @@ standard_challenges:
   - "hitless"
   - "damageless"
   - "no-hit-no-damage"
-community_challenge: "boonless"
+community_challenge:
 character: "sister-blades-melinoe-aspect"
 glitch_id: "unrestricted"
 restrictions:
   - "arcanaless"
+  - "boonless"
   - "no-hexes"
 verified: false
 submission_id: "sub_mkp4mwcf_lh7iiw"
