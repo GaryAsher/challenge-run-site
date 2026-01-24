@@ -38,10 +38,10 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Let users make Player-Made Challenges on the game's respective forum. Forum needs massive overhaul to accomodate for this, including backend support.
 
 ## Enhanced Runner Profiles:
-- [ ] Run file naming convention - revisit when building runner submission process
 - [ ] Runner profile submission - Self-service profile creation
 - [ ] Add social links (YouTube, Twitch, Twitter, Discord)
 - [ ] Add bio field
+- [ ] Run file naming convention - revisit when building runner submission process
 - [ ] Add featured runs section
 - [ ] Auto-calculate stats (total runs, games played, PBs)
 
@@ -69,7 +69,7 @@ featured_runs:
 # Future Features
 
 ## Site Features
-- [ ] Add Spanish language accessibility
+- [ ] Add Spanish language accessibility.
       - Request Community translation early so it can be done in parallel with other changes.
 - [ ] Dark/light mode toggle
 
