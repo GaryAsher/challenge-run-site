@@ -2925,6 +2925,51 @@ a.resource-card:hover {
   background: var(--bg-soft, var(--surface));
 }
 
+/* Tier accordion (Full Runs, Mini-Challenges, Player-Made within Run Categories) */
+.accordion-item--tier {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.75rem;
+  background: var(--surface);
+}
+
+.accordion-item--tier:last-child {
+  margin-bottom: 0;
+}
+
+.accordion-header--tier {
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  background: var(--bg-soft);
+  border-radius: var(--radius-sm);
+}
+
+.accordion-item--tier[open] .accordion-header--tier {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.accordion-item--tier > .accordion-content {
+  padding: 0.75rem;
+}
+
+.accordion-item--tier .accordion {
+  margin-top: 0;
+}
+
+.accordion-item--tier .accordion-item {
+  background: var(--bg);
+}
+
+/* Disabled parent option styling in Rule Builder dropdown */
+.rb-category-parent {
+  font-weight: 600;
+  font-style: italic;
+  color: var(--text-muted);
+  text-align: center;
+}
+
 /* =========================================================
    Community Challenges List (for Overview page)
    ========================================================= */
