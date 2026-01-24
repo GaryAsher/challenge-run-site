@@ -276,55 +276,89 @@ layout: default
       {% endif %}
 
       <!-- =========================================================
-           TIER PICKER PAGE (runs/index.html)
+           TIER PICKER PAGE (runs/index.html) - Auto-redirect to first category
            ========================================================= -->
       {% if page_type == "tier_picker" %}
-        <section class="tab-panel active" data-panel="runs">
-          <div class="runs-header">
-            <p class="muted mt-0 mb-0">Select a category type to browse runs for {{ game.game_name }}.</p>
-          </div>
+        {% comment %} Determine the first tier and first category to redirect to {% endcomment %}
+        {% assign redirect_tier = "" %}
+        {% assign redirect_category = "" %}
+        
+        {% if has_full_runs %}
+          {% assign redirect_tier = "full-runs" %}
+          {% if game.full_runs and game.full_runs.size > 0 %}
+            {% assign redirect_category = game.full_runs[0].slug %}
+          {% elsif game.categories_data and game.categories_data.size > 0 %}
+            {% assign redirect_category = game.categories_data[0].slug %}
+          {% endif %}
+        {% elsif has_mini_challenges %}
+          {% assign redirect_tier = "mini-challenges" %}
+          {% if game.mini_challenges and game.mini_challenges.size > 0 %}
+            {% assign redirect_category = game.mini_challenges[0].slug %}
+          {% endif %}
+        {% elsif has_player_made %}
+          {% assign redirect_tier = "player-made" %}
+          {% if game.player_made and game.player_made.size > 0 %}
+            {% assign redirect_category = game.player_made[0].slug %}
+          {% endif %}
+        {% endif %}
+        
+        {% if redirect_tier != "" and redirect_category != "" %}
+          <!-- Auto-redirect to first category of first tier -->
+          <script>
+            window.location.replace('{{ runs_base }}{{ redirect_tier }}/{{ redirect_category }}/');
+          </script>
+          <section class="tab-panel active" data-panel="runs">
+            <p class="muted" style="padding: 2rem; text-align: center;">Redirecting to runs...</p>
+          </section>
+        {% else %}
+          <!-- Fallback: show tier picker if no redirect possible -->
+          <section class="tab-panel active" data-panel="runs">
+            <div class="runs-header">
+              <p class="muted mt-0 mb-0">Select a category type to browse runs for {{ game.game_name }}.</p>
+            </div>
 
-          <div class="tier-cards">
-            {% if has_full_runs %}
-              <a href="{{ runs_base }}full-runs/" class="tier-card tier-card--full-runs">
-                <h3 class="tier-card__title">🏁 Full Runs</h3>
-                <p class="tier-card__desc muted">Categories that require reaching an ending</p>
-                <span class="tier-card__count">
-                  {% assign count = 0 %}
-                  {% if game.full_runs %}{% assign count = game.full_runs.size %}
-                  {% elsif game.categories_data %}{% assign count = game.categories_data.size %}{% endif %}
-                  {{ count }} categor{% if count == 1 %}y{% else %}ies{% endif %}
-                </span>
-              </a>
-            {% endif %}
+            <div class="tier-cards">
+              {% if has_full_runs %}
+                <a href="{{ runs_base }}full-runs/" class="tier-card tier-card--full-runs">
+                  <h3 class="tier-card__title">🏁 Full Runs</h3>
+                  <p class="tier-card__desc muted">Categories that require reaching an ending</p>
+                  <span class="tier-card__count">
+                    {% assign count = 0 %}
+                    {% if game.full_runs %}{% assign count = game.full_runs.size %}
+                    {% elsif game.categories_data %}{% assign count = game.categories_data.size %}{% endif %}
+                    {{ count }} categor{% if count == 1 %}y{% else %}ies{% endif %}
+                  </span>
+                </a>
+              {% endif %}
 
-            {% if has_mini_challenges %}
-              <a href="{{ runs_base }}mini-challenges/" class="tier-card tier-card--mini-challenges">
-                <h3 class="tier-card__title">⚡ Mini-Challenges</h3>
-                <p class="tier-card__desc muted">In-game challenges without requiring an ending</p>
-                <span class="tier-card__count">
-                  {{ game.mini_challenges.size }} categor{% if game.mini_challenges.size == 1 %}y{% else %}ies{% endif %}
-                </span>
-              </a>
-            {% endif %}
+              {% if has_mini_challenges %}
+                <a href="{{ runs_base }}mini-challenges/" class="tier-card tier-card--mini-challenges">
+                  <h3 class="tier-card__title">⚡ Mini-Challenges</h3>
+                  <p class="tier-card__desc muted">In-game challenges without requiring an ending</p>
+                  <span class="tier-card__count">
+                    {{ game.mini_challenges.size }} categor{% if game.mini_challenges.size == 1 %}y{% else %}ies{% endif %}
+                  </span>
+                </a>
+              {% endif %}
 
-            {% if has_player_made %}
-              <a href="{{ runs_base }}player-made/" class="tier-card tier-card--player-made">
-                <h3 class="tier-card__title">🎨 Player-Made</h3>
-                <p class="tier-card__desc muted">Community-created challenges with arbitrary goals</p>
-                <span class="tier-card__count">
-                  {{ game.player_made.size }} categor{% if game.player_made.size == 1 %}y{% else %}ies{% endif %}
-                </span>
-              </a>
-            {% endif %}
+              {% if has_player_made %}
+                <a href="{{ runs_base }}player-made/" class="tier-card tier-card--player-made">
+                  <h3 class="tier-card__title">🎨 Player-Made</h3>
+                  <p class="tier-card__desc muted">Community-created challenges with arbitrary goals</p>
+                  <span class="tier-card__count">
+                    {{ game.player_made.size }} categor{% if game.player_made.size == 1 %}y{% else %}ies{% endif %}
+                  </span>
+                </a>
+              {% endif %}
 
-            {% if tier_count == 0 %}
-              <div class="empty-state">
-                <p class="muted">No categories have been set up for this game yet.</p>
-              </div>
-            {% endif %}
-          </div>
-        </section>
+              {% if tier_count == 0 %}
+                <div class="empty-state">
+                  <p class="muted">No categories have been set up for this game yet.</p>
+                </div>
+              {% endif %}
+            </div>
+          </section>
+        {% endif %}
 
       <!-- =========================================================
            TIER INDEX PAGE - Redirect to first category
