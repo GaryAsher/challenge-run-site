@@ -32,10 +32,14 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Check Discord Webhook. Previously not working, but updated recently.
 - [ ] Update form to use 3-tier category system.
     - Update Google Apps Script, Google Sheet, and Google Form accordingly.
+- [ ] Change wording in Game Submission form to say Mini-Challenges.
 
-### Mini-Challenges and Player-Made Challenges
-- [ ] Make separate form for mini challenges? or do we keep it in the new game submission form?
-- [ ] Let users make Player-Made Challenges on the game's respective forum. Forum needs massive overhaul to accomodate for this, including backend support.
+### Modded Game Submisson
+- [ ] Allow Modded versions of games to accomodate for the modded community challenges.
+      - These would only be for mods that offer entirely new maps / characters / etc.
+      - QoL Mods, Cosmetic mods, and other things would still be allowed on main pages as the default.
+- [ ] Link between Modded Games and Main Games on each's page.
+- [ ] These categories would have a "Modded" tag.
 
 ## Enhanced Runner Profiles:
 - [ ] Runner profile submission - Self-service profile creation
@@ -44,6 +48,7 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Run file naming convention - revisit when building runner submission process
 - [ ] Add featured runs section
 - [ ] Auto-calculate stats (total runs, games played, PBs)
+- [ ] Add placeholder for badges
 
 **Proposed structure:**
 ```yaml
@@ -84,10 +89,6 @@ featured_runs:
 - [ ] Add keyboard navigation for filter dropdowns (arrow keys)
 - [ ] Add "Copy Link" button for sharing specific filtered views
 
-## Community Building
-- [ ] Show total run count badges on game cards
-- [ ] Leaderboards - Per-game, per-challenge rankings
-
 ---
 
 ## Later: History Tab
@@ -117,7 +118,19 @@ history:
     
 ```
 
-## When Needed: Forum Integration
+## Badges System
+- [ ] Create `_data/badges.yml` with badge definitions
+- [ ] Build badge calculation script
+- [ ] Display badges on runner profiles
+- [ ] Auto-assign badges on run promotion
+
+## Community Building
+- [ ] Show total run count badges on game cards
+- [ ] Leaderboards - Per-game, per-challenge rankings
+- [ ] Let users make Player-Made Challenges on the game's respective forum. 
+      - Forum needs massive overhaul to accomodate for this, including backend support.
+
+## Forum Integration
 
 **Option A: GitHub Discussions**
 - Enable Discussions in repo settings
@@ -134,14 +147,6 @@ history:
 - More real-time, community-focused
 
 **Decision needed:** Choose based on community preference and engagement style.
-
----
-
-## Badges System
-- [ ] Create `_data/badges.yml` with badge definitions
-- [ ] Build badge calculation script
-- [ ] Display badges on runner profiles
-- [ ] Auto-assign badges on run promotion
 
 ---
 
