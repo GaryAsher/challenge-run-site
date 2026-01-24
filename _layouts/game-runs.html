@@ -457,6 +457,18 @@ layout: default
 
             <div class="advanced-filters" id="advanced-filters" hidden>
               <div class="filter-groups">
+                {% if show_character and game.characters_data %}
+                <!-- Character Filter (typeahead style) -->
+                <div class="filter-group" id="f-character-container">
+                  <label class="filter-group__label">{{ character_label }}</label>
+                  <div class="filter-input__picked" id="f-character-picked"></div>
+                  <div class="filter-input__wrap">
+                    <input type="text" id="f-character-search" class="filter-input__field" placeholder="Type a {{ character_label | downcase }}..." autocomplete="off" />
+                    <div class="filter-input__suggestions" id="f-character-suggestions" hidden></div>
+                  </div>
+                </div>
+                {% endif %}
+
                 <!-- Challenge Filter (typeahead style) -->
                 <div class="filter-group" id="f-challenge-container">
                   <label class="filter-group__label">Challenge</label>
@@ -479,22 +491,10 @@ layout: default
                 </div>
                 {% endif %}
 
-                {% if show_character and game.characters_data %}
-                <!-- Character Filter (typeahead style) -->
-                <div class="filter-group" id="f-character-container">
-                  <label class="filter-group__label">{{ character_label }}</label>
-                  <div class="filter-input__picked" id="f-character-picked"></div>
-                  <div class="filter-input__wrap">
-                    <input type="text" id="f-character-search" class="filter-input__field" placeholder="Type a {{ character_label | downcase }}..." autocomplete="off" />
-                    <div class="filter-input__suggestions" id="f-character-suggestions" hidden></div>
-                  </div>
-                </div>
-                {% endif %}
-
                 {% if show_glitches %}
                 <!-- Glitch Category Filter (typeahead style) -->
                 <div class="filter-group" id="f-glitch-container">
-                  <label class="filter-group__label">Glitch Category</label>
+                  <label class="filter-group__label">Glitches Used</label>
                   <div class="filter-input__picked" id="f-glitch-picked"></div>
                   <div class="filter-input__wrap">
                     <input type="text" id="f-glitch-search" class="filter-input__field" placeholder="Type a glitch category..." autocomplete="off" />
@@ -592,9 +592,17 @@ layout: default
                     
                     {% assign runner_label = r.runner | default: r.runner_id | default: "—" | replace: "_", " " %}
 
+                    {% comment %} 
+                      Process restrictions - handle multiple formats:
+                      1. Old format: restriction_ids has slugs, restrictions has labels
+                      2. New format: restrictions has slugs directly (no restriction_ids)
+                      3. Mixed: could have labels in restrictions that need lookup
+                    {% endcomment %}
                     {% assign r_texts = "" | split: "" %}
                     {% assign r_ids = "" | split: "" %}
-                    {% comment %} Use restriction_ids if available, otherwise fall back to restrictions {% endcomment %}
+                    {% assign r_labels = "" | split: "" %}
+                    
+                    {% comment %} First, get raw values from restriction_ids if available {% endcomment %}
                     {% if r.restriction_ids and r.restriction_ids != empty %}
                       {% if r.restriction_ids.first %}
                         {% assign r_ids = r.restriction_ids %}
@@ -602,6 +610,8 @@ layout: default
                         {% assign r_ids = r.restriction_ids | split: "," %}
                       {% endif %}
                     {% endif %}
+                    
+                    {% comment %} Get raw values from restrictions {% endcomment %}
                     {% if r.restrictions and r.restrictions != empty %}
                       {% if r.restrictions.first %}
                         {% assign r_texts = r.restrictions %}
@@ -609,6 +619,8 @@ layout: default
                         {% assign r_texts = r.restrictions | split: "," %}
                       {% endif %}
                     {% endif %}
+                    
+                    {% comment %} Clean up arrays {% endcomment %}
                     {% assign r_clean = "" | split: "" %}
                     {% assign r_id_clean = "" | split: "" %}
                     {% for rr in r_texts %}
@@ -621,6 +633,40 @@ layout: default
                     {% endfor %}
                     {% assign r_texts = r_clean | uniq %}
                     {% assign r_ids = r_id_clean | uniq %}
+                    
+                    {% comment %} 
+                      If no restriction_ids but we have restrictions, check if they're slugs
+                      by matching against game.restrictions_data 
+                    {% endcomment %}
+                    {% if r_ids.size == 0 and r_texts.size > 0 %}
+                      {% assign r_ids = "" | split: "" %}
+                      {% assign r_labels = "" | split: "" %}
+                      {% for rt in r_texts %}
+                        {% assign found_slug = false %}
+                        {% assign found_label = rt %}
+                        {% for res in game.restrictions_data %}
+                          {% if res.slug == rt %}
+                            {% comment %} restrictions contains a slug {% endcomment %}
+                            {% assign r_ids = r_ids | push: rt %}
+                            {% assign found_label = res.label %}
+                            {% assign found_slug = true %}
+                            {% break %}
+                          {% elsif res.label == rt %}
+                            {% comment %} restrictions contains a label, get the slug {% endcomment %}
+                            {% assign r_ids = r_ids | push: res.slug %}
+                            {% assign found_label = rt %}
+                            {% assign found_slug = true %}
+                            {% break %}
+                          {% endif %}
+                        {% endfor %}
+                        {% unless found_slug %}
+                          {% comment %} Not found in game data, use as-is {% endcomment %}
+                          {% assign r_ids = r_ids | push: rt %}
+                        {% endunless %}
+                        {% assign r_labels = r_labels | push: found_label %}
+                      {% endfor %}
+                      {% assign r_texts = r_labels %}
+                    {% endif %}
 
                     {% assign video_url = r.video_url | default: r.video %}
 
@@ -640,7 +686,7 @@ layout: default
                         data-time="{{ r.time_primary | default: r.time | default: '' }}"
                         data-date="{{ r.date_completed | default: r.date | date: '%Y-%m-%d' }}"
                         data-category-slug="{{ r.category_slug | default: '' | escape }}"
-                        data-restriction-ids="{{ r_ids | join: '||' | escape }}">>
+                        data-restriction-ids="{{ r_ids | join: '||' | escape }}">
                       <td data-label="Runner">
                         {% if r.runner_id %}
                           <a href="{{ '/runners/' | relative_url }}{{ r.runner_id }}/">{{ runner_label }}</a>
