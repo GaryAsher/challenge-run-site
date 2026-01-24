@@ -6,14 +6,6 @@ This document consolidates all reminders, future ideas, and planned features for
 
 # Priority Roadmap
 
-## Game Page Tabs
-### /overview/ page
-- [ ] "Credits" need to be listed at the bottom of every page. Normalize language used. Default is there is no text?
-
-### /runs/ page
-- [ ] Challenge showing concatenation of Rule Builder? Why Does Challenge show "Hitless" , "Damageless" , and "boonless" ?
-- [ ] Fix Advanced Search to show all options available, not just what is in the grid below.
-
 ### /rules/ page
 - [ ] Run Categories drop-down accordion below uses old variables. Update to 3-tiered category system.
 
