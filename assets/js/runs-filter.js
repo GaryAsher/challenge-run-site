@@ -500,15 +500,19 @@ document.addEventListener('DOMContentLoaded', function() {
           row.dataset.challengeLabel,
           row.dataset.challengeAliases,
           row.dataset.restrictions,
+          row.dataset.restrictionLabels,
           row.dataset.character
         ].join(' ').toLowerCase();
         if (!searchable.includes(q)) show = false;
       }
 
-      // Challenge filter (any match)
+      // Challenge filter (any match - check all challenge IDs)
       if (show && selectedChallenges.size > 0) {
-        const rowChallenge = norm(row.dataset.challengeId);
-        if (!selectedChallenges.has(rowChallenge)) show = false;
+        // Get all challenge IDs for this row (comma-separated in data-challenge-ids)
+        const rowChallengeIds = (row.dataset.challengeIds || row.dataset.challengeId || '').split(',').map(norm).filter(Boolean);
+        // Check if any of the row's challenges match any of the selected challenges
+        const hasMatch = rowChallengeIds.some(chId => selectedChallenges.has(chId));
+        if (!hasMatch) show = false;
       }
 
       // Restriction filter (must have all selected)
