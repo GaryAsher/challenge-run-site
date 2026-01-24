@@ -592,6 +592,18 @@ a:hover {
   border-color: var(--accent);
 }
 
+/* Disable hover highlight in submit forms - only show on focus */
+.submit-run-page .select:hover {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+.submit-run-page .select:focus {
+  background: var(--surface);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--focus-2);
+}
+
 .results-controls .select { margin-left: 0.4rem; }
 
 :where(a, button, input, select, textarea, .tag-chip, .tag-suggestion, .tab):focus-visible {
@@ -4552,9 +4564,9 @@ a.resource-card:hover {
   }
 }
 
-/* Segmented Date Input (YYYY/MM/DD) */
+/* Segmented Date Input (YYYY/MM/DD) - Compact single-box design */
 .date-input-segmented {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -4562,6 +4574,8 @@ a.resource-card:hover {
   min-height: var(--tap);
   overflow: hidden;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  width: auto;
+  max-width: 160px;
 }
 
 .date-input-segmented:focus-within {
@@ -4579,7 +4593,8 @@ a.resource-card:hover {
   color: var(--fg);
   text-align: center;
   font-size: 0.95rem;
-  padding: 0.6rem 0;
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", "Segoe UI Mono", monospace;
+  padding: 0.5rem 0;
   min-height: auto;
   width: auto;
 }
@@ -4592,20 +4607,21 @@ a.resource-card:hover {
 
 .date-segment::placeholder {
   color: var(--placeholder);
+  font-family: inherit;
 }
 
 .date-segment--year {
-  width: 4.5ch;
-  padding-left: 0.75rem;
+  width: 4ch;
+  padding-left: 0.5rem;
 }
 
-.date-segment--month,
-.date-segment--day {
-  width: 3ch;
+.date-segment--month {
+  width: 2.5ch;
 }
 
 .date-segment--day {
-  padding-right: 0.75rem;
+  width: 2.5ch;
+  padding-right: 0.5rem;
 }
 
 .date-separator {
@@ -4613,7 +4629,8 @@ a.resource-card:hover {
   font-size: 0.95rem;
   user-select: none;
   cursor: pointer;
-  padding: 0.6rem 0.15rem;
+  padding: 0;
+  line-height: 1;
   transition: color 0.15s ease;
 }
 
