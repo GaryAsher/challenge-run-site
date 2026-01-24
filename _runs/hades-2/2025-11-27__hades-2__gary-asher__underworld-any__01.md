@@ -12,7 +12,7 @@ glitch_id: ""
 
 # === Display (matches table columns) ===
 runner: "Gary_Asher"
-character: "Moonstone Axe / Aspect of Thanatos"
+character: "Moonstone Axe / Thanatos Aspect"
 restrictions: []
 restriction_ids: []
 time_primary: "03:27:41"
