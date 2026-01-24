@@ -352,60 +352,52 @@ layout: default
       {% elsif page_type == "category" %}
         <section class="tab-panel active" data-panel="runs">
           
-          <!-- Category Pills Navigation -->
+          <!-- Category Pills Navigation (always top-level) -->
           <div class="category-pills">
-            {% comment %} Check if this is a child category (has parent) {% endcomment %}
-            {% if is_child_page and child_pairs.size > 0 %}
-              {% comment %} Show parent + children as pills {% endcomment %}
-              {% for p in child_pairs %}
-                {% assign parts = p | split: "||" %}
-                {% assign s = parts[0] | strip %}
-                {% assign lbl = parts[1] | default: s | strip %}
-                {% if s != "" %}
-                  <a class="category-pill{% if s == active_cat_slug %} is-active{% endif %}" 
-                     href="{{ runs_base }}{{ active_tier_slug }}/{{ s | url_encode }}/"
-                     {% if s == active_cat_slug %}aria-current="page"{% endif %}>
-                    {{ lbl }}
-                  </a>
-                {% endif %}
-              {% endfor %}
-            {% else %}
-               
-              {% comment %} Show all top-level categories as pills {% endcomment %}
-              {% for cat in current_tier_categories %}
-                {% assign cat_slug = cat.slug | default: "" | strip %}
-                {% if cat_slug != "" %}
-                  {% assign is_active = false %}
-                  {% if cat_slug == active_cat_slug %}
-                    {% assign is_active = true %}
-                  {% endif %}
-                  <a class="category-pill{% if is_active %} is-active{% endif %}" 
-                     href="{{ runs_base }}{{ active_tier_slug }}/{{ cat_slug }}/"
-                     {% if is_active %}aria-current="page"{% endif %}>
-                    {{ cat.label | default: cat_slug }}
-                  </a>
-                {% endif %}
-              {% endfor %}
+            {% assign active_top_slug = active_cat_slug %}
+            {% if is_child_page %}
+              {% assign active_top_slug = parent_slug %}
             {% endif %}
+          
+            {% for cat in current_tier_categories %}
+              {% assign cat_slug = cat.slug | default: "" | strip %}
+              {% if cat_slug != "" %}
+                {% assign is_active = false %}
+                {% if cat_slug == active_top_slug %}
+                  {% assign is_active = true %}
+                {% endif %}
+                <a class="category-pill{% if is_active %} is-active{% endif %}"
+                   href="{{ runs_base }}{{ active_tier_slug }}/{{ cat_slug }}/"
+                   {% if is_active %}aria-current="page"{% endif %}>
+                  {{ cat.label | default: cat_slug }}
+                </a>
+              {% endif %}
+            {% endfor %}
           </div>
 
           <!-- Subcategory Pills (if this category has children and we're on the parent) -->
+          {% assign browse_parent_slug = active_cat_slug %}
+          {% if is_child_page %}
+            {% assign browse_parent_slug = parent_slug %}
+          {% endif %}
+          
           {% for c in current_tier_categories %}
-            {% if c.slug == parent_slug and c.children and c.children.size > 0 %}
+            {% if c.slug == browse_parent_slug and c.children and c.children.size > 0 %}
               <div class="subcategory-pills" id="subcategory-filter">
                 <span class="muted subcategory-label">Browse:</span>
           
-                {% assign parent_full = c.slug %}
-                <a class="category-pill category-pill--sub{% if active_cat_slug == parent_full %} is-active{% endif %}"
-                   href="{{ runs_base }}{{ active_tier_slug }}/{{ parent_full }}/"
-                   {% if active_cat_slug == parent_full %}aria-current="page"{% endif %}>
+                <!-- All (parent page) -->
+                <a class="category-pill category-pill--sub{% if is_child_page == false %} is-active{% endif %}"
+                   href="{{ runs_base }}{{ active_tier_slug }}/{{ c.slug }}/"
+                   {% if is_child_page == false %}aria-current="page"{% endif %}>
                   All
                 </a>
           
+                <!-- Children -->
                 {% for ch in c.children %}
                   {% assign child_full = c.slug | append: "/" | append: ch.slug %}
                   <a class="category-pill category-pill--sub{% if active_cat_slug == child_full %} is-active{% endif %}"
-                     href="{{ runs_base }}{{ active_tier_slug }}/{{ child_full }}/"
+                     href="{{ runs_base }}{{ active_tier_slug }}/{{ child_full | url_encode }}/"
                      {% if active_cat_slug == child_full %}aria-current="page"{% endif %}>
                     {{ ch.label | default: ch.slug }}
                   </a>
