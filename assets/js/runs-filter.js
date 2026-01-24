@@ -411,30 +411,6 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ============================================================
-  // Subcategory Filter (for parent categories with children)
-  // ============================================================
-  const subcategoryFilter = document.getElementById('subcategory-filter');
-  let selectedSubcategory = '';
-
-  if (subcategoryFilter) {
-    const subcatButtons = subcategoryFilter.querySelectorAll('.category-pill--sub');
-    
-    subcatButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        // Update active state
-        subcatButtons.forEach(b => b.classList.remove('is-active'));
-        btn.classList.add('is-active');
-        
-        // Set selected subcategory
-        selectedSubcategory = btn.dataset.subcat || '';
-        
-        // Re-filter rows
-        filterRows();
-      });
-    });
-  }
-
-  // ============================================================
   // Filter Logic
   // ============================================================
   function filterRows() {
@@ -454,12 +430,6 @@ document.addEventListener('DOMContentLoaded', function() {
           row.dataset.character
         ].join(' ').toLowerCase();
         if (!searchable.includes(q)) show = false;
-      }
-
-      // Subcategory filter
-      if (show && selectedSubcategory) {
-        const rowCategory = row.dataset.categorySlug || '';
-        if (rowCategory !== selectedSubcategory) show = false;
       }
 
       // Challenge filter (any match)
