@@ -241,12 +241,12 @@ layout: default
       {% endunless %}
 
       <!-- =========================================================
-           6. Credits (if present)
+           6. Credits
            ========================================================= -->
-      {% if page.credits and page.credits.size > 0 %}
-        <div class="card card--compact mt-4" data-section-order="5">
-          <h2 class="mb-2">Credits</h2>
-          <p class="muted mb-3">Thanks to the following contributors for helping set up this page:</p>
+      <div class="card card--compact mt-4" data-section-order="5">
+        <h2 class="mb-2">Credits</h2>
+        {% if page.credits and page.credits.size > 0 %}
+          <p class="muted mb-3">Contributors who helped establish this game's challenge run definitions:</p>
           <ul class="credits-list">
             {% for credit in page.credits %}
               <li>
@@ -259,8 +259,10 @@ layout: default
               </li>
             {% endfor %}
           </ul>
-        </div>
-      {% endif %}
+        {% else %}
+          <p class="muted">No credits listed yet.</p>
+        {% endif %}
+      </div>
 
       <!-- Note: Community Challenges are NOT shown on Overview page per spec -->
       <!-- They appear only on the Rules page -->
