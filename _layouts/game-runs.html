@@ -559,6 +559,15 @@ layout: default
                     {% assign runner_label = r.runner | default: r.runner_id | default: "—" | replace: "_", " " %}
 
                     {% assign r_texts = "" | split: "" %}
+                    {% assign r_ids = "" | split: "" %}
+                    {% comment %} Use restriction_ids if available, otherwise fall back to restrictions {% endcomment %}
+                    {% if r.restriction_ids and r.restriction_ids != empty %}
+                      {% if r.restriction_ids.first %}
+                        {% assign r_ids = r.restriction_ids %}
+                      {% elsif r.restriction_ids != "[]" and r.restriction_ids != "" %}
+                        {% assign r_ids = r.restriction_ids | split: "," %}
+                      {% endif %}
+                    {% endif %}
                     {% if r.restrictions and r.restrictions != empty %}
                       {% if r.restrictions.first %}
                         {% assign r_texts = r.restrictions %}
@@ -567,11 +576,17 @@ layout: default
                       {% endif %}
                     {% endif %}
                     {% assign r_clean = "" | split: "" %}
+                    {% assign r_id_clean = "" | split: "" %}
                     {% for rr in r_texts %}
                       {% assign t = rr | strip %}
                       {% if t != "" and t != "[]" %}{% assign r_clean = r_clean | push: t %}{% endif %}
                     {% endfor %}
+                    {% for rid in r_ids %}
+                      {% assign t = rid | strip %}
+                      {% if t != "" and t != "[]" %}{% assign r_id_clean = r_id_clean | push: t %}{% endif %}
+                    {% endfor %}
                     {% assign r_texts = r_clean | uniq %}
+                    {% assign r_ids = r_id_clean | uniq %}
 
                     {% assign video_url = r.video_url | default: r.video %}
 
@@ -584,12 +599,14 @@ layout: default
                         data-challenges="{{ challenge_labels | join: ',' | escape }}"
                         data-challenge-ids="{{ challenge_ids | join: ',' | escape }}"
                         data-aliases="{{ all_aliases | join: ',' | escape }}"
-                        data-restrictions="{{ r_texts | join: '||' | escape }}"
+                        data-restrictions="{{ r_ids | join: '||' | escape }}"
+                        data-restriction-labels="{{ r_texts | join: '||' | escape }}"
                         data-character="{{ r.character | default: '' | escape }}"
                         data-glitch="{{ r.glitch_id | default: '' | escape }}"
                         data-time="{{ r.time_primary | default: r.time | default: '' }}"
                         data-date="{{ r.date_completed | default: r.date | date: '%Y-%m-%d' }}"
-                        data-category-slug="{{ r.category_slug | default: '' | escape }}">
+                        data-category-slug="{{ r.category_slug | default: '' | escape }}"
+                        data-restriction-ids="{{ r_ids | join: '||' | escape }}">>
                       <td data-label="Runner">
                         {% if r.runner_id %}
                           <a href="{{ '/runners/' | relative_url }}{{ r.runner_id }}/">{{ runner_label }}</a>
@@ -679,5 +696,38 @@ layout: default
 
 <!-- Runs filter JavaScript (external file) -->
 {% if page_type == "category" %}
+<script>
+// Inject game data for advanced filters (all options, not just what's in the grid)
+window.CRC_GAME_DATA = {
+  challenges: [
+    {% if game.challenges_data %}
+      {% for ch in game.challenges_data %}
+        { id: {{ ch.slug | jsonify }}, label: {{ ch.label | jsonify }} }{% unless forloop.last %},{% endunless %}
+      {% endfor %}
+    {% endif %}
+  ],
+  restrictions: [
+    {% if game.restrictions_data %}
+      {% for res in game.restrictions_data %}
+        { id: {{ res.slug | jsonify }}, label: {{ res.label | jsonify }} }{% unless forloop.last %},{% endunless %}
+      {% endfor %}
+    {% endif %}
+  ],
+  characters: [
+    {% if game.characters_data %}
+      {% for char in game.characters_data %}
+        { id: {{ char.slug | jsonify }}, label: {{ char.label | jsonify }} }{% unless forloop.last %},{% endunless %}
+      {% endfor %}
+    {% endif %}
+  ],
+  glitches: [
+    {% if game.glitches_data %}
+      {% for gl in game.glitches_data %}
+        { id: {{ gl.slug | jsonify }}, label: {{ gl.label | jsonify }} }{% unless forloop.last %},{% endunless %}
+      {% endfor %}
+    {% endif %}
+  ]
+};
+</script>
 <script src="{{ '/assets/js/runs-filter.js' | relative_url }}"></script>
 {% endif %}
