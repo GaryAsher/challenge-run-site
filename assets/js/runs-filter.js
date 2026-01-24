@@ -613,24 +613,50 @@ document.addEventListener('DOMContentLoaded', function() {
       const filtersParam = hash.split('filters=')[1];
       const filterData = JSON.parse(decodeURIComponent(filtersParam));
       
+      // Helper to find ID by label from available options
+      function findIdByLabel(items, label) {
+        const normalizedLabel = norm(label);
+        const found = items.find(item => norm(item.label) === normalizedLabel || norm(item.id) === normalizedLabel);
+        return found ? found.id : label; // Fall back to original if not found
+      }
+      
       if (filterData.challenges) {
-        filterData.challenges.forEach(id => selectedChallenges.add(norm(id)));
+        filterData.challenges.forEach(labelOrId => {
+          const id = findIdByLabel(availableChallenges, labelOrId);
+          selectedChallenges.add(norm(id));
+        });
       }
       
       if (filterData.restrictions) {
-        filterData.restrictions.forEach(id => selectedRestrictions.add(norm(id)));
+        filterData.restrictions.forEach(labelOrId => {
+          const id = findIdByLabel(availableRestrictions, labelOrId);
+          selectedRestrictions.add(norm(id));
+        });
       }
       
+      // Character can be a string or array
       if (filterData.character) {
-        filterData.character.forEach(id => selectedCharacters.add(norm(id)));
+        if (Array.isArray(filterData.character)) {
+          filterData.character.forEach(labelOrId => {
+            const id = findIdByLabel(availableCharacters, labelOrId);
+            selectedCharacters.add(norm(id));
+          });
+        } else if (filterData.character) {
+          const id = findIdByLabel(availableCharacters, filterData.character);
+          selectedCharacters.add(norm(id));
+        }
       }
       
       if (filterData.glitch) {
         selectedGlitches.clear();
         if (Array.isArray(filterData.glitch)) {
-          filterData.glitch.forEach(id => selectedGlitches.add(norm(id)));
+          filterData.glitch.forEach(labelOrId => {
+            const id = findIdByLabel(availableGlitches, labelOrId);
+            selectedGlitches.add(norm(id));
+          });
         } else {
-          selectedGlitches.add(norm(filterData.glitch));
+          const id = findIdByLabel(availableGlitches, filterData.glitch);
+          selectedGlitches.add(norm(id));
         }
       }
       
@@ -648,6 +674,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (challengeFilter) challengeFilter.refresh();
       if (restrictionsFilter) restrictionsFilter.refresh();
       if (characterFilter) characterFilter.refresh();
+      if (glitchFilter) glitchFilter.refresh();
       
       filterRows();
       
