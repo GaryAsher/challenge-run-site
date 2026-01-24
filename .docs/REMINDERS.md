@@ -7,9 +7,8 @@ This document consolidates all reminders, future ideas, and planned features for
 # Priority Roadmap
 
 ## Game Page Tabs
-
 ### /overview/ page
-- [ ] "Credits" need to be listed at the bottom of every page. If there are no credits listed, then it can be empty.
+- [ ] "Credits" need to be listed at the bottom of every page. Normalize language used. Default is there is no text?
 
 ### /runs/ page
 - [ ] Challenge showing concatenation of Rule Builder? Why Does Challenge show "Hitless" , "Damageless" , and "boonless" ?
@@ -17,10 +16,6 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ### /rules/ page
 - [ ] Run Categories drop-down accordion below uses old variables. Update to 3-tiered category system.
-- [ ] Rule Builder initial highlight color needs to be accent color, not green color.
-
-### /history/ page
-- [ ] Needs better filtering. Only show verified runs, community milestones, records broken (if verified), etc.
 
 ### /submit/ page
 - [ ] Fix js selector to only appear when hovering drop-down. Currently allows selection when on top of text.
@@ -30,24 +25,21 @@ This document consolidates all reminders, future ideas, and planned features for
       - Have the / limit characters, and clickable. revert to MM/DD/YYYY if needed.
 
 ## Forms & Submissions
-
 ### New Game Submission form:
 - [ ] Do we ask users to fill out Genres again?
-    - [ ] Can we find a list of every genre ever?
-    - [ ] Do we create a script that finds genres, and validates user-submitted info?
+    - Can we find a list of every genre ever?
+    - Do we create a script that finds genres, and validates user-submitted info?
 - [ ] Check Discord Webhook. Previously not working, but updated recently.
 - [ ] Update form to use 3-tier category system.
     - Update Google Apps Script, Google Sheet, and Google Form accordingly.
 
 ### Mini-Challenges and Player-Made Challenges
-- [ ] Make separate form for mini challenges? or do we put it in the new game submission form?
+- [ ] Make separate form for mini challenges? or do we keep it in the new game submission form?
 - [ ] Let users make Player-Made Challenges on the game's respective forum. Forum needs massive overhaul to accomodate for this, including backend support.
 
-### New Runner Profile form:  
+## Enhanced Runner Profiles:
+- [ ] Run file naming convention - revisit when building runner submission process
 - [ ] Runner profile submission - Self-service profile creation
-- [ ] Enhanced Runner Profiles first.
-
-## Enhanced Runner Profiles
 - [ ] Add social links (YouTube, Twitch, Twitter, Discord)
 - [ ] Add bio field
 - [ ] Add featured runs section
@@ -77,11 +69,8 @@ featured_runs:
 # Future Features
 
 ## Site Features
-- [ ] Add Spanish version
-- [ ] Add a "Back to Top" button for long pages
-- [ ] Add keyboard navigation for filter dropdowns (arrow keys)
-- [ ] Add "Copy Link" button for sharing specific filtered views
-- [ ] Show total run count badges on game cards
+- [ ] Add Spanish language accessibility
+      - Request Community translation early so it can be done in parallel with other changes.
 - [ ] Dark/light mode toggle
 
 ## Performance Optimizations
@@ -91,10 +80,12 @@ featured_runs:
 
 ## UX Improvements
 - [ ] Loading state indicator/symbol for JavaScript-driven filtering
-- [ ] Run file naming convention - revisit when building runner submission process
+- [ ] Add a "Back to Top" button for long pages
+- [ ] Add keyboard navigation for filter dropdowns (arrow keys)
+- [ ] Add "Copy Link" button for sharing specific filtered views
 
 ## Community Building
-- [ ] Discord webhook for new run notifications
+- [ ] Show total run count badges on game cards
 - [ ] Leaderboards - Per-game, per-challenge rankings
 
 ---
