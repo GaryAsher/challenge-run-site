@@ -4552,6 +4552,75 @@ a.resource-card:hover {
   }
 }
 
+/* Segmented Date Input (YYYY/MM/DD) */
+.date-input-segmented {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  min-height: var(--tap);
+  overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.date-input-segmented:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--focus-2);
+}
+
+.date-input-segmented.has-error {
+  border-color: #ef4444;
+}
+
+.date-segment {
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  text-align: center;
+  font-size: 0.95rem;
+  padding: 0.6rem 0;
+  min-height: auto;
+  width: auto;
+}
+
+.date-segment:focus {
+  outline: none;
+  background: var(--bg-soft);
+  box-shadow: none;
+}
+
+.date-segment::placeholder {
+  color: var(--placeholder);
+}
+
+.date-segment--year {
+  width: 4.5ch;
+  padding-left: 0.75rem;
+}
+
+.date-segment--month,
+.date-segment--day {
+  width: 3ch;
+}
+
+.date-segment--day {
+  padding-right: 0.75rem;
+}
+
+.date-separator {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  user-select: none;
+  cursor: pointer;
+  padding: 0.6rem 0.15rem;
+  transition: color 0.15s ease;
+}
+
+.date-separator:hover {
+  color: var(--accent);
+}
+
 /* Section cards (for grouping Standard / Community / Character / Glitches / Restrictions) */
 .submit-run-page .submit-section {
   border: 1px solid var(--border);
