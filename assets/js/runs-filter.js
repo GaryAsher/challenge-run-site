@@ -235,41 +235,90 @@ document.addEventListener('DOMContentLoaded', function() {
   // ============================================================
   function buildFilterOptions() {
     const challenges = new Map();
-    const restrictions = new Set();
-    const characters = new Set();
+    const restrictions = new Map();
+    const characters = new Map();
     const glitches = new Map();
 
+    // First, add all options from game data (if available)
+    // This ensures Advanced Search shows ALL options, not just what's in the grid
+    if (window.CRC_GAME_DATA) {
+      const gameData = window.CRC_GAME_DATA;
+      
+      if (gameData.challenges) {
+        gameData.challenges.forEach(ch => {
+          if (ch.id && ch.label) {
+            challenges.set(ch.id, { id: ch.id, label: ch.label });
+          }
+        });
+      }
+      
+      if (gameData.restrictions) {
+        gameData.restrictions.forEach(res => {
+          if (res.id && res.label) {
+            restrictions.set(res.id, { id: res.id, label: res.label });
+          }
+        });
+      }
+      
+      if (gameData.characters) {
+        gameData.characters.forEach(char => {
+          if (char.id && char.label) {
+            characters.set(char.id, { id: char.id, label: char.label });
+          }
+        });
+      }
+      
+      if (gameData.glitches) {
+        gameData.glitches.forEach(gl => {
+          if (gl.id && gl.label) {
+            glitches.set(gl.id, { id: gl.id, label: gl.label });
+          }
+        });
+      }
+    }
+
+    // Then add any additional items from rows (for backwards compatibility)
     rows.forEach(row => {
       // Challenges
       const chLabel = row.dataset.challengeLabel;
       const chId = row.dataset.challengeId;
-      if (chLabel && chId) {
+      if (chLabel && chId && !challenges.has(chId)) {
         challenges.set(chId, { id: chId, label: chLabel });
       }
 
-      // Restrictions
-      const res = row.dataset.restrictions;
-      if (res) {
-        res.split('||').forEach(r => {
-          const trimmed = r.trim();
-          if (trimmed) restrictions.add(trimmed);
+      // Restrictions - now using restriction IDs
+      const resIds = row.dataset.restrictions;
+      const resLabels = row.dataset.restrictionLabels;
+      if (resIds) {
+        const ids = resIds.split('||');
+        const labels = resLabels ? resLabels.split('||') : ids;
+        ids.forEach((id, i) => {
+          const trimmedId = id.trim();
+          if (trimmedId && !restrictions.has(trimmedId)) {
+            restrictions.set(trimmedId, { 
+              id: trimmedId, 
+              label: labels[i] ? labels[i].trim() : trimmedId 
+            });
+          }
         });
       }
 
       // Characters
       const char = row.dataset.character;
-      if (char) characters.add(char);
+      if (char && !characters.has(char)) {
+        characters.set(char, { id: char, label: char });
+      }
 
       // Glitches
       const glitch = row.dataset.glitch;
-      if (glitch) {
+      if (glitch && !glitches.has(glitch)) {
         glitches.set(glitch, { id: glitch, label: glitch });
       }
     });
 
     availableChallenges = Array.from(challenges.values()).sort((a, b) => a.label.localeCompare(b.label));
-    availableRestrictions = Array.from(restrictions).sort().map(r => ({ id: r, label: r }));
-    availableCharacters = Array.from(characters).sort().map(c => ({ id: c, label: c }));
+    availableRestrictions = Array.from(restrictions.values()).sort((a, b) => a.label.localeCompare(b.label));
+    availableCharacters = Array.from(characters.values()).sort((a, b) => a.label.localeCompare(b.label));
     availableGlitches = Array.from(glitches.values()).sort((a, b) => a.label.localeCompare(b.label));
   }
 
