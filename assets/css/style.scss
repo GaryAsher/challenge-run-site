@@ -2631,6 +2631,19 @@ a.resource-card:hover {
   padding: 0.5rem 1rem;
 }
 
+/* Runs tab: make content attach to game tabs */
+.page-width.runs-page {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.runs-card {
+  margin-top: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+
 /* ==========================================================================
    ACCORDION & COMMUNITY CHALLENGES
    ========================================================================== */
