@@ -6,8 +6,13 @@ This document consolidates all reminders, future ideas, and planned features for
 
 # Priority Roadmap
 
-### /rules/ page
-- [ ] Run Categories drop-down accordion below uses old variables. Update to 3-tiered category system.
+### /rules/ and /runs/ page
+- [ ] The Advanced Search and Rule Builder need to look identical. Any changes to one, needs to be done to the other.
+- [ ] Challenges and Restrictions should use typeahead and multi-select. 
+- [ ] Character (Weapon / Aspect) and Glitches Used should be typeahead single-select options.
+- [ ] for Rule Builder, move the "Remove all filters" button to the far right. Align it vertically with the "Open / Close" button.
+- [ ] Change the Rule Builder to use Advanced Search's "<slug> x" style when something is selected.
+- [ ] Change the Advanced Search to use Rule Builder's system of putting all selections below the filters. And ordered by Headers.
 
 ### /submit/ page
 - [ ] Fix js selector to only appear when hovering drop-down. Currently allows selection when on top of text.
