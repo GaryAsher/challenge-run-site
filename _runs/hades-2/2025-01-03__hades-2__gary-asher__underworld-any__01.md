@@ -12,7 +12,7 @@ glitch_id: ""
 
 # === Display (matches table columns) ===
 runner: "Gary_Asher"
-character: "Sister Blades / Aspect of Pan"
+character: "Sister Blades / Pan Aspect"
 restrictions:
   - "Hestia Only"
   - "No Hexes"
