@@ -109,11 +109,15 @@
             {% if game.full_runs and game.full_runs.size > 0 %}
               <optgroup label="Full Runs">
                 {% for cat in game.full_runs %}
-                  <option value="{{ cat.slug }}" data-label="{{ cat.label }}" data-description="{{ cat.description | escape }}" data-tier="full_runs">{{ cat.label }}</option>
-                  {% if cat.children %}
+                  {% if cat.children and cat.children.size > 0 %}
+                    <!-- Parent with children - non-selectable separator -->
+                    <option value="" disabled class="rb-category-parent">── {{ cat.label }} ──</option>
                     {% for child in cat.children %}
-                      <option value="{{ cat.slug }}/{{ child.slug }}" data-label="{{ child.label }}" data-description="{{ child.description | escape }}" data-tier="full_runs">  ↳ {{ child.label }}</option>
+                      <option value="{{ cat.slug }}/{{ child.slug }}" data-label="{{ child.label }}" data-description="{{ child.description | escape }}" data-tier="full_runs">{{ child.label }}</option>
                     {% endfor %}
+                  {% else %}
+                    <!-- Category without children - selectable -->
+                    <option value="{{ cat.slug }}" data-label="{{ cat.label }}" data-description="{{ cat.description | escape }}" data-tier="full_runs">{{ cat.label }}</option>
                   {% endif %}
                 {% endfor %}
               </optgroup>
@@ -121,11 +125,15 @@
             {% if game.mini_challenges and game.mini_challenges.size > 0 %}
               <optgroup label="Mini-Challenges">
                 {% for cat in game.mini_challenges %}
-                  <option value="{{ cat.slug }}" data-label="{{ cat.label }}" data-description="{{ cat.description | escape }}" data-tier="mini_challenges">{{ cat.label }}</option>
-                  {% if cat.children %}
+                  {% if cat.children and cat.children.size > 0 %}
+                    <!-- Parent with children - non-selectable separator -->
+                    <option value="" disabled class="rb-category-parent">── {{ cat.label }} ──</option>
                     {% for child in cat.children %}
-                      <option value="{{ cat.slug }}/{{ child.slug }}" data-label="{{ child.label }}" data-description="{{ child.description | escape }}" data-tier="mini_challenges">  ↳ {{ child.label }}</option>
+                      <option value="{{ cat.slug }}/{{ child.slug }}" data-label="{{ child.label }}" data-description="{{ child.description | escape }}" data-tier="mini_challenges">{{ child.label }}</option>
                     {% endfor %}
+                  {% else %}
+                    <!-- Category without children - selectable -->
+                    <option value="{{ cat.slug }}" data-label="{{ cat.label }}" data-description="{{ cat.description | escape }}" data-tier="mini_challenges">{{ cat.label }}</option>
                   {% endif %}
                 {% endfor %}
               </optgroup>
@@ -133,11 +141,15 @@
             {% if game.player_made and game.player_made.size > 0 %}
               <optgroup label="Player-Made">
                 {% for cat in game.player_made %}
-                  <option value="{{ cat.slug }}" data-label="{{ cat.label }}" data-description="{{ cat.description | escape }}" data-tier="player_made">{{ cat.label }}</option>
-                  {% if cat.children %}
+                  {% if cat.children and cat.children.size > 0 %}
+                    <!-- Parent with children - non-selectable separator -->
+                    <option value="" disabled class="rb-category-parent">── {{ cat.label }} ──</option>
                     {% for child in cat.children %}
-                      <option value="{{ cat.slug }}/{{ child.slug }}" data-label="{{ child.label }}" data-description="{{ child.description | escape }}" data-tier="player_made">  ↳ {{ child.label }}</option>
+                      <option value="{{ cat.slug }}/{{ child.slug }}" data-label="{{ child.label }}" data-description="{{ child.description | escape }}" data-tier="player_made">{{ child.label }}</option>
                     {% endfor %}
+                  {% else %}
+                    <!-- Category without children - selectable -->
+                    <option value="{{ cat.slug }}" data-label="{{ cat.label }}" data-description="{{ cat.description | escape }}" data-tier="player_made">{{ cat.label }}</option>
                   {% endif %}
                 {% endfor %}
               </optgroup>
@@ -145,11 +157,13 @@
             {% comment %} Legacy fallback for games without tiered structure {% endcomment %}
             {% if game.full_runs.size == 0 and game.mini_challenges.size == 0 and game.player_made.size == 0 %}
               {% for cat in game.categories_data %}
-                <option value="{{ cat.slug }}" data-label="{{ cat.label }}" data-description="{{ cat.description | escape }}">{{ cat.label }}</option>
-                {% if cat.children %}
+                {% if cat.children and cat.children.size > 0 %}
+                  <option value="" disabled class="rb-category-parent">── {{ cat.label }} ──</option>
                   {% for child in cat.children %}
-                    <option value="{{ cat.slug }}/{{ child.slug }}" data-label="{{ child.label }}" data-description="{{ child.description | escape }}">  ↳ {{ child.label }}</option>
+                    <option value="{{ cat.slug }}/{{ child.slug }}" data-label="{{ child.label }}" data-description="{{ child.description | escape }}">{{ child.label }}</option>
                   {% endfor %}
+                {% else %}
+                  <option value="{{ cat.slug }}" data-label="{{ cat.label }}" data-description="{{ cat.description | escape }}">{{ cat.label }}</option>
                 {% endif %}
               {% endfor %}
             {% endif %}
@@ -313,6 +327,161 @@
         <span class="accordion-icon">▼</span>
       </summary>
       <div class="accordion-content">
+        
+        <!-- Full Runs -->
+        {% if game.full_runs and game.full_runs.size > 0 %}
+        <details class="accordion-item accordion-item--tier" open>
+          <summary class="accordion-header accordion-header--tier">
+            <span class="accordion-title">🏁 Full Runs</span>
+            <span class="accordion-icon">▼</span>
+          </summary>
+          <div class="accordion-content">
+            <div class="accordion">
+              {% for cat in game.full_runs %}
+                <details class="accordion-item">
+                  <summary class="accordion-header">
+                    <span class="accordion-title">{{ cat.label }}</span>
+                    <span class="accordion-icon">▼</span>
+                  </summary>
+                  <div class="accordion-content">
+                    {% if cat.description %}
+                      {% include md.html text=cat.description %}
+                    {% else %}
+                      <p class="muted">See resources for rules.</p>
+                    {% endif %}
+
+                    {% if cat.children and cat.children.size > 0 %}
+                      <div class="mt-3">
+                        <strong>Subcategories:</strong>
+                        <ul class="mt-2">
+                          {% for child in cat.children %}
+                            <li>
+                              <strong>{{ child.label }}</strong>
+                              {% if child.description %}
+                                <div class="mt-2">
+                                  {% include md.html text=child.description %}
+                                </div>
+                              {% endif %}
+                            </li>
+                          {% endfor %}
+                        </ul>
+                      </div>
+                    {% endif %}
+                  </div>
+                </details>
+              {% endfor %}
+            </div>
+          </div>
+        </details>
+        {% endif %}
+
+        <!-- Mini-Challenges -->
+        {% if game.mini_challenges and game.mini_challenges.size > 0 %}
+        <details class="accordion-item accordion-item--tier">
+          <summary class="accordion-header accordion-header--tier">
+            <span class="accordion-title">⚡ Mini-Challenges</span>
+            <span class="accordion-icon">▼</span>
+          </summary>
+          <div class="accordion-content">
+            <div class="accordion">
+              {% for cat in game.mini_challenges %}
+                <details class="accordion-item">
+                  <summary class="accordion-header">
+                    <span class="accordion-title">{{ cat.label }}</span>
+                    <span class="accordion-icon">▼</span>
+                  </summary>
+                  <div class="accordion-content">
+                    {% if cat.description %}
+                      {% include md.html text=cat.description %}
+                    {% else %}
+                      <p class="muted">See resources for rules.</p>
+                    {% endif %}
+
+                    {% if cat.children and cat.children.size > 0 %}
+                      <div class="mt-3">
+                        <strong>Subcategories:</strong>
+                        <ul class="mt-2">
+                          {% for child in cat.children %}
+                            <li>
+                              <strong>{{ child.label }}</strong>
+                              {% if child.description %}
+                                <div class="mt-2">
+                                  {% include md.html text=child.description %}
+                                </div>
+                              {% endif %}
+                            </li>
+                          {% endfor %}
+                        </ul>
+                      </div>
+                    {% endif %}
+                  </div>
+                </details>
+              {% endfor %}
+            </div>
+          </div>
+        </details>
+        {% endif %}
+
+        <!-- Player-Made Challenges -->
+        {% if game.player_made and game.player_made.size > 0 %}
+        <details class="accordion-item accordion-item--tier">
+          <summary class="accordion-header accordion-header--tier">
+            <span class="accordion-title">🎨 Player-Made Challenges</span>
+            <span class="accordion-icon">▼</span>
+          </summary>
+          <div class="accordion-content">
+            <div class="accordion">
+              {% for cat in game.player_made %}
+                <details class="accordion-item">
+                  <summary class="accordion-header">
+                    <span class="accordion-title">{{ cat.label }}</span>
+                    <span class="accordion-icon">▼</span>
+                  </summary>
+                  <div class="accordion-content">
+                    {% if cat.description %}
+                      {% include md.html text=cat.description %}
+                    {% else %}
+                      <p class="muted">See resources for rules.</p>
+                    {% endif %}
+
+                    {% if cat.children and cat.children.size > 0 %}
+                      <div class="mt-3">
+                        <strong>Subcategories:</strong>
+                        <ul class="mt-2">
+                          {% for child in cat.children %}
+                            <li>
+                              <strong>{{ child.label }}</strong>
+                              {% if child.description %}
+                                <div class="mt-2">
+                                  {% include md.html text=child.description %}
+                                </div>
+                              {% endif %}
+                            </li>
+                          {% endfor %}
+                        </ul>
+                      </div>
+                    {% endif %}
+                  </div>
+                </details>
+              {% endfor %}
+            </div>
+          </div>
+        </details>
+        {% else %}
+        <!-- Player-Made placeholder if none exist -->
+        <details class="accordion-item accordion-item--tier">
+          <summary class="accordion-header accordion-header--tier">
+            <span class="accordion-title">🎨 Player-Made Challenges</span>
+            <span class="accordion-icon">▼</span>
+          </summary>
+          <div class="accordion-content">
+            <p class="muted">None exist yet. Have an idea? <a href="{{ game.url }}forum/">Suggest one in the Forum!</a></p>
+          </div>
+        </details>
+        {% endif %}
+
+        <!-- Legacy fallback for games without tiered structure -->
+        {% if game.full_runs.size == 0 and game.mini_challenges.size == 0 and game.player_made.size == 0 and game.categories_data and game.categories_data.size > 0 %}
         <div class="accordion">
           {% for cat in game.categories_data %}
             <details class="accordion-item">
@@ -348,6 +517,8 @@
             </details>
           {% endfor %}
         </div>
+        {% endif %}
+
       </div>
     </details>
   </div>
@@ -948,12 +1119,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const tierSlug = tier.replace(/_/g, '-'); // Convert full_runs to full-runs
         const categorySlug = selectedCategory.slug;
         
-        // Build filter data for any additional filters
+        // Build filter data using slugs/IDs for reliable matching
         const filterData = {
-          challenges: selectedChallenges.map(c => c.label),
-          restrictions: selectedRestrictions.map(r => r.label),
+          challenges: selectedChallenges.map(c => c.slug),
+          restrictions: selectedRestrictions.map(r => r.slug),
           glitch: selectedGlitch ? selectedGlitch.slug : '',
-          character: selectedCharacter ? selectedCharacter.label : ''
+          character: selectedCharacter ? selectedCharacter.slug : ''
         };
         
         // Only add hash if there are filters beyond the category
