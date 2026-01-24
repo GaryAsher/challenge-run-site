@@ -238,6 +238,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const restrictions = new Map();
     const characters = new Map();
     const glitches = new Map();
+    
+    // Track original order from game data for restrictions and characters
+    // These should appear in the order defined in the game file, not alphabetically
+    let restrictionsFromGameData = [];
+    let charactersFromGameData = [];
 
     // First, add all options from game data (if available)
     // This ensures Advanced Search shows ALL options, not just what's in the grid
@@ -256,6 +261,7 @@ document.addEventListener('DOMContentLoaded', function() {
         gameData.restrictions.forEach(res => {
           if (res.id && res.label) {
             restrictions.set(res.id, { id: res.id, label: res.label });
+            restrictionsFromGameData.push({ id: res.id, label: res.label });
           }
         });
       }
@@ -264,6 +270,7 @@ document.addEventListener('DOMContentLoaded', function() {
         gameData.characters.forEach(char => {
           if (char.id && char.label) {
             characters.set(char.id, { id: char.id, label: char.label });
+            charactersFromGameData.push({ id: char.id, label: char.label });
           }
         });
       }
@@ -295,10 +302,15 @@ document.addEventListener('DOMContentLoaded', function() {
         ids.forEach((id, i) => {
           const trimmedId = id.trim();
           if (trimmedId && !restrictions.has(trimmedId)) {
-            restrictions.set(trimmedId, { 
+            const item = { 
               id: trimmedId, 
               label: labels[i] ? labels[i].trim() : trimmedId 
-            });
+            };
+            restrictions.set(trimmedId, item);
+            // Only add to order list if not from game data
+            if (!restrictionsFromGameData.find(r => r.id === trimmedId)) {
+              restrictionsFromGameData.push(item);
+            }
           }
         });
       }
@@ -306,7 +318,12 @@ document.addEventListener('DOMContentLoaded', function() {
       // Characters
       const char = row.dataset.character;
       if (char && !characters.has(char)) {
-        characters.set(char, { id: char, label: char });
+        const item = { id: char, label: char };
+        characters.set(char, item);
+        // Only add to order list if not from game data
+        if (!charactersFromGameData.find(c => c.id === char)) {
+          charactersFromGameData.push(item);
+        }
       }
 
       // Glitches
@@ -316,10 +333,17 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
 
+    // Challenges and Glitches: sort alphabetically
     availableChallenges = Array.from(challenges.values()).sort((a, b) => a.label.localeCompare(b.label));
-    availableRestrictions = Array.from(restrictions.values()).sort((a, b) => a.label.localeCompare(b.label));
-    availableCharacters = Array.from(characters.values()).sort((a, b) => a.label.localeCompare(b.label));
     availableGlitches = Array.from(glitches.values()).sort((a, b) => a.label.localeCompare(b.label));
+    
+    // Restrictions and Characters: preserve original order from game data
+    availableRestrictions = restrictionsFromGameData.length > 0 
+      ? restrictionsFromGameData 
+      : Array.from(restrictions.values());
+    availableCharacters = charactersFromGameData.length > 0 
+      ? charactersFromGameData 
+      : Array.from(characters.values());
   }
 
   // ============================================================
