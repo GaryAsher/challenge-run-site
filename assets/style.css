@@ -2,32 +2,46 @@
    Theme Variables
    ============================================================ */
 :root {
+  /* Core palette */
   --accent: #3BC36E;
+  --accent-rgb: 59, 195, 110;
   --bg: #0f0f0f;
   --fg: #ffffff;
 
+  /* Surfaces and borders */
   --border: rgba(255, 255, 255, 0.12);
+  --border-hover: rgba(255, 255, 255, 0.2);
   --panel: rgba(255, 255, 255, 0.04);
   --surface: #0b0b0b;
   --surface-2: #111;
+  --card-bg: rgba(255, 255, 255, 0.02);
+  --bg-hover: rgba(255, 255, 255, 0.08);
+  --bg-soft: rgba(255, 255, 255, 0.06);
 
+  /* Text variations */
   --placeholder: rgba(255, 255, 255, 0.6);
   --placeholder-dim: rgba(255, 255, 255, 0.55);
-
-  --bg-soft: rgba(255, 255, 255, 0.06);
   --text-muted: rgba(255, 255, 255, 0.78);
   --text-dim: rgba(255, 255, 255, 0.75);
 
+  /* Focus states */
   --focus: rgba(59, 195, 110, 0.6);
   --focus-2: rgba(59, 195, 110, 0.35);
 
+  /* Overlays */
   --overlay-strong: rgba(15, 15, 15, 0.95);
   --overlay-mid: rgba(15, 15, 15, 0.6);
   --overlay-light: rgba(15, 15, 15, 0.35);
 
+  /* Hero overlays */
   --hero-strong: rgba(15, 15, 15, 0.92);
   --hero-mid: rgba(15, 15, 15, 0.65);
   --hero-light: rgba(15, 15, 15, 0.45);
+
+  /* Status colors */
+  --status-verified: #10b981;
+  --status-pending: #f59e0b;
+  --status-rejected: #ef4444;
 
   /* ============================================================
      Responsive layout scale (desktop default)
@@ -36,11 +50,14 @@
   --gutter: 1.5rem;
   --section-pad-y: 3rem;
 
+  /* Border radius scale */
   --radius-sm: 10px;
   --radius-md: 12px;
   --radius-lg: 14px;
   --radius-xl: 16px;
+  --radius: var(--radius-md);
 
+  /* Spacing scale */
   --space-1: 0.35rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -64,24 +81,28 @@
    ============================================================ */
 [data-theme="pink"] {
   --accent: #E91E8C;
+  --accent-rgb: 233, 30, 140;
   --focus: rgba(233, 30, 140, 0.6);
   --focus-2: rgba(233, 30, 140, 0.35);
 }
 
 [data-theme="blue"] {
   --accent: #3B82F6;
+  --accent-rgb: 59, 130, 246;
   --focus: rgba(59, 130, 246, 0.6);
   --focus-2: rgba(59, 130, 246, 0.35);
 }
 
 [data-theme="purple"] {
   --accent: #8B5CF6;
+  --accent-rgb: 139, 92, 246;
   --focus: rgba(139, 92, 246, 0.6);
   --focus-2: rgba(139, 92, 246, 0.35);
 }
 
 [data-theme="red"] {
   --accent: #EF4444;
+  --accent-rgb: 239, 68, 68;
   --focus: rgba(239, 68, 68, 0.6);
   --focus-2: rgba(239, 68, 68, 0.35);
 }
