@@ -1,0 +1,55 @@
+// ============================================================
+// Reset & Base Styles
+// ============================================================
+// Normalizes browser defaults and sets foundational styles.
+// ============================================================
+
+// ──────────────────────────────────────────────────────────
+// Box Sizing Reset
+// ──────────────────────────────────────────────────────────
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+// ──────────────────────────────────────────────────────────
+// Form Element Font Inheritance
+// ──────────────────────────────────────────────────────────
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+// ──────────────────────────────────────────────────────────
+// Body Defaults
+// ──────────────────────────────────────────────────────────
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  margin: 0;
+  line-height: 1.6;
+}
+
+// ──────────────────────────────────────────────────────────
+// Link Defaults
+// ──────────────────────────────────────────────────────────
+a {
+  color: var(--accent);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// ──────────────────────────────────────────────────────────
+// Hidden Utility
+// ──────────────────────────────────────────────────────────
+// Force true removal from layout (overrides display: block, etc.)
+[hidden] {
+  display: none !important;
+}
