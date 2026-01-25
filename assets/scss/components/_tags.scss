@@ -1,0 +1,217 @@
+// ============================================================
+// Tags, Pills, Chips
+// ============================================================
+// Unified tag styling for categories, filters, and status indicators.
+// Consolidates duplicate tag styles from multiple sections.
+//
+// CLASSES:
+// - .tag / .tag-chip - Base pill style
+// - .tag-chip.is-active - Selected state
+// - .filter-chip - Removable filter tag
+// - .category-pill - Category navigation pill
+// ============================================================
+
+// ──────────────────────────────────────────────────────────
+// Base Tag / Chip
+// ──────────────────────────────────────────────────────────
+.tag,
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: var(--pill-padding);
+  border-radius: 999px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: var(--pill-font-size);
+  line-height: 1.25;
+  white-space: nowrap;
+  text-decoration: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--transition-base), 
+              border-color var(--transition-base);
+}
+
+// Interactive tags (links & buttons)
+a.tag:hover,
+a.tag-chip:hover,
+button.tag:hover,
+.tag-chip:hover {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border-color: var(--accent);
+  text-decoration: none;
+}
+
+button.tag,
+.tag-chip {
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--pill-font-size);
+}
+
+.tag-chip.is-active {
+  background: var(--panel);
+  color: var(--fg);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--focus-2);
+}
+
+// Tag containers
+.tags,
+.tag-picked {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pill-gap);
+}
+
+.tag-picked:empty {
+  display: none;
+}
+
+.tag-picked:not(:empty) {
+  margin-bottom: 0.5rem;
+}
+
+// ──────────────────────────────────────────────────────────
+// Filter Chip (Removable tag with × button)
+// ──────────────────────────────────────────────────────────
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.5rem 0.3rem 0.65rem;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  color: var(--fg);
+  white-space: nowrap;
+  transition: background var(--transition-base), 
+              border-color var(--transition-base);
+
+  &:hover {
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    border-color: var(--accent);
+  }
+}
+
+.filter-chip__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--status-rejected);
+  }
+}
+
+// ──────────────────────────────────────────────────────────
+// Category Pills (Navigation)
+// ──────────────────────────────────────────────────────────
+.category-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: var(--panel);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.category-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  transition: all var(--transition-base);
+  white-space: nowrap;
+
+  &:hover {
+    color: var(--fg);
+    background: var(--bg-hover);
+    border-color: var(--border-hover);
+    text-decoration: none;
+  }
+
+  &.is-active {
+    color: #fff;
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+}
+
+.category-pill--sub {
+  font-size: 0.8rem;
+  padding: 0.4rem 0.8rem;
+}
+
+// ──────────────────────────────────────────────────────────
+// Tag Variants (Status colors)
+// ──────────────────────────────────────────────────────────
+.tag--verified,
+.tag-chip--verified {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: var(--status-verified);
+  color: var(--status-verified);
+}
+
+.tag--pending,
+.tag-chip--pending {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: var(--status-pending);
+  color: var(--status-pending);
+}
+
+.tag--rejected,
+.tag-chip--rejected {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: var(--status-rejected);
+  color: var(--status-rejected);
+}
+
+// ──────────────────────────────────────────────────────────
+// Runs Table Tags
+// ──────────────────────────────────────────────────────────
+.runs-table .cell-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pill-gap);
+  justify-content: center;
+  align-items: flex-start;
+}
+
+// ──────────────────────────────────────────────────────────
+// Responsive
+// ──────────────────────────────────────────────────────────
+@media (max-width: 600px) {
+  .category-pills {
+    gap: 0.4rem;
+  }
+
+  .category-pill {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.75rem;
+  }
+}
