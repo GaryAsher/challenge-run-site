@@ -4787,9 +4787,10 @@ a.resource-card:hover {
   border-color: var(--accent);
 }
 
-/* Select hover - only border change, no background tint to avoid option inheritance */
+/* Select hover - DISABLED to prevent unwanted highlight when hovering labels */
 .submit-run-page select:hover {
-  border-color: var(--accent);
+  /* No hover effect - only focus should highlight */
+  border-color: var(--border);
 }
 
 /* Force options to have solid background - never inherit hover tint */
