@@ -458,10 +458,9 @@ layout: default
             <div class="advanced-filters" id="advanced-filters" hidden>
               <div class="filter-groups">
                 {% if show_character and game.characters_data %}
-                <!-- Character Filter (typeahead style) -->
+                <!-- Character Filter (typeahead single-select) -->
                 <div class="filter-group" id="f-character-container">
                   <label class="filter-group__label">{{ character_label }}</label>
-                  <div class="filter-input__picked" id="f-character-picked"></div>
                   <div class="filter-input__wrap">
                     <input type="text" id="f-character-search" class="filter-input__field" placeholder="Type a {{ character_label | downcase }}..." autocomplete="off" />
                     <div class="filter-input__suggestions" id="f-character-suggestions" hidden></div>
@@ -469,10 +468,9 @@ layout: default
                 </div>
                 {% endif %}
 
-                <!-- Challenge Filter (typeahead style) -->
+                <!-- Challenge Filter (typeahead multi-select) -->
                 <div class="filter-group" id="f-challenge-container">
                   <label class="filter-group__label">Challenge</label>
-                  <div class="filter-input__picked" id="f-challenge-picked"></div>
                   <div class="filter-input__wrap">
                     <input type="text" id="f-challenge-search" class="filter-input__field" placeholder="Type a challenge..." autocomplete="off" />
                     <div class="filter-input__suggestions" id="f-challenge-suggestions" hidden></div>
@@ -480,10 +478,9 @@ layout: default
                 </div>
 
                 {% if game.restrictions_data and game.restrictions_data.size > 0 %}
-                <!-- Restrictions Filter (typeahead style) -->
+                <!-- Restrictions Filter (typeahead multi-select) -->
                 <div class="filter-group" id="f-restrictions-container">
                   <label class="filter-group__label">Restrictions</label>
-                  <div class="filter-input__picked" id="f-restrictions-picked"></div>
                   <div class="filter-input__wrap">
                     <input type="text" id="f-restrictions-search" class="filter-input__field" placeholder="Type a restriction..." autocomplete="off" />
                     <div class="filter-input__suggestions" id="f-restrictions-suggestions" hidden></div>
@@ -492,27 +489,29 @@ layout: default
                 {% endif %}
 
                 {% if show_glitches %}
-                <!-- Glitch Category Filter (typeahead style) -->
+                <!-- Glitch Category Filter (typeahead single-select) -->
                 <div class="filter-group" id="f-glitch-container">
                   <label class="filter-group__label">Glitches Used</label>
-                  <div class="filter-input__picked" id="f-glitch-picked"></div>
                   <div class="filter-input__wrap">
                     <input type="text" id="f-glitch-search" class="filter-input__field" placeholder="Type a glitch category..." autocomplete="off" />
                     <div class="filter-input__suggestions" id="f-glitch-suggestions" hidden></div>
                  </div>
                </div>
                {% endif %}
+
+                <!-- Reset Button (far right) -->
+                <div class="filter-group filter-group--reset">
+                  <button type="button" id="reset-filters" class="btn btn--outline btn--reset" style="display: none;">
+                    Remove all filters
+                  </button>
+                </div>
               </div>
+
+              <!-- Unified selections area below filters -->
+              <div class="filter-selections" id="filter-selections"></div>
             </div>
 
-            <div class="active-filters" id="active-filters"></div>
-            
-            <button type="button" id="reset-filters" class="btn btn--secondary" style="display: none; margin-top: 0.5rem;">
-              Reset All Filters
-            </button>
-          </div>
-
-          <div class="results-status" id="results-status">
+            <div class="results-status" id="results-status">
             <span class="results-status__text" id="results-text"></span>
           </div>
 
