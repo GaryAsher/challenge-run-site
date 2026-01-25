@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
       placeholder, 
       items, 
       selectedSet,      // For multi-select (Set)
-      getValue,         // For single-select: () => value
+      getValue,         // For single-select: () => value object {id, label}
       setValue,         // For single-select: (value) => void
       singleSelect = false,
       onFilter,
@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateInputDisplay() {
       if (singleSelect) {
         const val = getValue();
-        if (val) {
+        if (val && val.label) {
           input.value = val.label;
           input.classList.add('filter-input__field--selected');
         } else {
@@ -245,9 +245,27 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
-    // Events
-    input.addEventListener('focus', open);
-    input.addEventListener('input', debounce(() => renderSuggestions(input.value), 100));
+    function toggle() {
+      if (isOpen) {
+        close();
+      } else {
+        open();
+      }
+    }
+
+    // Events - use click for toggle behavior
+    input.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggle();
+    });
+    input.addEventListener('focus', () => {
+      // Only open if not already open (handles tab navigation)
+      if (!isOpen) open();
+    });
+    input.addEventListener('input', debounce(() => {
+      if (!isOpen) open();
+      renderSuggestions(input.value);
+    }, 100));
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         close();
@@ -408,7 +426,7 @@ document.addEventListener('DOMContentLoaded', function() {
         placeholder: 'Type a weapon/aspect...',
         items: availableCharacters,
         singleSelect: true,
-        getValue: () => selectedCharacter ? selectedCharacter.id : null,
+        getValue: () => selectedCharacter,
         setValue: (val) => { selectedCharacter = val; },
         onFilter: filterRows
       });
@@ -470,7 +488,7 @@ document.addEventListener('DOMContentLoaded', function() {
         placeholder: 'Type a glitch category...',
         items: availableGlitches,
         singleSelect: true,
-        getValue: () => selectedGlitch ? selectedGlitch.id : null,
+        getValue: () => selectedGlitch,
         setValue: (val) => { selectedGlitch = val; },
         onFilter: filterRows
       });
