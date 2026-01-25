@@ -20,6 +20,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const filterToggle = document.getElementById('filter-toggle');
   const advancedFilters = document.getElementById('advanced-filters');
   const filterSelections = document.getElementById('filter-selections');
+  const filterSelectionsRow = document.getElementById('filter-selections-row');
+  const resetBtn = document.getElementById('reset-filters');
   const runsBody = document.getElementById('runs-body');
   const rows = runsBody ? Array.from(runsBody.querySelectorAll('.run-row')) : [];
   const totalRuns = rows.length;
@@ -36,7 +38,6 @@ document.addEventListener('DOMContentLoaded', function() {
   const fGlitch = document.getElementById('f-glitch');
   const fCharacter = document.getElementById('f-character');
   
-  const resetBtn = document.getElementById('reset-filters');
   const resultsText = document.getElementById('results-text');
 
   // Sort buttons
@@ -208,7 +209,8 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.textContent = item[labelKey] || item;
         btn.dataset.id = item[idKey] || item;
         
-        btn.addEventListener('click', () => {
+        btn.addEventListener('mousedown', (e) => {
+          e.preventDefault(); // Prevent blur
           if (singleSelect) {
             setValue({ id: btn.dataset.id, label: item[labelKey] || item });
             updateInputDisplay();
@@ -253,14 +255,23 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
-    // Events - use click for toggle behavior
-    input.addEventListener('click', (e) => {
-      e.stopPropagation();
-      toggle();
+    // Events - use mousedown for toggle behavior (fires before blur)
+    input.addEventListener('mousedown', (e) => {
+      // Only toggle if already focused, otherwise let focus event handle it
+      if (document.activeElement === input) {
+        e.preventDefault(); // Prevent re-focus
+        toggle();
+      }
     });
     input.addEventListener('focus', () => {
-      // Only open if not already open (handles tab navigation)
+      // Open on focus (for tab navigation and first click)
       if (!isOpen) open();
+    });
+    input.addEventListener('blur', () => {
+      // Small delay to allow mousedown on suggestions to fire first
+      setTimeout(() => {
+        if (isOpen) close();
+      }, 150);
     });
     input.addEventListener('input', debounce(() => {
       if (!isOpen) open();
@@ -272,10 +283,6 @@ document.addEventListener('DOMContentLoaded', function() {
         input.blur();
       }
     });
-
-    document.addEventListener('pointerdown', (e) => {
-      if (!container.contains(e.target)) close();
-    }, true);
 
     // Initial display for single-select
     updateInputDisplay();
@@ -533,37 +540,6 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ============================================================
-  // Reset All Filters
-  // ============================================================
-  if (resetBtn) {
-    resetBtn.addEventListener('click', function() {
-      if (qInput) qInput.value = '';
-      
-      // Clear multi-select
-      selectedChallenges.clear();
-      selectedRestrictions.clear();
-      
-      // Clear single-select
-      selectedCharacter = null;
-      selectedGlitch = null;
-      
-      // Reset legacy selects
-      if (fChallenge) fChallenge.value = '';
-      if (fRestrictions) fRestrictions.value = '';
-      if (fCharacter) fCharacter.value = '';
-      if (fGlitch) fGlitch.value = '';
-      
-      // Refresh typeahead displays (if they exist)
-      if (challengeFilter) challengeFilter.refresh();
-      if (restrictionsFilter) restrictionsFilter.refresh();
-      if (characterFilter) characterFilter.refresh();
-      if (glitchFilter) glitchFilter.refresh();
-      
-      filterRows();
-    });
-  }
-
-  // ============================================================
   // Filter Logic
   // ============================================================
   function filterRows() {
@@ -636,6 +612,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // ============================================================
   // Unified Selections Display (chips below filters)
   // Order: Character → Challenges → Restrictions → Glitches
+  // Reset button is in HTML, aligned horizontally with chips
   // ============================================================
   function updateSelections() {
     if (!filterSelections) return;
@@ -644,7 +621,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const hasSelections = selectedCharacter || selectedChallenges.size > 0 || 
                           selectedRestrictions.size > 0 || selectedGlitch;
 
-    // Show/hide reset button
+    // Show/hide the selections row and reset button
+    if (filterSelectionsRow) {
+      filterSelectionsRow.style.display = hasSelections ? '' : 'none';
+    }
     if (resetBtn) {
       resetBtn.style.display = hasSelections ? '' : 'none';
     }
@@ -655,7 +635,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (selectedCharacter) {
       const chip = createChip(selectedCharacter.label, () => {
         selectedCharacter = null;
-        if (characterFilter) characterFilter.refresh(); // Just updates input display
+        if (characterFilter) characterFilter.refresh();
         filterRows();
       });
       filterSelections.appendChild(chip);
@@ -687,11 +667,35 @@ document.addEventListener('DOMContentLoaded', function() {
     if (selectedGlitch) {
       const chip = createChip(selectedGlitch.label, () => {
         selectedGlitch = null;
-        if (glitchFilter) glitchFilter.refresh(); // Just updates input display
+        if (glitchFilter) glitchFilter.refresh();
         filterRows();
       });
       filterSelections.appendChild(chip);
     }
+  }
+
+  // Reset all filters function
+  function resetAllFilters() {
+    if (qInput) qInput.value = '';
+    
+    selectedChallenges.clear();
+    selectedRestrictions.clear();
+    selectedCharacter = null;
+    selectedGlitch = null;
+    
+    // Legacy selects
+    if (fChallenge) fChallenge.value = '';
+    if (fRestrictions) fRestrictions.value = '';
+    if (fCharacter) fCharacter.value = '';
+    if (fGlitch) fGlitch.value = '';
+    
+    // Refresh typeahead displays
+    if (challengeFilter) challengeFilter.refresh();
+    if (restrictionsFilter) restrictionsFilter.refresh();
+    if (characterFilter) characterFilter.refresh();
+    if (glitchFilter) glitchFilter.refresh();
+    
+    filterRows();
   }
 
   // Legacy function name for compatibility
@@ -729,6 +733,11 @@ document.addEventListener('DOMContentLoaded', function() {
   // Event Listeners
   // ============================================================
   if (qInput) qInput.addEventListener('input', debounce(filterRows, 150));
+  
+  // Reset button
+  if (resetBtn) {
+    resetBtn.addEventListener('click', resetAllFilters);
+  }
   
   if (sortDateAsc) sortDateAsc.addEventListener('click', () => sortRows('date', true));
   if (sortDateDesc) sortDateDesc.addEventListener('click', () => sortRows('date', false));
