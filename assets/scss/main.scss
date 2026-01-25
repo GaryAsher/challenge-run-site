@@ -4054,19 +4054,33 @@ a.resource-card:hover {
 }
 
 /* ============================================================
-   Unified Selections Area (chips below filters)
+   Unified Selections Area (chips + reset button below filters)
    ============================================================ */
-.filter-selections {
+.filter-selections-row {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--pill-gap);
   margin-top: 0.75rem;
   padding-top: 0.75rem;
   border-top: 1px solid var(--border);
 }
 
+.filter-selections {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--pill-gap);
+  flex: 1;
+}
+
 .filter-selections:empty {
   display: none;
+}
+
+/* Reset button in selections row */
+.filter-selections-row .btn--reset {
+  flex-shrink: 0;
 }
 
 /* Single-select input when has value */
