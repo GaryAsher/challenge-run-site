@@ -1,0 +1,116 @@
+// ============================================================
+// CSS Custom Properties (Design Tokens)
+// ============================================================
+// All design tokens are defined here as CSS custom properties.
+// This allows for runtime theming and easy customization.
+//
+// USAGE:
+// - Colors: var(--accent), var(--bg), var(--fg)
+// - Spacing: var(--space-1) through var(--space-6)
+// - Radius: var(--radius-sm), var(--radius-md), var(--radius-lg)
+// - Layout: var(--page-max), var(--gutter)
+// ============================================================
+
+:root {
+  // ──────────────────────────────────────────────────────────
+  // COLORS - Core Palette
+  // ──────────────────────────────────────────────────────────
+  --accent: #3BC36E;                    // Primary brand color (green)
+  --accent-rgb: 59, 195, 110;           // RGB values for rgba() usage
+  --bg: #0f0f0f;                        // Page background
+  --fg: #ffffff;                        // Primary text color
+
+  // ──────────────────────────────────────────────────────────
+  // COLORS - Surfaces & Borders
+  // ──────────────────────────────────────────────────────────
+  --border: rgba(255, 255, 255, 0.12);        // Default border
+  --border-hover: rgba(255, 255, 255, 0.2);   // Border on hover
+  --panel: rgba(255, 255, 255, 0.04);         // Panel/card background
+  --surface: #0b0b0b;                         // Elevated surface
+  --surface-2: #111;                          // Secondary surface
+  --card-bg: rgba(255, 255, 255, 0.02);       // Card background
+  --bg-hover: rgba(255, 255, 255, 0.08);      // Background on hover
+  --bg-soft: rgba(255, 255, 255, 0.06);       // Subtle background
+
+  // ──────────────────────────────────────────────────────────
+  // COLORS - Text
+  // ──────────────────────────────────────────────────────────
+  --text-muted: rgba(255, 255, 255, 0.78);    // Secondary text
+  --text-dim: rgba(255, 255, 255, 0.75);      // Tertiary text
+  --placeholder: rgba(255, 255, 255, 0.6);    // Input placeholder
+  --placeholder-dim: rgba(255, 255, 255, 0.55);
+
+  // ──────────────────────────────────────────────────────────
+  // COLORS - Interactive States
+  // ──────────────────────────────────────────────────────────
+  --focus: rgba(59, 195, 110, 0.6);           // Focus ring color
+  --focus-2: rgba(59, 195, 110, 0.35);        // Subtle focus
+
+  // ──────────────────────────────────────────────────────────
+  // COLORS - Overlays
+  // ──────────────────────────────────────────────────────────
+  --overlay-strong: rgba(15, 15, 15, 0.95);   // Modal overlay
+  --overlay-mid: rgba(15, 15, 15, 0.6);       // Medium overlay
+  --overlay-light: rgba(15, 15, 15, 0.35);    // Light overlay
+
+  // ──────────────────────────────────────────────────────────
+  // COLORS - Hero Section
+  // ──────────────────────────────────────────────────────────
+  --hero-strong: rgba(15, 15, 15, 0.92);
+  --hero-mid: rgba(15, 15, 15, 0.65);
+  --hero-light: rgba(15, 15, 15, 0.45);
+
+  // ──────────────────────────────────────────────────────────
+  // COLORS - Status Indicators
+  // ──────────────────────────────────────────────────────────
+  --status-verified: #10b981;                 // Green - approved
+  --status-pending: #f59e0b;                  // Yellow - waiting
+  --status-rejected: #ef4444;                 // Red - denied
+
+  // ──────────────────────────────────────────────────────────
+  // LAYOUT - Page Constraints
+  // ──────────────────────────────────────────────────────────
+  --page-max: 960px;                          // Max content width
+  --gutter: 1.5rem;                           // Page side padding
+  --section-pad-y: 3rem;                      // Vertical section padding
+
+  // ──────────────────────────────────────────────────────────
+  // LAYOUT - Border Radius Scale
+  // ──────────────────────────────────────────────────────────
+  --radius-sm: 10px;
+  --radius-md: 12px;
+  --radius-lg: 14px;
+  --radius-xl: 16px;
+  --radius: var(--radius-md);                 // Default radius alias
+
+  // ──────────────────────────────────────────────────────────
+  // LAYOUT - Spacing Scale (based on 0.25rem = 4px)
+  // ──────────────────────────────────────────────────────────
+  --space-1: 0.35rem;                         // ~5.6px - tiny
+  --space-2: 0.5rem;                          // 8px - small
+  --space-3: 0.75rem;                         // 12px - medium
+  --space-4: 1rem;                            // 16px - default
+  --space-5: 1.25rem;                         // 20px - large
+  --space-6: 1.5rem;                          // 24px - xlarge
+
+  // ──────────────────────────────────────────────────────────
+  // LAYOUT - Touch Targets (Accessibility)
+  // ──────────────────────────────────────────────────────────
+  --tap: 36px;                                // Minimum tap target
+  --az-size: 36px;                            // A-Z filter button size
+  --az-gap: 0.35rem;                          // A-Z button spacing
+
+  // ──────────────────────────────────────────────────────────
+  // COMPONENTS - Pills & Tags
+  // ──────────────────────────────────────────────────────────
+  --pill-padding: 0.25rem 0.65rem;
+  --pill-font-size: 0.85rem;
+  --pill-gap: 0.4rem;
+
+  // ──────────────────────────────────────────────────────────
+  // ANIMATION - Timing
+  // ──────────────────────────────────────────────────────────
+  --transition-fast: 0.1s ease;
+  --transition-base: 0.15s ease;
+  --transition-slow: 0.2s ease;
+}
