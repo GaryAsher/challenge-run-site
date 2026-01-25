@@ -78,14 +78,6 @@
       fieldEl.classList.add("has-error");
       fieldEl.setAttribute("aria-invalid", "true");
     }
-    
-    // Special handling for segmented date input
-    if (fieldId === "dateCompleted") {
-      const segmentedWrapper = $("dateInputSegmented");
-      if (segmentedWrapper) {
-        segmentedWrapper.classList.add("has-error");
-      }
-    }
   }
 
   function clearFieldError(fieldId) {
@@ -100,14 +92,6 @@
     if (fieldEl) {
       fieldEl.classList.remove("has-error");
       fieldEl.removeAttribute("aria-invalid");
-    }
-    
-    // Special handling for segmented date input
-    if (fieldId === "dateCompleted") {
-      const segmentedWrapper = $("dateInputSegmented");
-      if (segmentedWrapper) {
-        segmentedWrapper.classList.remove("has-error");
-      }
     }
   }
 
@@ -963,123 +947,87 @@
   });
 
   // =============================================================================
-  // Segmented Date Input Handler (YYYY/MM/DD)
+  // Date Input Handler (YYYY/MM/DD in single field)
   // =============================================================================
-  const dateYearEl = $("dateYear");
-  const dateMonthEl = $("dateMonth");
-  const dateDayEl = $("dateDay");
   const dateCompletedEl = $("dateCompleted");
-  const dateInputSegmented = $("dateInputSegmented");
 
-  function updateHiddenDateField() {
-    const year = (dateYearEl?.value || "").trim();
-    const month = (dateMonthEl?.value || "").trim();
-    const day = (dateDayEl?.value || "").trim();
+  function formatDateInput(value) {
+    // Remove all non-digits
+    let digits = value.replace(/\D/g, "");
+    
+    // Format as YYYY/MM/DD as user types
+    let formatted = "";
+    if (digits.length > 0) {
+      formatted = digits.substring(0, 4); // Year
+    }
+    if (digits.length > 4) {
+      formatted += "/" + digits.substring(4, 6); // Month
+    }
+    if (digits.length > 6) {
+      formatted += "/" + digits.substring(6, 8); // Day
+    }
+    
+    return formatted;
+  }
 
-    // Only set value if at least one segment has content
-    if (year || month || day) {
-      const paddedMonth = month.padStart(2, "0");
-      const paddedDay = day.padStart(2, "0");
-      dateCompletedEl.value = `${year}/${paddedMonth}/${paddedDay}`;
-    } else {
-      dateCompletedEl.value = "";
+  function validateDateInput() {
+    if (!dateCompletedEl || !dateCompletedEl.value.trim()) {
+      clearFieldError("dateCompleted");
+      return true;
+    }
+    
+    const value = dateCompletedEl.value.trim();
+    const datePattern = /^\d{4}\/\d{2}\/\d{2}$/;
+    
+    if (!datePattern.test(value)) {
+      showFieldError("dateCompleted", "Please use format YYYY/MM/DD");
+      return false;
+    }
+    
+    const parts = value.split("/");
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10);
+    const day = parseInt(parts[2], 10);
+    
+    // Validate month (1-12)
+    if (month < 1 || month > 12) {
+      showFieldError("dateCompleted", "Month must be 01-12");
+      return false;
+    }
+    
+    // Validate day (1-31)
+    if (day < 1 || day > 31) {
+      showFieldError("dateCompleted", "Day must be 01-31");
+      return false;
+    }
+    
+    // Validate year is reasonable (e.g., 1990-2099)
+    if (year < 1990 || year > 2099) {
+      showFieldError("dateCompleted", "Year must be 1990-2099");
+      return false;
     }
     
     clearFieldError("dateCompleted");
-    if (dateInputSegmented) {
-      dateInputSegmented.classList.remove("has-error");
-    }
-    repaint();
+    return true;
   }
 
-  function handleDateSegmentInput(e, nextEl, maxLen, fieldType) {
-    const input = e.target;
-    // Only allow digits
-    input.value = input.value.replace(/\D/g, "");
+  if (dateCompletedEl) {
+    dateCompletedEl.addEventListener("input", (e) => {
+      const cursorPos = e.target.selectionStart;
+      const oldValue = e.target.value;
+      const newValue = formatDateInput(oldValue);
+      
+      e.target.value = newValue;
+      
+      // Adjust cursor position if slashes were added
+      const addedSlashes = (newValue.match(/\//g) || []).length - (oldValue.match(/\//g) || []).length;
+      const newCursorPos = Math.min(cursorPos + addedSlashes, newValue.length);
+      e.target.setSelectionRange(newCursorPos, newCursorPos);
+      
+      repaint();
+    });
     
-    // Validate and clamp month values (01-12)
-    if (fieldType === "month" && input.value.length === 2) {
-      const monthNum = parseInt(input.value, 10);
-      if (monthNum < 1) input.value = "01";
-      else if (monthNum > 12) input.value = "12";
-    }
-    
-    // Validate and clamp day values (01-31)
-    if (fieldType === "day" && input.value.length === 2) {
-      const dayNum = parseInt(input.value, 10);
-      if (dayNum < 1) input.value = "01";
-      else if (dayNum > 31) input.value = "31";
-    }
-    
-    // Auto-advance to next field when max length reached
-    if (input.value.length >= maxLen && nextEl) {
-      nextEl.focus();
-      nextEl.select();
-    }
-    
-    updateHiddenDateField();
-  }
-
-  function handleDateSegmentKeydown(e, prevEl, nextEl) {
-    const input = e.target;
-    
-    // Handle backspace - move to previous field if empty
-    if (e.key === "Backspace" && input.value === "" && prevEl) {
-      e.preventDefault();
-      prevEl.focus();
-      // Select all text in previous field
-      prevEl.setSelectionRange(prevEl.value.length, prevEl.value.length);
-    }
-    
-    // Handle left arrow at start of field
-    if (e.key === "ArrowLeft" && input.selectionStart === 0 && prevEl) {
-      e.preventDefault();
-      prevEl.focus();
-      prevEl.setSelectionRange(prevEl.value.length, prevEl.value.length);
-    }
-    
-    // Handle right arrow at end of field
-    if (e.key === "ArrowRight" && input.selectionStart === input.value.length && nextEl) {
-      e.preventDefault();
-      nextEl.focus();
-      nextEl.setSelectionRange(0, 0);
-    }
-    
-    // Handle / key to advance to next field
-    if (e.key === "/" && nextEl) {
-      e.preventDefault();
-      nextEl.focus();
-      nextEl.select();
-    }
-  }
-
-  // Make date separators clickable to focus appropriate field
-  if (dateInputSegmented) {
-    const separators = dateInputSegmented.querySelectorAll(".date-separator");
-    if (separators[0]) {
-      separators[0].addEventListener("click", () => dateMonthEl?.focus());
-    }
-    if (separators[1]) {
-      separators[1].addEventListener("click", () => dateDayEl?.focus());
-    }
-  }
-
-  if (dateYearEl) {
-    dateYearEl.addEventListener("input", (e) => handleDateSegmentInput(e, dateMonthEl, 4, "year"));
-    dateYearEl.addEventListener("keydown", (e) => handleDateSegmentKeydown(e, null, dateMonthEl));
-    dateYearEl.addEventListener("blur", updateHiddenDateField);
-  }
-
-  if (dateMonthEl) {
-    dateMonthEl.addEventListener("input", (e) => handleDateSegmentInput(e, dateDayEl, 2, "month"));
-    dateMonthEl.addEventListener("keydown", (e) => handleDateSegmentKeydown(e, dateYearEl, dateDayEl));
-    dateMonthEl.addEventListener("blur", updateHiddenDateField);
-  }
-
-  if (dateDayEl) {
-    dateDayEl.addEventListener("input", (e) => handleDateSegmentInput(e, null, 2, "day"));
-    dateDayEl.addEventListener("keydown", (e) => handleDateSegmentKeydown(e, dateMonthEl, null));
-    dateDayEl.addEventListener("blur", updateHiddenDateField);
+    dateCompletedEl.addEventListener("blur", validateDateInput);
   }
 
   // Video URL handler with title fetching
@@ -1143,16 +1091,8 @@
     }
   });
 
-  // Helper to focus a field, handling special cases like segmented date input
+  // Helper to focus a field
   function focusField(fieldId) {
-    if (fieldId === "dateCompleted") {
-      // Focus the year segment of the segmented date input
-      const yearEl = $("dateYear");
-      if (yearEl) {
-        yearEl.focus();
-        return;
-      }
-    }
     $(fieldId)?.focus();
   }
 
