@@ -1,0 +1,293 @@
+// ============================================================
+// Filters & Search
+// ============================================================
+// Filter components for games, runs, and search functionality.
+// ============================================================
+
+// ──────────────────────────────────────────────────────────
+// Filters Grid (Games index + general)
+// ──────────────────────────────────────────────────────────
+.filters-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: start;
+  margin-bottom: 1.5rem;
+}
+
+.filters-grid__search {
+  flex: 1;
+}
+
+.filters-grid__controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+// ──────────────────────────────────────────────────────────
+// Results Bar
+// ──────────────────────────────────────────────────────────
+.results-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.results-count {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.results-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+// ──────────────────────────────────────────────────────────
+// Filter Input Component (Typeahead)
+// ──────────────────────────────────────────────────────────
+.filter-input {
+  position: relative;
+  width: 100%;
+}
+
+.filter-input__wrap {
+  position: relative;
+}
+
+.filter-input__field {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.95rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--fg);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+
+  &::placeholder {
+    color: var(--placeholder);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--focus-2);
+  }
+}
+
+.filter-input__picked {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+
+  &:empty {
+    display: none;
+    margin-bottom: 0;
+  }
+}
+
+.filter-input__suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  max-height: 200px;
+  overflow-y: auto;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.filter-suggestion {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  color: var(--fg);
+  background: transparent;
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+
+  &:first-child {
+    border-top: none;
+  }
+
+  &:hover,
+  &.is-highlighted {
+    background: var(--panel);
+  }
+}
+
+// ──────────────────────────────────────────────────────────
+// Active Filters Row
+// ──────────────────────────────────────────────────────────
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+
+  &:empty {
+    display: none;
+  }
+}
+
+// ──────────────────────────────────────────────────────────
+// Advanced Filters Panel
+// ──────────────────────────────────────────────────────────
+.advanced-filters {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.filter-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-group__label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+// ──────────────────────────────────────────────────────────
+// Filter Toggle Button
+// ──────────────────────────────────────────────────────────
+.btn--filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-base);
+
+  &:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-hover);
+    color: var(--fg);
+  }
+
+  &[aria-expanded="true"] .filter-toggle__icon {
+    transform: rotate(180deg);
+  }
+}
+
+.filter-toggle__icon {
+  font-size: 0.75rem;
+  transition: transform var(--transition-base);
+}
+
+// ──────────────────────────────────────────────────────────
+// A–Z Navigation
+// ──────────────────────────────────────────────────────────
+.az-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--az-gap);
+  padding: 0.75rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 1rem;
+}
+
+.az-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--az-size);
+  height: var(--az-size);
+  padding: 0;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-base);
+
+  &:hover {
+    background: var(--panel);
+    border-color: var(--accent);
+    color: var(--fg);
+  }
+
+  &.is-active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+}
+
+// ──────────────────────────────────────────────────────────
+// Results Status
+// ──────────────────────────────────────────────────────────
+.results-status {
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.results-status__text {
+  color: var(--text-muted);
+}
+
+// ──────────────────────────────────────────────────────────
+// Responsive
+// ──────────────────────────────────────────────────────────
+@media (max-width: 640px) {
+  .filters-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-groups {
+    grid-template-columns: 1fr;
+  }
+
+  .az-nav {
+    justify-content: center;
+  }
+}
