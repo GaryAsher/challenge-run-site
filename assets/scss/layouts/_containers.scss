@@ -1,0 +1,124 @@
+// ============================================================
+// Layout Containers
+// ============================================================
+// Page-level container and wrapper utilities.
+// ============================================================
+
+// ──────────────────────────────────────────────────────────
+// Main Container
+// ──────────────────────────────────────────────────────────
+.container {
+  padding: var(--section-pad-y) var(--gutter);
+  max-width: var(--page-max);
+  margin: 0 auto;
+}
+
+// ──────────────────────────────────────────────────────────
+// Page Width Wrapper
+// ──────────────────────────────────────────────────────────
+.page-width {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+// ──────────────────────────────────────────────────────────
+// Back Navigation
+// ──────────────────────────────────────────────────────────
+.page-back {
+  margin: 1.25rem 0 0.75rem 0;
+  opacity: 0.8;
+
+  a {
+    color: var(--text-dim);
+
+    &:hover {
+      color: var(--fg);
+    }
+  }
+}
+
+// ──────────────────────────────────────────────────────────
+// Game Shell (Full width)
+// ──────────────────────────────────────────────────────────
+.game-shell {
+  max-width: none;
+  margin: 0;
+}
+
+// ──────────────────────────────────────────────────────────
+// Grid Utilities
+// ──────────────────────────────────────────────────────────
+.grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.grid--2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.grid--3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.grid--4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.grid--auto {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+// ──────────────────────────────────────────────────────────
+// Section Spacing
+// ──────────────────────────────────────────────────────────
+.section {
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+}
+
+.section-subtitle {
+  font-size: 1rem;
+  color: var(--text-muted);
+  margin: -0.5rem 0 1rem 0;
+}
+
+// ──────────────────────────────────────────────────────────
+// Responsive Grid
+// ──────────────────────────────────────────────────────────
+@media (max-width: 900px) {
+  .grid--4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .grid--2,
+  .grid--3,
+  .grid--4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ──────────────────────────────────────────────────────────
+// Responsive Scale Tweaks
+// ──────────────────────────────────────────────────────────
+@media (max-width: 640px) {
+  :root {
+    --gutter: 1rem;
+    --section-pad-y: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --gutter: 0.75rem;
+    --section-pad-y: 1.5rem;
+  }
+}
