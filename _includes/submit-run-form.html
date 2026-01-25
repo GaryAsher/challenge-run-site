@@ -305,35 +305,14 @@
             <div class="submit-field">
               <label for="dateCompleted" class="submit-label">Date Completed</label>
               <div class="submit-hint" id="dateCompleted-hint">Format: YYYY/MM/DD (optional).</div>
-              <div class="date-input-segmented" id="dateInputSegmented">
-                <input 
-                  id="dateYear" 
-                  type="text" 
-                  class="date-segment date-segment--year"
-                  placeholder="YYYY"
-                  maxlength="4"
-                  inputmode="numeric"
-                  aria-label="Year"
-                /><span class="date-separator">/</span><input 
-                  id="dateMonth" 
-                  type="text" 
-                  class="date-segment date-segment--month"
-                  placeholder="MM"
-                  maxlength="2"
-                  inputmode="numeric"
-                  aria-label="Month"
-                /><span class="date-separator">/</span><input 
-                  id="dateDay" 
-                  type="text" 
-                  class="date-segment date-segment--day"
-                  placeholder="DD"
-                  maxlength="2"
-                  inputmode="numeric"
-                  aria-label="Day"
-                />
-              </div>
-              <!-- Hidden input for form submission -->
-              <input type="hidden" id="dateCompleted" aria-describedby="dateCompleted-hint" />
+              <input 
+                id="dateCompleted" 
+                type="text" 
+                class="date-input"
+                placeholder="YYYY/MM/DD"
+                maxlength="10"
+                aria-describedby="dateCompleted-hint"
+              />
               <span class="field-error" id="dateCompleted-error" role="alert" hidden></span>
             </div>
 
