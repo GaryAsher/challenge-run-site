@@ -4652,78 +4652,33 @@ a.resource-card:hover {
   }
 }
 
-/* Segmented Date Input (YYYY/MM/DD) - Compact single-box design */
-.date-input-segmented {
-  display: inline-flex;
-  align-items: center;
+/* Date Input (YYYY/MM/DD) - Single input field */
+.date-input {
+  width: 100%;
+  max-width: 160px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.95rem;
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", "Segoe UI Mono", monospace;
+  color: var(--fg);
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  background: var(--surface);
-  min-height: var(--tap);
-  overflow: hidden;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
-  width: auto;
-  max-width: 160px;
 }
 
-.date-input-segmented:focus-within {
+.date-input:focus {
+  outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--focus-2);
 }
 
-.date-input-segmented.has-error {
-  border-color: #ef4444;
-}
-
-.date-segment {
-  border: none;
-  background: transparent;
-  color: var(--fg);
-  text-align: center;
-  font-size: 0.95rem;
-  font-family: ui-monospace, "SF Mono", "Cascadia Code", "Segoe UI Mono", monospace;
-  padding: 0.5rem 0;
-  min-height: auto;
-  width: auto;
-}
-
-.date-segment:focus {
-  outline: none;
-  background: var(--bg-soft);
-  box-shadow: none;
-}
-
-.date-segment::placeholder {
+.date-input::placeholder {
   color: var(--placeholder);
   font-family: inherit;
 }
 
-.date-segment--year {
-  width: 4ch;
-  padding-left: 0.5rem;
-}
-
-.date-segment--month {
-  width: 2.5ch;
-}
-
-.date-segment--day {
-  width: 2.5ch;
-  padding-right: 0.5rem;
-}
-
-.date-separator {
-  color: var(--text-muted);
-  font-size: 0.95rem;
-  user-select: none;
-  cursor: pointer;
-  padding: 0;
-  line-height: 1;
-  transition: color 0.15s ease;
-}
-
-.date-separator:hover {
-  color: var(--accent);
+.date-input.has-error {
+  border-color: #ef4444;
 }
 
 /* Section cards (for grouping Standard / Community / Character / Glitches / Restrictions) */
