@@ -1,111 +1,18 @@
-/* ============================================================
-   Theme Variables
-   ============================================================ */
-:root {
-  /* Core palette */
-  --accent: #3BC36E;
-  --accent-rgb: 59, 195, 110;
-  --bg: #0f0f0f;
-  --fg: #ffffff;
+---
+# Jekyll front matter - DO NOT REMOVE
+# Main stylesheet with modular imports for extracted components.
+---
 
-  /* Surfaces and borders */
-  --border: rgba(255, 255, 255, 0.12);
-  --border-hover: rgba(255, 255, 255, 0.2);
-  --panel: rgba(255, 255, 255, 0.04);
-  --surface: #0b0b0b;
-  --surface-2: #111;
-  --card-bg: rgba(255, 255, 255, 0.02);
-  --bg-hover: rgba(255, 255, 255, 0.08);
-  --bg-soft: rgba(255, 255, 255, 0.06);
+// ============================================================
+// MODULAR IMPORTS - Extracted components
+// ============================================================
+@import "../scss/base/themes";  // Color overrides
+@import "../scss/base/variables";  // Theme variables
+@import "../scss/components/footer"; // Footer + theme picker
 
-  /* Text variations */
-  --placeholder: rgba(255, 255, 255, 0.6);
-  --placeholder-dim: rgba(255, 255, 255, 0.55);
-  --text-muted: rgba(255, 255, 255, 0.78);
-  --text-dim: rgba(255, 255, 255, 0.75);
-
-  /* Focus states */
-  --focus: rgba(59, 195, 110, 0.6);
-  --focus-2: rgba(59, 195, 110, 0.35);
-
-  /* Overlays */
-  --overlay-strong: rgba(15, 15, 15, 0.95);
-  --overlay-mid: rgba(15, 15, 15, 0.6);
-  --overlay-light: rgba(15, 15, 15, 0.35);
-
-  /* Hero overlays */
-  --hero-strong: rgba(15, 15, 15, 0.92);
-  --hero-mid: rgba(15, 15, 15, 0.65);
-  --hero-light: rgba(15, 15, 15, 0.45);
-
-  /* Status colors */
-  --status-verified: #10b981;
-  --status-pending: #f59e0b;
-  --status-rejected: #ef4444;
-
-  /* ============================================================
-     Responsive layout scale (desktop default)
-     ============================================================ */
-  --page-max: 960px;
-  --gutter: 1.5rem;
-  --section-pad-y: 3rem;
-
-  /* Border radius scale */
-  --radius-sm: 10px;
-  --radius-md: 12px;
-  --radius-lg: 14px;
-  --radius-xl: 16px;
-  --radius: var(--radius-md);
-
-  /* Spacing scale */
-  --space-1: 0.35rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.25rem;
-  --space-6: 1.5rem;
-
-  /* Touch targets */
-  --tap: 36px;
-  --az-size: 36px;
-  --az-gap: 0.35rem;
-
-  /* Shared pill/tag styling */
-  --pill-padding: 0.25rem 0.65rem;
-  --pill-font-size: 0.85rem;
-  --pill-gap: 0.4rem;
-}
-
-/* ============================================================
-   Theme Color Overrides
-   ============================================================ */
-[data-theme="pink"] {
-  --accent: #E91E8C;
-  --accent-rgb: 233, 30, 140;
-  --focus: rgba(233, 30, 140, 0.6);
-  --focus-2: rgba(233, 30, 140, 0.35);
-}
-
-[data-theme="blue"] {
-  --accent: #3B82F6;
-  --accent-rgb: 59, 130, 246;
-  --focus: rgba(59, 130, 246, 0.6);
-  --focus-2: rgba(59, 130, 246, 0.35);
-}
-
-[data-theme="purple"] {
-  --accent: #8B5CF6;
-  --accent-rgb: 139, 92, 246;
-  --focus: rgba(139, 92, 246, 0.6);
-  --focus-2: rgba(139, 92, 246, 0.35);
-}
-
-[data-theme="red"] {
-  --accent: #EF4444;
-  --accent-rgb: 239, 68, 68;
-  --focus: rgba(239, 68, 68, 0.6);
-  --focus-2: rgba(239, 68, 68, 0.35);
-}
+// ============================================================
+// REMAINING STYLES - Not yet extracted
+// ============================================================
 
 /* ============================================================
    Global Defaults
@@ -394,71 +301,7 @@ a:hover {
   }
 }
 
-/* ============================================================
-   Footer
-   ============================================================ */
-.site-footer {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid var(--border);
-}
-
-.footer-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.theme-picker {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.theme-btn {
-  appearance: none;
-  border: 2px solid transparent;
-  background: var(--surface);
-  border-radius: var(--radius-sm);
-  padding: 0.3rem 0.5rem;
-  cursor: pointer;
-  font-size: 1rem;
-  line-height: 1;
-  transition: transform 0.1s ease, border-color 0.15s ease, background 0.15s ease;
-}
-
-.theme-btn:hover {
-  transform: scale(1.1);
-}
-
-/* Theme button hover + active colors */
-.theme-btn[data-theme=""]:hover { background: rgba(59, 195, 110, 0.2); }
-.theme-btn[data-theme="pink"]:hover { background: rgba(233, 30, 140, 0.2); }
-.theme-btn[data-theme="blue"]:hover { background: rgba(59, 130, 246, 0.2); }
-.theme-btn[data-theme="purple"]:hover { background: rgba(139, 92, 246, 0.2); }
-.theme-btn[data-theme="red"]:hover { background: rgba(239, 68, 68, 0.2); }
-
-.theme-btn[data-theme=""].is-active {
-  border-color: #3BC36E;
-  background: rgba(59, 195, 110, 0.15);
-}
-.theme-btn[data-theme="pink"].is-active {
-  border-color: #E91E8C;
-  background: rgba(233, 30, 140, 0.15);
-}
-.theme-btn[data-theme="blue"].is-active {
-  border-color: #3B82F6;
-  background: rgba(59, 130, 246, 0.15);
-}
-.theme-btn[data-theme="purple"].is-active {
-  border-color: #8B5CF6;
-  background: rgba(139, 92, 246, 0.15);
-}
-.theme-btn[data-theme="red"].is-active {
-  border-color: #EF4444;
-  background: rgba(239, 68, 68, 0.15);
-}
+/* Footer styles moved to: assets/scss/components/_footer.scss */
 
 /* ============================================================
    Components: Shared (used across pages)
