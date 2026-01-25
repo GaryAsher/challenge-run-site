@@ -1,36 +1,50 @@
 ---
-# Jekyll will process this file and output it as /assets/css/style.css
+# Jekyll processes this file and outputs it as /assets/css/style.css
 ---
 /* ============================================================
    Theme Variables
    ============================================================ */
 :root {
+  /* Core palette */
   --accent: #3BC36E;
+  --accent-rgb: 59, 195, 110;
   --bg: #0f0f0f;
   --fg: #ffffff;
 
+  /* Surfaces and borders */
   --border: rgba(255, 255, 255, 0.12);
+  --border-hover: rgba(255, 255, 255, 0.2);
   --panel: rgba(255, 255, 255, 0.04);
   --surface: #0b0b0b;
   --surface-2: #111;
+  --card-bg: rgba(255, 255, 255, 0.02);
+  --bg-hover: rgba(255, 255, 255, 0.08);
+  --bg-soft: rgba(255, 255, 255, 0.06);
 
+  /* Text variations */
   --placeholder: rgba(255, 255, 255, 0.6);
   --placeholder-dim: rgba(255, 255, 255, 0.55);
-
-  --bg-soft: rgba(255, 255, 255, 0.06);
   --text-muted: rgba(255, 255, 255, 0.78);
   --text-dim: rgba(255, 255, 255, 0.75);
 
+  /* Focus states */
   --focus: rgba(59, 195, 110, 0.6);
   --focus-2: rgba(59, 195, 110, 0.35);
 
+  /* Overlays */
   --overlay-strong: rgba(15, 15, 15, 0.95);
   --overlay-mid: rgba(15, 15, 15, 0.6);
   --overlay-light: rgba(15, 15, 15, 0.35);
 
+  /* Hero overlays */
   --hero-strong: rgba(15, 15, 15, 0.92);
   --hero-mid: rgba(15, 15, 15, 0.65);
   --hero-light: rgba(15, 15, 15, 0.45);
+
+  /* Status colors */
+  --status-verified: #10b981;
+  --status-pending: #f59e0b;
+  --status-rejected: #ef4444;
 
   /* ============================================================
      Responsive layout scale (desktop default)
@@ -39,11 +53,14 @@
   --gutter: 1.5rem;
   --section-pad-y: 3rem;
 
+  /* Border radius scale */
   --radius-sm: 10px;
   --radius-md: 12px;
   --radius-lg: 14px;
   --radius-xl: 16px;
+  --radius: var(--radius-md);
 
+  /* Spacing scale */
   --space-1: 0.35rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -67,24 +84,28 @@
    ============================================================ */
 [data-theme="pink"] {
   --accent: #E91E8C;
+  --accent-rgb: 233, 30, 140;
   --focus: rgba(233, 30, 140, 0.6);
   --focus-2: rgba(233, 30, 140, 0.35);
 }
 
 [data-theme="blue"] {
   --accent: #3B82F6;
+  --accent-rgb: 59, 130, 246;
   --focus: rgba(59, 130, 246, 0.6);
   --focus-2: rgba(59, 130, 246, 0.35);
 }
 
 [data-theme="purple"] {
   --accent: #8B5CF6;
+  --accent-rgb: 139, 92, 246;
   --focus: rgba(139, 92, 246, 0.6);
   --focus-2: rgba(139, 92, 246, 0.35);
 }
 
 [data-theme="red"] {
   --accent: #EF4444;
+  --accent-rgb: 239, 68, 68;
   --focus: rgba(239, 68, 68, 0.6);
   --focus-2: rgba(239, 68, 68, 0.35);
 }
@@ -1666,8 +1687,8 @@ button.tag,
   margin: 0;
 }
 
-/* Push Submit Run tab to far right */
-.runner-tabs.game-tabs .tab--submit {
+/* Push Submit Run tab to the far right */
+.runner-tabs .tab--submit {
   margin-left: auto;
 }
 
@@ -2630,19 +2651,6 @@ a.resource-card:hover {
   font-size: 0.9rem;
   padding: 0.5rem 1rem;
 }
-
-/* Runs tab: make content attach to game tabs */
-.page-width.runs-page {
-  margin-top: 0;
-  padding-top: 0;
-}
-
-.runs-card {
-  margin-top: 0;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-}
-
 
 /* ==========================================================================
    ACCORDION & COMMUNITY CHALLENGES
@@ -3616,7 +3624,6 @@ a.resource-card:hover {
   border: none;
   border-top: 1px solid var(--border);
   margin: 0.5rem 0;
-}
    
 /* ============================================================
    TEAMS STYLES
@@ -3858,16 +3865,16 @@ a.resource-card:hover {
 /* Highlight animation for first visit */
 @keyframes ruleBuilderPulse {
   0%, 100% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--footer-accent, var(--accent)) 0%, transparent);
   }
   50% {
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 40%, transparent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--footer-accent, var(--accent)) 40%, transparent);
   }
 }
 
 .rule-builder-highlight--animate {
   animation: ruleBuilderPulse 1s ease-in-out 3;
-  border-color: var(--accent) !important;
+  border-color: var(--footer-accent, var(--accent)) !important;
 }
 
 /* Rules Summary Panel */
@@ -3911,6 +3918,115 @@ a.resource-card:hover {
   font-size: 0.9em;
   display: block;
   margin-top: 0.25rem;
+  margin-left: 1.5rem;
+}
+
+/* New rule builder summary content (without bullets) */
+.rule-builder__rules-content {
+  line-height: 1.6;
+}
+
+.rule-builder__rule-item {
+  margin: 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.rule-builder__rule-item:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.rule-builder__rule-desc {
+  margin: 0.5rem 0 0 0;
+  padding-left: 1.5rem;
+  font-size: 0.9em;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* Plain text paragraphs - add visual indent indicator */
+.rule-builder__rule-desc .rule-text {
+  margin: 0.25rem 0;
+  padding: 0.35rem 0 0.35rem 0.75rem;
+  border-left: 2px solid var(--border);
+}
+
+/* Indented content within list items */
+.rule-builder__rule-desc .rule-indent {
+  display: block;
+  margin-top: 0.35rem;
+  padding-left: 0.5rem;
+  color: var(--text-muted);
+}
+
+/* Rule lists */
+.rule-builder__rule-desc .rule-list {
+  margin: 0.25rem 0 0 0;
+  padding-left: 1.25rem;
+  list-style-type: disc;
+}
+
+.rule-builder__rule-desc .rule-list li {
+  margin: 0.25rem 0;
+  line-height: 1.5;
+}
+
+.rule-builder__rule-desc .rule-list li:last-child {
+  margin-bottom: 0;
+}
+
+/* Plain text should be indented and visually distinct */
+.rule-builder__rule-desc .rule-desc-text {
+  display: block;
+  padding: 0.5rem 0.75rem;
+  margin: 0.25rem 0;
+  background: rgba(255, 255, 255, 0.02);
+  border-left: 2px solid var(--border);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+/* Headers inside descriptions - no extra indent */
+.rule-builder__rule-desc h3,
+.rule-builder__rule-desc h4 {
+  margin-left: 0;
+}
+
+.rule-builder__rule-desc ul {
+  margin: 0.25rem 0 0 0;
+  padding-left: 1.25rem;
+  list-style-type: disc;
+}
+
+.rule-builder__rule-desc li {
+  margin: 0.15rem 0;
+}
+
+.rule-builder__rule-desc li:last-child {
+  margin-bottom: 0;
+}
+
+.rule-builder__rule-desc h4 {
+  margin: 0.35rem 0 0.15rem 0;
+  font-size: 0.95em;
+  color: var(--fg);
+}
+
+/* Remove extra space before headers that follow lists */
+.rule-builder__rule-desc ul + h4,
+.rule-builder__rule-desc ul + br + h4 {
+  margin-top: 0.25rem;
+}
+
+/* Clean up any trailing <br> in descriptions */
+.rule-builder__rule-desc br:last-child {
+  display: none;
+}
+
+.rule-builder__rule-extra {
+  margin: 0.25rem 0 0 0;
+  margin-left: 1.5rem;
+  font-size: 0.9em;
 }
 
 /* Text colors for allowed/banned */
@@ -3967,16 +4083,16 @@ a.resource-card:hover {
    Unified Filter System CSS
    ============================================================ */
 /* ============================================================
-   Filter Chip (removable tag with ×)
+   Filter Chip (removable tag with ×) - Pill-shaped style
    ============================================================ */
 .filter-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.3rem 0.5rem 0.3rem 0.65rem;
+  padding: 0.3rem 0.6rem 0.3rem 0.75rem;
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: 999px; /* Pill shape */
   font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -4005,7 +4121,7 @@ a.resource-card:hover {
   height: 18px;
   font-size: 1rem;
   line-height: 1;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.45); /* Lighter than text for differentiation */
   background: transparent;
   border-radius: 50%;
   transition: all 0.15s ease;
@@ -4102,6 +4218,17 @@ a.resource-card:hover {
 
 .filter-suggestion--empty:hover {
   background: transparent;
+}
+
+/* Ensure filter-suggestion works inside tag-suggestions containers (Games page) */
+.tag-suggestions .filter-suggestion {
+  border-radius: var(--radius-sm);
+  margin: 0.1rem 0;
+}
+
+.tag-suggestions .filter-suggestion:hover {
+  background: var(--panel);
+  border-color: var(--border);
 }
 
 /* ============================================================
@@ -4313,12 +4440,34 @@ a.resource-card:hover {
 
 /* ============================================================
    Runs Advanced Filter - Typeahead Style
+   Supports both .runs-filter-typeahead__* (legacy) and 
+   .filter-typeahead__* (used by JS) class naming
    ============================================================ */
-.runs-filter-typeahead {
+.runs-filter-typeahead,
+.filter-typeahead {
   position: relative;
 }
 
-.runs-filter-typeahead__input {
+.runs-filter-typeahead__picked,
+.filter-typeahead__picked {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.runs-filter-typeahead__picked:empty,
+.filter-typeahead__picked:empty {
+  margin-bottom: 0;
+}
+
+.runs-filter-typeahead__wrap,
+.filter-typeahead__wrap {
+  position: relative;
+}
+
+.runs-filter-typeahead__input,
+.filter-typeahead__input {
   width: 100%;
   min-width: 180px;
   padding: 0.5rem 0.75rem;
@@ -4329,13 +4478,20 @@ a.resource-card:hover {
   border-radius: var(--radius-sm);
 }
 
-.runs-filter-typeahead__input:focus {
+.runs-filter-typeahead__input:focus,
+.filter-typeahead__input:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 2px var(--focus-2);
 }
 
-.runs-filter-typeahead__dropdown {
+.runs-filter-typeahead__input::placeholder,
+.filter-typeahead__input::placeholder {
+  color: var(--placeholder-dim);
+}
+
+.runs-filter-typeahead__dropdown,
+.filter-typeahead__dropdown {
   position: absolute;
   top: 100%;
   left: 0;
@@ -4350,7 +4506,8 @@ a.resource-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.runs-filter-typeahead__option {
+.runs-filter-typeahead__option,
+.filter-typeahead__option {
   display: block;
   width: 100%;
   padding: 0.5rem 0.75rem;
@@ -4360,10 +4517,24 @@ a.resource-card:hover {
   background: transparent;
   border: none;
   cursor: pointer;
+  transition: background 0.1s ease;
 }
 
-.runs-filter-typeahead__option:hover {
+.runs-filter-typeahead__option:hover,
+.filter-typeahead__option:hover {
   background: var(--bg-soft);
+}
+
+.runs-filter-typeahead__option--empty,
+.filter-typeahead__option--empty {
+  color: var(--text-muted);
+  cursor: default;
+  font-style: italic;
+}
+
+.runs-filter-typeahead__option--empty:hover,
+.filter-typeahead__option--empty:hover {
+  background: transparent;
 }
 
 /* ============================================================
@@ -4399,9 +4570,20 @@ a.resource-card:hover {
   padding: 0.6rem 0.75rem;
   font-size: 0.95rem;
   color: var(--fg);
-  background: var(--panel);
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.submit-form select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2.5rem;
 }
 
 .submit-form input:focus,
@@ -4461,11 +4643,7 @@ a.resource-card:hover {
 
 /* Make selects match site selects */
 #standardChallengeSelect,
-#restrictionsSelect,
-#communityChallengeSelect,
-#characterSelect,
-#glitchSelect,
-#gameSelect {
+#restrictionsSelect {
   width: 100%;
 }
 
@@ -4478,7 +4656,10 @@ a.resource-card:hover {
 
 /* ============================================================
    Submit Run Page (submit-run/index.html)
+   All form styling is now handled by .submit-run-page selectors
+   below for better maintainability and consistent specificity
    ============================================================ */
+
 /* Scope everything to the submit-run page */
 .submit-run-page .card {
   max-width: 860px;
@@ -4488,10 +4669,15 @@ a.resource-card:hover {
 
 .submit-run-page h1 {
   margin: 0 0 0.5rem 0;
+  font-size: 1.75rem;
 }
 
 .submit-run-page .submit-lead {
-  margin: 0 0 1rem 0;
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
 /* Form wrapper */
@@ -4509,25 +4695,81 @@ a.resource-card:hover {
 /* Field blocks */
 .submit-run-page .submit-field {
   display: grid;
-  gap: 6px;
+  gap: 0.5rem;
 }
 
+/* Field labels - IMPROVED: better spacing and visual hierarchy */
 .submit-run-page .submit-label {
-  font-weight: 650;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   color: var(--fg);
+  margin-bottom: 0.35rem;
+  display: block;
 }
 
-.submit-run-page .submit-hint {
-  font-size: 0.85rem;
+.submit-run-page .submit-label.muted {
   color: var(--text-muted);
 }
 
-/* Inputs/selects match site styling */
+/* Improve hint text visibility */
+.submit-run-page .submit-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 0.35rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.45;
+}
+
+.submit-run-page .submit-hint code {
+  background: rgba(255,255,255,0.08);
+  padding: 0.15em 0.4em;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+/* Inputs/selects - consistent styling with site-wide .select class */
 .submit-run-page input[type="text"],
 .submit-run-page input[type="url"],
 .submit-run-page input[type="date"],
-.submit-run-page select,
+.submit-run-page input.filter-input__field,
 .submit-run-page textarea {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  background-color: var(--surface);
+  color: var(--fg);
+  min-height: var(--tap);
+  font-size: 0.95rem;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Ensure filter inputs specifically get the right styling */
+.submit-run-page .filter-input__field,
+.submit-run-page #runnerId,
+.submit-run-page #dateCompleted,
+.submit-run-page #videoUrl,
+.submit-run-page #standardChallengeSearch,
+.submit-run-page #restrictionsSearch {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface) !important;
+  background-color: var(--surface) !important;
+  color: var(--fg);
+  min-height: var(--tap);
+  font-size: 0.95rem;
+}
+
+.submit-run-page select,
+.submit-run-page select.select {
   width: 100%;
   padding: 0.6rem 0.75rem;
   border: 1px solid var(--border);
@@ -4535,29 +4777,59 @@ a.resource-card:hover {
   background: var(--surface);
   color: var(--fg);
   min-height: var(--tap);
+  font-size: 0.95rem;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2.5rem;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
 }
 
 .submit-run-page input::placeholder,
 .submit-run-page textarea::placeholder {
-  color: var(--placeholder);
+  color: var(--placeholder-dim);
 }
 
 .submit-run-page input:focus,
 .submit-run-page select:focus,
-.submit-run-page textarea:focus {
+.submit-run-page textarea:focus,
+.submit-run-page .filter-input__field:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--focus-2);
 }
 
-.submit-run-page select {
-  cursor: pointer;
+/* Hover effect only on the closed select box */
+.submit-run-page input:hover,
+.submit-run-page textarea:hover,
+.submit-run-page .filter-input__field:hover {
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface)) !important;
+  border-color: var(--accent);
 }
 
+/* Select hover - DISABLED to prevent unwanted highlight when hovering labels */
+.submit-run-page select:hover {
+  /* No hover effect - only focus should highlight */
+  border-color: var(--border);
+}
+
+/* Force options to have solid background - never inherit hover tint */
 .submit-run-page select option,
 .submit-run-page select optgroup {
-  background: var(--surface);
+  background: var(--bg) !important;
+  background-color: var(--bg) !important;
   color: var(--fg);
+}
+
+/* When select is hovered/focused, options still stay solid */
+.submit-run-page select:hover option,
+.submit-run-page select:focus option {
+  background: var(--bg) !important;
+  background-color: var(--bg) !important;
 }
 
 /* Two-up rows where useful */
@@ -4573,59 +4845,122 @@ a.resource-card:hover {
   }
 }
 
-/* Section cards (for grouping Standard / Community / Character / Glitches / Restrictions) */
+/* Section cards - these are the main groupings */
 .submit-run-page .submit-section {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--panel);
-  padding: 14px;
+  padding: 1.5rem;
   display: grid;
-  gap: 12px;
+  gap: 1.25rem;
+  position: relative;
 }
 
+/* Add a separator line between sections */
+.submit-run-page .submit-section + .submit-section::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border) 20%, var(--border) 80%, transparent);
+}
+
+/* Section titles - prominent headers with better spacing */
 .submit-run-page .submit-section__title {
-  margin: 0;
-  font-size: 0.95rem;
-  font-weight: 800;
-  letter-spacing: 0.2px;
-  color: var(--fg);
+  margin: 0 0 0.75rem 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
+/* Add a subtle line under the title */
+.submit-run-page .submit-section__title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  margin-left: 0.5rem;
+}
+
+/* Section subtitle - IMPROVED: more spacing from title and form fields */
 .submit-run-page .submit-section__sub {
-  margin: -6px 0 0 0;
-  font-size: 0.85rem;
+  margin: 0 0 1.25rem 0;
+  font-size: 0.9rem;
   color: var(--text-muted);
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  line-height: 1.5;
 }
 
 /* Actions row */
 .submit-run-page .submit-actions {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
-  margin-top: 6px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.06);
 }
 
 .submit-run-page .submit-actions .btn {
   flex: 0 0 auto;
+  padding: 0.65rem 1.25rem;
+  font-size: 0.95rem;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
 }
 
 .submit-run-page .btn--primary {
   background: var(--accent);
-  border-color: var(--accent);
+  border: 2px solid var(--accent);
   color: var(--bg);
   font-weight: 700;
 }
 
 .submit-run-page .btn--primary:hover {
-  filter: brightness(1.05);
+  background: color-mix(in srgb, var(--accent) 85%, white);
+  border-color: color-mix(in srgb, var(--accent) 85%, white);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 195, 110, 0.25);
+}
+
+.submit-run-page .btn--primary:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* Secondary button styling */
+.submit-run-page .submit-actions .btn:not(.btn--primary) {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--fg);
+}
+
+.submit-run-page .submit-actions .btn:not(.btn--primary):hover {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  border-color: var(--accent);
 }
 
 /* Status message */
 .submit-run-page #msg {
-  padding: 10px 12px;
+  padding: 12px 14px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: rgba(255,255,255,0.02);
+  font-size: 0.9rem;
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+}
+
+.submit-run-page #msg:empty {
+  display: none;
 }
 
 /* Preview payload */
@@ -4633,22 +4968,37 @@ a.resource-card:hover {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--surface);
-  padding: 10px 12px;
+  margin-top: 8px;
 }
 
 .submit-run-page details > summary {
   cursor: pointer;
-  font-weight: 650;
+  font-weight: 600;
+  font-size: 0.9rem;
   user-select: none;
+  padding: 12px 14px;
+  color: var(--text-muted);
+  transition: color 0.15s ease;
+}
+
+.submit-run-page details > summary:hover {
+  color: var(--fg);
+}
+
+.submit-run-page details[open] > summary {
+  border-bottom: 1px solid var(--border);
+  color: var(--fg);
 }
 
 .submit-run-page #preview {
-  margin: 10px 0 0 0;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  margin: 0;
+  border: none;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
   background: var(--bg);
-  padding: 10px 12px;
+  padding: 14px;
   overflow: auto;
+  font-size: 0.85rem;
+  max-height: 300px;
 }
 
 /* ============================================================
@@ -4656,47 +5006,372 @@ a.resource-card:hover {
    ============================================================ */
 .submit-run-page .multi-pick {
   display: grid;
-  gap: 8px;
+  gap: 12px;
 }
 
 .submit-run-page .multi-pick__picked {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  min-height: 1.5rem;
+  min-height: 0;
 }
 
 .submit-run-page .multi-pick__picked:empty {
   display: none;
 }
 
-.submit-run-page .multi-pick__help {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  margin: -2px 0 0 0;
+/* Chip styling */
+.submit-run-page .filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.65rem;
+  background: color-mix(in srgb, var(--accent) 15%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 2rem;
+  font-size: 0.875rem;
+  color: var(--fg);
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-/* Make suggestions list feel consistent with site */
+.submit-run-page .filter-chip:hover {
+  background: color-mix(in srgb, var(--accent) 25%, var(--surface));
+  border-color: var(--accent);
+}
+
+.submit-run-page .filter-chip__text {
+  font-weight: 500;
+}
+
+.submit-run-page .filter-chip__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  font-size: 0.9rem;
+  line-height: 1;
+  transition: background 0.15s ease;
+}
+
+.submit-run-page .filter-chip:hover .filter-chip__close {
+  background: rgba(255,100,100,0.3);
+  color: #ff6b6b;
+}
+
+.submit-run-page .multi-pick__help {
+  font-size: 0.825rem;
+  color: var(--text-dim);
+  font-style: italic;
+  padding-left: 2px;
+}
+
+/* Suggestions dropdown styling */
 .submit-run-page .filter-input__suggestions {
   border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  border: 1px solid var(--border);
+  border-top: none;
+  background: var(--bg);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  max-height: 240px;
+  overflow-y: auto;
 }
 
 .submit-run-page .filter-suggestion {
+  display: block;
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  text-align: left;
+  background: transparent;
+  border: none;
   border-top: 1px solid rgba(255,255,255,0.04);
+  color: var(--fg);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.1s ease;
 }
 
 .submit-run-page .filter-suggestion:first-child {
   border-top: none;
 }
 
+.submit-run-page .filter-suggestion:hover {
+  background: color-mix(in srgb, var(--accent) 15%, var(--bg));
+}
+
+.submit-run-page .filter-suggestion--empty {
+  color: var(--text-dim);
+  font-style: italic;
+  cursor: default;
+}
+
+.submit-run-page .filter-suggestion--empty:hover {
+  background: transparent;
+}
+
+/* ============================================================
+   Turnstile Captcha Styling (moved from inline to main CSS)
+   ============================================================ */
+.submit-run-page .turnstile-field {
+  margin: 0;
+}
+
+.submit-run-page .turnstile-field .submit-label {
+  color: var(--fg);
+}
+
+.submit-run-page .cf-turnstile {
+  margin-top: 0.75rem;
+}
+
+/* ============================================================
+   Required Field Markers & Hints
+   ============================================================ */
+.required-marker {
+  color: var(--accent);
+  font-weight: 700;
+  margin-left: 0.15em;
+}
+
+.required-hint {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+/* ============================================================
+   Inline Field Validation Errors
+   ============================================================ */
+.field-error {
+  display: block;
+  margin-top: 0.35rem;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.85rem;
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+  border-left: 3px solid #ff6b6b;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.field-error[hidden] {
+  display: none;
+}
+
+/* Error state for inputs */
+.submit-run-page input.has-error,
+.submit-run-page select.has-error,
+.submit-run-page textarea.has-error {
+  border-color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.05);
+}
+
+.submit-run-page input.has-error:focus,
+.submit-run-page select.has-error:focus,
+.submit-run-page textarea.has-error:focus {
+  border-color: #ff6b6b;
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2);
+}
+
+/* ============================================================
+   Submit Message Styles
+   ============================================================ */
+.submit-message {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  border: 1px solid var(--border);
+  background: var(--panel);
+}
+
+.submit-message--error {
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+  border-color: rgba(255, 107, 107, 0.3);
+}
+
+.submit-message--success {
+  color: var(--accent);
+  background: rgba(59, 195, 110, 0.1);
+  border-color: rgba(59, 195, 110, 0.3);
+}
+
+/* ============================================================
+   Loading State & Spinner
+   ============================================================ */
+.btn.is-loading {
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.btn__loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spinner {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   Improved Mobile Responsiveness
+   ============================================================ */
+@media (max-width: 640px) {
+  /* Stack form sections tighter on mobile */
+  .submit-run-page .submit-grid {
+    gap: 12px;
+  }
+  
+  .submit-run-page .submit-section {
+    padding: 14px;
+  }
+  
+  .submit-run-page .submit-section__title {
+    font-size: 1rem;
+  }
+  
+  /* Full-width suggestion dropdowns on mobile */
+  .submit-run-page .filter-input__suggestions {
+    position: fixed;
+    left: var(--gutter);
+    right: var(--gutter);
+    max-width: none;
+    max-height: 50vh;
+    z-index: 100;
+  }
+  
+  /* Larger touch targets for filter suggestions */
+  .submit-run-page .filter-suggestion {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+  }
+  
+  /* Better touch targets for chips */
+  .submit-run-page .filter-chip {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+  }
+  
+  /* Stack actions vertically on very small screens */
+  .submit-run-page .submit-actions {
+    flex-direction: column;
+  }
+  
+  .submit-run-page .submit-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* Larger inputs for touch */
+  .submit-run-page input,
+  .submit-run-page select,
+  .submit-run-page textarea {
+    font-size: 16px; /* Prevents iOS zoom on focus */
+    min-height: 44px; /* iOS minimum touch target */
+  }
+  
+  /* Full width message */
+  .submit-message {
+    margin-left: -14px;
+    margin-right: -14px;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Even tighter on very small screens */
+  .submit-run-page .submit-row-2 {
+    gap: 12px;
+  }
+  
+  .submit-run-page h1 {
+    font-size: 1.4rem;
+  }
+  
+  .submit-run-page .submit-lead {
+    font-size: 0.9rem;
+  }
+  
+  /* Stack required hint below text */
+  .required-hint {
+    display: block;
+    margin-top: 0.35rem;
+  }
+}
+
+/* ============================================================
+   Improved Focus States for Accessibility
+   ============================================================ */
+.submit-run-page *:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.submit-run-page input:focus-visible,
+.submit-run-page select:focus-visible,
+.submit-run-page textarea:focus-visible,
+.submit-run-page button:focus-visible {
+  outline: none; /* Using box-shadow instead for these */
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .submit-run-page input,
+  .submit-run-page select,
+  .submit-run-page textarea {
+    border-width: 2px;
+  }
+  
+  .required-marker {
+    text-decoration: underline;
+  }
+  
+  .field-error {
+    border-left-width: 4px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+    border-style: dotted;
+  }
+  
+  .submit-run-page input,
+  .submit-run-page select,
+  .submit-run-page textarea,
+  .submit-run-page button {
+    transition: none;
+  }
+}
+
 /* ============================================================
    Category Tier System Styles
    ============================================================ */
 
-/* Tier Navigation Container - flush with card edges */
+/* Tier Navigation Container */
 .tier-nav-container {
-  margin: 0;
-  padding: 0 var(--space-4) 1rem;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
 }
 
 /* Tier Navigation (styled like game tabs) */
@@ -4792,181 +5467,6 @@ a.resource-card:hover {
 .subcategory-label {
   font-size: 0.8rem;
   margin-right: 0.25rem;
-}
-
-/* ============================================================
-   Advanced Filters Section (Runs Page)
-   ============================================================ */
-.filters-wrap {
-  margin-top: 1rem;
-}
-
-.filters-bar {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.filters-bar .filter-input {
-  flex: 1;
-  min-width: 200px;
-}
-
-.filters-bar .filter-input__field {
-  width: 100%;
-  padding: 0.6rem 0.75rem;
-  font-size: 0.95rem;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--fg);
-}
-
-.filters-bar .filter-input__field:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--focus-2);
-}
-
-.btn--filter-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1rem;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.btn--filter-toggle:hover {
-  background: var(--bg-hover);
-  border-color: var(--border-hover);
-  color: var(--fg);
-}
-
-.btn--filter-toggle[aria-expanded="true"] .filter-toggle__icon {
-  transform: rotate(180deg);
-}
-
-.filter-toggle__icon {
-  font-size: 0.75rem;
-  transition: transform 0.15s ease;
-}
-
-.advanced-filters {
-  margin-top: 1rem;
-  padding: 1rem;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-}
-
-.filter-groups {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-}
-
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.filter-group__label {
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--text-muted);
-}
-
-/* Filter group typeahead inputs */
-.filter-group .filter-input__picked {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-bottom: 0.5rem;
-}
-
-.filter-group .filter-input__picked:empty {
-  display: none;
-  margin-bottom: 0;
-}
-
-.filter-group .filter-input__wrap {
-  position: relative;
-}
-
-.filter-group .filter-input__field {
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.9rem;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--fg);
-}
-
-.filter-group .filter-input__field:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--focus-2);
-}
-
-.filter-group .filter-input__suggestions {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  max-height: 200px;
-  overflow-y: auto;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-top: none;
-  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.filter-select {
-  padding: 0.5rem;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--fg);
-  font-size: 0.9rem;
-}
-
-.filter-select:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-
-.filter-select[multiple] {
-  min-height: 100px;
-}
-
-.active-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 1rem;
-}
-
-.active-filters:empty {
-  display: none;
-}
-
-.results-status {
-  margin-top: 0.75rem;
-  font-size: 0.9rem;
-}
-
-.results-status__text {
-  color: var(--text-muted);
 }
 
 /* Tier Cards (for tier picker page) */
@@ -5073,7 +5573,7 @@ a.resource-card:hover {
   border: 1px dashed var(--border);
 }
 
-/* Responsive adjustments */
+/* Responsive adjustments for tier system */
 @media (max-width: 600px) {
   .tier-nav {
     flex-direction: column;
@@ -5100,37 +5600,4 @@ a.resource-card:hover {
     flex-direction: column;
     align-items: flex-start;
   }
-}
-
-/* ============================================================
-   Video Title Preview (Submit Form)
-   ============================================================ */
-.video-title-preview {
-  margin-top: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.875rem;
-  color: var(--text-muted);
-  background: var(--panel);
-  border-radius: var(--radius-sm);
-  border-left: 3px solid var(--accent);
-}
-
-/* Input with secondary label */
-.input-with-secondary {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.input-with-secondary input {
-  flex: 1;
-}
-
-.input-secondary-label {
-  font-size: 0.85rem;
-  white-space: nowrap;
-}
-
-.input-secondary-label:empty {
-  display: none;
 }
