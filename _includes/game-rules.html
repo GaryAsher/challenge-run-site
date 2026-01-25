@@ -1074,7 +1074,7 @@ document.addEventListener('DOMContentLoaded', function() {
       rbContent.hidden = !isHidden;
       rbToggle.setAttribute('aria-expanded', isHidden);
       rbToggle.classList.toggle('is-active', isHidden);
-      if (rbCard) rbCard.classList.toggle('rule-builder--expanded', isHidden);
+      rbCard.classList.toggle('rule-builder--expanded', isHidden);
       rbToggle.querySelector('.filter-toggle__text').textContent = isHidden ? 'Close' : 'Open';
     });
   }
