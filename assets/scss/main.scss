@@ -4059,7 +4059,7 @@ a.resource-card:hover {
 .filter-selections {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--pill-gap);
   margin-top: 0.75rem;
   padding-top: 0.75rem;
   border-top: 1px solid var(--border);
@@ -4069,12 +4069,21 @@ a.resource-card:hover {
   display: none;
 }
 
-/* Reset button positioning */
-.filter-group--reset {
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
+/* Reset button positioning - in filters-bar, pushed to right */
+.filters-bar .btn--reset {
   margin-left: auto;
+}
+
+/* Single-select input when has value */
+.filter-input__field--selected {
+  color: var(--fg);
+  font-weight: 500;
+}
+
+/* Selected suggestion in dropdown */
+.filter-suggestion--selected {
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
 }
 
 /* ============================================================
