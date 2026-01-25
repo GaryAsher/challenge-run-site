@@ -7,11 +7,7 @@ This document consolidates all reminders, future ideas, and planned features for
 # Priority Roadmap
 
 ### /rules/ and /runs/ page
-- [ ] When clicking in the filters, the clickRelease is considered a 2nd click. This is incorrect. It needs to only open and close on clickDown.
-- [ ] "Remove all filters" needs to be in the same box as filters. Horizontally-aligned with the selected filters.
-- [ ] The Advanced Search and Rule Builder need to look identical. Any changes to one, needs to be done to the other.
 - [ ] Current Rule Builder appears to be broken. Review js.
-- [ ] For Rule Builder, move the "Remove all filters" button to the far right. Align it vertically with the "Open / Close" button.
 - [ ] Change the Rule Builder to use Advanced Search's "<slug> x" style when something is selected.
 
 ### /submit/ page
