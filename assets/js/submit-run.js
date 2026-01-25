@@ -1002,8 +1002,8 @@
     }
     
     // Validate year is reasonable (e.g., 1990-2099)
-    if (year < 1990 || year > 2099) {
-      showFieldError("dateCompleted", "Year must be 1990-2099");
+    if (year < 1970 || year > 2099) {
+      showFieldError("dateCompleted", "Year must be 1970-2099");
       return false;
     }
     
