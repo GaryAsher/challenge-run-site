@@ -139,20 +139,40 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     let isOpen = false;
+    const originalPlaceholder = input.placeholder;
 
     function isSelected(id) {
       if (singleSelect) {
-        return norm(getValue()) === norm(id);
+        const val = getValue();
+        return val && norm(val.id) === norm(id);
       }
       return selectedSet.has(norm(id));
+    }
+
+    // Update input display for single-select
+    function updateInputDisplay() {
+      if (singleSelect) {
+        const val = getValue();
+        if (val) {
+          input.value = val.label;
+          input.classList.add('filter-input__field--selected');
+        } else {
+          input.value = '';
+          input.classList.remove('filter-input__field--selected');
+        }
+      }
     }
 
     function renderSuggestions(query) {
       const q = norm(query);
       sugEl.innerHTML = '';
 
+      // For single-select with a value, filter based on typed query but show all non-selected
       const available = items.filter(x => {
         const id = x[idKey] || x;
+        // For single-select, don't filter out the currently selected item from suggestions
+        // so user can see it's selected and potentially change
+        if (singleSelect) return true;
         return !isSelected(id);
       });
 
@@ -179,17 +199,24 @@ document.addEventListener('DOMContentLoaded', function() {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'filter-suggestion';
+        
+        // Mark currently selected item
+        if (singleSelect && isSelected(item[idKey] || item)) {
+          btn.classList.add('filter-suggestion--selected');
+        }
+        
         btn.textContent = item[labelKey] || item;
         btn.dataset.id = item[idKey] || item;
         
         btn.addEventListener('click', () => {
           if (singleSelect) {
             setValue({ id: btn.dataset.id, label: item[labelKey] || item });
+            updateInputDisplay();
           } else {
             selectedSet.add(norm(btn.dataset.id));
+            input.value = '';
           }
-          input.value = '';
-          renderSuggestions('');
+          close();
           onFilter();
         });
         
@@ -202,12 +229,20 @@ document.addEventListener('DOMContentLoaded', function() {
     function open() {
       if (isOpen) return;
       isOpen = true;
+      // For single-select, clear input to allow searching when opening
+      if (singleSelect && getValue()) {
+        input.value = '';
+      }
       renderSuggestions(input.value);
     }
 
     function close() {
       isOpen = false;
       sugEl.hidden = true;
+      // Restore single-select display value when closing
+      if (singleSelect) {
+        updateInputDisplay();
+      }
     }
 
     // Events
@@ -224,11 +259,18 @@ document.addEventListener('DOMContentLoaded', function() {
       if (!container.contains(e.target)) close();
     }, true);
 
+    // Initial display for single-select
+    updateInputDisplay();
+
     return {
-      refresh: () => renderSuggestions(input.value),
+      // Don't re-render suggestions on refresh - just update the display
+      refresh: () => {
+        updateInputDisplay();
+      },
       clear: () => {
         if (singleSelect) {
           setValue(null);
+          updateInputDisplay();
         } else {
           selectedSet.clear();
         }
@@ -595,7 +637,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (selectedCharacter) {
       const chip = createChip(selectedCharacter.label, () => {
         selectedCharacter = null;
-        if (characterFilter) characterFilter.refresh();
+        if (characterFilter) characterFilter.refresh(); // Just updates input display
         filterRows();
       });
       filterSelections.appendChild(chip);
@@ -607,7 +649,6 @@ document.addEventListener('DOMContentLoaded', function() {
       const label = item ? item.label : id;
       const chip = createChip(label, () => {
         selectedChallenges.delete(id);
-        if (challengeFilter) challengeFilter.refresh();
         filterRows();
       });
       filterSelections.appendChild(chip);
@@ -619,7 +660,6 @@ document.addEventListener('DOMContentLoaded', function() {
       const label = item ? item.label : id;
       const chip = createChip(label, () => {
         selectedRestrictions.delete(id);
-        if (restrictionsFilter) restrictionsFilter.refresh();
         filterRows();
       });
       filterSelections.appendChild(chip);
@@ -629,7 +669,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (selectedGlitch) {
       const chip = createChip(selectedGlitch.label, () => {
         selectedGlitch = null;
-        if (glitchFilter) glitchFilter.refresh();
+        if (glitchFilter) glitchFilter.refresh(); // Just updates input display
         filterRows();
       });
       filterSelections.appendChild(chip);
