@@ -1,10 +1,11 @@
 /**
- * Runs Filter & Sort JavaScript v2
+ * Runs Filter & Sort JavaScript v3
  * 
- * Unified filter UI with typeahead inputs matching the Games page.
- * - Text inputs with placeholders (not dropdowns)
- * - Selected items shown as chips with × close button
- * - Consistent UI across all filter types
+ * Unified filter UI with typeahead inputs.
+ * - Character and Glitches: single-select
+ * - Challenges and Restrictions: multi-select
+ * - All selections shown as chips in unified area below filters
+ * - Ordered: Character → Challenge → Restrictions → Glitches
  * 
  * Used by _layouts/game-runs.html
  */
@@ -18,18 +19,18 @@ document.addEventListener('DOMContentLoaded', function() {
   const qInput = document.getElementById('q');
   const filterToggle = document.getElementById('filter-toggle');
   const advancedFilters = document.getElementById('advanced-filters');
-  const activeFiltersDiv = document.getElementById('active-filters');
+  const filterSelections = document.getElementById('filter-selections');
   const runsBody = document.getElementById('runs-body');
   const rows = runsBody ? Array.from(runsBody.querySelectorAll('.run-row')) : [];
   const totalRuns = rows.length;
 
-  // Filter containers (we'll convert these to typeahead)
+  // Filter containers
   const fChallengeContainer = document.getElementById('f-challenge-container');
   const fRestrictionsContainer = document.getElementById('f-restrictions-container');
   const fGlitchContainer = document.getElementById('f-glitch-container');
   const fCharacterContainer = document.getElementById('f-character-container');
   
-  // Legacy select elements (fallback if containers don't exist)
+  // Legacy select elements (fallback)
   const fChallenge = document.getElementById('f-challenge');
   const fRestrictions = document.getElementById('f-restrictions');
   const fGlitch = document.getElementById('f-glitch');
@@ -44,11 +45,13 @@ document.addEventListener('DOMContentLoaded', function() {
   const sortTimeAsc = document.getElementById('th-time-asc');
   const sortTimeDesc = document.getElementById('th-time-desc');
 
-  // Selected items (multi-select)
+  // Selected items
+  // Multi-select: Sets
   let selectedChallenges = new Set();
   let selectedRestrictions = new Set();
-  let selectedCharacters = new Set();
-  let selectedGlitches = new Set();
+  // Single-select: single value or null
+  let selectedCharacter = null;
+  let selectedGlitch = null;
 
   // Available options (built from data)
   let availableChallenges = [];
@@ -70,6 +73,12 @@ document.addEventListener('DOMContentLoaded', function() {
       clearTimeout(timer);
       timer = setTimeout(() => fn.apply(this, args), ms);
     };
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
   }
 
   // ============================================================
@@ -101,22 +110,25 @@ document.addEventListener('DOMContentLoaded', function() {
     return chip;
   }
 
-  function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str || '';
-    return div.innerHTML;
-  }
-
   // ============================================================
-  // Typeahead Filter Component (uses existing HTML structure)
+  // Typeahead Filter Component
   // ============================================================
   function createTypeaheadFilter(config) {
-    const { container, placeholder, items, selectedSet, onFilter, labelKey = 'label', idKey = 'id' } = config;
+    const { 
+      container, 
+      placeholder, 
+      items, 
+      selectedSet,      // For multi-select (Set)
+      getValue,         // For single-select: () => value
+      setValue,         // For single-select: (value) => void
+      singleSelect = false,
+      onFilter,
+      labelKey = 'label', 
+      idKey = 'id' 
+    } = config;
     
     if (!container) return null;
 
-    // Find existing elements in the container
-    const pickedEl = container.querySelector('.filter-input__picked');
     const inputWrap = container.querySelector('.filter-input__wrap');
     const input = container.querySelector('input[type="text"]');
     const sugEl = container.querySelector('.filter-input__suggestions');
@@ -128,19 +140,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let isOpen = false;
 
-    function renderPicked() {
-      if (!pickedEl) return;
-      pickedEl.innerHTML = '';
-      selectedSet.forEach(id => {
-        const item = items.find(x => norm(x[idKey] || x) === norm(id));
-        const label = item ? (item[labelKey] || item) : id;
-        const chip = createChip(label, () => {
-          selectedSet.delete(norm(id));
-          renderPicked();
-          onFilter();
-        });
-        pickedEl.appendChild(chip);
-      });
+    function isSelected(id) {
+      if (singleSelect) {
+        return norm(getValue()) === norm(id);
+      }
+      return selectedSet.has(norm(id));
     }
 
     function renderSuggestions(query) {
@@ -149,7 +153,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       const available = items.filter(x => {
         const id = x[idKey] || x;
-        return !selectedSet.has(norm(id));
+        return !isSelected(id);
       });
 
       const filtered = q 
@@ -179,9 +183,12 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.dataset.id = item[idKey] || item;
         
         btn.addEventListener('click', () => {
-          selectedSet.add(norm(btn.dataset.id));
+          if (singleSelect) {
+            setValue({ id: btn.dataset.id, label: item[labelKey] || item });
+          } else {
+            selectedSet.add(norm(btn.dataset.id));
+          }
           input.value = '';
-          renderPicked();
           renderSuggestions('');
           onFilter();
         });
@@ -217,15 +224,15 @@ document.addEventListener('DOMContentLoaded', function() {
       if (!container.contains(e.target)) close();
     }, true);
 
-    // Initial render
-    renderPicked();
-
     return {
-      refresh: renderPicked,
+      refresh: () => renderSuggestions(input.value),
       clear: () => {
-        selectedSet.clear();
+        if (singleSelect) {
+          setValue(null);
+        } else {
+          selectedSet.clear();
+        }
         input.value = '';
-        renderPicked();
       }
     };
   }
@@ -352,17 +359,41 @@ document.addEventListener('DOMContentLoaded', function() {
   let challengeFilter, restrictionsFilter, characterFilter, glitchFilter;
 
   function initTypeaheadFilters() {
-    // Challenge filter
+    // Character filter (SINGLE-SELECT)
+    if (fCharacterContainer && availableCharacters.length > 0) {
+      characterFilter = createTypeaheadFilter({
+        container: fCharacterContainer,
+        placeholder: 'Type a weapon/aspect...',
+        items: availableCharacters,
+        singleSelect: true,
+        getValue: () => selectedCharacter ? selectedCharacter.id : null,
+        setValue: (val) => { selectedCharacter = val; },
+        onFilter: filterRows
+      });
+    } else if (fCharacter && availableCharacters.length > 0) {
+      populateSelect(fCharacter, availableCharacters);
+      fCharacter.addEventListener('change', () => {
+        if (fCharacter.value) {
+          const item = availableCharacters.find(c => c.id === fCharacter.value);
+          selectedCharacter = item || { id: fCharacter.value, label: fCharacter.value };
+        } else {
+          selectedCharacter = null;
+        }
+        filterRows();
+      });
+    }
+
+    // Challenge filter (MULTI-SELECT)
     if (fChallengeContainer && availableChallenges.length > 0) {
       challengeFilter = createTypeaheadFilter({
         container: fChallengeContainer,
         placeholder: 'Type a challenge...',
         items: availableChallenges,
         selectedSet: selectedChallenges,
+        singleSelect: false,
         onFilter: filterRows
       });
     } else if (fChallenge && availableChallenges.length > 0) {
-      // Populate legacy select element
       populateSelect(fChallenge, availableChallenges);
       fChallenge.addEventListener('change', () => {
         selectedChallenges.clear();
@@ -371,17 +402,17 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
 
-    // Restrictions filter
+    // Restrictions filter (MULTI-SELECT)
     if (fRestrictionsContainer && availableRestrictions.length > 0) {
       restrictionsFilter = createTypeaheadFilter({
         container: fRestrictionsContainer,
         placeholder: 'Type a restriction...',
         items: availableRestrictions,
         selectedSet: selectedRestrictions,
+        singleSelect: false,
         onFilter: filterRows
       });
     } else if (fRestrictions && availableRestrictions.length > 0) {
-      // Populate legacy select element
       populateSelect(fRestrictions, availableRestrictions);
       fRestrictions.addEventListener('change', () => {
         selectedRestrictions.clear();
@@ -390,47 +421,33 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
 
-    // Character filter
-    if (fCharacterContainer && availableCharacters.length > 0) {
-      characterFilter = createTypeaheadFilter({
-        container: fCharacterContainer,
-        placeholder: 'Type a weapon/aspect...',
-        items: availableCharacters,
-        selectedSet: selectedCharacters,
-        onFilter: filterRows
-      });
-    } else if (fCharacter && availableCharacters.length > 0) {
-      // Populate legacy select element
-      populateSelect(fCharacter, availableCharacters);
-      fCharacter.addEventListener('change', () => {
-        selectedCharacters.clear();
-        if (fCharacter.value) selectedCharacters.add(norm(fCharacter.value));
-        filterRows();
-      });
-    }
-
-    // Glitch filter (typeahead style)
+    // Glitch filter (SINGLE-SELECT)
     if (fGlitchContainer && availableGlitches.length > 0) {
       glitchFilter = createTypeaheadFilter({
         container: fGlitchContainer,
         placeholder: 'Type a glitch category...',
         items: availableGlitches,
-        selectedSet: selectedGlitches,
+        singleSelect: true,
+        getValue: () => selectedGlitch ? selectedGlitch.id : null,
+        setValue: (val) => { selectedGlitch = val; },
         onFilter: filterRows
       });
     } else if (fGlitch && availableGlitches.length > 0) {
-      // Populate legacy select element
       populateSelect(fGlitch, availableGlitches);
       fGlitch.addEventListener('change', () => {
-        selectedGlitches.clear();
-        if (fGlitch.value) selectedGlitches.add(norm(fGlitch.value));
+        if (fGlitch.value) {
+          const item = availableGlitches.find(g => g.id === fGlitch.value);
+          selectedGlitch = item || { id: fGlitch.value, label: fGlitch.value };
+        } else {
+          selectedGlitch = null;
+        }
         filterRows();
       });
     }
   }
+
   // Helper to populate a select element with options
   function populateSelect(selectEl, items) {
-    // Keep the first "All" option
     const firstOption = selectEl.querySelector('option');
     selectEl.innerHTML = '';
     if (firstOption) selectEl.appendChild(firstOption);
@@ -462,10 +479,13 @@ document.addEventListener('DOMContentLoaded', function() {
     resetBtn.addEventListener('click', function() {
       if (qInput) qInput.value = '';
       
+      // Clear multi-select
       selectedChallenges.clear();
       selectedRestrictions.clear();
-      selectedCharacters.clear();
-      selectedGlitches.clear();
+      
+      // Clear single-select
+      selectedCharacter = null;
+      selectedGlitch = null;
       
       // Reset legacy selects
       if (fChallenge) fChallenge.value = '';
@@ -508,9 +528,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // Challenge filter (any match - check all challenge IDs)
       if (show && selectedChallenges.size > 0) {
-        // Get all challenge IDs for this row (comma-separated in data-challenge-ids)
         const rowChallengeIds = (row.dataset.challengeIds || row.dataset.challengeId || '').split(',').map(norm).filter(Boolean);
-        // Check if any of the row's challenges match any of the selected challenges
         const hasMatch = rowChallengeIds.some(chId => selectedChallenges.has(chId));
         if (!hasMatch) show = false;
       }
@@ -522,23 +540,23 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!hasAll) show = false;
       }
 
-      // Character filter (any match)
-      if (show && selectedCharacters.size > 0) {
+      // Character filter (single-select)
+      if (show && selectedCharacter) {
         const rowChar = norm(row.dataset.character);
-        if (!selectedCharacters.has(rowChar)) show = false;
+        if (rowChar !== norm(selectedCharacter.id)) show = false;
       }
 
-      // Glitch filter (any match)
-      if (show && selectedGlitches.size > 0) {
+      // Glitch filter (single-select)
+      if (show && selectedGlitch) {
         const rowGlitch = norm(row.dataset.glitch);
-        if (!selectedGlitches.has(rowGlitch)) show = false;
+        if (rowGlitch !== norm(selectedGlitch.id)) show = false;
       }
 
       row.style.display = show ? '' : 'none';
       if (show) visibleCount++;
     });
 
-    updateActiveFilters();
+    updateSelections();
     updateResultsStatus(visibleCount);
   }
 
@@ -556,14 +574,71 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ============================================================
-  // Active Filters Display (chips below filters row)
+  // Unified Selections Display (chips below filters)
+  // Order: Character → Challenges → Restrictions → Glitches
   // ============================================================
-  function updateActiveFilters() {
-    if (!activeFiltersDiv) return;
-    activeFiltersDiv.innerHTML = '';
+  function updateSelections() {
+    if (!filterSelections) return;
+    filterSelections.innerHTML = '';
 
-    // Don't duplicate - chips are shown in the typeahead containers
-    // This area can show a summary or be removed
+    const hasSelections = selectedCharacter || selectedChallenges.size > 0 || 
+                          selectedRestrictions.size > 0 || selectedGlitch;
+
+    // Show/hide reset button
+    if (resetBtn) {
+      resetBtn.style.display = hasSelections ? '' : 'none';
+    }
+
+    if (!hasSelections) return;
+
+    // Character (single-select)
+    if (selectedCharacter) {
+      const chip = createChip(selectedCharacter.label, () => {
+        selectedCharacter = null;
+        if (characterFilter) characterFilter.refresh();
+        filterRows();
+      });
+      filterSelections.appendChild(chip);
+    }
+
+    // Challenges (multi-select)
+    selectedChallenges.forEach(id => {
+      const item = availableChallenges.find(x => norm(x.id) === norm(id));
+      const label = item ? item.label : id;
+      const chip = createChip(label, () => {
+        selectedChallenges.delete(id);
+        if (challengeFilter) challengeFilter.refresh();
+        filterRows();
+      });
+      filterSelections.appendChild(chip);
+    });
+
+    // Restrictions (multi-select)
+    selectedRestrictions.forEach(id => {
+      const item = availableRestrictions.find(x => norm(x.id) === norm(id));
+      const label = item ? item.label : id;
+      const chip = createChip(label, () => {
+        selectedRestrictions.delete(id);
+        if (restrictionsFilter) restrictionsFilter.refresh();
+        filterRows();
+      });
+      filterSelections.appendChild(chip);
+    });
+
+    // Glitch (single-select)
+    if (selectedGlitch) {
+      const chip = createChip(selectedGlitch.label, () => {
+        selectedGlitch = null;
+        if (glitchFilter) glitchFilter.refresh();
+        filterRows();
+      });
+      filterSelections.appendChild(chip);
+    }
+  }
+
+  // Legacy function name for compatibility
+  function updateActiveFilters() {
+    updateSelections();
   }
 
   // ============================================================
@@ -613,56 +688,51 @@ document.addEventListener('DOMContentLoaded', function() {
       const filtersParam = hash.split('filters=')[1];
       const filterData = JSON.parse(decodeURIComponent(filtersParam));
       
-      // Helper to find ID by label from available options
-      function findIdByLabel(items, label) {
-        const normalizedLabel = norm(label);
-        const found = items.find(item => norm(item.label) === normalizedLabel || norm(item.id) === normalizedLabel);
-        return found ? found.id : label; // Fall back to original if not found
+      // Helper to find item by label or ID from available options
+      function findItem(items, labelOrId) {
+        const normalized = norm(labelOrId);
+        return items.find(item => norm(item.label) === normalized || norm(item.id) === normalized);
       }
       
       if (filterData.challenges) {
         filterData.challenges.forEach(labelOrId => {
-          const id = findIdByLabel(availableChallenges, labelOrId);
-          selectedChallenges.add(norm(id));
+          const item = findItem(availableChallenges, labelOrId);
+          if (item) selectedChallenges.add(norm(item.id));
         });
       }
       
       if (filterData.restrictions) {
         filterData.restrictions.forEach(labelOrId => {
-          const id = findIdByLabel(availableRestrictions, labelOrId);
-          selectedRestrictions.add(norm(id));
+          const item = findItem(availableRestrictions, labelOrId);
+          if (item) selectedRestrictions.add(norm(item.id));
         });
       }
       
-      // Character can be a string or array
+      // Character (single-select)
       if (filterData.character) {
-        if (Array.isArray(filterData.character)) {
-          filterData.character.forEach(labelOrId => {
-            const id = findIdByLabel(availableCharacters, labelOrId);
-            selectedCharacters.add(norm(id));
-          });
-        } else if (filterData.character) {
-          const id = findIdByLabel(availableCharacters, filterData.character);
-          selectedCharacters.add(norm(id));
+        const charLabelOrId = Array.isArray(filterData.character) ? filterData.character[0] : filterData.character;
+        if (charLabelOrId) {
+          const item = findItem(availableCharacters, charLabelOrId);
+          if (item) {
+            selectedCharacter = { id: item.id, label: item.label };
+          }
         }
       }
       
+      // Glitch (single-select)
       if (filterData.glitch) {
-        selectedGlitches.clear();
-        if (Array.isArray(filterData.glitch)) {
-          filterData.glitch.forEach(labelOrId => {
-            const id = findIdByLabel(availableGlitches, labelOrId);
-            selectedGlitches.add(norm(id));
-          });
-        } else {
-          const id = findIdByLabel(availableGlitches, filterData.glitch);
-          selectedGlitches.add(norm(id));
+        const glitchLabelOrId = Array.isArray(filterData.glitch) ? filterData.glitch[0] : filterData.glitch;
+        if (glitchLabelOrId) {
+          const item = findItem(availableGlitches, glitchLabelOrId);
+          if (item) {
+            selectedGlitch = { id: item.id, label: item.label };
+          }
         }
       }
       
       // Open advanced filters if we have any
       if (selectedChallenges.size > 0 || selectedRestrictions.size > 0 || 
-          selectedCharacters.size > 0 || selectedGlitches.size > 0) {
+          selectedCharacter || selectedGlitch) {
         if (advancedFilters && filterToggle) {
           advancedFilters.hidden = false;
           filterToggle.setAttribute('aria-expanded', 'true');
