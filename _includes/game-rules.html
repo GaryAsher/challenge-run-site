@@ -184,92 +184,60 @@
         </div>
         {% endif %}
 
-        <!-- 3. Character/Weapon/Aspect Dropdown (if applicable) -->
+        <!-- 3. Character/Weapon/Aspect (typeahead single-select) -->
         {% if has_character and game.characters_data and game.characters_data.size > 0 %}
-        <div class="rule-builder__group" data-rb-order="3">
-          <label class="rule-builder__label">{{ character_label }}</label>
-          <select class="rule-builder__select" id="rb-character">
-            <option value="" data-description="">-- Select {{ character_label }} --</option>
-            {% for char in game.characters_data %}
-              <option value="{{ char.slug }}" data-label="{{ char.label }}" data-description="{{ char.description | escape }}">{{ char.label }}</option>
-            {% endfor %}
-          </select>
+        <div class="rule-builder__group filter-group" id="rb-character-container" data-rb-order="3">
+          <label class="rule-builder__label filter-group__label">{{ character_label }}</label>
+          <div class="filter-input__wrap">
+            <input type="text" id="rb-character-search" class="filter-input__field" placeholder="Type a {{ character_label | downcase }}..." autocomplete="off" />
+            <div class="filter-input__suggestions" id="rb-character-suggestions" hidden></div>
+          </div>
         </div>
         {% endif %}
 
-        <!-- 4. Standard Challenge Type Dropdown (Multi-select) -->
+        <!-- 4. Standard Challenge Type(s) (typeahead multi-select) -->
         {% if has_challenges %}
-        <div class="rule-builder__group" data-rb-order="4">
-          <label class="rule-builder__label">Standard Challenge Type(s)</label>
-          <select class="rule-builder__select" id="rb-challenge">
-            <option value="" data-description="">-- Add Challenge --</option>
-            {% for ch in game.challenges_data %}
-              {% comment %}
-                If the game's challenge has no description, fall back to global _data/challenges.yml
-              {% endcomment %}
-              {% assign ch_desc = ch.description %}
-              {% if ch_desc == nil or ch_desc == "" or ch_desc == blank %}
-                {% assign global_challenge = site.data.challenges[ch.slug] %}
-                {% if global_challenge and global_challenge.description %}
-                  {% assign ch_desc = global_challenge.description %}
-                {% endif %}
-              {% endif %}
-              <option value="{{ ch.slug }}" data-label="{{ ch.label }}" data-description="{{ ch_desc | escape }}">{{ ch.label }}</option>
-            {% endfor %}
-          </select>
-          <div class="rule-builder__selected" id="rb-selected-challenges"></div>
+        <div class="rule-builder__group filter-group" id="rb-challenge-container" data-rb-order="4">
+          <label class="rule-builder__label filter-group__label">Challenge</label>
+          <div class="filter-input__wrap">
+            <input type="text" id="rb-challenge-search" class="filter-input__field" placeholder="Type a challenge..." autocomplete="off" />
+            <div class="filter-input__suggestions" id="rb-challenge-suggestions" hidden></div>
+          </div>
         </div>
         {% endif %}
 
-        <!-- 5. Restrictions Dropdown (Multi-select style) -->
+        <!-- 5. Restrictions (typeahead multi-select) -->
         {% if has_restrictions %}
-        <div class="rule-builder__group" data-rb-order="5">
-          <label class="rule-builder__label">Restrictions</label>
-          <select class="rule-builder__select" id="rb-restriction">
-            <option value="" data-description="" data-incompatible="">-- Add Restriction --</option>
-            {% for res in game.restrictions_data %}
-              <option value="{{ res.slug }}"
-                      data-label="{{ res.label }}"
-                      data-description="{{ res.description | escape }}"
-                      data-incompatible="{{ res.incompatible_with | join: ',' | escape }}">
-                {{ res.label }}
-              </option>
-            {% endfor %}
-          </select>
-          <div class="rule-builder__selected" id="rb-selected-restrictions"></div>
+        <div class="rule-builder__group filter-group" id="rb-restriction-container" data-rb-order="5">
+          <label class="rule-builder__label filter-group__label">Restrictions</label>
+          <div class="filter-input__wrap">
+            <input type="text" id="rb-restriction-search" class="filter-input__field" placeholder="Type a restriction..." autocomplete="off" />
+            <div class="filter-input__suggestions" id="rb-restriction-suggestions" hidden></div>
+          </div>
         </div>
         {% endif %}
 
-        <!-- 6. Glitch Rules Dropdown -->
+        <!-- 6. Glitch Rules (typeahead single-select) -->
         {% if has_glitches %}
-        <div class="rule-builder__group" data-rb-order="6">
-          <label class="rule-builder__label">Glitch Rules</label>
-          <select class="rule-builder__select" id="rb-glitch">
-            <option value="" data-label="" data-description="" data-allowed="" data-banned="">-- Select Glitch Category --</option>
-            {% for glitch in game.glitches_data %}
-              <option value="{{ glitch.slug }}"
-                      data-label="{{ glitch.label }}"
-                      data-description="{{ glitch.description | escape }}"
-                      data-allowed="{{ glitch.allowed | join: '|' | escape }}"
-                      data-banned="{{ glitch.banned | join: '|' | escape }}"
-                      data-notes="{{ glitch.notes | escape }}">
-                {{ glitch.label }}
-              </option>
-            {% endfor %}
-          </select>
+        <div class="rule-builder__group filter-group" id="rb-glitch-container" data-rb-order="6">
+          <label class="rule-builder__label filter-group__label">Glitches Used</label>
+          <div class="filter-input__wrap">
+            <input type="text" id="rb-glitch-search" class="filter-input__field" placeholder="Type a glitch category..." autocomplete="off" />
+            <div class="filter-input__suggestions" id="rb-glitch-suggestions" hidden></div>
+          </div>
         </div>
         {% endif %}
 
-        <!-- Reset Button -->
+        <!-- Reset Button (far right) -->
         <div class="rule-builder__group rule-builder__group--reset">
-          <button type="button" class="btn btn--outline btn--reset" id="rb-reset">
+          <button type="button" class="btn btn--outline btn--reset" id="rb-reset" style="display: none;">
             Remove all filters
           </button>
         </div>
       </div>
 
-      <!-- Active Selections Display -->
-      <div class="rule-builder__active" id="rb-active-filters"></div>
+      <!-- Unified Selections Display (chips below filters) -->
+      <div class="filter-selections" id="rb-selections"></div>
 
       <!-- Rules Summary Panel -->
       <div class="rule-builder__summary" id="rb-summary" style="display: none;">
@@ -777,52 +745,231 @@ document.addEventListener('DOMContentLoaded', function() {
   const rbContent = document.getElementById('rule-builder-content');
   const categorySelect = document.getElementById('rb-category');
   const communitySelect = document.getElementById('rb-community-challenge');
-  const characterSelect = document.getElementById('rb-character');
-  const glitchSelect = document.getElementById('rb-glitch');
-  const challengeSelect = document.getElementById('rb-challenge');
-  const restrictionSelect = document.getElementById('rb-restriction');
   const resetBtn = document.getElementById('rb-reset');
-  const activeFiltersDiv = document.getElementById('rb-active-filters');
+  const selectionsDiv = document.getElementById('rb-selections');
   const summaryDiv = document.getElementById('rb-summary');
   const summaryContent = document.getElementById('rb-summary-content');
   const validationDiv = document.getElementById('rb-validation');
   const findRunnersBtn = document.getElementById('rb-find-runners');
 
+  // Typeahead containers
+  const rbCharacterContainer = document.getElementById('rb-character-container');
+  const rbChallengeContainer = document.getElementById('rb-challenge-container');
+  const rbRestrictionContainer = document.getElementById('rb-restriction-container');
+  const rbGlitchContainer = document.getElementById('rb-glitch-container');
+
   // State
   let selectedCategory = null;
   let selectedCommunityChallenge = null;
-  let selectedCharacter = null;
-  let selectedGlitch = null;
-  let selectedChallenges = [];
-  let selectedRestrictions = [];
+  let selectedCharacter = null;  // single-select
+  let selectedGlitch = null;     // single-select
+  let selectedChallenges = [];   // multi-select
+  let selectedRestrictions = []; // multi-select
 
-  // Store original options for multi-selects
-  const originalChallengeOptions = challengeSelect ? Array.from(challengeSelect.options).map(el => {
-    if (el.tagName === 'OPTGROUP') return null;
-    return {
-      value: el.value,
-      text: el.textContent.trim(),
-      label: el.dataset.label,
-      description: el.dataset.description || '',
-      optgroup: el.parentElement.tagName === 'OPTGROUP' ? el.parentElement.label : null
+  // Available options (from Jekyll data)
+  const availableCharacters = [
+    {% for char in game.characters_data %}
+    { id: "{{ char.slug }}", label: "{{ char.label | escape }}", description: "{{ char.description | escape }}" }{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ];
+
+  const availableChallenges = [
+    {% for ch in game.challenges_data %}
+    {% assign ch_desc = ch.description %}
+    {% if ch_desc == nil or ch_desc == "" or ch_desc == blank %}
+      {% assign global_challenge = site.data.challenges[ch.slug] %}
+      {% if global_challenge and global_challenge.description %}
+        {% assign ch_desc = global_challenge.description %}
+      {% endif %}
+    {% endif %}
+    { id: "{{ ch.slug }}", label: "{{ ch.label | escape }}", description: "{{ ch_desc | escape }}" }{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ];
+
+  const availableRestrictions = [
+    {% for res in game.restrictions_data %}
+    { id: "{{ res.slug }}", label: "{{ res.label | escape }}", description: "{{ res.description | escape }}" }{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ];
+
+  const availableGlitches = [
+    {% for glitch in game.glitches_data %}
+    { 
+      id: "{{ glitch.slug }}", 
+      label: "{{ glitch.label | escape }}", 
+      description: "{{ glitch.description | escape }}",
+      allowed: "{{ glitch.allowed | join: '|' | escape }}".split('|').filter(Boolean),
+      banned: "{{ glitch.banned | join: '|' | escape }}".split('|').filter(Boolean),
+      notes: "{{ glitch.notes | escape }}"
+    }{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ];
+
+  // Utility functions
+  function norm(s) { return (s || '').toString().trim().toLowerCase(); }
+  function debounce(fn, ms) {
+    let timer;
+    return function() {
+      const args = arguments;
+      clearTimeout(timer);
+      timer = setTimeout(() => fn.apply(this, args), ms);
     };
-  }).filter(Boolean) : [];
+  }
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
 
-  const originalRestrictionOptions = restrictionSelect ? Array.from(restrictionSelect.options).map(opt => ({
-    value: opt.value,
-    text: opt.textContent.trim(),
-    label: opt.dataset.label,
-    description: opt.dataset.description || ''
-  })) : [];
+  // Chip component
+  function createChip(label, onRemove) {
+    const chip = document.createElement('span');
+    chip.className = 'filter-chip';
+    chip.setAttribute('role', 'button');
+    chip.setAttribute('tabindex', '0');
+    chip.innerHTML = `
+      <span class="filter-chip__text">${escapeHtml(label)}</span>
+      <span class="filter-chip__close" aria-label="Remove">×</span>
+    `;
+    const handleRemove = (e) => { e.preventDefault(); e.stopPropagation(); if (onRemove) onRemove(); };
+    chip.addEventListener('click', handleRemove);
+    chip.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Backspace' || e.key === 'Delete') handleRemove(e);
+    });
+    return chip;
+  }
+
+  // Typeahead component
+  function createTypeahead(config) {
+    const { container, items, singleSelect, getValue, setValue, selectedArray, onUpdate } = config;
+    if (!container) return null;
+
+    const input = container.querySelector('input[type="text"]');
+    const sugEl = container.querySelector('.filter-input__suggestions');
+    if (!input || !sugEl) return null;
+
+    let isOpen = false;
+
+    function isSelected(id) {
+      if (singleSelect) return getValue() && norm(getValue().slug) === norm(id);
+      return selectedArray.some(x => norm(x.slug) === norm(id));
+    }
+
+    function renderSuggestions(query) {
+      const q = norm(query);
+      sugEl.innerHTML = '';
+
+      const available = items.filter(x => !isSelected(x.id));
+      const filtered = q 
+        ? available.filter(x => norm(x.label).includes(q) || norm(x.id).includes(q))
+        : available;
+
+      const show = filtered.slice(0, 20);
+
+      if (!show.length) {
+        const empty = document.createElement('div');
+        empty.className = 'filter-suggestion filter-suggestion--empty';
+        empty.textContent = available.length ? 'No matches.' : 'All options selected.';
+        sugEl.appendChild(empty);
+        sugEl.hidden = false;
+        return;
+      }
+
+      show.forEach(item => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'filter-suggestion';
+        btn.textContent = item.label;
+        btn.dataset.id = item.id;
+        
+        btn.addEventListener('click', () => {
+          if (singleSelect) {
+            setValue(item);
+          } else {
+            selectedArray.push({ slug: item.id, label: item.label, description: item.description || '' });
+          }
+          input.value = '';
+          renderSuggestions('');
+          onUpdate();
+        });
+        
+        sugEl.appendChild(btn);
+      });
+
+      sugEl.hidden = false;
+    }
+
+    function open() { if (isOpen) return; isOpen = true; renderSuggestions(input.value); }
+    function close() { isOpen = false; sugEl.hidden = true; }
+
+    input.addEventListener('focus', open);
+    input.addEventListener('input', debounce(() => renderSuggestions(input.value), 100));
+    input.addEventListener('keydown', (e) => { if (e.key === 'Escape') { close(); input.blur(); } });
+    document.addEventListener('pointerdown', (e) => { if (!container.contains(e.target)) close(); }, true);
+
+    return { refresh: () => renderSuggestions(input.value), clear: () => { input.value = ''; } };
+  }
+
+  // Initialize typeaheads
+  let characterTypeahead, challengeTypeahead, restrictionTypeahead, glitchTypeahead;
+
+  if (rbCharacterContainer && availableCharacters.length > 0) {
+    characterTypeahead = createTypeahead({
+      container: rbCharacterContainer,
+      items: availableCharacters,
+      singleSelect: true,
+      getValue: () => selectedCharacter,
+      setValue: (val) => { selectedCharacter = val ? { slug: val.id, label: val.label, description: val.description || '' } : null; },
+      onUpdate: updateRuleBuilder
+    });
+  }
+
+  if (rbChallengeContainer && availableChallenges.length > 0) {
+    challengeTypeahead = createTypeahead({
+      container: rbChallengeContainer,
+      items: availableChallenges,
+      singleSelect: false,
+      selectedArray: selectedChallenges,
+      onUpdate: updateRuleBuilder
+    });
+  }
+
+  if (rbRestrictionContainer && availableRestrictions.length > 0) {
+    restrictionTypeahead = createTypeahead({
+      container: rbRestrictionContainer,
+      items: availableRestrictions,
+      singleSelect: false,
+      selectedArray: selectedRestrictions,
+      onUpdate: updateRuleBuilder
+    });
+  }
+
+  if (rbGlitchContainer && availableGlitches.length > 0) {
+    glitchTypeahead = createTypeahead({
+      container: rbGlitchContainer,
+      items: availableGlitches,
+      singleSelect: true,
+      getValue: () => selectedGlitch,
+      setValue: (val) => { 
+        selectedGlitch = val ? { 
+          slug: val.id, 
+          label: val.label, 
+          description: val.description || '',
+          allowed: val.allowed || [],
+          banned: val.banned || [],
+          notes: val.notes || ''
+        } : null; 
+      },
+      onUpdate: updateRuleBuilder
+    });
+  }
 
   // Highlight animation on first visit
   const highlightKey = 'rb-highlighted-' + gameId;
   if (!sessionStorage.getItem(highlightKey)) {
     rbCard.classList.add('rule-builder-highlight--animate');
     sessionStorage.setItem(highlightKey, 'true');
-    setTimeout(() => {
-      rbCard.classList.remove('rule-builder-highlight--animate');
-    }, 3000);
+    setTimeout(() => { rbCard.classList.remove('rule-builder-highlight--animate'); }, 3000);
   }
 
   // Toggle Rule Builder visibility
@@ -864,69 +1011,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Character select
-  if (characterSelect) {
-    characterSelect.addEventListener('change', function() {
-      const option = this.options[this.selectedIndex];
-      selectedCharacter = option.value ? {
-        slug: option.value,
-        label: option.dataset.label || option.text.trim(),
-        description: option.dataset.description || ''
-      } : null;
-      updateRuleBuilder();
-    });
-  }
-
-  // Glitch select
-  if (glitchSelect) {
-    glitchSelect.addEventListener('change', function() {
-      const option = this.options[this.selectedIndex];
-      selectedGlitch = option.value ? {
-        slug: option.value,
-        label: option.dataset.label || option.text.trim(),
-        description: option.dataset.description || '',
-        allowed: option.dataset.allowed ? option.dataset.allowed.split('|') : [],
-        banned: option.dataset.banned ? option.dataset.banned.split('|') : [],
-        notes: option.dataset.notes || ''
-      } : null;
-      updateRuleBuilder();
-    });
-  }
-
-  // Challenge multi-select
-  if (challengeSelect) {
-    challengeSelect.addEventListener('change', function() {
-      const option = this.options[this.selectedIndex];
-      if (option.value && !selectedChallenges.find(c => c.slug === option.value)) {
-        selectedChallenges.push({
-          slug: option.value,
-          label: option.dataset.label || option.text.trim(),
-          description: option.dataset.description || ''
-        });
-        this.value = '';
-        updateChallengeDropdown();
-        updateRuleBuilder();
-      }
-    });
-  }
-
-  // Restriction multi-select
-  if (restrictionSelect) {
-    restrictionSelect.addEventListener('change', function() {
-      const option = this.options[this.selectedIndex];
-      if (option.value && !selectedRestrictions.find(r => r.slug === option.value)) {
-        selectedRestrictions.push({
-          slug: option.value,
-          label: option.dataset.label || option.text.trim(),
-          description: option.dataset.description || ''
-        });
-        this.value = '';
-        updateRestrictionDropdown();
-        updateRuleBuilder();
-      }
-    });
-  }
-
   // Reset all
   if (resetBtn) {
     resetBtn.addEventListener('click', function() {
@@ -934,80 +1018,29 @@ document.addEventListener('DOMContentLoaded', function() {
       selectedCommunityChallenge = null;
       selectedCharacter = null;
       selectedGlitch = null;
-      selectedChallenges = [];
-      selectedRestrictions = [];
+      selectedChallenges.length = 0;
+      selectedRestrictions.length = 0;
       if (categorySelect) categorySelect.value = '';
       if (communitySelect) communitySelect.value = '';
-      if (characterSelect) characterSelect.value = '';
-      if (glitchSelect) glitchSelect.value = '';
-      updateChallengeDropdown();
-      updateRestrictionDropdown();
+      if (characterTypeahead) characterTypeahead.clear();
+      if (challengeTypeahead) challengeTypeahead.clear();
+      if (restrictionTypeahead) restrictionTypeahead.clear();
+      if (glitchTypeahead) glitchTypeahead.clear();
       updateRuleBuilder();
     });
   }
 
-  function updateChallengeDropdown() {
-    if (!challengeSelect) return;
-    const selectedSlugs = selectedChallenges.map(c => c.slug);
-    challengeSelect.innerHTML = '';
-    const groups = {};
-    originalChallengeOptions.forEach(opt => {
-      if (!opt.value || !selectedSlugs.includes(opt.value)) {
-        const groupName = opt.optgroup || '_default';
-        if (!groups[groupName]) groups[groupName] = [];
-        groups[groupName].push(opt);
-      }
-    });
-    if (groups['_default']) {
-      groups['_default'].forEach(opt => {
-        const option = document.createElement('option');
-        option.value = opt.value;
-        option.textContent = opt.text;
-        if (opt.label) option.dataset.label = opt.label;
-        if (opt.description) option.dataset.description = opt.description;
-        challengeSelect.appendChild(option);
-      });
-    }
-    Object.keys(groups).filter(k => k !== '_default').forEach(groupName => {
-      const optgroup = document.createElement('optgroup');
-      optgroup.label = groupName;
-      groups[groupName].forEach(opt => {
-        const option = document.createElement('option');
-        option.value = opt.value;
-        option.textContent = opt.text;
-        if (opt.label) option.dataset.label = opt.label;
-        if (opt.description) option.dataset.description = opt.description;
-        optgroup.appendChild(option);
-      });
-      if (optgroup.children.length > 0) challengeSelect.appendChild(optgroup);
-    });
-  }
-
-  function updateRestrictionDropdown() {
-    if (!restrictionSelect) return;
-    const selectedSlugs = selectedRestrictions.map(r => r.slug);
-    restrictionSelect.innerHTML = '';
-    originalRestrictionOptions.forEach(opt => {
-      if (!opt.value || !selectedSlugs.includes(opt.value)) {
-        const option = document.createElement('option');
-        option.value = opt.value;
-        option.textContent = opt.text;
-        if (opt.label) option.dataset.label = opt.label;
-        if (opt.description) option.dataset.description = opt.description;
-        restrictionSelect.appendChild(option);
-      }
-    });
-  }
-
   function removeChallenge(slug) {
-    selectedChallenges = selectedChallenges.filter(c => c.slug !== slug);
-    updateChallengeDropdown();
+    const idx = selectedChallenges.findIndex(c => c.slug === slug);
+    if (idx > -1) selectedChallenges.splice(idx, 1);
+    if (challengeTypeahead) challengeTypeahead.refresh();
     updateRuleBuilder();
   }
 
   function removeRestriction(slug) {
-    selectedRestrictions = selectedRestrictions.filter(r => r.slug !== slug);
-    updateRestrictionDropdown();
+    const idx = selectedRestrictions.findIndex(r => r.slug === slug);
+    if (idx > -1) selectedRestrictions.splice(idx, 1);
+    if (restrictionTypeahead) restrictionTypeahead.refresh();
     updateRuleBuilder();
   }
 
@@ -1025,71 +1058,62 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function removeCharacter() {
     selectedCharacter = null;
-    if (characterSelect) characterSelect.value = '';
+    if (characterTypeahead) characterTypeahead.refresh();
     updateRuleBuilder();
   }
 
   function removeGlitch() {
     selectedGlitch = null;
-    if (glitchSelect) glitchSelect.value = '';
+    if (glitchTypeahead) glitchTypeahead.refresh();
     updateRuleBuilder();
   }
 
   function updateRuleBuilder() {
-    const tags = [];
-    let hasContent = false;
+    const hasContent = selectedCategory || selectedCommunityChallenge || selectedCharacter || 
+                       selectedChallenges.length > 0 || selectedRestrictions.length > 0 || selectedGlitch;
 
-    // Build tags in order: Category -> Community -> Character -> Challenges -> Restrictions -> Glitch
-    if (selectedCategory) { tags.push({ label: selectedCategory.label, clear: removeCategory }); hasContent = true; }
-    if (selectedCommunityChallenge) { tags.push({ label: selectedCommunityChallenge.label, clear: removeCommunityChallenge }); hasContent = true; }
-    if (selectedCharacter) { tags.push({ label: selectedCharacter.label, clear: removeCharacter }); hasContent = true; }
-    selectedChallenges.forEach(c => { tags.push({ label: c.label, clear: () => removeChallenge(c.slug) }); hasContent = true; });
-    selectedRestrictions.forEach(r => { tags.push({ label: r.label, clear: () => removeRestriction(r.slug) }); hasContent = true; });
-    if (selectedGlitch) { tags.push({ label: selectedGlitch.label, clear: removeGlitch }); hasContent = true; }
+    // Show/hide reset button
+    if (resetBtn) resetBtn.style.display = hasContent ? '' : 'none';
 
-    // Update active filters tags
-    if (activeFiltersDiv) {
-      activeFiltersDiv.innerHTML = tags.map(t =>
-        `<span class="tag tag--removable" role="button" tabindex="0" title="Click to remove">${t.label}</span>`
-      ).join('');
-      activeFiltersDiv.querySelectorAll('.tag--removable').forEach((tag, i) => {
-        tag.addEventListener('click', () => tags[i].clear());
-        tag.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tags[i].clear(); } });
-      });
+    // Update unified selections display (chips below filters)
+    // Order: Category -> Community -> Character -> Challenges -> Restrictions -> Glitch
+    if (selectionsDiv) {
+      selectionsDiv.innerHTML = '';
+      if (selectedCategory) selectionsDiv.appendChild(createChip(selectedCategory.label, removeCategory));
+      if (selectedCommunityChallenge) selectionsDiv.appendChild(createChip(selectedCommunityChallenge.label, removeCommunityChallenge));
+      if (selectedCharacter) selectionsDiv.appendChild(createChip(selectedCharacter.label, removeCharacter));
+      selectedChallenges.forEach(c => selectionsDiv.appendChild(createChip(c.label, () => removeChallenge(c.slug))));
+      selectedRestrictions.forEach(r => selectionsDiv.appendChild(createChip(r.label, () => removeRestriction(r.slug))));
+      if (selectedGlitch) selectionsDiv.appendChild(createChip(selectedGlitch.label, removeGlitch));
     }
 
-    // Update rules summary panel (plain text)
+    // Update rules summary panel
     if (summaryDiv && summaryContent) {
       if (hasContent) {
         let summaryHtml = '<div class="rule-builder__rules-content">';
 
         if (selectedCategory) {
-          summaryHtml += `<p class="rule-builder__rule-item"><strong>Category:</strong> ${selectedCategory.label}</p>`;
+          summaryHtml += `<p class="rule-builder__rule-item"><strong>Category:</strong> ${escapeHtml(selectedCategory.label)}</p>`;
           if (selectedCategory.description) summaryHtml += `<div class="rule-builder__rule-desc md">${parseMarkdown(selectedCategory.description)}</div>`;
         }
-
         if (selectedCommunityChallenge) {
-          summaryHtml += `<p class="rule-builder__rule-item"><strong>Community Challenge:</strong> ${selectedCommunityChallenge.label}</p>`;
+          summaryHtml += `<p class="rule-builder__rule-item"><strong>Community Challenge:</strong> ${escapeHtml(selectedCommunityChallenge.label)}</p>`;
           if (selectedCommunityChallenge.description) summaryHtml += `<div class="rule-builder__rule-desc md">${parseMarkdown(selectedCommunityChallenge.description)}</div>`;
         }
-
         if (selectedCharacter) {
-          summaryHtml += `<p class="rule-builder__rule-item"><strong>{{ character_label }}:</strong> ${selectedCharacter.label}</p>`;
+          summaryHtml += `<p class="rule-builder__rule-item"><strong>{{ character_label }}:</strong> ${escapeHtml(selectedCharacter.label)}</p>`;
           if (selectedCharacter.description) summaryHtml += `<div class="rule-builder__rule-desc md">${parseMarkdown(selectedCharacter.description)}</div>`;
         }
-
         selectedChallenges.forEach(ch => {
-          summaryHtml += `<p class="rule-builder__rule-item"><strong>Challenge:</strong> ${ch.label}</p>`;
+          summaryHtml += `<p class="rule-builder__rule-item"><strong>Challenge:</strong> ${escapeHtml(ch.label)}</p>`;
           if (ch.description) summaryHtml += `<div class="rule-builder__rule-desc md">${parseMarkdown(ch.description)}</div>`;
         });
-
         selectedRestrictions.forEach(r => {
-          summaryHtml += `<p class="rule-builder__rule-item"><strong>Restriction:</strong> ${r.label}</p>`;
+          summaryHtml += `<p class="rule-builder__rule-item"><strong>Restriction:</strong> ${escapeHtml(r.label)}</p>`;
           if (r.description) summaryHtml += `<div class="rule-builder__rule-desc md">${parseMarkdown(r.description)}</div>`;
         });
-
         if (selectedGlitch) {
-          summaryHtml += `<p class="rule-builder__rule-item"><strong>Glitch Rules:</strong> ${selectedGlitch.label}</p>`;
+          summaryHtml += `<p class="rule-builder__rule-item"><strong>Glitch Rules:</strong> ${escapeHtml(selectedGlitch.label)}</p>`;
           if (selectedGlitch.description) summaryHtml += `<div class="rule-builder__rule-desc md">${parseMarkdown(selectedGlitch.description)}</div>`;
           if (selectedGlitch.allowed && selectedGlitch.allowed.length > 0 && selectedGlitch.allowed[0]) {
             summaryHtml += `<p class="rule-builder__rule-extra"><span class="text-success">✓ Allowed:</span> ${selectedGlitch.allowed.join(', ')}</p>`;
@@ -1114,12 +1138,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (findRunnersBtn) {
       if (hasContent && selectedCategory) {
-        // Build the tier-based URL
         const tier = selectedCategory.tier || 'full-runs';
-        const tierSlug = tier.replace(/_/g, '-'); // Convert full_runs to full-runs
+        const tierSlug = tier.replace(/_/g, '-');
         const categorySlug = selectedCategory.slug;
         
-        // Build filter data using slugs/IDs for reliable matching
         const filterData = {
           challenges: selectedChallenges.map(c => c.slug),
           restrictions: selectedRestrictions.map(r => r.slug),
@@ -1127,7 +1149,6 @@ document.addEventListener('DOMContentLoaded', function() {
           character: selectedCharacter ? selectedCharacter.slug : ''
         };
         
-        // Only add hash if there are filters beyond the category
         let url = '/games/' + gameId + '/runs/' + tierSlug + '/' + categorySlug + '/';
         
         const hasFilters = filterData.challenges.length > 0 || 
@@ -1147,9 +1168,6 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
   }
-
-  updateChallengeDropdown();
-  updateRestrictionDropdown();
 });
 </script>
 {% endif %}
