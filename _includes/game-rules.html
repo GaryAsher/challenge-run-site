@@ -1059,10 +1059,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Highlight animation on first visit
   const highlightKey = 'rb-highlighted-' + gameId;
-  if (!sessionStorage.getItem(highlightKey)) {
+  if (rbCard && !sessionStorage.getItem(highlightKey)) {
     rbCard.classList.add('rule-builder-highlight--animate');
     sessionStorage.setItem(highlightKey, 'true');
-    setTimeout(() => { rbCard.classList.remove('rule-builder-highlight--animate'); }, 3000);
+    setTimeout(() => { 
+      if (rbCard) rbCard.classList.remove('rule-builder-highlight--animate'); 
+    }, 3000);
   }
 
   // Toggle Rule Builder visibility
@@ -1072,7 +1074,7 @@ document.addEventListener('DOMContentLoaded', function() {
       rbContent.hidden = !isHidden;
       rbToggle.setAttribute('aria-expanded', isHidden);
       rbToggle.classList.toggle('is-active', isHidden);
-      rbCard.classList.toggle('rule-builder--expanded', isHidden);
+      if (rbCard) rbCard.classList.toggle('rule-builder--expanded', isHidden);
       rbToggle.querySelector('.filter-toggle__text').textContent = isHidden ? 'Close' : 'Open';
     });
   }
