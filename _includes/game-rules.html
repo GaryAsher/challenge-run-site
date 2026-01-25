@@ -227,15 +227,17 @@
           </div>
         </div>
         {% endif %}
+
+        <!-- Reset Button (far right) -->
+        <div class="rule-builder__group rule-builder__group--reset">
+          <button type="button" class="btn btn--outline btn--reset" id="rb-reset" style="display: none;">
+            Remove all filters
+          </button>
+        </div>
       </div>
 
-      <!-- Selections row: chips + reset button aligned horizontally -->
-      <div class="filter-selections-row" id="rb-selections-row" style="display: none;">
-        <div class="filter-selections" id="rb-selections"></div>
-        <button type="button" class="btn btn--outline btn--reset" id="rb-reset">
-          Remove all filters
-        </button>
-      </div>
+      <!-- Unified Selections Display (chips below filters) -->
+      <div class="filter-selections" id="rb-selections"></div>
 
       <!-- Rules Summary Panel -->
       <div class="rule-builder__summary" id="rb-summary" style="display: none;">
@@ -743,9 +745,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const rbContent = document.getElementById('rule-builder-content');
   const categorySelect = document.getElementById('rb-category');
   const communitySelect = document.getElementById('rb-community-challenge');
-  const selectionsRow = document.getElementById('rb-selections-row');
-  const selectionsDiv = document.getElementById('rb-selections');
   const resetBtn = document.getElementById('rb-reset');
+  const selectionsDiv = document.getElementById('rb-selections');
   const summaryDiv = document.getElementById('rb-summary');
   const summaryContent = document.getElementById('rb-summary-content');
   const validationDiv = document.getElementById('rb-validation');
@@ -760,15 +761,15 @@ document.addEventListener('DOMContentLoaded', function() {
   // State
   let selectedCategory = null;
   let selectedCommunityChallenge = null;
-  let selectedCharacter = null;  // single-select {id, label}
-  let selectedGlitch = null;     // single-select {id, label}
-  let selectedChallenges = new Set();   // multi-select (Set of IDs)
-  let selectedRestrictions = new Set(); // multi-select (Set of IDs)
+  let selectedCharacter = null;  // single-select
+  let selectedGlitch = null;     // single-select
+  let selectedChallenges = [];   // multi-select
+  let selectedRestrictions = []; // multi-select
 
   // Available options (from Jekyll data)
   const availableCharacters = [
     {% for char in game.characters_data %}
-    { id: {{ char.slug | json }}, label: {{ char.label | json }}, description: {{ char.description | default: "" | json }} }{% unless forloop.last %},{% endunless %}
+    { id: "{{ char.slug }}", label: "{{ char.label | escape }}", description: "{{ char.description | escape }}" }{% unless forloop.last %},{% endunless %}
     {% endfor %}
   ];
 
@@ -781,25 +782,25 @@ document.addEventListener('DOMContentLoaded', function() {
         {% assign ch_desc = global_challenge.description %}
       {% endif %}
     {% endif %}
-    { id: {{ ch.slug | json }}, label: {{ ch.label | json }}, description: {{ ch_desc | default: "" | json }} }{% unless forloop.last %},{% endunless %}
+    { id: "{{ ch.slug }}", label: "{{ ch.label | escape }}", description: "{{ ch_desc | escape }}" }{% unless forloop.last %},{% endunless %}
     {% endfor %}
   ];
 
   const availableRestrictions = [
     {% for res in game.restrictions_data %}
-    { id: {{ res.slug | json }}, label: {{ res.label | json }}, description: {{ res.description | default: "" | json }} }{% unless forloop.last %},{% endunless %}
+    { id: "{{ res.slug }}", label: "{{ res.label | escape }}", description: "{{ res.description | escape }}" }{% unless forloop.last %},{% endunless %}
     {% endfor %}
   ];
 
   const availableGlitches = [
     {% for glitch in game.glitches_data %}
     { 
-      id: {{ glitch.slug | json }}, 
-      label: {{ glitch.label | json }}, 
-      description: {{ glitch.description | default: "" | json }},
-      allowed: {{ glitch.allowed | default: empty | json }},
-      banned: {{ glitch.banned | default: empty | json }},
-      notes: {{ glitch.notes | default: "" | json }}
+      id: "{{ glitch.slug }}", 
+      label: "{{ glitch.label | escape }}", 
+      description: "{{ glitch.description | escape }}",
+      allowed: "{{ glitch.allowed | join: '|' | escape }}".split('|').filter(Boolean),
+      banned: "{{ glitch.banned | join: '|' | escape }}".split('|').filter(Boolean),
+      notes: "{{ glitch.notes | escape }}"
     }{% unless forloop.last %},{% endunless %}
     {% endfor %}
   ];
@@ -820,7 +821,7 @@ document.addEventListener('DOMContentLoaded', function() {
     return div.innerHTML;
   }
 
-  // Chip component (matches Advanced Search)
+  // Chip component
   function createChip(label, onRemove) {
     const chip = document.createElement('span');
     chip.className = 'filter-chip';
@@ -838,18 +839,9 @@ document.addEventListener('DOMContentLoaded', function() {
     return chip;
   }
 
-  // Typeahead component (matches Advanced Search exactly)
+  // Typeahead component
   function createTypeahead(config) {
-    const { 
-      container, 
-      items, 
-      singleSelect = false,
-      selectedSet,      // For multi-select (Set)
-      getValue,         // For single-select: () => value object {id, label}
-      setValue,         // For single-select: (value) => void
-      onUpdate 
-    } = config;
-    
+    const { container, items, singleSelect, getValue, setValue, selectedArray, onUpdate } = config;
     if (!container) return null;
 
     const input = container.querySelector('input[type="text"]');
@@ -859,36 +851,15 @@ document.addEventListener('DOMContentLoaded', function() {
     let isOpen = false;
 
     function isSelected(id) {
-      if (singleSelect) {
-        const val = getValue();
-        return val && norm(val.id) === norm(id);
-      }
-      return selectedSet.has(norm(id));
-    }
-
-    // Update input display for single-select
-    function updateInputDisplay() {
-      if (singleSelect) {
-        const val = getValue();
-        if (val && val.label) {
-          input.value = val.label;
-          input.classList.add('filter-input__field--selected');
-        } else {
-          input.value = '';
-          input.classList.remove('filter-input__field--selected');
-        }
-      }
+      if (singleSelect) return getValue() && norm(getValue().slug) === norm(id);
+      return selectedArray.some(x => norm(x.slug) === norm(id));
     }
 
     function renderSuggestions(query) {
       const q = norm(query);
       sugEl.innerHTML = '';
 
-      const available = items.filter(x => {
-        if (singleSelect) return true;
-        return !isSelected(x.id);
-      });
-
+      const available = items.filter(x => !isSelected(x.id));
       const filtered = q 
         ? available.filter(x => norm(x.label).includes(q) || norm(x.id).includes(q))
         : available;
@@ -908,24 +879,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'filter-suggestion';
-        
-        if (singleSelect && isSelected(item.id)) {
-          btn.classList.add('filter-suggestion--selected');
-        }
-        
         btn.textContent = item.label;
         btn.dataset.id = item.id;
         
-        btn.addEventListener('mousedown', (e) => {
-          e.preventDefault(); // Prevent blur
+        btn.addEventListener('click', () => {
           if (singleSelect) {
-            setValue({ id: item.id, label: item.label, description: item.description || '' });
-            updateInputDisplay();
+            setValue(item);
           } else {
-            selectedSet.add(norm(item.id));
-            input.value = '';
+            selectedArray.push({ slug: item.id, label: item.label, description: item.description || '' });
           }
-          close();
+          input.value = '';
+          renderSuggestions('');
           onUpdate();
         });
         
@@ -935,72 +899,15 @@ document.addEventListener('DOMContentLoaded', function() {
       sugEl.hidden = false;
     }
 
-    function open() {
-      if (isOpen) return;
-      isOpen = true;
-      if (singleSelect && getValue()) {
-        input.value = '';
-      }
-      renderSuggestions(input.value);
-    }
+    function open() { if (isOpen) return; isOpen = true; renderSuggestions(input.value); }
+    function close() { isOpen = false; sugEl.hidden = true; }
 
-    function close() {
-      isOpen = false;
-      sugEl.hidden = true;
-      if (singleSelect) {
-        updateInputDisplay();
-      }
-    }
+    input.addEventListener('focus', open);
+    input.addEventListener('input', debounce(() => renderSuggestions(input.value), 100));
+    input.addEventListener('keydown', (e) => { if (e.key === 'Escape') { close(); input.blur(); } });
+    document.addEventListener('pointerdown', (e) => { if (!container.contains(e.target)) close(); }, true);
 
-    function toggle() {
-      if (isOpen) {
-        close();
-      } else {
-        open();
-      }
-    }
-
-    // Events - use mousedown for toggle (matches Advanced Search)
-    input.addEventListener('mousedown', (e) => {
-      // Only toggle if already focused, otherwise let focus event handle it
-      if (document.activeElement === input) {
-        e.preventDefault(); // Prevent re-focus
-        toggle();
-      }
-    });
-    input.addEventListener('focus', () => {
-      // Open on focus (for tab navigation and first click)
-      if (!isOpen) open();
-    });
-    input.addEventListener('blur', () => {
-      // Small delay to allow mousedown on suggestions to fire first
-      setTimeout(() => {
-        if (isOpen) close();
-      }, 150);
-    });
-    input.addEventListener('input', debounce(() => {
-      if (!isOpen) open();
-      renderSuggestions(input.value);
-    }, 100));
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { close(); input.blur(); }
-    });
-
-    // Initial display
-    updateInputDisplay();
-
-    return { 
-      refresh: () => updateInputDisplay(), 
-      clear: () => { 
-        if (singleSelect) {
-          setValue(null);
-          updateInputDisplay();
-        } else {
-          selectedSet.clear();
-        }
-        input.value = ''; 
-      } 
-    };
+    return { refresh: () => renderSuggestions(input.value), clear: () => { input.value = ''; } };
   }
 
   // Initialize typeaheads
@@ -1012,7 +919,7 @@ document.addEventListener('DOMContentLoaded', function() {
       items: availableCharacters,
       singleSelect: true,
       getValue: () => selectedCharacter,
-      setValue: (val) => { selectedCharacter = val; },
+      setValue: (val) => { selectedCharacter = val ? { slug: val.id, label: val.label, description: val.description || '' } : null; },
       onUpdate: updateRuleBuilder
     });
   }
@@ -1022,7 +929,7 @@ document.addEventListener('DOMContentLoaded', function() {
       container: rbChallengeContainer,
       items: availableChallenges,
       singleSelect: false,
-      selectedSet: selectedChallenges,
+      selectedArray: selectedChallenges,
       onUpdate: updateRuleBuilder
     });
   }
@@ -1032,7 +939,7 @@ document.addEventListener('DOMContentLoaded', function() {
       container: rbRestrictionContainer,
       items: availableRestrictions,
       singleSelect: false,
-      selectedSet: selectedRestrictions,
+      selectedArray: selectedRestrictions,
       onUpdate: updateRuleBuilder
     });
   }
@@ -1045,7 +952,7 @@ document.addEventListener('DOMContentLoaded', function() {
       getValue: () => selectedGlitch,
       setValue: (val) => { 
         selectedGlitch = val ? { 
-          id: val.id, 
+          slug: val.id, 
           label: val.label, 
           description: val.description || '',
           allowed: val.allowed || [],
@@ -1059,12 +966,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Highlight animation on first visit
   const highlightKey = 'rb-highlighted-' + gameId;
-  if (rbCard && !sessionStorage.getItem(highlightKey)) {
+  if (!sessionStorage.getItem(highlightKey)) {
     rbCard.classList.add('rule-builder-highlight--animate');
     sessionStorage.setItem(highlightKey, 'true');
-    setTimeout(() => { 
-      if (rbCard) rbCard.classList.remove('rule-builder-highlight--animate'); 
-    }, 3000);
+    setTimeout(() => { rbCard.classList.remove('rule-builder-highlight--animate'); }, 3000);
   }
 
   // Toggle Rule Builder visibility
@@ -1106,35 +1011,36 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Reset all filters function
-  function resetAllFilters() {
-    selectedCategory = null;
-    selectedCommunityChallenge = null;
-    selectedCharacter = null;
-    selectedGlitch = null;
-    selectedChallenges.clear();
-    selectedRestrictions.clear();
-    if (categorySelect) categorySelect.value = '';
-    if (communitySelect) communitySelect.value = '';
-    if (characterTypeahead) characterTypeahead.clear();
-    if (challengeTypeahead) challengeTypeahead.clear();
-    if (restrictionTypeahead) restrictionTypeahead.clear();
-    if (glitchTypeahead) glitchTypeahead.clear();
-    updateRuleBuilder();
-  }
-
-  // Event listener for reset button
+  // Reset all
   if (resetBtn) {
-    resetBtn.addEventListener('click', resetAllFilters);
+    resetBtn.addEventListener('click', function() {
+      selectedCategory = null;
+      selectedCommunityChallenge = null;
+      selectedCharacter = null;
+      selectedGlitch = null;
+      selectedChallenges.length = 0;
+      selectedRestrictions.length = 0;
+      if (categorySelect) categorySelect.value = '';
+      if (communitySelect) communitySelect.value = '';
+      if (characterTypeahead) characterTypeahead.clear();
+      if (challengeTypeahead) challengeTypeahead.clear();
+      if (restrictionTypeahead) restrictionTypeahead.clear();
+      if (glitchTypeahead) glitchTypeahead.clear();
+      updateRuleBuilder();
+    });
   }
 
-  function removeChallenge(id) {
-    selectedChallenges.delete(id);
+  function removeChallenge(slug) {
+    const idx = selectedChallenges.findIndex(c => c.slug === slug);
+    if (idx > -1) selectedChallenges.splice(idx, 1);
+    if (challengeTypeahead) challengeTypeahead.refresh();
     updateRuleBuilder();
   }
 
-  function removeRestriction(id) {
-    selectedRestrictions.delete(id);
+  function removeRestriction(slug) {
+    const idx = selectedRestrictions.findIndex(r => r.slug === slug);
+    if (idx > -1) selectedRestrictions.splice(idx, 1);
+    if (restrictionTypeahead) restrictionTypeahead.refresh();
     updateRuleBuilder();
   }
 
@@ -1164,39 +1070,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function updateRuleBuilder() {
     const hasContent = selectedCategory || selectedCommunityChallenge || selectedCharacter || 
-                       selectedChallenges.size > 0 || selectedRestrictions.size > 0 || selectedGlitch;
+                       selectedChallenges.length > 0 || selectedRestrictions.length > 0 || selectedGlitch;
 
-    // Show/hide selections row
-    if (selectionsRow) {
-      selectionsRow.style.display = hasContent ? '' : 'none';
-    }
+    // Show/hide reset button
+    if (resetBtn) resetBtn.style.display = hasContent ? '' : 'none';
 
     // Update unified selections display (chips below filters)
     // Order: Category -> Community -> Character -> Challenges -> Restrictions -> Glitch
     if (selectionsDiv) {
       selectionsDiv.innerHTML = '';
-      
-      if (hasContent) {
-        if (selectedCategory) selectionsDiv.appendChild(createChip(selectedCategory.label, removeCategory));
-        if (selectedCommunityChallenge) selectionsDiv.appendChild(createChip(selectedCommunityChallenge.label, removeCommunityChallenge));
-        if (selectedCharacter) selectionsDiv.appendChild(createChip(selectedCharacter.label, removeCharacter));
-        
-        // Challenges (from Set)
-        selectedChallenges.forEach(id => {
-          const item = availableChallenges.find(x => norm(x.id) === norm(id));
-          const label = item ? item.label : id;
-          selectionsDiv.appendChild(createChip(label, () => removeChallenge(id)));
-        });
-        
-        // Restrictions (from Set)
-        selectedRestrictions.forEach(id => {
-          const item = availableRestrictions.find(x => norm(x.id) === norm(id));
-          const label = item ? item.label : id;
-          selectionsDiv.appendChild(createChip(label, () => removeRestriction(id)));
-        });
-        
-        if (selectedGlitch) selectionsDiv.appendChild(createChip(selectedGlitch.label, removeGlitch));
-      }
+      if (selectedCategory) selectionsDiv.appendChild(createChip(selectedCategory.label, removeCategory));
+      if (selectedCommunityChallenge) selectionsDiv.appendChild(createChip(selectedCommunityChallenge.label, removeCommunityChallenge));
+      if (selectedCharacter) selectionsDiv.appendChild(createChip(selectedCharacter.label, removeCharacter));
+      selectedChallenges.forEach(c => selectionsDiv.appendChild(createChip(c.label, () => removeChallenge(c.slug))));
+      selectedRestrictions.forEach(r => selectionsDiv.appendChild(createChip(r.label, () => removeRestriction(r.slug))));
+      if (selectedGlitch) selectionsDiv.appendChild(createChip(selectedGlitch.label, removeGlitch));
     }
 
     // Update rules summary panel
@@ -1216,25 +1104,14 @@ document.addEventListener('DOMContentLoaded', function() {
           summaryHtml += `<p class="rule-builder__rule-item"><strong>{{ character_label }}:</strong> ${escapeHtml(selectedCharacter.label)}</p>`;
           if (selectedCharacter.description) summaryHtml += `<div class="rule-builder__rule-desc md">${parseMarkdown(selectedCharacter.description)}</div>`;
         }
-        
-        // Challenges (from Set)
-        selectedChallenges.forEach(id => {
-          const item = availableChallenges.find(x => norm(x.id) === norm(id));
-          if (item) {
-            summaryHtml += `<p class="rule-builder__rule-item"><strong>Challenge:</strong> ${escapeHtml(item.label)}</p>`;
-            if (item.description) summaryHtml += `<div class="rule-builder__rule-desc md">${parseMarkdown(item.description)}</div>`;
-          }
+        selectedChallenges.forEach(ch => {
+          summaryHtml += `<p class="rule-builder__rule-item"><strong>Challenge:</strong> ${escapeHtml(ch.label)}</p>`;
+          if (ch.description) summaryHtml += `<div class="rule-builder__rule-desc md">${parseMarkdown(ch.description)}</div>`;
         });
-        
-        // Restrictions (from Set)
-        selectedRestrictions.forEach(id => {
-          const item = availableRestrictions.find(x => norm(x.id) === norm(id));
-          if (item) {
-            summaryHtml += `<p class="rule-builder__rule-item"><strong>Restriction:</strong> ${escapeHtml(item.label)}</p>`;
-            if (item.description) summaryHtml += `<div class="rule-builder__rule-desc md">${parseMarkdown(item.description)}</div>`;
-          }
+        selectedRestrictions.forEach(r => {
+          summaryHtml += `<p class="rule-builder__rule-item"><strong>Restriction:</strong> ${escapeHtml(r.label)}</p>`;
+          if (r.description) summaryHtml += `<div class="rule-builder__rule-desc md">${parseMarkdown(r.description)}</div>`;
         });
-        
         if (selectedGlitch) {
           summaryHtml += `<p class="rule-builder__rule-item"><strong>Glitch Rules:</strong> ${escapeHtml(selectedGlitch.label)}</p>`;
           if (selectedGlitch.description) summaryHtml += `<div class="rule-builder__rule-desc md">${parseMarkdown(selectedGlitch.description)}</div>`;
@@ -1266,10 +1143,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const categorySlug = selectedCategory.slug;
         
         const filterData = {
-          challenges: Array.from(selectedChallenges),
-          restrictions: Array.from(selectedRestrictions),
-          glitch: selectedGlitch ? selectedGlitch.id : '',
-          character: selectedCharacter ? selectedCharacter.id : ''
+          challenges: selectedChallenges.map(c => c.slug),
+          restrictions: selectedRestrictions.map(r => r.slug),
+          glitch: selectedGlitch ? selectedGlitch.slug : '',
+          character: selectedCharacter ? selectedCharacter.slug : ''
         };
         
         let url = '/games/' + gameId + '/runs/' + tierSlug + '/' + categorySlug + '/';
