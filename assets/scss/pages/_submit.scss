@@ -1,0 +1,247 @@
+// ============================================================
+// Submit Form
+// ============================================================
+// Styles for run submission forms.
+// ============================================================
+
+// ──────────────────────────────────────────────────────────
+// Form Container
+// ──────────────────────────────────────────────────────────
+.submit-form {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.submit-form__section {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+
+  &:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+}
+
+.submit-form__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+}
+
+// ──────────────────────────────────────────────────────────
+// Form Fields
+// ──────────────────────────────────────────────────────────
+.form-group {
+  margin-bottom: 1.25rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--fg);
+}
+
+.form-label--required::after {
+  content: ' *';
+  color: var(--status-rejected);
+}
+
+.form-hint {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.95rem;
+  color: var(--fg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+
+  &::placeholder {
+    color: var(--placeholder);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--focus-2);
+  }
+
+  &.has-error {
+    border-color: var(--status-rejected);
+  }
+}
+
+.form-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+// ──────────────────────────────────────────────────────────
+// Chip Pickers (Standard + Restrictions)
+// ──────────────────────────────────────────────────────────
+.chip-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.chip-picker__input-wrap {
+  position: relative;
+}
+
+.chip-picker__input {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.95rem;
+  color: var(--fg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--transition-base);
+
+  &::placeholder {
+    color: var(--placeholder);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+}
+
+.chip-picker__suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  max-height: 200px;
+  overflow-y: auto;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.chip-picker__suggestion {
+  display: block;
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.9rem;
+  color: var(--fg);
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+
+  &:hover,
+  &.is-highlighted {
+    background: var(--panel);
+  }
+}
+
+.chip-picker__selected {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  &:empty {
+    display: none;
+  }
+}
+
+// ──────────────────────────────────────────────────────────
+// Turnstile Captcha
+// ──────────────────────────────────────────────────────────
+.turnstile-container {
+  margin: 1.5rem 0;
+}
+
+// ──────────────────────────────────────────────────────────
+// Submit Button
+// ──────────────────────────────────────────────────────────
+.submit-form__actions {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.btn--submit {
+  width: 100%;
+  padding: 0.85rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+// ──────────────────────────────────────────────────────────
+// Submit Messages
+// ──────────────────────────────────────────────────────────
+.submit-message {
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 1rem;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.submit-message--success {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid var(--status-verified);
+  color: var(--status-verified);
+}
+
+.submit-message--error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--status-rejected);
+  color: var(--status-rejected);
+}
+
+// ──────────────────────────────────────────────────────────
+// Loading State
+// ──────────────────────────────────────────────────────────
+.submit-form.is-loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.submit-form__spinner {
+  display: none;
+  margin-right: 0.5rem;
+}
+
+.submit-form.is-loading .submit-form__spinner {
+  display: inline-block;
+}
+
+// ──────────────────────────────────────────────────────────
+// Responsive
+// ──────────────────────────────────────────────────────────
+@media (max-width: 640px) {
+  .submit-form {
+    padding: 0 0.5rem;
+  }
+}
