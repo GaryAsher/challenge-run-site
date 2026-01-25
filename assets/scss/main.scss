@@ -592,7 +592,11 @@ a:hover {
   border-color: var(--accent);
 }
 
-/* Disable hover highlight in submit forms - only show on focus */
+/* Disable all hover effects on selects in submit forms */
+.submit-run-page .select {
+  /* Reset hover effects - only focus should highlight */
+}
+
 .submit-run-page .select:hover {
   background: var(--surface);
   border-color: var(--border);
