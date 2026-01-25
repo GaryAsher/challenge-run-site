@@ -592,12 +592,15 @@ a:hover {
   border-color: var(--accent);
 }
 
-/* Disable all hover effects on selects in submit forms */
-.submit-run-page .select {
+/* Disable all hover effects on selects in submit forms to prevent 
+   unwanted highlight when hovering labels or adjacent text */
+.submit-run-page .select,
+.submit-run-page select {
   /* Reset hover effects - only focus should highlight */
 }
 
-.submit-run-page .select:hover {
+.submit-run-page .select:hover,
+.submit-run-page select:hover {
   background: var(--surface);
   border-color: var(--border);
 }
