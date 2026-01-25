@@ -3253,6 +3253,7 @@ a.resource-card:hover {
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;
+  margin-left: auto;
 }
 
 .rule-builder__selected {
@@ -4050,6 +4051,30 @@ a.resource-card:hover {
 .filter-chip:hover .filter-chip__close {
   background: rgba(239, 68, 68, 0.2);
   color: #EF4444;
+}
+
+/* ============================================================
+   Unified Selections Area (chips below filters)
+   ============================================================ */
+.filter-selections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.filter-selections:empty {
+  display: none;
+}
+
+/* Reset button positioning */
+.filter-group--reset {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  margin-left: auto;
 }
 
 /* ============================================================
