@@ -12,10 +12,6 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ### /submit/ page
 - [ ] Fix js selector to only appear when hovering drop-down. Currently allows selection when on top of text.
-- [ ] Update logic to require character selection for Hades 2. This needs to be category specific, as it is not relevant for Chaos Trials.
-- [ ] Produce "error message" if user-id does not exist.
-- [ ] Update Date Completed format to be YYYY/MM/DD
-      - Have the / limit characters, and clickable. revert to MM/DD/YYYY if needed.
 
 ## Forms & Submissions
 ### New Game Submission form:
