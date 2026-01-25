@@ -1,0 +1,148 @@
+// ============================================================
+// Forms: Inputs, Selects, Textareas
+// ============================================================
+// Base form element styles and focus states.
+// ============================================================
+
+// ──────────────────────────────────────────────────────────
+// Filter Input (Search boxes)
+// ──────────────────────────────────────────────────────────
+.filter {
+  width: 100%;
+  max-width: 520px;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--fg);
+  min-height: var(--tap);
+
+  &::placeholder {
+    color: var(--placeholder);
+  }
+}
+
+.filter-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+
+  &::after {
+    content: none !important;
+  }
+}
+
+// ──────────────────────────────────────────────────────────
+// Select Dropdowns
+// ──────────────────────────────────────────────────────────
+.select {
+  min-height: var(--tap);
+  padding: 0.45rem 0.6rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--fg);
+  margin: 0;
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease;
+
+  &:hover {
+    background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+    border-color: var(--accent);
+  }
+}
+
+// ──────────────────────────────────────────────────────────
+// Focus States (Global)
+// ──────────────────────────────────────────────────────────
+:where(a, button, input, select, textarea, .tag-chip, .tag-suggestion, .tab):focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+// ──────────────────────────────────────────────────────────
+// Results Controls Row
+// ──────────────────────────────────────────────────────────
+.results-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0.25rem 0 0.75rem 0;
+
+  .select {
+    margin-left: 0.4rem;
+  }
+}
+
+// Status text
+#status,
+[data-status] {
+  display: block;
+  text-align: center;
+  color: var(--placeholder-dim);
+  font-size: 0.9rem;
+  margin: 0.5rem 0 0 0;
+}
+
+// ──────────────────────────────────────────────────────────
+// Date Input
+// ──────────────────────────────────────────────────────────
+.date-input {
+  width: 100%;
+  max-width: 160px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.95rem;
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", "Segoe UI Mono", monospace;
+  color: var(--fg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--focus-2);
+  }
+
+  &::placeholder {
+    color: var(--placeholder);
+    font-family: inherit;
+  }
+
+  &.has-error {
+    border-color: var(--status-rejected);
+  }
+}
+
+// ──────────────────────────────────────────────────────────
+// Validation Errors
+// ──────────────────────────────────────────────────────────
+.field-error {
+  display: block;
+  margin-top: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.85rem;
+  color: var(--status-rejected);
+  background: rgba(239, 68, 68, 0.08);
+  border-left: 3px solid var(--status-rejected);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.field-error[hidden] {
+  display: none;
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .filter,
+  .select,
+  .date-input {
+    border-width: 2px;
+  }
+
+  .field-error {
+    border-left-width: 4px;
+  }
+}
