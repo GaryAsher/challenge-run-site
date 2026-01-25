@@ -1,0 +1,74 @@
+// ============================================================
+// Footer & Theme Picker
+// ============================================================
+// Site footer with copyright and theme color selector.
+// ============================================================
+
+.site-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+// ──────────────────────────────────────────────────────────
+// Theme Picker
+// ──────────────────────────────────────────────────────────
+.theme-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.theme-btn {
+  appearance: none;
+  border: 2px solid transparent;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  transition: transform var(--transition-fast), 
+              border-color var(--transition-base), 
+              background var(--transition-base);
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  // Theme-specific hover states
+  &[data-theme=""]:hover { background: rgba(59, 195, 110, 0.2); }
+  &[data-theme="pink"]:hover { background: rgba(233, 30, 140, 0.2); }
+  &[data-theme="blue"]:hover { background: rgba(59, 130, 246, 0.2); }
+  &[data-theme="purple"]:hover { background: rgba(139, 92, 246, 0.2); }
+  &[data-theme="red"]:hover { background: rgba(239, 68, 68, 0.2); }
+
+  // Theme-specific active states
+  &[data-theme=""].is-active {
+    border-color: #3BC36E;
+    background: rgba(59, 195, 110, 0.15);
+  }
+  &[data-theme="pink"].is-active {
+    border-color: #E91E8C;
+    background: rgba(233, 30, 140, 0.15);
+  }
+  &[data-theme="blue"].is-active {
+    border-color: #3B82F6;
+    background: rgba(59, 130, 246, 0.15);
+  }
+  &[data-theme="purple"].is-active {
+    border-color: #8B5CF6;
+    background: rgba(139, 92, 246, 0.15);
+  }
+  &[data-theme="red"].is-active {
+    border-color: #EF4444;
+    background: rgba(239, 68, 68, 0.15);
+  }
+}
