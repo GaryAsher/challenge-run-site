@@ -453,10 +453,6 @@ layout: default
                 <span class="filter-toggle__icon">▼</span>
                 <span class="filter-toggle__text">Advanced Filters</span>
               </button>
-
-              <button type="button" id="reset-filters" class="btn btn--outline btn--reset" style="display: none;">
-                Remove all filters
-              </button>
             </div>
 
             <div class="advanced-filters" id="advanced-filters" hidden>
@@ -504,8 +500,13 @@ layout: default
                {% endif %}
               </div>
 
-              <!-- Unified selections area below filters -->
-              <div class="filter-selections" id="filter-selections"></div>
+              <!-- Selections row: chips + reset button aligned horizontally -->
+              <div class="filter-selections-row" id="filter-selections-row">
+                <div class="filter-selections" id="filter-selections"></div>
+                <button type="button" id="reset-filters" class="btn btn--outline btn--reset" style="display: none;">
+                  Remove all filters
+                </button>
+              </div>
             </div>
 
             <div class="results-status" id="results-status">
