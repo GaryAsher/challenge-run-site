@@ -1,0 +1,210 @@
+// ============================================================
+// Teams Styles
+// ============================================================
+// Styles for teams index and individual team pages.
+//
+// STRUCTURE:
+//   .teams-grid     - Grid of team cards
+//   .team-card      - Individual team card
+//   .team-header    - Single team page header
+//   .team-members   - Members grid
+//
+// TEST: /teams/ and /teams/{team}/
+// ============================================================
+
+// ──────────────────────────────────────────────────────────
+// Teams Grid (Index Page)
+// ──────────────────────────────────────────────────────────
+.teams-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+// ──────────────────────────────────────────────────────────
+// Team Card
+// ──────────────────────────────────────────────────────────
+.team-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  text-decoration: none;
+}
+
+.team-card:hover {
+  text-decoration: none;
+}
+
+.team-card__logo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 0.75rem;
+}
+
+.team-card__logo--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--border);
+  color: var(--muted);
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.team-card__name {
+  font-weight: 500;
+  color: var(--text);
+  text-align: center;
+}
+
+.team-card__tagline {
+  font-size: 0.875rem;
+  text-align: center;
+  margin-top: 0.25rem;
+}
+
+.team-card__games {
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+// ──────────────────────────────────────────────────────────
+// Team Header (Single Page)
+// ──────────────────────────────────────────────────────────
+.team-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.team-header__logo {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.team-header__logo--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--border);
+  color: var(--muted);
+  font-size: 3rem;
+  font-weight: bold;
+}
+
+.team-header__info h1 {
+  margin: 0 0 0.25rem 0;
+}
+
+.team-header__tagline {
+  margin: 0 0 0.75rem 0;
+}
+
+.team-header__socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.social-link {
+  padding: 0.25rem 0.75rem;
+  background: var(--border);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  color: var(--text);
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.social-link:hover {
+  background: var(--accent);
+  color: white;
+}
+
+// ──────────────────────────────────────────────────────────
+// Team Members
+// ──────────────────────────────────────────────────────────
+.team-members {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.75rem;
+}
+
+.team-member {
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem;
+  background: var(--bg);
+  border-radius: 4px;
+}
+
+.team-member__name {
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.team-member__name:hover {
+  color: var(--accent);
+}
+
+.team-member__role {
+  font-size: 0.75rem;
+}
+
+// ──────────────────────────────────────────────────────────
+// Team Achievements
+// ──────────────────────────────────────────────────────────
+.team-achievements {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.team-achievement {
+  padding: 0.75rem;
+  background: var(--bg);
+  border-radius: 4px;
+  border-left: 3px solid var(--accent);
+}
+
+.team-achievement__title {
+  font-weight: 500;
+}
+
+.team-achievement__date {
+  font-size: 0.75rem;
+  margin-left: 0.5rem;
+}
+
+.team-achievement__desc {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.875rem;
+}
+
+// ──────────────────────────────────────────────────────────
+// Responsive
+// ──────────────────────────────────────────────────────────
+@media (max-width: 600px) {
+  .team-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .team-header__socials {
+    justify-content: center;
+  }
+}
