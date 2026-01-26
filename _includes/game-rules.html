@@ -769,7 +769,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Available options (from Jekyll data)
   const availableCharacters = [
     {% for char in game.characters_data %}
-    { id: "{{ char.slug }}", label: "{{ char.label | escape }}", description: "{{ char.description | escape }}" }{% unless forloop.last %},{% endunless %}
+    { id: "{{ char.slug }}", label: "{{ char.label | escape }}", description: "{{ char.description | strip_newlines | escape }}" }{% unless forloop.last %},{% endunless %}
     {% endfor %}
   ];
 
@@ -782,13 +782,13 @@ document.addEventListener('DOMContentLoaded', function() {
         {% assign ch_desc = global_challenge.description %}
       {% endif %}
     {% endif %}
-    { id: "{{ ch.slug }}", label: "{{ ch.label | escape }}", description: "{{ ch_desc | escape }}" }{% unless forloop.last %},{% endunless %}
+    { id: "{{ ch.slug }}", label: "{{ ch.label | escape }}", description: "{{ ch_desc | strip_newlines | escape }}" }{% unless forloop.last %},{% endunless %}
     {% endfor %}
   ];
 
   const availableRestrictions = [
     {% for res in game.restrictions_data %}
-    { id: "{{ res.slug }}", label: "{{ res.label | escape }}", description: "{{ res.description | escape }}" }{% unless forloop.last %},{% endunless %}
+    { id: "{{ res.slug }}", label: "{{ res.label | escape }}", description: "{{ res.description | strip_newlines | escape }}" }{% unless forloop.last %},{% endunless %}
     {% endfor %}
   ];
 
@@ -797,10 +797,10 @@ document.addEventListener('DOMContentLoaded', function() {
     { 
       id: "{{ glitch.slug }}", 
       label: "{{ glitch.label | escape }}", 
-      description: "{{ glitch.description | escape }}",
+      description: "{{ glitch.description | strip_newlines | escape }}",
       allowed: "{{ glitch.allowed | join: '|' | escape }}".split('|').filter(Boolean),
       banned: "{{ glitch.banned | join: '|' | escape }}".split('|').filter(Boolean),
-      notes: "{{ glitch.notes | escape }}"
+      notes: "{{ glitch.notes | strip_newlines | escape }}"
     }{% unless forloop.last %},{% endunless %}
     {% endfor %}
   ];
