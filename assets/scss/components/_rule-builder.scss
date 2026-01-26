@@ -1,0 +1,228 @@
+// ============================================================
+// Rule Builder
+// ============================================================
+// Interactive rule configuration tool on game rules pages.
+//
+// STRUCTURE:
+//   #rule-builder-card
+//   ├── .rule-builder-header
+//   ├── .rule-builder-content
+//   │   ├── .rule-builder__selections  - Grid of dropdowns
+//   │   ├── .rule-builder__summary     - Selected rules display
+//   │   └── .rule-builder__actions     - Action buttons
+//   └── .rule-builder__validation      - Error messages
+//
+// TEST: /games/{game}/rules/ page - click "Open" button
+// ============================================================
+
+// ──────────────────────────────────────────────────────────
+// Card States
+// ──────────────────────────────────────────────────────────
+#rule-builder-card {
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+// Collapsed state
+#rule-builder-card:not(.rule-builder--expanded) {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+// Expanded state
+#rule-builder-card.rule-builder--expanded {
+  border: 2px solid var(--accent);
+  background: var(--panel);
+}
+
+// ──────────────────────────────────────────────────────────
+// Header
+// ──────────────────────────────────────────────────────────
+.rule-builder-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.rule-builder-subtitle {
+  font-size: 0.9rem;
+}
+
+.rule-builder-content {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+// ──────────────────────────────────────────────────────────
+// Selections Grid
+// ──────────────────────────────────────────────────────────
+.rule-builder__selections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.rule-builder__group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rule-builder__group--reset {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+// ──────────────────────────────────────────────────────────
+// Labels & Inputs
+// ──────────────────────────────────────────────────────────
+.rule-builder__label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--fg);
+}
+
+.rule-builder__select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.rule-builder__select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--focus-2);
+}
+
+// ──────────────────────────────────────────────────────────
+// Checkbox Groups
+// ──────────────────────────────────────────────────────────
+.rule-builder__checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.rule-builder__checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.rule-builder__checkbox:hover {
+  border-color: var(--accent);
+}
+
+.rule-builder__checkbox:has(input:checked) {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border-color: var(--accent);
+}
+
+.rule-builder__checkbox input {
+  margin: 0;
+  cursor: pointer;
+}
+
+// ──────────────────────────────────────────────────────────
+// Selected Items Display
+// ──────────────────────────────────────────────────────────
+.rule-builder__selected {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+  min-height: 0;
+}
+
+.rule-builder__active {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.rule-builder__active:empty {
+  display: none;
+}
+
+// ──────────────────────────────────────────────────────────
+// Output / Result Display
+// ──────────────────────────────────────────────────────────
+.rule-builder__output {
+  padding: 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.rule-builder__result {
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.rb-section {
+  padding: 0.25rem 0;
+}
+
+.rb-detail {
+  margin: 0.25rem 0 0 1rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.rb-list {
+  margin: 0.25rem 0 0 1.5rem;
+  padding: 0;
+}
+
+.rb-list li {
+  margin-bottom: 0.2rem;
+}
+
+// ──────────────────────────────────────────────────────────
+// Validation Messages
+// ──────────────────────────────────────────────────────────
+.rule-builder__validation {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: color-mix(in srgb, var(--danger, #ef4444) 15%, transparent);
+  border: 1px solid var(--danger, #ef4444);
+  border-radius: var(--radius-sm);
+}
+
+.rule-builder__warning {
+  margin: 0;
+  color: var(--danger, #ef4444);
+  font-size: 0.9rem;
+}
+
+// ──────────────────────────────────────────────────────────
+// Highlight Animation (first visit)
+// ──────────────────────────────────────────────────────────
+@keyframes ruleBuilderPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--footer-accent, var(--accent)) 0%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--footer-accent, var(--accent)) 40%, transparent);
+  }
+}
+
+.rule-builder-highlight--animate {
+  animation: ruleBuilderPulse 1s ease-in-out 3;
+}
