@@ -1,6 +1,21 @@
 # SCSS Architecture
 
-This directory contains the modular SCSS source files for Challenge Run Collective.
+> **Current Status:** Incremental migration in progress.
+> The site uses `assets/css/style.scss` which imports extracted partials + inline styles.
+
+## Currently Extracted Components
+
+These partials are complete and imported by `style.scss`:
+
+| Partial | Location | Description |
+|---------|----------|-------------|
+| `_variables.scss` | `base/` | CSS custom properties (colors, spacing, radius) |
+| `_themes.scss` | `base/` | Theme color overrides (pink, blue, purple, red) |
+| `_footer.scss` | `components/` | Site footer + theme picker |
+| `_buttons.scss` | `components/` | Button styles (.btn, .btn--outline) |
+| `_tags.scss` | `components/` | Tags, pills, chips (.tag, .tag-chip) |
+| `_az-nav.scss` | `components/` | A-Z letter navigation |
+| `_results-bar.scss` | `components/` | Results count + reset button |
 
 ## Directory Structure
 
