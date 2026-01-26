@@ -1,0 +1,272 @@
+// ============================================================
+// Runs Table
+// ============================================================
+// Table styles for displaying runs on game category pages.
+//
+// STRUCTURE:
+//   .table-wrap   - Scrollable container
+//   .runs-table   - The table itself
+//   .pager        - Pagination within table
+//
+// TEST: /games/{game}/runs/{tier}/{category}/ pages
+// ============================================================
+
+// ──────────────────────────────────────────────────────────
+// Table Container
+// ──────────────────────────────────────────────────────────
+.table-wrap {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  overflow-x: auto;
+  background: var(--surface);
+}
+
+// ──────────────────────────────────────────────────────────
+// Table Base
+// ──────────────────────────────────────────────────────────
+.runs-table {
+  width: 100%;
+  min-width: 780px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.95rem;
+}
+
+// Header cells
+.runs-table thead th {
+  text-align: center;
+  vertical-align: top;
+  font-weight: 700;
+  color: var(--fg);
+  background: rgba(255, 255, 255, 0.03);
+
+  padding: 0.75rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+}
+
+// First column (Runner) left-aligned
+.runs-table thead th:first-child {
+  text-align: left;
+}
+
+// Headers with sort buttons
+.runs-table thead th.th-filter {
+  vertical-align: bottom;
+}
+
+// Body cells
+.runs-table tbody td {
+  padding: 0.75rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  text-align: center;
+}
+
+.runs-table tbody td:first-child {
+  text-align: left;
+}
+
+// Vertical borders between columns
+.runs-table thead th + th,
+.runs-table tbody td + td {
+  border-left: 1px solid var(--border);
+}
+
+// Zebra striping
+.runs-table tbody tr:nth-child(even) td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+// Hover highlight
+.runs-table tbody tr:hover td {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+// Last row no border
+.runs-table tbody tr:last-child td { 
+  border-bottom: none; 
+}
+
+// ──────────────────────────────────────────────────────────
+// Pager
+// ──────────────────────────────────────────────────────────
+.pager {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.pager .muted { 
+  white-space: nowrap; 
+}
+
+// ──────────────────────────────────────────────────────────
+// Tags in Table
+// ──────────────────────────────────────────────────────────
+.runs-table td :is(.tag, .tags) .tag {
+  margin: 0;
+}
+
+.runs-table td .tag + .tag {
+  margin-left: 0.35rem;
+}
+
+.runs-table td .tags {
+  gap: 0.35rem;
+}
+
+// Date/Time columns
+.runs-table th:nth-child(5),
+.runs-table td:nth-child(5) {
+  white-space: nowrap;
+}
+
+.runs-table td:nth-child(5) {
+  font-variant-numeric: tabular-nums;
+}
+
+// ──────────────────────────────────────────────────────────
+// Sort Buttons
+// ──────────────────────────────────────────────────────────
+.th-sort {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-dim);
+
+  border-radius: 10px;
+  padding: 0.18rem 0.45rem;
+
+  line-height: 1;
+  cursor: pointer;
+}
+
+.th-sort:hover {
+  background: var(--panel);
+  color: var(--fg);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.th-sort.is-active {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+
+.th-date .th-title,
+.th-time .th-title {
+  display: flex;
+  justify-content: center;
+}
+
+.th-date-sort,
+.th-time-sort {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.35rem;
+}
+
+.th-date-sort .th-sort,
+.th-time-sort .th-sort {
+  min-width: 32px;
+  text-align: center;
+}
+
+// ──────────────────────────────────────────────────────────
+// Mobile Responsive (Card Layout)
+// ──────────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .table-wrap {
+    overflow-x: visible;
+  }
+  
+  .runs-table {
+    display: block;
+    min-width: 0;
+  }
+  
+  .runs-table thead {
+    display: none;
+  }
+  
+  .runs-table tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .runs-table tbody tr {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    gap: 0.5rem;
+  }
+  
+  .runs-table tbody tr:hover {
+    border-color: var(--accent);
+  }
+  
+  .runs-table tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.25rem 0;
+    border: none !important;
+    background: transparent !important;
+    text-align: left !important;
+  }
+  
+  .runs-table tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    margin-right: 1rem;
+  }
+  
+  // First cell (runner name) special treatment
+  .runs-table tbody td:first-child {
+    font-weight: 600;
+    font-size: 1.1rem;
+    border-bottom: 1px solid var(--border) !important;
+    padding-bottom: 0.75rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .runs-table tbody td:first-child::before {
+    display: none;
+  }
+  
+  // Tags in mobile view
+  .runs-table tbody td .cell-tags {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  
+  // Video link styling
+  .runs-table tbody td:last-child {
+    justify-content: flex-end;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border) !important;
+    margin-top: 0.25rem;
+  }
+  
+  .runs-table tbody td:last-child::before {
+    display: none;
+  }
+  
+  .runs-table tbody td:last-child a {
+    padding: 0.35rem 0.75rem;
+    background: var(--accent);
+    color: var(--bg);
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+  }
+}
