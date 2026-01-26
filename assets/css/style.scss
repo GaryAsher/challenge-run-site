@@ -17,6 +17,7 @@
 @import "../scss/components/forms";  // Inputs, selects, focus states
 @import "../scss/components/cards";  // Game & runner cards
 @import "../scss/components/filters-grid"; // Filter grid layouts
+@import "../scss/components/utilities"; // Grid, pagination, spinner
 
 // ============================================================
 // REMAINING STYLES - Not yet extracted
@@ -525,18 +526,7 @@ a:hover {
 
 .list { padding-left: 1.2rem; }
 
-/* ============================================================
-   Grid Utility
-   ============================================================ */
-.grid {
-  display: grid;
-  gap: 0.9rem;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-}
-
-@media (min-width: 1200px) {
-  .grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-}
+/* Grid Utility moved to: assets/scss/components/_utilities.scss */
 
 /* ============================================================
    Games: Hero + Tags (Fixed 2:1)
@@ -1186,51 +1176,7 @@ a:hover {
 
 .th-menu__empty { padding: 0.6rem 0.4rem; }
 
-/* ============================================================
-   Pagination (shared utilities)
-   ============================================================ */
-.list-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  align-items: center;
-  justify-content: space-between;
-  margin: 0.75rem 0;
-}
-
-.list-controls--bottom { justify-content: center; }
-.list-controls--bottom [data-status] { display: none; }
-
-.page-numbers {
-  display: inline-flex;
-  gap: 0.35rem;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.page-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: var(--tap);
-  padding: 0.35rem 0.6rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  color: var(--fg);
-  cursor: pointer;
-}
-
-.page-btn:hover {
-  background: var(--panel);
-  text-decoration: none;
-}
-
-.page-btn.is-current {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--focus-2);
-  opacity: 1;
-}
+/* Pagination moved to: assets/scss/components/_utilities.scss */
 
 /* ============================================================
    Responsive scale tweaks
@@ -4369,33 +4315,7 @@ a.resource-card:hover {
   border-color: rgba(59, 195, 110, 0.3);
 }
 
-/* ============================================================
-   Loading State & Spinner
-   ============================================================ */
-.btn.is-loading {
-  pointer-events: none;
-  opacity: 0.85;
-}
-
-.btn__loading {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.spinner {
-  display: inline-block;
-  width: 1em;
-  height: 1em;
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: spin 0.75s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+/* Loading/Spinner moved to: assets/scss/components/_utilities.scss */
 
 /* ============================================================
    Improved Mobile Responsiveness
