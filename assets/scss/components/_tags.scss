@@ -1,50 +1,57 @@
 // ============================================================
-// Tags, Pills, Chips
+// Tags (Global) - Base Pill Styling
 // ============================================================
-// Unified tag styling for categories, filters, and status indicators.
-// Consolidates duplicate tag styles from multiple sections.
+// Pill-shaped tags and chips used throughout the site.
 //
 // CLASSES:
-// - .tag / .tag-chip - Base pill style
-// - .tag-chip.is-active - Selected state
-// - .filter-chip - Removable filter tag
-// - .category-pill - Category navigation pill
+//   .tag          - Static pill tag (display only)
+//   .tag-chip     - Interactive pill (clickable filter)
+//   .tags         - Flex container for multiple tags
+//   .tag-picked   - Container for selected filter chips
+//
+// STATES:
+//   :hover        - Accent border + tinted background
+//   .is-active    - Selected state for filter chips
 // ============================================================
 
-// ──────────────────────────────────────────────────────────
-// Base Tag / Chip
-// ──────────────────────────────────────────────────────────
 .tag,
 .tag-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
-  padding: var(--pill-padding);
-  border-radius: 999px;
-  background: var(--bg-soft);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  font-size: var(--pill-font-size);
+  gap: 0.35rem;                         // Space between icon and text
+
+  padding: var(--pill-padding);         // 0.25rem 0.65rem
+  border-radius: 999px;                 // Full pill shape
+
+  background: var(--bg-soft);           // Subtle background
+  border: 1px solid var(--border);      // Default border
+  color: var(--text-muted);             // Muted text color
+
+  font-size: var(--pill-font-size);     // 0.85rem
   line-height: 1.25;
-  white-space: nowrap;
+
+  white-space: nowrap;                  // Prevent wrapping
   text-decoration: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  transition: background var(--transition-base), 
-              border-color var(--transition-base);
 }
 
-// Interactive tags (links & buttons)
+// ──────────────────────────────────────────────────────────
+// Hover States
+// ──────────────────────────────────────────────────────────
 a.tag:hover,
 a.tag-chip:hover,
 button.tag:hover,
 .tag-chip:hover {
-  background: color-mix(in srgb, var(--accent) 15%, transparent);
-  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);  // Tinted accent
+  border-color: var(--accent);          // Accent border
   text-decoration: none;
 }
 
+// ──────────────────────────────────────────────────────────
+// Interactive Tags (Buttons)
+// ──────────────────────────────────────────────────────────
 button.tag,
 .tag-chip {
   cursor: pointer;
@@ -52,166 +59,41 @@ button.tag,
   font-size: var(--pill-font-size);
 }
 
+// ──────────────────────────────────────────────────────────
+// Active/Selected State
+// ──────────────────────────────────────────────────────────
 .tag-chip.is-active {
   background: var(--panel);
-  color: var(--fg);
+  color: var(--fg);                     // Full brightness text
   border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--focus-2);
+  box-shadow: 0 0 0 1px var(--focus-2); // Subtle glow
 }
 
-// Tag containers
+// ──────────────────────────────────────────────────────────
+// Tag Containers
+// ──────────────────────────────────────────────────────────
 .tags,
 .tag-picked {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--pill-gap);
+  gap: var(--pill-gap);                 // 0.4rem between tags
 }
 
 .tag-picked:empty {
-  display: none;
+  display: none;                        // Hide when no selections
 }
 
 .tag-picked:not(:empty) {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.5rem;                // Space below when populated
 }
 
 // ──────────────────────────────────────────────────────────
-// Filter Chip (Removable tag with × button)
-// ──────────────────────────────────────────────────────────
-.filter-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.3rem 0.5rem 0.3rem 0.65rem;
-  background: var(--bg-soft);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  font-size: 0.85rem;
-  color: var(--fg);
-  white-space: nowrap;
-  transition: background var(--transition-base), 
-              border-color var(--transition-base);
-
-  &:hover {
-    background: color-mix(in srgb, var(--accent) 12%, transparent);
-    border-color: var(--accent);
-  }
-}
-
-.filter-chip__remove {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.1rem;
-  height: 1.1rem;
-  padding: 0;
-  background: transparent;
-  border: none;
-  border-radius: 50%;
-  color: var(--text-muted);
-  font-size: 0.9rem;
-  line-height: 1;
-  cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast);
-
-  &:hover {
-    background: rgba(239, 68, 68, 0.2);
-    color: var(--status-rejected);
-  }
-}
-
-// ──────────────────────────────────────────────────────────
-// Category Pills (Navigation)
-// ──────────────────────────────────────────────────────────
-.category-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 1rem;
-  padding: 0.75rem;
-  background: var(--panel);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-}
-
-.category-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  text-decoration: none;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 9999px;
-  transition: all var(--transition-base);
-  white-space: nowrap;
-
-  &:hover {
-    color: var(--fg);
-    background: var(--bg-hover);
-    border-color: var(--border-hover);
-    text-decoration: none;
-  }
-
-  &.is-active {
-    color: #fff;
-    background: var(--accent);
-    border-color: var(--accent);
-  }
-}
-
-.category-pill--sub {
-  font-size: 0.8rem;
-  padding: 0.4rem 0.8rem;
-}
-
-// ──────────────────────────────────────────────────────────
-// Tag Variants (Status colors)
-// ──────────────────────────────────────────────────────────
-.tag--verified,
-.tag-chip--verified {
-  background: rgba(16, 185, 129, 0.15);
-  border-color: var(--status-verified);
-  color: var(--status-verified);
-}
-
-.tag--pending,
-.tag-chip--pending {
-  background: rgba(245, 158, 11, 0.15);
-  border-color: var(--status-pending);
-  color: var(--status-pending);
-}
-
-.tag--rejected,
-.tag-chip--rejected {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: var(--status-rejected);
-  color: var(--status-rejected);
-}
-
-// ──────────────────────────────────────────────────────────
-// Runs Table Tags
+// Runs Table: Centered Tags
 // ──────────────────────────────────────────────────────────
 .runs-table .cell-tags {
   display: flex;
   flex-wrap: wrap;
   gap: var(--pill-gap);
-  justify-content: center;
+  justify-content: center;              // Center tags in table cells
   align-items: flex-start;
-}
-
-// ──────────────────────────────────────────────────────────
-// Responsive
-// ──────────────────────────────────────────────────────────
-@media (max-width: 600px) {
-  .category-pills {
-    gap: 0.4rem;
-  }
-
-  .category-pill {
-    font-size: 0.8rem;
-    padding: 0.4rem 0.75rem;
-  }
 }
