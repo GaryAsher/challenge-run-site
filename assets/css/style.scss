@@ -415,7 +415,6 @@ a:hover {
 }
 
 .select:hover {
-  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
   border-color: var(--accent);
 }
 
@@ -473,6 +472,7 @@ a:hover {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--surface);
+  min-height: 120px; /* Prevent layout shift when chips appear/disappear */
 }
 
 @media (max-width: 1000px) {
