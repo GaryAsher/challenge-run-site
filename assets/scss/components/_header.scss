@@ -1,0 +1,242 @@
+// ============================================================
+// Header / Navigation
+// ============================================================
+// Site header with logo, navigation links, and search.
+//
+// CLASSES:
+//   .site-header     - Main header container (sticky)
+//   .brand           - Logo/site name
+//   .nav             - Navigation link container
+//   .nav-dropdown    - Dropdown "More" menu
+//   .nav-search-wrap - Live search in header
+//
+// RESPONSIVE:
+//   < 640px - Narrower search input
+// ============================================================
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.brand {
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  color: var(--accent);                   // Accent color for brand
+}
+
+// ──────────────────────────────────────────────────────────
+// Navigation Links
+// ──────────────────────────────────────────────────────────
+.nav {
+  display: flex;
+  gap: 0.9rem;
+}
+
+.nav-group {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.nav a {
+  display: inline-flex;
+  align-items: center;
+
+  min-height: var(--tap);                 // 36px touch target
+  padding: 0.35rem 0.65rem;
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.nav a:hover {
+  background: var(--panel);
+  text-decoration: none;
+}
+
+// ──────────────────────────────────────────────────────────
+// Dropdown Menu (More)
+// ──────────────────────────────────────────────────────────
+.nav-dropdown {
+  position: relative;
+}
+
+.nav-dropdown__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-height: var(--tap);
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--fg);
+  font-size: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.nav-dropdown__toggle:hover {
+  background: var(--panel);
+}
+
+.nav-dropdown__caret {
+  font-size: 0.75em;
+  opacity: 0.7;
+}
+
+.nav-dropdown__menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 140px;
+  margin-top: 0.35rem;
+  padding: 0.35rem 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+}
+
+.nav-dropdown__menu[hidden] {
+  display: none;
+}
+
+.nav-dropdown__item {
+  display: block;
+  padding: 0.5rem 1rem;
+  color: var(--fg);
+  text-decoration: none;
+  border: none !important;
+  border-radius: 0 !important;
+  min-height: auto !important;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.nav-dropdown__item:hover {
+  background: var(--panel);
+  text-decoration: none;
+}
+
+// ──────────────────────────────────────────────────────────
+// Live Search
+// ──────────────────────────────────────────────────────────
+.nav-search-wrap {
+  margin-left: 0.5rem;
+  position: relative;
+}
+
+.nav-search-input {
+  min-height: var(--tap);
+  width: 160px;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--fg);
+  font-size: 0.9rem;
+  transition: border-color 0.15s ease, background 0.15s ease, width 0.2s ease;
+}
+
+.nav-search-input::placeholder {
+  color: var(--placeholder);
+}
+
+.nav-search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--panel);
+  width: 220px;                           // Expands on focus
+}
+
+// ──────────────────────────────────────────────────────────
+// Search Results Dropdown
+// ──────────────────────────────────────────────────────────
+.header-search-results {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 280px;
+  max-height: 400px;
+  overflow-y: auto;
+  margin-top: 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 200;
+}
+
+.header-search-results[hidden] {
+  display: none;
+}
+
+.search-result-group {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.search-result-group:last-child {
+  border-bottom: none;
+}
+
+.search-result-group__title {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.search-result-item {
+  display: block;
+  padding: 0.5rem 0.75rem;
+  color: var(--fg);
+  text-decoration: none;
+  transition: background 0.1s ease;
+}
+
+.search-result-item:hover {
+  background: var(--panel);
+  text-decoration: none;
+}
+
+.search-result-item__name {
+  font-size: 0.9rem;
+}
+
+.search-no-results {
+  padding: 1rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+// ──────────────────────────────────────────────────────────
+// Mobile Responsive
+// ──────────────────────────────────────────────────────────
+@media (max-width: 640px) {
+  .nav-search-input {
+    width: 100px;
+  }
+  .nav-search-input:focus {
+    width: 140px;
+  }
+  .header-search-results {
+    width: 220px;
+  }
+}
