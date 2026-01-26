@@ -1,0 +1,90 @@
+// ============================================================
+// A–Z Navigation
+// ============================================================
+// Horizontal letter navigation used on /games/ index page.
+//
+// CLASSES:
+//   .az           - Container for letter links
+//   .az a         - Individual letter pill
+//   .az-wide      - Wider pill for multi-char labels (#, Other, All)
+//
+// STATES:
+//   :hover        - Lighter background
+//   .is-active    - Accent border + glow
+//
+// RESPONSIVE:
+//   < 640px       - Horizontal scroll, no wrap
+// ============================================================
+
+.az {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--az-gap);                   // 0.35rem between pills
+  margin-bottom: 1.25rem;
+}
+
+.az a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: var(--az-size);                // 36px square
+  height: var(--az-size);
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);      // 10px - pill shape
+
+  font-size: 0.9rem;
+  font-weight: 400;
+  line-height: 1;
+
+  background: var(--surface);
+  color: var(--accent);                 // Accent color text
+
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+
+  flex: 0 0 auto;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.az a:hover {
+  background: var(--panel);             // Lighter on hover
+}
+
+.az a.is-active {
+  font-weight: 700;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--focus-2); // Accent glow
+}
+
+// ──────────────────────────────────────────────────────────
+// Wider pills for multi-character labels
+// ──────────────────────────────────────────────────────────
+.az a.az-wide {
+  width: auto;
+  min-width: var(--az-size);
+  padding: 0 0.65rem;
+}
+
+// ──────────────────────────────────────────────────────────
+// Mobile: Horizontal scroll
+// ──────────────────────────────────────────────────────────
+@media (max-width: 640px) {
+  .az {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+
+    padding-bottom: 0.35rem;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+    margin-bottom: 1rem;
+
+    scrollbar-width: none;              // Hide scrollbar (Firefox)
+  }
+
+  .az::-webkit-scrollbar { 
+    display: none;                      // Hide scrollbar (WebKit)
+  }
+}
