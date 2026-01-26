@@ -2,128 +2,53 @@
 // Buttons
 // ============================================================
 // Base button styles and variants.
+// 
+// CLASSES:
+//   .btn          - Base button style
+//   .btn--outline - Transparent background, border only
 //
-// VARIANTS:
-// - .btn (default)
-// - .btn--outline (transparent background)
-// - .btn--primary (accent color)
-// - .btn--ghost (minimal)
+// STATES:
+//   :hover        - Hover effect
+//   :disabled     - Reduced opacity, no pointer
 // ============================================================
 
 .btn {
   appearance: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--fg);
-  border-radius: var(--radius-sm);
-  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--border);      // Default border
+  background: var(--surface);           // Elevated surface background
+  color: var(--fg);                     // Primary text color
+  border-radius: var(--radius-sm);      // Rounded corners (10px)
+  padding: 0.55rem 0.85rem;             // Internal spacing
   cursor: pointer;
   line-height: 1;
-  min-height: var(--tap);
+  min-height: var(--tap);               // Minimum touch target (36px)
+}
+
+.btn:hover {
+  background: var(--panel);             // Slightly lighter on hover
   text-decoration: none;
-  transition: background var(--transition-base), 
-              border-color var(--transition-base),
-              color var(--transition-base);
+}
 
-  &:hover {
-    background: var(--panel);
-    text-decoration: none;
-  }
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-
-    &:hover {
-      background: var(--surface);
-    }
-  }
+.btn:disabled:hover {
+  background: var(--surface);           // No hover effect when disabled
 }
 
 // ──────────────────────────────────────────────────────────
-// Button Variants
+// Outline Variant
 // ──────────────────────────────────────────────────────────
 .btn--outline {
   background: transparent;
   border-color: var(--border);
   color: var(--text-muted);
-
-  &:hover {
-    background: var(--panel);
-    border-color: var(--accent);
-    color: var(--fg);
-  }
 }
 
-.btn--primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--bg);
-  font-weight: 700;
-
-  &:hover {
-    filter: brightness(1.05);
-  }
-}
-
-.btn--ghost {
-  background: transparent;
-  border-color: transparent;
-  color: var(--text-muted);
-
-  &:hover {
-    background: var(--panel);
-    color: var(--fg);
-  }
-}
-
-.btn--sm {
-  padding: 0.35rem 0.65rem;
-  font-size: 0.875rem;
-  min-height: auto;
-}
-
-.btn--lg {
-  padding: 0.75rem 1.25rem;
-  font-size: 1rem;
-}
-
-// ──────────────────────────────────────────────────────────
-// Loading State
-// ──────────────────────────────────────────────────────────
-.btn.is-loading {
-  pointer-events: none;
-  opacity: 0.85;
-}
-
-.btn__loading {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.spinner {
-  display: inline-block;
-  width: 1em;
-  height: 1em;
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: spin 0.75s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-// Reduced motion support
-@media (prefers-reduced-motion: reduce) {
-  .spinner {
-    animation: none;
-    border-style: dotted;
-  }
+.btn--outline:hover {
+  background: var(--panel);
+  border-color: var(--accent);          // Accent border on hover
+  color: var(--fg);
 }
