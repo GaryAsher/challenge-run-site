@@ -1,0 +1,121 @@
+// ============================================================
+// Tabs & Tab Panels
+// ============================================================
+// Tab navigation used on runner profiles and game pages.
+//
+// CLASSES:
+//   .runner-tabs  - Tab button container (sticky)
+//   .tab          - Individual tab button
+//   .tab.active   - Currently active tab
+//   .tab-panel    - Content panel
+//
+// TEST: /runners/{name}/ and /games/{game}/ pages
+// ============================================================
+
+// ──────────────────────────────────────────────────────────
+// Tab Container
+// ──────────────────────────────────────────────────────────
+.runner-tabs {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+
+  position: sticky;
+  top: 76px;                              // Below header
+  z-index: 50;
+
+  background: var(--bg);
+  padding: 0.75rem 0 0 0;
+  border-bottom: none;
+}
+
+// ──────────────────────────────────────────────────────────
+// Individual Tab Button
+// ──────────────────────────────────────────────────────────
+.runner-tabs .tab {
+  appearance: none;
+  cursor: pointer;
+  font: inherit;
+
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--border);
+  border-bottom: none;
+
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+
+  background: transparent;
+  color: var(--text-dim);
+
+  font-weight: 650;
+  opacity: 0.75;
+
+  // Push tabs down to sit on container border
+  margin-bottom: -1px;
+
+  transition:
+    background 120ms ease,
+    color 120ms ease,
+    opacity 120ms ease,
+    border-color 120ms ease;
+}
+
+.runner-tabs .tab:hover {
+  background: var(--panel);
+  color: var(--fg);
+  opacity: 1;
+}
+
+// Active Tab
+.runner-tabs .tab.active {
+  background: var(--bg);
+  color: var(--fg);
+  opacity: 1;
+
+  border-color: var(--border);
+  border-bottom-color: var(--surface);
+  box-shadow: none;
+}
+
+// Game page tabs (non-sticky)
+.page-width .runner-tabs.game-tabs {
+  position: static;
+  top: auto;
+  z-index: auto;
+
+  background: transparent;
+  padding: 0;
+  margin: 0;
+}
+
+// Submit tab pushed to right
+.runner-tabs .tab--submit {
+  margin-left: auto;
+}
+
+.page-width + .page-width .table-wrap {
+  margin-top: 0.75rem;
+}
+
+// ──────────────────────────────────────────────────────────
+// Tab Panel Content
+// ──────────────────────────────────────────────────────────
+.tab-panel {
+  display: none;
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  border-top-left-radius: 0;
+
+  background: var(--surface);
+  padding: 1rem;
+
+  min-height: 40vh;
+  overflow-y: auto;
+}
+
+.tab-panel.active { 
+  display: block; 
+}
