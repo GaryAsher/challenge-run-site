@@ -1,0 +1,55 @@
+// ============================================================
+// Base / Reset
+// ============================================================
+// Global defaults and browser reset styles.
+// This should be imported early, after variables.
+// ============================================================
+
+// ──────────────────────────────────────────────────────────
+// Box Sizing
+// ──────────────────────────────────────────────────────────
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+// ──────────────────────────────────────────────────────────
+// Form Elements Inherit Font
+// ──────────────────────────────────────────────────────────
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+// ──────────────────────────────────────────────────────────
+// Body Defaults
+// ──────────────────────────────────────────────────────────
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  margin: 0;
+  line-height: 1.6;
+}
+
+// ──────────────────────────────────────────────────────────
+// Link Defaults
+// ──────────────────────────────────────────────────────────
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+// ──────────────────────────────────────────────────────────
+// Hidden Utility
+// ──────────────────────────────────────────────────────────
+[hidden] { 
+  display: none !important; 
+}
