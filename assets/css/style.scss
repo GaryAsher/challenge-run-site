@@ -11,6 +11,8 @@
 @import "../scss/components/footer"; // Footer + theme picker
 @import "../scss/components/buttons"; // Button styles
 @import "../scss/components/tags";   // Tags, pills, chips
+@import "../scss/components/az-nav"; // A-Z letter navigation
+@import "../scss/components/results-bar"; // Results bar (count + reset)
 
 // ============================================================
 // REMAINING STYLES - Not yet extracted
@@ -495,71 +497,7 @@ a:hover {
   }
 }
 
-/* ============================================================
-   Results Bar (Show / Status / Reset)
-   ============================================================ */
-.results-bar {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-}
-
-.results-bar__left {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-shrink: 0;
-}
-
-.results-bar__center {
-  flex: 1;
-  text-align: center;
-  min-width: 0;
-}
-
-.results-bar__center p {
-  margin: 0;
-}
-
-.results-bar__right {
-  flex-shrink: 0;
-}
-
-.btn--reset {
-  background: var(--bg-soft);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  padding: 0.4rem 0.75rem;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: 0.85rem;
-  transition: background 120ms ease, color 120ms ease;
-}
-
-.btn--reset:hover {
-  background: var(--panel);
-  color: var(--fg);
-}
-
-@media (max-width: 560px) {
-  .results-bar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.5rem;
-  }
-
-  .results-bar__left,
-  .results-bar__center,
-  .results-bar__right {
-    text-align: center;
-  }
-
-  .results-bar__left {
-    justify-content: center;
-  }
-}
+/* Results Bar moved to: assets/scss/components/_results-bar.scss */
 
 /* ============================================================
    Runs: top filter bar (game-runs.html)
@@ -911,74 +849,7 @@ a:hover {
   color: var(--text-muted);
 }
 
-/* ============================================================
-   A–Z Navigation
-   ============================================================ */
-.az {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--az-gap);
-  margin-bottom: 1.25rem;
-}
-
-.az a {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  width: var(--az-size);
-  height: var(--az-size);
-
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-
-  font-size: 0.9rem;
-  font-weight: 400;
-  line-height: 1;
-
-  background: var(--surface);
-  color: var(--accent);
-
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-
-  flex: 0 0 auto;
-  transition: border-color 120ms ease, background 120ms ease;
-}
-
-.az a:hover {
-  background: var(--panel);
-}
-
-.az a.is-active {
-  font-weight: 700;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--focus-2);
-}
-
-@media (max-width: 640px) {
-  .az {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-
-    padding-bottom: 0.35rem;
-    padding-left: 0.25rem;
-    padding-right: 0.25rem;
-    margin-bottom: 1rem;
-
-    scrollbar-width: none;
-  }
-
-  .az::-webkit-scrollbar { display: none; }
-}
-
-/* Wider A–Z pills for multi-character labels like "Other" / "All" / "0-9" */
-.az a.az-wide {
-  width: auto;
-  min-width: var(--az-size);
-  padding: 0 0.65rem;
-}
+/* A-Z Navigation moved to: assets/scss/components/_az-nav.scss */
 
 .list { padding-left: 1.2rem; }
 
@@ -3354,6 +3225,7 @@ a.resource-card:hover {
   border: none;
   border-top: 1px solid var(--border);
   margin: 0.5rem 0;
+}
    
 /* ============================================================
    TEAMS STYLES
@@ -5331,3 +5203,4 @@ a.resource-card:hover {
     align-items: flex-start;
   }
 }
+
