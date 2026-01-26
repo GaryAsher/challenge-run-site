@@ -1,14 +1,8 @@
 // ============================================================
-// CSS Custom Properties (Design Tokens)
+// Theme Variables
 // ============================================================
-// All design tokens are defined here as CSS custom properties.
-// This allows for runtime theming and easy customization.
-//
-// USAGE:
-// - Colors: var(--accent), var(--bg), var(--fg)
-// - Spacing: var(--space-1) through var(--space-6)
-// - Radius: var(--radius-sm), var(--radius-md), var(--radius-lg)
-// - Layout: var(--page-max), var(--gutter)
+// All CSS custom properties used throughout the site.
+// Edit these values to change the global design tokens.
 // ============================================================
 
 :root {
@@ -33,32 +27,32 @@
   --bg-soft: rgba(255, 255, 255, 0.06);       // Subtle background
 
   // ──────────────────────────────────────────────────────────
-  // COLORS - Text
+  // COLORS - Text Variations
   // ──────────────────────────────────────────────────────────
-  --text-muted: rgba(255, 255, 255, 0.78);    // Secondary text
-  --text-dim: rgba(255, 255, 255, 0.75);      // Tertiary text
   --placeholder: rgba(255, 255, 255, 0.6);    // Input placeholder
   --placeholder-dim: rgba(255, 255, 255, 0.55);
+  --text-muted: rgba(255, 255, 255, 0.78);    // Secondary text
+  --text-dim: rgba(255, 255, 255, 0.75);      // Tertiary text
 
   // ──────────────────────────────────────────────────────────
-  // COLORS - Interactive States
+  // COLORS - Focus States
   // ──────────────────────────────────────────────────────────
-  --focus: rgba(59, 195, 110, 0.6);           // Focus ring color
-  --focus-2: rgba(59, 195, 110, 0.35);        // Subtle focus
+  --focus: rgba(59, 195, 110, 0.6);           // Focus ring (accent)
+  --focus-2: rgba(59, 195, 110, 0.35);        // Subtle focus glow
 
   // ──────────────────────────────────────────────────────────
   // COLORS - Overlays
   // ──────────────────────────────────────────────────────────
-  --overlay-strong: rgba(15, 15, 15, 0.95);   // Modal overlay
+  --overlay-strong: rgba(15, 15, 15, 0.95);   // Modal backdrop
   --overlay-mid: rgba(15, 15, 15, 0.6);       // Medium overlay
   --overlay-light: rgba(15, 15, 15, 0.35);    // Light overlay
 
   // ──────────────────────────────────────────────────────────
-  // COLORS - Hero Section
+  // COLORS - Hero Overlays (gradient stops)
   // ──────────────────────────────────────────────────────────
-  --hero-strong: rgba(15, 15, 15, 0.92);
-  --hero-mid: rgba(15, 15, 15, 0.65);
-  --hero-light: rgba(15, 15, 15, 0.45);
+  --hero-strong: rgba(15, 15, 15, 0.92);      // Bottom of hero
+  --hero-mid: rgba(15, 15, 15, 0.65);         // Middle of hero
+  --hero-light: rgba(15, 15, 15, 0.45);       // Top of hero
 
   // ──────────────────────────────────────────────────────────
   // COLORS - Status Indicators
@@ -68,49 +62,42 @@
   --status-rejected: #ef4444;                 // Red - denied
 
   // ──────────────────────────────────────────────────────────
-  // LAYOUT - Page Constraints
+  // LAYOUT - Page Structure
   // ──────────────────────────────────────────────────────────
-  --page-max: 960px;                          // Max content width
+  --page-max: 960px;                          // Maximum content width
   --gutter: 1.5rem;                           // Page side padding
   --section-pad-y: 3rem;                      // Vertical section padding
 
   // ──────────────────────────────────────────────────────────
   // LAYOUT - Border Radius Scale
   // ──────────────────────────────────────────────────────────
-  --radius-sm: 10px;
-  --radius-md: 12px;
-  --radius-lg: 14px;
-  --radius-xl: 16px;
-  --radius: var(--radius-md);                 // Default radius alias
+  --radius-sm: 10px;                          // Small (buttons, inputs)
+  --radius-md: 12px;                          // Medium (cards)
+  --radius-lg: 14px;                          // Large (panels)
+  --radius-xl: 16px;                          // Extra large (heroes)
+  --radius: var(--radius-md);                 // Default alias
 
   // ──────────────────────────────────────────────────────────
-  // LAYOUT - Spacing Scale (based on 0.25rem = 4px)
+  // LAYOUT - Spacing Scale
   // ──────────────────────────────────────────────────────────
-  --space-1: 0.35rem;                         // ~5.6px - tiny
+  --space-1: 0.35rem;                         // 5.6px - tight
   --space-2: 0.5rem;                          // 8px - small
   --space-3: 0.75rem;                         // 12px - medium
   --space-4: 1rem;                            // 16px - default
   --space-5: 1.25rem;                         // 20px - large
-  --space-6: 1.5rem;                          // 24px - xlarge
+  --space-6: 1.5rem;                          // 24px - extra large
 
   // ──────────────────────────────────────────────────────────
-  // LAYOUT - Touch Targets (Accessibility)
+  // LAYOUT - Touch & Interactive
   // ──────────────────────────────────────────────────────────
-  --tap: 36px;                                // Minimum tap target
-  --az-size: 36px;                            // A-Z filter button size
-  --az-gap: 0.35rem;                          // A-Z button spacing
+  --tap: 36px;                                // Minimum touch target
+  --az-size: 36px;                            // A-Z nav button size
+  --az-gap: 0.35rem;                          // A-Z nav gap
 
   // ──────────────────────────────────────────────────────────
-  // COMPONENTS - Pills & Tags
+  // COMPONENTS - Pill/Tag Styling
   // ──────────────────────────────────────────────────────────
-  --pill-padding: 0.25rem 0.65rem;
-  --pill-font-size: 0.85rem;
-  --pill-gap: 0.4rem;
-
-  // ──────────────────────────────────────────────────────────
-  // ANIMATION - Timing
-  // ──────────────────────────────────────────────────────────
-  --transition-fast: 0.1s ease;
-  --transition-base: 0.15s ease;
-  --transition-slow: 0.2s ease;
+  --pill-padding: 0.25rem 0.65rem;            // Tag internal padding
+  --pill-font-size: 0.85rem;                  // Tag text size
+  --pill-gap: 0.4rem;                         // Gap between tags
 }
