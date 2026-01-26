@@ -1,0 +1,74 @@
+// ============================================================
+// Floating Filter Menu
+// ============================================================
+// Dropdown filter menu for table column filtering.
+//
+// STRUCTURE:
+//   .th-menu
+//   ├── .th-menu__top     - Search input area
+//   ├── .th-menu__list    - Checkbox list
+//   ├── .th-menu__item    - Individual checkbox row
+//   └── .th-menu__actions - Apply/Clear buttons
+//
+// TEST: Click column headers on runs table pages
+// ============================================================
+
+.th-menu {
+  position: fixed;
+  z-index: 999;
+
+  width: 320px;
+  max-width: calc(100vw - 24px);
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  padding: 0.6rem;
+}
+
+.th-menu__top { 
+  margin-bottom: 0.5rem; 
+}
+
+.th-menu__q {
+  margin: 0;
+  max-width: none;
+}
+
+.th-menu__list {
+  max-height: 260px;
+  overflow: auto;
+  padding: 0.25rem 0;
+}
+
+.th-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  padding: 0.4rem 0.5rem;
+  border-radius: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.th-menu__item:hover { 
+  background: var(--panel); 
+}
+
+.th-menu__item input { 
+  margin: 0; 
+}
+
+.th-menu__actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 0.6rem;
+}
+
+.th-menu__empty { 
+  padding: 0.6rem 0.4rem; 
+}
