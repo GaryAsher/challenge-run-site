@@ -1,0 +1,104 @@
+// ============================================================
+// Forms: Inputs, Selects & Focus States
+// ============================================================
+// Base form element styling used across the site.
+//
+// CLASSES:
+//   .filter        - Text input for search/filter
+//   .filter-wrap   - Container for filter input
+//   .select        - Styled select dropdown
+//   .results-controls - Flex container for filter controls
+//
+// FOCUS:
+//   :focus-visible - Unified focus ring for accessibility
+// ============================================================
+
+// ──────────────────────────────────────────────────────────
+// Filter Input (Search boxes)
+// ──────────────────────────────────────────────────────────
+.filter {
+  width: 100%;
+  max-width: 520px;
+  padding: 0.6rem 0.75rem;
+
+  border-radius: var(--radius-md);        // 12px
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--fg);
+
+  min-height: var(--tap);                 // 36px touch target
+}
+
+.filter::placeholder { 
+  color: var(--placeholder); 
+}
+
+.filter-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+}
+
+.filter-wrap::after { 
+  content: none !important; 
+}
+
+-picker .filter-wrap { 
+  max-width: none; 
+}
+
+// ──────────────────────────────────────────────────────────
+// Select Dropdown
+// ──────────────────────────────────────────────────────────
+.select {
+  min-height: var(--tap);                 // 36px touch target
+  padding: 0.45rem 0.6rem;
+
+  border-radius: var(--radius-sm);        // 10px
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--fg);
+
+  margin: 0;
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.select:hover {
+  border-color: var(--accent);            // Accent border on hover
+}
+
+// ──────────────────────────────────────────────────────────
+// Results Controls (filter controls row)
+// ──────────────────────────────────────────────────────────
+.results-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0.25rem 0 0.75rem 0;
+}
+
+.results-controls .select { 
+  margin-left: 0.4rem; 
+}
+
+// ──────────────────────────────────────────────────────────
+// Unified Focus States (Accessibility)
+// ──────────────────────────────────────────────────────────
+:where(a, button, input, select, textarea, .tag-chip, .tag-suggestion, .tab):focus-visible {
+  outline: 2px solid var(--focus);        // Accent-colored focus ring
+  outline-offset: 2px;
+}
+
+// ──────────────────────────────────────────────────────────
+// Status Text
+// ──────────────────────────────────────────────────────────
+#status,
+[data-status] {
+  display: block;
+  text-align: center;
+  color: var(--placeholder-dim);
+  font-size: 0.9rem;
+  margin: 0.5rem 0 0 0;
+}
