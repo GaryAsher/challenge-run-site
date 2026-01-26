@@ -1,0 +1,42 @@
+// ============================================================
+// Layout Containers
+// ============================================================
+// Page-level container classes for consistent width and spacing.
+//
+// CLASSES:
+//   .container   - Centered container with vertical padding
+//   .page-width  - Centered container (horizontal padding only)
+//   .page-back   - Back link styling
+//   .game-shell  - Full-width game page wrapper
+// ============================================================
+
+.container {
+  padding: var(--section-pad-y) var(--gutter);
+  max-width: var(--page-max);
+  margin: 0 auto;
+}
+
+.page-width {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.page-back {
+  margin: 1.25rem 0 0.75rem 0;
+  opacity: 0.8;
+}
+
+.page-back a { 
+  color: var(--text-dim); 
+}
+
+.page-back a:hover { 
+  color: var(--fg); 
+}
+
+// Full-width wrapper for game pages
+.game-shell {
+  max-width: none;
+  margin: 0;
+}
