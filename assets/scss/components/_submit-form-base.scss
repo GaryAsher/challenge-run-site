@@ -1,0 +1,111 @@
+// ============================================================
+// Submit Form Base Styles
+// ============================================================
+// Base form styling for generic submit forms.
+// The submit-run page has its own more specific styles.
+//
+// TEST: General submit forms
+// ============================================================
+
+.submit-form {
+  max-width: 700px;
+}
+
+.submit-form .form-group {
+  margin-bottom: 1.25rem;
+}
+
+.submit-form label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-weight: 500;
+  color: var(--fg);
+}
+
+.submit-form .form-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+
+.submit-form input[type="text"],
+.submit-form input[type="url"],
+.submit-form input[type="date"],
+.submit-form select,
+.submit-form textarea {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.95rem;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.submit-form select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2.5rem;
+}
+
+.submit-form input:focus,
+.submit-form select:focus,
+.submit-form textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--focus-2);
+}
+
+.submit-form textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.submit-form .btn-submit {
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+// ──────────────────────────────────────────────────────────
+// Chip Pickers
+// ──────────────────────────────────────────────────────────
+.field-block {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.field-label {
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.chip-picker {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  min-height: 0;
+}
+
+// Make selects match site selects
+#standardChallengeSelect,
+#restrictionsSelect {
+  width: 100%;
+}
+
+// Make the submit form grid feel consistent
+.form-grid .select,
+.form-grid select,
+.form-grid input {
+  min-height: var(--tap);
+}
