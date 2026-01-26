@@ -1,0 +1,85 @@
+// ============================================================
+// Shared Components
+// ============================================================
+// Small utility components used across the site.
+//
+// CLASSES:
+//   .muted           - Muted text color
+//   .card            - Basic card container
+//   .card--compact   - Compact card variant
+//   .card-lift       - Hover lift effect
+//   .card-lift--sm   - Smaller lift effect
+// ============================================================
+
+// ──────────────────────────────────────────────────────────
+// Muted Text
+// ──────────────────────────────────────────────────────────
+.muted { 
+  color: var(--text-muted); 
+}
+
+.muted a { 
+  color: inherit; 
+}
+
+// ──────────────────────────────────────────────────────────
+// Card Container
+// ──────────────────────────────────────────────────────────
+.card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin: var(--space-4) 0;
+  background: var(--surface);
+}
+
+.card label.muted {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+// Non-clickable filter labels
+.filter-label-text {
+  display: block;
+  margin-bottom: 0.25rem;
+  pointer-events: none;
+  user-select: none;
+}
+
+// Compact card (no top margin)
+.card.card--compact {
+  margin: 0 0 1rem 0;
+}
+
+// ──────────────────────────────────────────────────────────
+// Card Lift Effect (hover animation)
+// ──────────────────────────────────────────────────────────
+.card-lift {
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  border-color: var(--accent);
+}
+
+// Smaller lift for compact cards
+.card-lift--sm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+// Respect reduced motion preference
+@media (prefers-reduced-motion: reduce) {
+  .card-lift,
+  .card-lift--sm {
+    transition: border-color 0.15s ease;
+  }
+  
+  .card-lift:hover,
+  .card-lift--sm:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
