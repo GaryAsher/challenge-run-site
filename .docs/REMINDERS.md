@@ -6,22 +6,28 @@ This document consolidates all reminders, future ideas, and planned features for
 
 # Priority Roadmap
 
-### /rules/ and /runs/ page
-- [ ] Current Rule Builder appears to be broken. Review js.
-- [ ] Change the Rule Builder to use Advanced Search's "<slug> x" style when something is selected.
+### /rules/ page
+- [ ] Runs header need to look like it is resting flush on the top-most container below it.
+- [ ] For Advanced Search, make the filters typeahead the same length and height as the ones used in /rules/ Rule Builder. 
+- [ ] "Advanced Filers" button should be in the same position as Rule Builder's "Open". To the right of the search bar.
 
-### /submit/ page
-- [ ] Fix js selector to only appear when hovering drop-down. Currently allows selection when on top of text.
+### /rules/ page
+- [ ] In Rule Builder, move "Remove all filters" below the filtered options. So it is consistent with /runs/ Advanced Search.
+- [ ] Character "Weapon / Aspect" not recognizing the ' in "Witch's Staff"
+- [ ] Consider making "Summary Ruleset" easier to read somehow.
+
+### Metadata
+- [ ] Do not allow "Deathless" for mini-challenges, since it is effectively first-playthrough. Do we add separate set of Standard Challenges for Mini-Challenges and Player-Made Challenges?
+- [ ] How do we find all genres?
+    - Can we find a list of every genre ever?
+    - Do we create a script that finds genres, and validates user-submitted info?
 
 ## Forms & Submissions
 ### New Game Submission form:
-- [ ] Do we ask users to fill out Genres again?
-    - Can we find a list of every genre ever?
-    - Do we create a script that finds genres, and validates user-submitted info?
 - [ ] Check Discord Webhook. Previously not working, but updated recently.
-- [ ] Update form to use 3-tier category system.
+- [ ] Update form to use 3-tier category system. (Excluding Player-Made Challenges for now.)
     - Update Google Apps Script, Google Sheet, and Google Form accordingly.
-- [ ] Change wording in Game Submission form to say Mini-Challenges.
+    - Change wording in Game Submission form to say Mini-Challenges.
 
 ### Modded Game Submisson
 - [ ] Allow Modded versions of games to accomodate for the modded community challenges.
