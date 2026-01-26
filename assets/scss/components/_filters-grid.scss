@@ -1,0 +1,68 @@
+// ============================================================
+// Filters Grid
+// ============================================================
+// Grid layouts for filter sections on games index and runs pages.
+//
+// CLASSES:
+//   .filters-grid        - 2-column grid (default)
+//   .filters-grid--three - 3-column grid (games index)
+//   .filters-grid--runs  - 4-column grid (runs advanced search)
+//   .tag-filter          - Individual filter box within grid
+//
+// RESPONSIVE:
+//   < 1000px - 4-col → 2-col
+//   < 800px  - 3-col → 2-col
+//   < 560px  - All → 1-col
+// ============================================================
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+  align-items: start;
+  margin: 0 0 0.9rem 0;
+  width: 100%;
+}
+
+// 3-column variant (games index: Platform, Genre, Challenges)
+.filters-grid--three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+// 4-column variant (runs page advanced search)
+.filters-grid--runs {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 0;
+}
+
+// Individual filter box styling
+.filters-grid .tag-filter {
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  min-height: 120px;                      // Prevent layout shift when chips appear
+}
+
+// ──────────────────────────────────────────────────────────
+// Responsive Breakpoints
+// ──────────────────────────────────────────────────────────
+@media (max-width: 1000px) {
+  .filters-grid--runs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 800px) {
+  .filters-grid--three {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .filters-grid,
+  .filters-grid--three,
+  .filters-grid--runs {
+    grid-template-columns: 1fr;           // Single column on mobile
+  }
+}
