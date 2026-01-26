@@ -1,0 +1,69 @@
+// ============================================================
+// Tag Chip Variants
+// ============================================================
+// Additional tag/chip style variants beyond base _tags.scss.
+//
+// VARIANTS:
+//   .tag-chip--accent   - Accent colored chip
+//   .tag-chip--sub      - Sub-item indicator
+//   .tag-chip--outline  - Outline only
+//
+// TEST: /games/{game}/rules/ page
+// ============================================================
+
+.tag-chip--accent {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+
+.tag-chip--accent:hover {
+  background: var(--accent);
+  filter: brightness(1.1);
+}
+
+.tag-chip--sub {
+  font-size: calc(var(--pill-font-size) * 0.9);
+  opacity: 0.85;
+  padding-left: 0.5rem;
+}
+
+.tag-chip--sub::before {
+  content: "↳ ";
+  opacity: 0.5;
+  margin-right: 0.1rem;
+}
+
+.tag-chip--outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--fg);
+}
+
+.tag-chip--outline:hover {
+  background: var(--bg-soft);
+}
+
+// ──────────────────────────────────────────────────────────
+// Community Challenges List
+// ──────────────────────────────────────────────────────────
+.community-challenges-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.community-challenge {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.community-challenge__desc {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  padding-top: 0.2rem;
+  flex: 1;
+  min-width: 200px;
+}
