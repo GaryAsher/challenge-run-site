@@ -59,22 +59,45 @@
 // Selections Grid
 // ──────────────────────────────────────────────────────────
 .rule-builder__selections {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
   margin-bottom: 1rem;
 }
 
+// Make Rule Builder filter groups match Advanced Filters sizing
+.rule-builder__selections .rule-builder__group {
+  flex: 1 1 200px;
+  min-width: 180px;
+  max-width: 300px;
+}
+
+// Standalone groups (dropdowns like category/community)
 .rule-builder__group {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.rule-builder__group--reset {
+// Filter selections row (chips + reset button below filters)
+// Consistent with Advanced Filters on /runs/ page
+#rb-selections-row {
   display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+#rb-selections-row .filter-selections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  flex: 1;
+}
+
+#rb-selections-row .filter-selections:empty {
+  display: none;
 }
 
 // ──────────────────────────────────────────────────────────
