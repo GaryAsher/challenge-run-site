@@ -1,0 +1,134 @@
+// ============================================================
+// Cards: Game & Runner Cards
+// ============================================================
+// Card components for the /games/ and /runners/ index pages.
+// Both use similar structure with background image + overlay.
+//
+// CLASSES:
+//   .game-card     - Card for games index grid
+//   .runner-card   - Card for runners index grid
+//
+// STRUCTURE:
+//   .card
+//   ├── .card__bg      - Background image (absolute)
+//   ├── .card__overlay - Gradient overlay
+//   └── .card__title   - Card title text
+// ============================================================
+
+// ──────────────────────────────────────────────────────────
+// Game Cards (/games/ index)
+// ──────────────────────────────────────────────────────────
+.game-card {
+  position: relative;
+  display: block;
+  min-height: 140px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);        // 14px
+  overflow: hidden;
+  background: var(--surface-2);
+  text-decoration: none;
+}
+
+.game-card__bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.45;                          // Dimmed by default
+  filter: saturate(1.1);
+}
+
+.game-card__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  background: linear-gradient(
+    to top,
+    var(--overlay-strong),                // Dark at bottom
+    var(--overlay-mid),
+    var(--overlay-light)                  // Light at top
+  );
+}
+
+.game-card__title {
+  padding: 0.9rem;
+  font-weight: 650;
+  color: var(--fg);
+  position: relative;
+  z-index: 2;
+}
+
+.game-card__meta {
+  padding: 0 0.9rem 0.8rem 0.9rem;
+  font-size: 0.85rem;
+}
+
+// Hover state - brighten background
+.game-card:hover .game-card__bg { 
+  opacity: 0.6; 
+}
+
+.game-card:hover { 
+  text-decoration: none; 
+}
+
+// Hide tag elements inside game cards (filtering is done via data attributes)
+.game-card :is(.tag, .tags, .game-tags) {
+  display: none !important;
+}
+
+// ──────────────────────────────────────────────────────────
+// Runner Cards (/runners/ index)
+// ──────────────────────────────────────────────────────────
+.runner-card {
+  position: relative;
+  display: block;
+  min-height: 140px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);        // 14px
+  background: var(--surface-2);
+  overflow: hidden;
+  text-decoration: none;
+}
+
+.runner-card__bg {
+  position: absolute;
+  inset: 0;
+  background-size: contain;              // Contain for avatars
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.85;                         // Higher opacity for avatars
+  filter: saturate(1.05);
+}
+
+.runner-card__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  background: linear-gradient(
+    to top,
+    var(--overlay-strong),
+    var(--overlay-mid),
+    var(--overlay-light)
+  );
+}
+
+.runner-card__title {
+  padding: 0.9rem;
+  font-weight: 650;
+  color: var(--fg);
+  position: relative;
+  z-index: 2;
+}
+
+// Hover state - full opacity
+.runner-card:hover { 
+  text-decoration: none; 
+}
+
+.runner-card:hover .runner-card__bg { 
+  opacity: 1; 
+}
