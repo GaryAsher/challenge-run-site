@@ -1,0 +1,298 @@
+// ============================================================
+// Runs Filter Bar
+// ============================================================
+// Top filter bar for game-runs.html pages.
+//
+// STRUCTURE:
+//   .runs-filters--main      - Main filter row
+//   .filters-panel           - Collapsible advanced panel
+//   .runs-filters--advanced  - Advanced filter options
+//   .active-filters          - Applied filter tags
+//
+// TEST: /games/{game}/runs/{tier}/{category}/ pages
+// ============================================================
+
+// ──────────────────────────────────────────────────────────
+// Main Filter Grid
+// ──────────────────────────────────────────────────────────
+.runs-filters--main {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.runs-filter label.muted {
+  display: block;
+  margin-bottom: 0.25rem;
+  text-align: center;
+}
+
+.runs-filter--search .filter {
+  max-width: none;
+  margin: 0;
+}
+
+// Compact filter buttons
+.runs-filter--compact {
+  flex: 1;
+  min-width: 100px;
+}
+
+.runs-filter--compact .select.th-caret {
+  width: 100%;
+  min-width: 0;
+}
+
+// ──────────────────────────────────────────────────────────
+// Filter Toggle Button
+// ──────────────────────────────────────────────────────────
+.btn--filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 140px;
+  justify-content: center;
+}
+
+.btn--filter-toggle .filter-toggle__icon {
+  transition: transform 150ms ease;
+}
+
+.btn--filter-toggle.is-active .filter-toggle__icon {
+  transform: rotate(180deg);
+}
+
+.btn--filter-toggle.is-active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--focus-2);
+}
+
+// ──────────────────────────────────────────────────────────
+// Collapsible Filters Panel
+// ──────────────────────────────────────────────────────────
+.filters-panel {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  position: relative;
+  z-index: 10;
+}
+
+.runs-filters--advanced {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: end;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.runs-filters--advanced .runs-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 140px;
+}
+
+.runs-filters--advanced .select.th-caret {
+  background: var(--surface);
+  color: var(--fg);
+}
+
+.runs-filters--advanced .select.th-caret option {
+  background: var(--surface);
+  color: var(--fg);
+}
+
+.filters-panel__row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: end;
+  flex-wrap: wrap;
+}
+
+// ──────────────────────────────────────────────────────────
+// Results Bar (Runs specific)
+// ──────────────────────────────────────────────────────────
+.results-bar--runs {
+  margin-top: 0.75rem;
+  margin-bottom: 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  position: relative;
+  z-index: 5;
+}
+
+// ──────────────────────────────────────────────────────────
+// Select Caret Styling
+// ──────────────────────────────────────────────────────────
+.runs-filters .select.th-caret {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+
+  width: auto;
+  min-width: 7rem;
+
+  cursor: pointer;
+  text-align: left;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.runs-filters .select.th-caret:hover {
+  background: var(--panel);
+  text-decoration: none;
+}
+
+.runs-filters .select.th-caret:active {
+  transform: translateY(0.5px);
+}
+
+// ──────────────────────────────────────────────────────────
+// Active Filters Tags
+// ──────────────────────────────────────────────────────────
+.active-filters {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.active-filters:empty { 
+  display: none; 
+}
+
+.active-filters .tag {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.active-filters .tag:hover {
+  background: var(--panel);
+  color: var(--fg);
+}
+
+// ──────────────────────────────────────────────────────────
+// Removable Filter Tags
+// ──────────────────────────────────────────────────────────
+.tag--removable {
+  background: var(--panel);
+  border-color: var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tag--removable:hover {
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
+  border-color: var(--accent);
+  color: var(--fg);
+}
+
+.tag--removable:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+// Legacy active tag style
+.active-filters .tag--active {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  border-color: var(--accent);
+  color: var(--fg);
+}
+
+// ──────────────────────────────────────────────────────────
+// Tag Remove Button
+// ──────────────────────────────────────────────────────────
+.tag-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  padding: 0;
+  margin-left: 0.15rem;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--fg);
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.tag-remove:hover {
+  background: var(--danger, #ef4444);
+  color: #fff;
+}
+
+// ──────────────────────────────────────────────────────────
+// Results Status
+// ──────────────────────────────────────────────────────────
+.results-status {
+  margin: 0.75rem 0;
+  padding: 0.5rem 0;
+}
+
+.results-status__text {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+// ──────────────────────────────────────────────────────────
+// Reset Button
+// ──────────────────────────────────────────────────────────
+.btn--reset {
+  white-space: nowrap;
+}
+
+.runs-filter--reset {
+  display: flex;
+  align-items: flex-end;
+  margin-left: auto;
+}
+
+// ──────────────────────────────────────────────────────────
+// Mobile Responsive
+// ──────────────────────────────────────────────────────────
+@media (max-width: 640px) {
+  .runs-filters--main {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .runs-filters--main .runs-filter--show {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .runs-filters--main .runs-filter--show label {
+    margin-bottom: 0;
+  }
+
+  .filters-panel__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 400px) {
+  .filters-panel__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Simple list utility
+.list { 
+  padding-left: 1.2rem; 
+}
