@@ -1,0 +1,21 @@
+// ============================================================
+// Active Tab Enhancement
+// ============================================================
+// Enhanced active tab styling with accent color highlight.
+// This overrides the base tab styling with more visual emphasis.
+//
+// TEST: /runners/{name}/ and /games/{game}/ pages
+// ============================================================
+
+.runner-tabs .tab.active {
+  background: var(--bg);
+  color: var(--accent);
+  opacity: 1;
+  border-color: var(--border);
+  border-bottom-color: var(--bg);
+  box-shadow: inset 0 2px 0 var(--accent);
+}
+
+.runner-tabs .tab.active:hover {
+  color: var(--accent);
+}
