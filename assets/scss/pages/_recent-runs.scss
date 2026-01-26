@@ -1,0 +1,46 @@
+// ============================================================
+// Recent Runs List (Homepage)
+// ============================================================
+// Compact list of recent runs for homepage sidebar.
+//
+// STRUCTURE:
+//   .recent-runs-list
+//   └── .recent-run-item
+//       ├── .recent-run-item__game
+//       ├── .recent-run-item__runner
+//       └── .recent-run-item__date
+//
+// TEST: Homepage (/) sidebar
+// ============================================================
+
+.recent-runs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.recent-run-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.recent-run-item:last-child {
+  border-bottom: none;
+}
+
+.recent-run-item__game {
+  font-weight: 500;
+  flex: 1;
+}
+
+.recent-run-item__runner {
+  font-size: 0.875rem;
+}
+
+.recent-run-item__date {
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
