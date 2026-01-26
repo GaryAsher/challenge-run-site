@@ -1,0 +1,58 @@
+// ============================================================
+// Back to Top Button
+// ============================================================
+// Fixed floating button that scrolls to page top.
+//
+// TEST: Scroll down on any long page - button appears
+// ============================================================
+
+.back-to-top {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 90;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--fg);
+  background: var(--accent);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease;
+}
+
+.back-to-top:hover {
+  transform: translateY(-3px);
+  background: var(--accent);
+  filter: brightness(1.1);
+}
+
+.back-to-top:focus {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.back-to-top[hidden] {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(20px);
+}
+
+@media (max-width: 600px) {
+  .back-to-top {
+    bottom: 1rem;
+    right: 1rem;
+    width: 44px;
+    height: 44px;
+    font-size: 1.25rem;
+  }
+}
