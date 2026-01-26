@@ -1,0 +1,35 @@
+// ============================================================
+// Markdown Content Styles
+// ============================================================
+// Styling for rendered markdown content.
+//
+// TEST: Rule descriptions, news posts, any .md class content
+// ============================================================
+
+.md > *:first-child { 
+  margin-top: 0; 
+}
+
+.md > *:last-child { 
+  margin-bottom: 0; 
+}
+
+.md p { 
+  margin: 0 0 0.75rem; 
+}
+
+.md ul, 
+.md ol { 
+  margin: 0.5rem 0 0.75rem 1.25rem; 
+}
+
+.md li { 
+  margin: 0.25rem 0; 
+}
+
+.md h1, 
+.md h2, 
+.md h3, 
+.md h4 {
+  margin: 0.9rem 0 0.5rem;
+}
