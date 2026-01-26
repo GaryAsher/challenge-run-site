@@ -1,0 +1,133 @@
+// ============================================================
+// Game Hero Section
+// ============================================================
+// Large hero banner with game cover image used on game pages.
+//
+// STRUCTURE:
+//   .game-hero
+//   ├── .game-hero__overlay  - Gradient overlay
+//   ├── .game-hero__content  - Title/info area
+//   └── .game-hero__platforms - Platform tags
+//
+// RESPONSIVE:
+//   < 640px - Stacks content vertically
+// ============================================================
+
+.game-hero {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  margin: 0 0 1.25rem 0;
+
+  aspect-ratio: 2 / 1;                    // 2:1 aspect ratio
+  height: auto;
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+// Active state (on overview tab)
+.game-hero--active {
+  border-color: var(--border);
+  box-shadow: none;
+}
+
+// Gradient overlay
+.game-hero__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  background: linear-gradient(
+    to top,
+    var(--hero-strong),                   // Dark at bottom
+    var(--hero-mid),
+    var(--hero-light)                     // Light at top
+  );
+}
+
+.game-hero__content {
+  padding: 1.25rem;
+  max-width: 70%;
+}
+
+.game-hero__platforms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 1.25rem;
+  align-self: flex-end;
+  justify-content: flex-end;
+  max-width: 50%;
+}
+
+// Platform tag variant
+.tag--platform {
+  background: rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--fg);
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+}
+
+// Compact hero variant
+.game-hero--compact {
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+// ──────────────────────────────────────────────────────────
+// Fallback for browsers without aspect-ratio support
+// ──────────────────────────────────────────────────────────
+@supports not (aspect-ratio: 2 / 1) {
+  .game-hero::before {
+    content: "";
+    display: block;
+    padding-top: 50%;
+  }
+
+  .game-hero__overlay {
+    position: absolute;
+    inset: 0;
+  }
+}
+
+// ──────────────────────────────────────────────────────────
+// Game Tags (below hero)
+// ──────────────────────────────────────────────────────────
+.game-tags {
+  margin-top: 0.5rem;
+}
+
+.game-tags .tag {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+}
+
+// ──────────────────────────────────────────────────────────
+// Mobile Responsive
+// ──────────────────────────────────────────────────────────
+@media (max-width: 640px) {
+  .game-hero__overlay {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+  }
+
+  .game-hero__content {
+    max-width: 100%;
+  }
+
+  .game-hero__platforms {
+    max-width: 100%;
+    justify-content: flex-start;
+    padding-top: 0;
+  }
+}
