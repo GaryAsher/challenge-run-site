@@ -1,0 +1,164 @@
+// ============================================================
+// Accordion
+// ============================================================
+// Collapsible content sections using <details>/<summary>.
+//
+// STRUCTURE:
+//   .accordion
+//   └── .accordion-item (details element)
+//       ├── .accordion-header (summary element)
+//       │   ├── .accordion-title
+//       │   └── .accordion-icon
+//       └── .accordion-content
+//
+// VARIANTS:
+//   .accordion-item--section  - Larger section-level accordion
+//
+// TEST: /games/{game}/rules/ page
+// ============================================================
+
+.accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+// ──────────────────────────────────────────────────────────
+// Accordion Item
+// ──────────────────────────────────────────────────────────
+.accordion-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface, var(--bg));
+  overflow: hidden;
+}
+
+// ──────────────────────────────────────────────────────────
+// Accordion Header (summary element)
+// ──────────────────────────────────────────────────────────
+.accordion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--fg);
+  background: var(--bg-soft, var(--panel));
+  list-style: none;
+  transition: background 0.15s ease;
+}
+
+.accordion-header::-webkit-details-marker {
+  display: none;
+}
+
+.accordion-header:hover {
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg-soft, var(--panel)));
+}
+
+.accordion-title {
+  flex: 1;
+}
+
+.accordion-icon {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+}
+
+.accordion-item[open] .accordion-icon {
+  transform: rotate(180deg);
+}
+
+// ──────────────────────────────────────────────────────────
+// Accordion Content
+// ──────────────────────────────────────────────────────────
+.accordion-content {
+  padding: 1rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  background: var(--bg);
+}
+
+.accordion-content p {
+  margin: 0;
+}
+
+.accordion-content p + p {
+  margin-top: 0.5rem;
+}
+
+.accordion-content ul {
+  margin: 0.5rem 0 0 0;
+  padding-left: 1.25rem;
+}
+
+.accordion-content li {
+  margin-bottom: 0.25rem;
+}
+
+// ──────────────────────────────────────────────────────────
+// Section-Level Accordions (larger headers)
+// ──────────────────────────────────────────────────────────
+.rules-section {
+  margin-bottom: 0;
+}
+
+.accordion-item--section {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface, var(--panel));
+}
+
+.accordion-header--section {
+  padding: 1rem 1.25rem;
+  font-size: 1.1rem;
+  background: var(--panel);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.accordion-item--section[open] .accordion-header--section {
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.accordion-item--section:not([open]) .accordion-header--section {
+  border-radius: var(--radius);
+}
+
+.accordion-item--section > .accordion-content {
+  padding: 1.25rem;
+  background: var(--bg);
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
+// Nested accordions inside section accordions
+.accordion-item--section .accordion {
+  margin-top: 0;
+}
+
+.accordion-item--section .accordion-item {
+  background: var(--bg-soft, var(--surface));
+}
+
+// ──────────────────────────────────────────────────────────
+// Rules Page Specific
+// ──────────────────────────────────────────────────────────
+.rules-label {
+  font-weight: 600;
+  margin-right: 0.5rem;
+}
+
+.rules-list--allowed {
+  color: var(--success, #22c55e);
+}
+
+.rules-list--banned {
+  color: var(--danger, #ef4444);
+}
+
+// Rules list styling in accordion
+.rules-list {
+  margin: 0.5rem 0;
+}
