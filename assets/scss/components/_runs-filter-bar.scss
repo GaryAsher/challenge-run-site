@@ -4,8 +4,11 @@
 // Top filter bar for game-runs.html pages.
 //
 // STRUCTURE:
-//   .runs-filters--main      - Main filter row
-//   .filters-panel           - Collapsible advanced panel
+//   .filters-wrap            - Container for all filters
+//   .filters-bar             - Main search + toggle row
+//   .advanced-filters        - Collapsible advanced panel
+//   .runs-filters--main      - Main filter row (legacy)
+//   .filters-panel           - Collapsible advanced panel (legacy)
 //   .runs-filters--advanced  - Advanced filter options
 //   .active-filters          - Applied filter tags
 //
@@ -13,7 +16,60 @@
 // ============================================================
 
 // ──────────────────────────────────────────────────────────
-// Main Filter Grid
+// Filters Wrap Container
+// ──────────────────────────────────────────────────────────
+.filters-wrap {
+  margin-top: 1rem;
+}
+
+// ──────────────────────────────────────────────────────────
+// Filters Bar (search input + toggle button)
+// ──────────────────────────────────────────────────────────
+.filters-bar {
+  display: flex;
+  align-items: stretch;
+  gap: 0.75rem;
+}
+
+.filters-bar .filter-input {
+  flex: 1;
+}
+
+.filters-bar .filter-input__field {
+  height: 100%;
+}
+
+// ──────────────────────────────────────────────────────────
+// Advanced Filters Panel
+// ──────────────────────────────────────────────────────────
+.advanced-filters {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+// Filter selections row (chips + reset)
+.filter-selections-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.filter-selections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  flex: 1;
+}
+
+.filter-selections:empty {
+  display: none;
+}
+
+// ──────────────────────────────────────────────────────────
+// Main Filter Grid (legacy)
 // ──────────────────────────────────────────────────────────
 .runs-filters--main {
   display: grid;
