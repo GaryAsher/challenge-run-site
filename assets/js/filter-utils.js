@@ -17,8 +17,11 @@ window.CRCFilters = (function() {
   // Core utilities
   // =========================================================
   
+  // Note: norm() decodes HTML entities (e.g., &#39; -> ') so searches work with special characters
   function norm(s) {
-    return (s || '').toString().trim().toLowerCase();
+    var txt = document.createElement('textarea');
+    txt.innerHTML = (s || '').toString();
+    return txt.value.trim().toLowerCase();
   }
 
   function expandRomanNumerals(s) {
