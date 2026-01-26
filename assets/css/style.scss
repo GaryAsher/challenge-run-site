@@ -4,14 +4,17 @@
 ---
 
 // ============================================================
-// MODULAR IMPORTS - Extracted components
+// MODULAR IMPORTS
 // ============================================================
+// Base
 @import "../scss/base/variables";    // Theme variables (CSS custom properties)
 @import "../scss/base/themes";       // Theme color overrides
 @import "../scss/base/reset";        // Global defaults and reset
 @import "../scss/base/responsive";   // Responsive breakpoint tweaks
 @import "../scss/base/markdown";     // Markdown content styles
 @import "../scss/components/layout"; // Container, page-width
+
+// Components
 @import "../scss/components/shared"; // Muted, card, card-lift
 @import "../scss/components/header"; // Header + navigation
 @import "../scss/components/footer"; // Footer + theme picker
@@ -39,6 +42,8 @@
 @import "../scss/components/filter-chips"; // Filter chips & input
 @import "../scss/components/runs-typeahead"; // Typeahead filter
 @import "../scss/components/back-to-top"; // Back to top button
+
+// Pages
 @import "../scss/pages/homepage";    // Homepage grid layout
 @import "../scss/pages/news-carousel"; // News carousel + related
 @import "../scss/pages/news-posts";  // News list and single posts
@@ -47,77 +52,3 @@
 @import "../scss/pages/global-search"; // Global search page
 @import "../scss/pages/submit-run";  // Submit run page
 @import "../scss/pages/category-tiers"; // Category tier navigation
-
-// ============================================================
-// REMAINING STYLES - Not yet extracted
-// ============================================================
-
-/* Base/Reset moved to: assets/scss/base/_reset.scss */
-
-/* Layout moved to: assets/scss/components/_layout.scss */
-
-/* Shared/Card moved to: assets/scss/components/_shared.scss */
-
-/* Buttons moved to: assets/scss/components/_buttons.scss */
-
-/* Forms moved to: assets/scss/components/_forms.scss */
-
-/* Tags moved to: assets/scss/components/_tags.scss */
-
-/* Filters Grid moved to: assets/scss/components/_filters-grid.scss */
-
-/* Results Bar moved to: assets/scss/components/_results-bar.scss */
-
-/* Runs Filter Bar moved to: assets/scss/components/_runs-filter-bar.scss */
-
-/* Tag Picker moved to: assets/scss/components/_tag-picker.scss */
-
-/* A-Z Navigation moved to: assets/scss/components/_az-nav.scss */
-
-.list { padding-left: 1.2rem; }
-
-/* Grid Utility moved to: assets/scss/components/_utilities.scss */
-
-/* Game Hero moved to: assets/scss/components/_game-hero.scss */
-
-/* Filter Options moved to: assets/scss/components/_shared.scss */
-
-/* Game Cards moved to: assets/scss/components/_cards.scss */
-
-/* Runner Cards moved to: assets/scss/components/_cards.scss */
-
-/* Runner Profile moved to: assets/scss/components/_runner-profile.scss */
-
-/* Tabs moved to: assets/scss/components/_tabs.scss */
-
-/* Runs Table moved to: assets/scss/components/_runs-table.scss */
-
-/* Floating Menu moved to: assets/scss/components/_floating-menu.scss */
-
-/* Pagination moved to: assets/scss/components/_utilities.scss */
-
-/* Responsive moved to: assets/scss/base/_responsive.scss */
-
-/* Homepage moved to: assets/scss/pages/_homepage.scss */
-
-/* News Carousel moved to: assets/scss/pages/_news-carousel.scss */
-
-/* Submit Form moved to: assets/scss/components/_submit-form.scss */
-
-/* Accordion moved to: assets/scss/components/_accordion.scss */
-
-
-/* ============================================================
-   Unified Filter System CSS
-   ============================================================ */
-/* Filter Chips moved to: assets/scss/components/_filter-chips.scss */
-
-/* Back to Top moved to: assets/scss/components/_back-to-top.scss */
-
-
-/* All remaining styles have been extracted to partials:
-   - Submit Form Base: assets/scss/components/_submit-form-base.scss
-   - Submit Run Page: assets/scss/pages/_submit-run.scss  
-   - Category Tiers: assets/scss/pages/_category-tiers.scss
-   - Markdown: assets/scss/base/_markdown.scss
-*/
