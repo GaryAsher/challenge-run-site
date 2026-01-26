@@ -8,14 +8,19 @@
 // ============================================================
 @import "../scss/base/variables";    // Theme variables (CSS custom properties)
 @import "../scss/base/themes";       // Theme color overrides
+@import "../scss/base/reset";        // Global defaults and reset
+@import "../scss/components/layout"; // Container, page-width
+@import "../scss/components/shared"; // Muted, card, card-lift
 @import "../scss/components/header"; // Header + navigation
 @import "../scss/components/footer"; // Footer + theme picker
 @import "../scss/components/buttons"; // Button styles
 @import "../scss/components/tags";   // Tags, pills, chips
+@import "../scss/components/tag-picker"; // Searchable tag filter
 @import "../scss/components/az-nav"; // A-Z letter navigation
 @import "../scss/components/results-bar"; // Results bar (count + reset)
 @import "../scss/components/forms";  // Inputs, selects, focus states
 @import "../scss/components/cards";  // Game & runner cards
+@import "../scss/components/game-hero"; // Game hero banner
 @import "../scss/components/filters-grid"; // Filter grid layouts
 @import "../scss/components/utilities"; // Grid, pagination, spinner
 
@@ -23,144 +28,11 @@
 // REMAINING STYLES - Not yet extracted
 // ============================================================
 
-/* ============================================================
-   Global Defaults
-   ============================================================ */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+/* Base/Reset moved to: assets/scss/base/_reset.scss */
 
-button,
-input,
-select,
-textarea {
-  font: inherit;
-}
+/* Layout moved to: assets/scss/components/_layout.scss */
 
-/* ============================================================
-   Base / Reset
-   ============================================================ */
-body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: var(--bg);
-  color: var(--fg);
-  margin: 0;
-  line-height: 1.6;
-}
-
-a {
-  color: var(--accent);
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
-/* ============================================================
-   Hidden utility (force true removal from layout)
-   ============================================================ */
-[hidden] { display: none !important; }
-
-/* ============================================================
-   Layout Containers
-   ============================================================ */
-.container {
-  padding: var(--section-pad-y) var(--gutter);
-  max-width: var(--page-max);
-  margin: 0 auto;
-}
-
-.page-width {
-  max-width: var(--page-max);
-  margin: 0 auto;
-  padding: 0 var(--gutter);
-}
-
-.page-back {
-  margin: 1.25rem 0 0.75rem 0;
-  opacity: 0.8;
-}
-
-.page-back a { color: var(--text-dim); }
-.page-back a:hover { color: var(--fg); }
-
-/* Keep widths consistent across the site */
-.game-shell {
-  max-width: none;
-  margin: 0;
-}
-
-/* Header moved to: assets/scss/components/_header.scss */
-
-/* Footer styles moved to: assets/scss/components/_footer.scss */
-
-/* ============================================================
-   Components: Shared (used across pages)
-   ============================================================ */
-.muted { color: var(--text-muted); }
-.muted a { color: inherit; }
-
-.card {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
-  margin: var(--space-4) 0;
-  background: var(--surface);
-}
-
-.card label.muted {
-  display: block;
-  margin-bottom: 0.25rem;
-}
-
-/* Non-clickable filter labels */
-.filter-label-text {
-  display: block;
-  margin-bottom: 0.25rem;
-  pointer-events: none;
-  user-select: none;
-}
-
-/* Optional: use this class instead of inline margins on a "top controls" card */
-.card.card--compact {
-  margin: 0 0 1rem 0;
-}
-
-/* ============================================================
-   Hero Card Lift Effect (shared across all interactive cards)
-   Apply to: game-card, runner-card, team-card, resource-card, etc.
-   ============================================================ */
-.card-lift {
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.card-lift:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-  border-color: var(--accent);
-}
-
-/* Smaller lift for compact cards */
-.card-lift--sm:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-}
-
-/* Respect reduced motion preference */
-@media (prefers-reduced-motion: reduce) {
-  .card-lift,
-  .card-lift--sm {
-    transition: border-color 0.15s ease;
-  }
-  .card-lift:hover,
-  .card-lift--sm:hover {
-    transform: none;
-    box-shadow: none;
-  }
-}
+/* Shared/Card moved to: assets/scss/components/_shared.scss */
 
 /* Buttons moved to: assets/scss/components/_buttons.scss */
 
@@ -430,97 +302,7 @@ a:hover {
   }
 }
 
-/* ============================================================
-   Games: Tag Filter (index) - Searchable picker
-   ============================================================ */
-.filter-label {
-  display: block;
-  text-align: center;
-  font-weight: 600;
-  margin-bottom: 0.35rem;
-}
-
-.tag-picker {
-  position: relative;
-  cursor: default;
-}
-
-.tag-search {
-  width: 100%;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 0.55rem 0.65rem;
-  background: var(--surface);
-  color: var(--fg);
-  outline: none;
-  transition: border-color 120ms ease, box-shadow 120ms ease;
-}
-
-.tag-search:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--focus-2);
-}
-
-.tag-search::placeholder {
-  color: var(--placeholder-dim);
-}
-
-.tag-suggestions {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: calc(100% + 6px);
-  z-index: 100;
-
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-
-  max-height: 260px;
-  overflow: auto;
-  scrollbar-gutter: stable;
-
-  padding: 0.35rem;
-}
-
-.tag-suggestion {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  min-height: 32px;
-
-  text-align: left;
-
-  background: transparent;
-  border: 1px solid transparent;
-  color: var(--text-muted);
-
-  padding: 0.5rem 0.6rem;
-  border-radius: var(--radius-sm);
-
-  cursor: pointer;
-  font: inherit;
-
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.tag-suggestion:hover {
-  background: var(--panel);
-  border-color: var(--border);
-  color: var(--fg);
-}
-
-.tag-suggestion.is-empty {
-  cursor: default;
-  opacity: 0.8;
-}
-
-.tag-suggestion.is-empty:hover {
-  background: transparent;
-  border-color: transparent;
-  color: var(--text-muted);
-}
+/* Tag Picker moved to: assets/scss/components/_tag-picker.scss */
 
 /* A-Z Navigation moved to: assets/scss/components/_az-nav.scss */
 
@@ -528,116 +310,7 @@ a:hover {
 
 /* Grid Utility moved to: assets/scss/components/_utilities.scss */
 
-/* ============================================================
-   Games: Hero + Tags (Fixed 2:1)
-   ============================================================ */
-.game-hero {
-  position: relative;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  margin: 0 0 1.25rem 0;
-
-  aspect-ratio: 2 / 1;
-  height: auto;
-
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-/* Hero gets accent border only when on overview tab (active state) */
-/* Removed accent border/glow to eliminate colored outline around images */
-.game-hero--active {
-  border-color: var(--border);
-  box-shadow: none;
-}
-
-.game-hero__overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-
-  background: linear-gradient(
-    to top,
-    var(--hero-strong),
-    var(--hero-mid),
-    var(--hero-light)
-  );
-}
-
-.game-hero__content {
-  padding: 1.25rem;
-  max-width: 70%;
-}
-
-.game-hero__platforms {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  padding: 1.25rem;
-  align-self: flex-end;
-  justify-content: flex-end;
-  max-width: 50%;
-}
-
-.tag--platform {
-  background: rgba(0, 0, 0, 0.5);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: var(--fg);
-  font-size: 0.75rem;
-  padding: 0.2rem 0.5rem;
-}
-
-@media (max-width: 640px) {
-  .game-hero__overlay {
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-end;
-  }
-
-  .game-hero__content {
-    max-width: 100%;
-  }
-
-  .game-hero__platforms {
-    max-width: 100%;
-    justify-content: flex-start;
-    padding-top: 0;
-  }
-}
-
-.game-hero--compact {
-  max-width: none;
-  margin-left: 0;
-  margin-right: 0;
-}
-
-@supports not (aspect-ratio: 2 / 1) {
-  .game-hero::before {
-    content: "";
-    display: block;
-    padding-top: 50%;
-  }
-
-  .game-hero__overlay {
-    position: absolute;
-    inset: 0;
-  }
-}
-
-.game-tags {
-  margin-top: 0.5rem;
-}
-
-.game-tags .tag {
-  font-size: 0.75rem;
-  padding: 0.2rem 0.5rem;
-}
+/* Game Hero moved to: assets/scss/components/_game-hero.scss */
 
 /* ============================================================
    Filter Options (Overview page)
