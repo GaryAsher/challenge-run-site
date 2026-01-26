@@ -1,0 +1,141 @@
+// ============================================================
+// Runner Profile
+// ============================================================
+// Styles for individual runner profile pages (/runners/{name}/).
+//
+// STRUCTURE:
+//   .runner-top        - Header with avatar + socials
+//   ├── .runner-left   - Avatar + name
+//   └── .runner-right  - Social links
+//
+// TEST: /runners/{any-runner}/ page
+// ============================================================
+
+// ──────────────────────────────────────────────────────────
+// Runner Header Layout
+// ──────────────────────────────────────────────────────────
+.runner-top {
+  display: flex;
+  gap: 1rem;
+  align-items: stretch;
+  justify-content: space-between;
+  margin: 1rem 0 1.25rem 0;
+}
+
+.runner-left,
+.runner-right {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  padding: 0.9rem;
+}
+
+.runner-left {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex: 1;
+}
+
+.runner-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 220px;
+}
+
+// ──────────────────────────────────────────────────────────
+// Avatar
+// ──────────────────────────────────────────────────────────
+.runner-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background-color: var(--surface-2);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  flex: 0 0 auto;
+}
+
+.runner-avatar.is-logo { 
+  background-size: contain; 
+}
+
+// ──────────────────────────────────────────────────────────
+// Name & Status
+// ──────────────────────────────────────────────────────────
+.runner-name h1 {
+  margin: 0;
+  color: var(--accent);
+}
+
+.runner-status {
+  margin: 0.25rem 0 0 0;
+}
+
+// ──────────────────────────────────────────────────────────
+// Social Links Container
+// ──────────────────────────────────────────────────────────
+.runner-links {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+// ──────────────────────────────────────────────────────────
+// Individual Social Link
+// ──────────────────────────────────────────────────────────
+.runner-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: transparent;
+
+  font-size: 0.9rem;
+  line-height: 1;
+  color: var(--fg);
+  text-decoration: none;
+
+  white-space: nowrap;
+}
+
+.runner-link:hover {
+  opacity: 0.9;
+  text-decoration: none;
+}
+
+// ──────────────────────────────────────────────────────────
+// Social Icons
+// ──────────────────────────────────────────────────────────
+.runner-link .icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  display: inline-block;
+  vertical-align: middle;
+  transform: translateY(0.5px);
+  fill: currentColor;
+}
+
+.runner-link span {
+  display: inline-block;
+  line-height: 1;
+}
+
+// ──────────────────────────────────────────────────────────
+// Run Meta (on profile page)
+// ──────────────────────────────────────────────────────────
+.runner-run-meta {
+  margin-top: 0.35rem;
+}
+
+.runner-run-tags {
+  margin-top: 0.5rem;
+}
