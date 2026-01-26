@@ -1,0 +1,74 @@
+// ============================================================
+// Responsive Scale Tweaks
+// ============================================================
+// Global responsive adjustments for spacing and sizing.
+// These override CSS custom properties at different breakpoints.
+//
+// BREAKPOINTS:
+//   < 640px  - Mobile (larger touch targets)
+//   < 900px  - Tablet
+//   > 1200px - Large desktop
+//
+// TEST: Resize browser window on any page
+// ============================================================
+
+// ──────────────────────────────────────────────────────────
+// Tablet (< 900px)
+// ──────────────────────────────────────────────────────────
+@media (max-width: 900px) {
+  :root {
+    --page-max: 860px;
+    --gutter: 1.25rem;
+    --section-pad-y: 2.25rem;
+
+    --tap: 40px;
+    --az-size: 40px;
+    --az-gap: 0.4rem;
+  }
+}
+
+// ──────────────────────────────────────────────────────────
+// Mobile (< 640px)
+// ──────────────────────────────────────────────────────────
+@media (max-width: 640px) {
+  :root {
+    --gutter: 1rem;
+    --section-pad-y: 1.75rem;
+
+    --tap: 44px;                          // Larger touch targets
+    --az-size: 44px;
+    --az-gap: 0.45rem;
+  }
+
+  .nav {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .runner-tabs { 
+    flex-wrap: wrap; 
+  }
+  
+  .runner-top { 
+    flex-direction: column; 
+  }
+
+  .runner-right {
+    justify-content: flex-start;
+    min-width: 0;
+  }
+
+  .runner-links { 
+    justify-content: flex-start; 
+  }
+}
+
+// ──────────────────────────────────────────────────────────
+// Large Desktop (> 1200px)
+// ──────────────────────────────────────────────────────────
+@media (min-width: 1200px) {
+  :root {
+    --page-max: 1200px;
+    --gutter: 2rem;
+  }
+}
