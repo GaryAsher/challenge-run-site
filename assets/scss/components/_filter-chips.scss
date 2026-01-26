@@ -1,0 +1,221 @@
+// ============================================================
+// Filter Chips & Input
+// ============================================================
+// Unified filter system components - removable chips and
+// typeahead input fields.
+//
+// COMPONENTS:
+//   .filter-chip   - Removable pill-shaped tag
+//   .filter-input  - Typeahead input with suggestions
+//
+// TEST: Filter dropdowns on runs pages, submit form
+// ============================================================
+
+// ──────────────────────────────────────────────────────────
+// Filter Chip (removable tag with ×)
+// ──────────────────────────────────────────────────────────
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.6rem 0.3rem 0.75rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 999px;                   // Pill shape
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.filter-chip:hover {
+  background: var(--bg-soft);
+  border-color: var(--accent);
+}
+
+.filter-chip:focus {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.filter-chip__text {
+  color: var(--fg);
+}
+
+.filter-chip__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  font-size: 1rem;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.45);
+  background: transparent;
+  border-radius: 50%;
+  transition: all 0.15s ease;
+}
+
+.filter-chip:hover .filter-chip__close {
+  background: rgba(239, 68, 68, 0.2);
+  color: #EF4444;
+}
+
+// ──────────────────────────────────────────────────────────
+// Filter Input (typeahead)
+// ──────────────────────────────────────────────────────────
+.filter-input {
+  position: relative;
+  width: 100%;
+}
+
+.filter-input__picked {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.filter-input__picked:empty {
+  margin-bottom: 0;
+}
+
+.filter-input__wrap {
+  position: relative;
+}
+
+.filter-input__field {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.95rem;
+  color: var(--fg);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.filter-input__field:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--focus-2);
+}
+
+.filter-input__field::placeholder {
+  color: var(--placeholder-dim);
+}
+
+// ──────────────────────────────────────────────────────────
+// Suggestions Dropdown
+// ──────────────────────────────────────────────────────────
+.filter-input__suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  max-height: 280px;
+  overflow-y: auto;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.filter-suggestion {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  font-size: 0.9rem;
+  color: var(--fg);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.filter-suggestion:hover,
+.filter-suggestion:focus {
+  background: var(--bg-soft);
+  outline: none;
+}
+
+.filter-suggestion--empty {
+  color: var(--text-muted);
+  cursor: default;
+  font-style: italic;
+}
+
+.filter-suggestion--empty:hover {
+  background: transparent;
+}
+
+// Ensure filter-suggestion works inside tag-suggestions (Games page)
+.tag-suggestions .filter-suggestion {
+  border-radius: var(--radius-sm);
+  margin: 0.1rem 0;
+}
+
+.tag-suggestions .filter-suggestion:hover {
+  background: var(--panel);
+  border-color: var(--border);
+}
+
+// ──────────────────────────────────────────────────────────
+// Active Filters Row
+// ──────────────────────────────────────────────────────────
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+
+.active-filters:empty {
+  display: none;
+}
+
+// ──────────────────────────────────────────────────────────
+// Legacy Tag Chip (backwards compatible)
+// ──────────────────────────────────────────────────────────
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  color: var(--fg);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tag-chip:hover {
+  background: var(--bg-soft);
+  border-color: var(--accent);
+}
+
+.tag-chip__remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-left: 0.25rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tag-chip__remove:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #EF4444;
+}
