@@ -1,0 +1,698 @@
+// ============================================================
+// Submit Run Page
+// ============================================================
+// All styles for the submit-run page (/games/{game}/submit/).
+// Scoped to .submit-run-page for maintainability.
+//
+// STRUCTURE:
+//   .submit-run-page
+//   ├── .submit-form       - Form container
+//   ├── .submit-section    - Section cards
+//   ├── .submit-field      - Individual fields
+//   ├── .multi-pick        - Multi-select chips
+//   └── .submit-actions    - Form buttons
+//
+// TEST: /games/{game}/submit/ pages
+// ============================================================
+
+// ──────────────────────────────────────────────────────────
+// Page Container
+// ──────────────────────────────────────────────────────────
+.submit-run-page .card {
+  max-width: 860px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.submit-run-page h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.75rem;
+}
+
+.submit-run-page .submit-lead {
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+// ──────────────────────────────────────────────────────────
+// Form Layout
+// ──────────────────────────────────────────────────────────
+.submit-run-page .submit-form {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.submit-run-page .submit-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.submit-run-page .submit-field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+// Two-column rows
+.submit-run-page .submit-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 720px) {
+  .submit-run-page .submit-row-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ──────────────────────────────────────────────────────────
+// Labels & Hints
+// ──────────────────────────────────────────────────────────
+.submit-run-page .submit-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--fg);
+  margin-bottom: 0.35rem;
+  display: block;
+}
+
+.submit-run-page .submit-label.muted {
+  color: var(--text-muted);
+}
+
+.submit-run-page .submit-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 0.35rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.45;
+}
+
+.submit-run-page .submit-hint code {
+  background: rgba(255,255,255,0.08);
+  padding: 0.15em 0.4em;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+// ──────────────────────────────────────────────────────────
+// Input Fields
+// ──────────────────────────────────────────────────────────
+.submit-run-page input[type="text"],
+.submit-run-page input[type="url"],
+.submit-run-page input[type="date"],
+.submit-run-page input.filter-input__field,
+.submit-run-page textarea {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  background-color: var(--surface);
+  color: var(--fg);
+  min-height: var(--tap);
+  font-size: 0.95rem;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+// Ensure filter inputs get correct styling
+.submit-run-page .filter-input__field,
+.submit-run-page #runnerId,
+.submit-run-page #dateCompleted,
+.submit-run-page #videoUrl,
+.submit-run-page #standardChallengeSearch,
+.submit-run-page #restrictionsSearch {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface) !important;
+  background-color: var(--surface) !important;
+  color: var(--fg);
+  min-height: var(--tap);
+  font-size: 0.95rem;
+}
+
+// ──────────────────────────────────────────────────────────
+// Select Fields
+// ──────────────────────────────────────────────────────────
+.submit-run-page select,
+.submit-run-page select.select {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--fg);
+  min-height: var(--tap);
+  font-size: 0.95rem;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2.5rem;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.submit-run-page input::placeholder,
+.submit-run-page textarea::placeholder {
+  color: var(--placeholder-dim);
+}
+
+// ──────────────────────────────────────────────────────────
+// Focus & Hover States
+// ──────────────────────────────────────────────────────────
+.submit-run-page input:focus,
+.submit-run-page select:focus,
+.submit-run-page textarea:focus,
+.submit-run-page .filter-input__field:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--focus-2);
+}
+
+.submit-run-page input:hover,
+.submit-run-page textarea:hover,
+.submit-run-page .filter-input__field:hover {
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface)) !important;
+  border-color: var(--accent);
+}
+
+// Select hover disabled to prevent unwanted highlight
+.submit-run-page select:hover {
+  border-color: var(--border);
+}
+
+// Force options to have solid background
+.submit-run-page select option,
+.submit-run-page select optgroup {
+  background: var(--bg) !important;
+  background-color: var(--bg) !important;
+  color: var(--fg);
+}
+
+.submit-run-page select:hover option,
+.submit-run-page select:focus option {
+  background: var(--bg) !important;
+  background-color: var(--bg) !important;
+}
+
+// ──────────────────────────────────────────────────────────
+// Section Cards
+// ──────────────────────────────────────────────────────────
+.submit-run-page .submit-section {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--panel);
+  padding: 1.5rem;
+  display: grid;
+  gap: 1.25rem;
+  position: relative;
+}
+
+// Separator line between sections
+.submit-run-page .submit-section + .submit-section::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border) 20%, var(--border) 80%, transparent);
+}
+
+// Section titles
+.submit-run-page .submit-section__title {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.submit-run-page .submit-section__title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  margin-left: 0.5rem;
+}
+
+// Section subtitle
+.submit-run-page .submit-section__sub {
+  margin: 0 0 1.25rem 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  line-height: 1.5;
+}
+
+// ──────────────────────────────────────────────────────────
+// Actions Row
+// ──────────────────────────────────────────────────────────
+.submit-run-page .submit-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.submit-run-page .submit-actions .btn {
+  flex: 0 0 auto;
+  padding: 0.65rem 1.25rem;
+  font-size: 0.95rem;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+}
+
+.submit-run-page .btn--primary {
+  background: var(--accent);
+  border: 2px solid var(--accent);
+  color: var(--bg);
+  font-weight: 700;
+}
+
+.submit-run-page .btn--primary:hover {
+  background: color-mix(in srgb, var(--accent) 85%, white);
+  border-color: color-mix(in srgb, var(--accent) 85%, white);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 195, 110, 0.25);
+}
+
+.submit-run-page .btn--primary:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+// Secondary button styling
+.submit-run-page .submit-actions .btn:not(.btn--primary) {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--fg);
+}
+
+.submit-run-page .submit-actions .btn:not(.btn--primary):hover {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  border-color: var(--accent);
+}
+
+// ──────────────────────────────────────────────────────────
+// Status Message
+// ──────────────────────────────────────────────────────────
+.submit-run-page #msg {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.02);
+  font-size: 0.9rem;
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+}
+
+.submit-run-page #msg:empty {
+  display: none;
+}
+
+// ──────────────────────────────────────────────────────────
+// Preview Payload
+// ──────────────────────────────────────────────────────────
+.submit-run-page details {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  margin-top: 8px;
+}
+
+.submit-run-page details > summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  user-select: none;
+  padding: 12px 14px;
+  color: var(--text-muted);
+  transition: color 0.15s ease;
+}
+
+.submit-run-page details > summary:hover {
+  color: var(--fg);
+}
+
+.submit-run-page details[open] > summary {
+  border-bottom: 1px solid var(--border);
+  color: var(--fg);
+}
+
+.submit-run-page #preview {
+  margin: 0;
+  border: none;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  background: var(--bg);
+  padding: 14px;
+  overflow: auto;
+  font-size: 0.85rem;
+  max-height: 300px;
+}
+
+// ──────────────────────────────────────────────────────────
+// Multi-select Chip Input
+// ──────────────────────────────────────────────────────────
+.submit-run-page .multi-pick {
+  display: grid;
+  gap: 12px;
+}
+
+.submit-run-page .multi-pick__picked {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-height: 0;
+}
+
+.submit-run-page .multi-pick__picked:empty {
+  display: none;
+}
+
+// Chip styling
+.submit-run-page .filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.65rem;
+  background: color-mix(in srgb, var(--accent) 15%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 2rem;
+  font-size: 0.875rem;
+  color: var(--fg);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.submit-run-page .filter-chip:hover {
+  background: color-mix(in srgb, var(--accent) 25%, var(--surface));
+  border-color: var(--accent);
+}
+
+.submit-run-page .filter-chip__text {
+  font-weight: 500;
+}
+
+.submit-run-page .filter-chip__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  font-size: 0.9rem;
+  line-height: 1;
+  transition: background 0.15s ease;
+}
+
+.submit-run-page .filter-chip:hover .filter-chip__close {
+  background: rgba(255,100,100,0.3);
+  color: #ff6b6b;
+}
+
+.submit-run-page .multi-pick__help {
+  font-size: 0.825rem;
+  color: var(--text-dim);
+  font-style: italic;
+  padding-left: 2px;
+}
+
+// Suggestions dropdown styling
+.submit-run-page .filter-input__suggestions {
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  border: 1px solid var(--border);
+  border-top: none;
+  background: var(--bg);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.submit-run-page .filter-suggestion {
+  display: block;
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.04);
+  color: var(--fg);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.submit-run-page .filter-suggestion:first-child {
+  border-top: none;
+}
+
+.submit-run-page .filter-suggestion:hover {
+  background: color-mix(in srgb, var(--accent) 15%, var(--bg));
+}
+
+.submit-run-page .filter-suggestion--empty {
+  color: var(--text-dim);
+  font-style: italic;
+  cursor: default;
+}
+
+.submit-run-page .filter-suggestion--empty:hover {
+  background: transparent;
+}
+
+// ──────────────────────────────────────────────────────────
+// Turnstile Captcha
+// ──────────────────────────────────────────────────────────
+.submit-run-page .turnstile-field {
+  margin: 0;
+}
+
+.submit-run-page .turnstile-field .submit-label {
+  color: var(--fg);
+}
+
+.submit-run-page .cf-turnstile {
+  margin-top: 0.75rem;
+}
+
+// ──────────────────────────────────────────────────────────
+// Required Field Markers
+// ──────────────────────────────────────────────────────────
+.required-marker {
+  color: var(--accent);
+  font-weight: 700;
+  margin-left: 0.15em;
+}
+
+.required-hint {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+// ──────────────────────────────────────────────────────────
+// Field Validation Errors
+// ──────────────────────────────────────────────────────────
+.field-error {
+  display: block;
+  margin-top: 0.35rem;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.85rem;
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+  border-left: 3px solid #ff6b6b;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.field-error[hidden] {
+  display: none;
+}
+
+// Error state for inputs
+.submit-run-page input.has-error,
+.submit-run-page select.has-error,
+.submit-run-page textarea.has-error {
+  border-color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.05);
+}
+
+.submit-run-page input.has-error:focus,
+.submit-run-page select.has-error:focus,
+.submit-run-page textarea.has-error:focus {
+  border-color: #ff6b6b;
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2);
+}
+
+// ──────────────────────────────────────────────────────────
+// Submit Messages
+// ──────────────────────────────────────────────────────────
+.submit-message {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  border: 1px solid var(--border);
+  background: var(--panel);
+}
+
+.submit-message--error {
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+  border-color: rgba(255, 107, 107, 0.3);
+}
+
+.submit-message--success {
+  color: var(--accent);
+  background: rgba(59, 195, 110, 0.1);
+  border-color: rgba(59, 195, 110, 0.3);
+}
+
+// ──────────────────────────────────────────────────────────
+// Mobile Responsiveness
+// ──────────────────────────────────────────────────────────
+@media (max-width: 640px) {
+  .submit-run-page .submit-grid {
+    gap: 12px;
+  }
+  
+  .submit-run-page .submit-section {
+    padding: 14px;
+  }
+  
+  .submit-run-page .submit-section__title {
+    font-size: 1rem;
+  }
+  
+  // Full-width suggestion dropdowns on mobile
+  .submit-run-page .filter-input__suggestions {
+    position: fixed;
+    left: var(--gutter);
+    right: var(--gutter);
+    max-width: none;
+    max-height: 50vh;
+    z-index: 100;
+  }
+  
+  // Larger touch targets for filter suggestions
+  .submit-run-page .filter-suggestion {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+  }
+  
+  // Better touch targets for chips
+  .submit-run-page .filter-chip {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+  }
+  
+  // Stack actions vertically on very small screens
+  .submit-run-page .submit-actions {
+    flex-direction: column;
+  }
+  
+  .submit-run-page .submit-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  // Larger inputs for touch
+  .submit-run-page input,
+  .submit-run-page select,
+  .submit-run-page textarea {
+    font-size: 16px; // Prevents iOS zoom on focus
+    min-height: 44px; // iOS minimum touch target
+  }
+  
+  // Full width message
+  .submit-message {
+    margin-left: -14px;
+    margin-right: -14px;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .submit-run-page .submit-row-2 {
+    gap: 12px;
+  }
+  
+  .submit-run-page h1 {
+    font-size: 1.4rem;
+  }
+  
+  .submit-run-page .submit-lead {
+    font-size: 0.9rem;
+  }
+  
+  .required-hint {
+    display: block;
+    margin-top: 0.35rem;
+  }
+}
+
+// ──────────────────────────────────────────────────────────
+// Accessibility
+// ──────────────────────────────────────────────────────────
+.submit-run-page *:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.submit-run-page input:focus-visible,
+.submit-run-page select:focus-visible,
+.submit-run-page textarea:focus-visible,
+.submit-run-page button:focus-visible {
+  outline: none; // Using box-shadow instead
+}
+
+// High contrast mode
+@media (prefers-contrast: high) {
+  .submit-run-page input,
+  .submit-run-page select,
+  .submit-run-page textarea {
+    border-width: 2px;
+  }
+  
+  .required-marker {
+    text-decoration: underline;
+  }
+  
+  .field-error {
+    border-left-width: 4px;
+  }
+}
+
+// Reduced motion
+@media (prefers-reduced-motion: reduce) {
+  .submit-run-page input,
+  .submit-run-page select,
+  .submit-run-page textarea,
+  .submit-run-page button {
+    transition: none;
+  }
+}
