@@ -1,4 +1,4 @@
-// ============================================================
+6// ============================================================
 // Tags (Global) - Base Pill Styling
 // ============================================================
 // Pill-shaped tags and chips used throughout the site.
@@ -79,8 +79,12 @@ button.tag,
   gap: var(--pill-gap);                 // 0.4rem between tags
 }
 
-.tag-picked:empty {
-  display: none;                        // Hide when no selections
+.tag-picked {
+  min-height: 1.75rem;                  // Reserve space to prevent layout shift
+}
+
+.tag-picked:empty::before {
+  content: '';                          // Keep container visible but empty
 }
 
 .tag-picked:not(:empty) {
