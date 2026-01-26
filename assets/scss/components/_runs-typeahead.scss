@@ -1,0 +1,115 @@
+// ============================================================
+// Runs Advanced Filter - Typeahead
+// ============================================================
+// Typeahead/autocomplete components for runs filtering.
+// Supports both .runs-filter-typeahead__* (legacy) and 
+// .filter-typeahead__* (used by JS) class naming.
+//
+// TEST: Advanced filters on runs pages
+// ============================================================
+
+.runs-filter-typeahead,
+.filter-typeahead {
+  position: relative;
+}
+
+// ──────────────────────────────────────────────────────────
+// Picked Items
+// ──────────────────────────────────────────────────────────
+.runs-filter-typeahead__picked,
+.filter-typeahead__picked {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.runs-filter-typeahead__picked:empty,
+.filter-typeahead__picked:empty {
+  margin-bottom: 0;
+}
+
+// ──────────────────────────────────────────────────────────
+// Input Wrapper
+// ──────────────────────────────────────────────────────────
+.runs-filter-typeahead__wrap,
+.filter-typeahead__wrap {
+  position: relative;
+}
+
+.runs-filter-typeahead__input,
+.filter-typeahead__input {
+  width: 100%;
+  min-width: 180px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  color: var(--fg);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.runs-filter-typeahead__input:focus,
+.filter-typeahead__input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--focus-2);
+}
+
+.runs-filter-typeahead__input::placeholder,
+.filter-typeahead__input::placeholder {
+  color: var(--placeholder-dim);
+}
+
+// ──────────────────────────────────────────────────────────
+// Dropdown
+// ──────────────────────────────────────────────────────────
+.runs-filter-typeahead__dropdown,
+.filter-typeahead__dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  max-height: 240px;
+  overflow-y: auto;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+// ──────────────────────────────────────────────────────────
+// Options
+// ──────────────────────────────────────────────────────────
+.runs-filter-typeahead__option,
+.filter-typeahead__option {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-size: 0.85rem;
+  color: var(--fg);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.runs-filter-typeahead__option:hover,
+.filter-typeahead__option:hover {
+  background: var(--bg-soft);
+}
+
+.runs-filter-typeahead__option--empty,
+.filter-typeahead__option--empty {
+  color: var(--text-muted);
+  cursor: default;
+  font-style: italic;
+}
+
+.runs-filter-typeahead__option--empty:hover,
+.filter-typeahead__option--empty:hover {
+  background: transparent;
+}
