@@ -1,177 +1,103 @@
 // ============================================================
-// Tabs (Navigation & Content Panels)
+// Tags (Global) - Base Pill Styling
 // ============================================================
-// Tab navigation for switching between content panels.
+// Pill-shaped tags and chips used throughout the site.
 //
-// STRUCTURE:
-// .tabs-container
-//   .tabs / .game-tabs / .runner-tabs
-//     .tab
-//   .tab-panels
-//     .tab-panel
+// CLASSES:
+//   .tag          - Static pill tag (display only)
+//   .tag-chip     - Interactive pill (clickable filter)
+//   .tags         - Flex container for multiple tags
+//   .tag-picked   - Container for selected filter chips
+//
+// STATES:
+//   :hover        - Accent border + tinted background
+//   .is-active    - Selected state for filter chips
 // ============================================================
 
-// ──────────────────────────────────────────────────────────
-// Base Tab List
-// ──────────────────────────────────────────────────────────
-.tabs,
-.game-tabs,
-.runner-tabs {
-  display: flex;
-  gap: 0;
-  border-bottom: 1px solid var(--border);
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+.tag,
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;                         // Space between icon and text
 
-  // Hide scrollbar but keep functionality
-  scrollbar-width: none;
-  &::-webkit-scrollbar {
-    display: none;
-  }
+  padding: var(--pill-padding);         // 0.25rem 0.65rem
+  border-radius: 999px;                 // Full pill shape
+
+  background: var(--bg-soft);           // Subtle background
+  border: 1px solid var(--border);      // Default border
+  color: var(--text-muted);             // Muted text color
+
+  font-size: var(--pill-font-size);     // 0.85rem
+  line-height: 1.25;
+
+  white-space: nowrap;                  // Prevent wrapping
+  text-decoration: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 // ──────────────────────────────────────────────────────────
-// Tab Item
+// Hover States
 // ──────────────────────────────────────────────────────────
-.tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.25rem;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: var(--text-muted);
+a.tag:hover,
+a.tag-chip:hover,
+button.tag:hover,
+.tag-chip:hover {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);  // Tinted accent
+  border-color: var(--accent);          // Accent border
   text-decoration: none;
-  background: transparent;
-  border: 1px solid transparent;
-  border-bottom: none;
-  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-  white-space: nowrap;
+}
+
+// ──────────────────────────────────────────────────────────
+// Interactive Tags (Buttons)
+// ──────────────────────────────────────────────────────────
+button.tag,
+.tag-chip {
   cursor: pointer;
-  transition: color var(--transition-base), 
-              background var(--transition-base),
-              border-color var(--transition-base);
-
-  &:hover {
-    color: var(--fg);
-    background: var(--panel);
-    text-decoration: none;
-  }
-}
-
-// Active tab state
-.tab.active,
-.tab.is-active,
-.tab[aria-selected="true"] {
-  background: var(--bg);
-  color: var(--accent);
-  border-color: var(--border);
-  border-bottom-color: var(--bg);
-  box-shadow: inset 0 2px 0 var(--accent);
-
-  &:hover {
-    color: var(--accent);
-  }
+  font: inherit;
+  font-size: var(--pill-font-size);
 }
 
 // ──────────────────────────────────────────────────────────
-// Tab Panels
+// Active/Selected State
 // ──────────────────────────────────────────────────────────
-.tab-panels {
-  margin-top: 0;
-}
-
-.tab-panel {
-  display: none;
-  padding: 1.5rem 0;
-
-  &.active,
-  &.is-active,
-  &[aria-hidden="false"] {
-    display: block;
-  }
-}
-
-// ──────────────────────────────────────────────────────────
-// Game-Specific Tab Styling
-// ──────────────────────────────────────────────────────────
-.game-tabs {
-  background: var(--surface);
-  padding: 0 var(--gutter);
-  margin: 0;
-  border-bottom: 1px solid var(--border);
-
-  .tab {
-    padding: 0.85rem 1.25rem;
-    margin-bottom: -1px;
-  }
-}
-
-// ──────────────────────────────────────────────────────────
-// Runner-Specific Tab Styling
-// ──────────────────────────────────────────────────────────
-.runner-tabs {
-  margin-bottom: 1.5rem;
-}
-
-// Push Submit Run tab to far right
-.runner-tabs .tab--submit,
-.runner-tabs.game-tabs .tab--submit {
-  margin-left: auto;
-}
-
-// ──────────────────────────────────────────────────────────
-// Tier Navigation (Category tabs)
-// ──────────────────────────────────────────────────────────
-.tier-nav-container {
-  padding-bottom: 1rem;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.tier-nav {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.tier-nav__tab {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.65rem 1.25rem;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  text-decoration: none;
+.tag-chip.is-active {
   background: var(--panel);
-  border: 2px solid var(--border);
-  border-radius: var(--radius);
-  transition: all var(--transition-base);
-
-  &:hover {
-    color: var(--fg);
-    background: var(--bg-hover);
-    border-color: var(--border-hover);
-    text-decoration: none;
-  }
-
-  &.is-active {
-    color: var(--accent);
-    background: rgba(var(--accent-rgb), 0.1);
-    border-color: var(--accent);
-    font-weight: 600;
-  }
+  color: var(--fg);                     // Full brightness text
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--focus-2); // Subtle glow
 }
 
 // ──────────────────────────────────────────────────────────
-// Responsive
+// Tag Containers
 // ──────────────────────────────────────────────────────────
-@media (max-width: 600px) {
-  .tier-nav {
-    flex-direction: column;
-  }
+.tags,
+.tag-picked {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pill-gap);                 // 0.4rem between tags
+}
 
-  .tier-nav__tab {
-    justify-content: center;
-  }
+.tag-picked {
+  min-height: 1.75rem;                  // Reserve space to prevent layout shift
+}
+
+.tag-picked:empty::before {
+  content: '';                          // Keep container visible but empty
+}
+
+.tag-picked:not(:empty) {
+  margin-bottom: 0.5rem;                // Space below when populated
+}
+
+// ──────────────────────────────────────────────────────────
+// Runs Table: Centered Tags
+// ──────────────────────────────────────────────────────────
+.runs-table .cell-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pill-gap);
+  justify-content: center;              // Center tags in table cells
+  align-items: flex-start;
 }
