@@ -7,7 +7,8 @@ This document consolidates all reminders, future ideas, and planned features for
 # Priority Roadmap
 
 ### /runs/ page
-- [ ] "Advanced Filers" button should be in the same position as Rule Builder's "Open". To the right of the search bar.
+- [ ] When on mobile, Full Runs and Mini-Challenges' tab header's look off.
+- [ ] Make Category Tiers lightly highlighted, like the game header tabs.
 
 ### /rules/ page
 - [ ] Consider making "Summary Ruleset" easier to read somehow.
