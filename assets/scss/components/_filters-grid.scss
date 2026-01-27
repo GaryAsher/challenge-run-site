@@ -62,6 +62,16 @@
   max-width: 300px;
 }
 
+// Reset button group - align to bottom right
+.filter-group--reset {
+  flex: 0 0 auto;
+  min-width: auto;
+  max-width: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
 .filter-group__label {
   display: block;
   font-size: 0.85rem;
