@@ -57,16 +57,14 @@
 }
 
 .filter-group {
-  flex: 1 1 200px;                        // Flexible, min 200px width
-  min-width: 180px;
-  max-width: 300px;
+  flex: 1 1 0;                            // Equal width for all filter groups
+  min-width: 150px;
 }
 
-// Reset button group - align to bottom right
+// Reset button group - align to bottom right, don't grow
 .filter-group--reset {
   flex: 0 0 auto;
   min-width: auto;
-  max-width: none;
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;
@@ -96,7 +94,7 @@
   
   .filter-group {
     flex: 1 1 45%;                        // 2 per row on tablet
-    max-width: none;
+    min-width: 140px;
   }
 }
 
@@ -113,6 +111,6 @@
   
   .filter-group {
     flex: 1 1 100%;                       // Full width on mobile
-    max-width: none;
+    min-width: 0;
   }
 }
