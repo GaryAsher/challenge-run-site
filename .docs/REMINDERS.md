@@ -7,7 +7,6 @@ This document consolidates all reminders, future ideas, and planned features for
 # Priority Roadmap
 
 ### /rules/ page
-- [ ] Runs header need to look like it is resting flush on the top-most container below it.
 - [ ] For Advanced Search, make the filters typeahead the same length and height as the ones used in /rules/ Rule Builder. 
 - [ ] "Advanced Filers" button should be in the same position as Rule Builder's "Open". To the right of the search bar.
 
