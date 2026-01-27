@@ -61,21 +61,49 @@
   min-width: 150px;
 }
 
-// Reset button group - align to bottom right, don't grow
-.filter-group--reset {
-  flex: 0 0 auto;
-  min-width: auto;
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-}
-
 .filter-group__label {
   display: block;
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--text-muted);
   margin-bottom: 0.35rem;
+}
+
+// ──────────────────────────────────────────────────────────
+// Selections Row (chips + reset button)
+// ──────────────────────────────────────────────────────────
+.filter-selections-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+}
+
+.filter-selections-row .filter-selections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  flex: 1;
+}
+
+// Accent-styled reset button (stands out from chips)
+.btn--reset-accent {
+  margin-left: auto;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm, 4px);
+  color: var(--accent);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn--reset-accent:hover {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
 // ──────────────────────────────────────────────────────────
@@ -112,5 +140,15 @@
   .filter-group {
     flex: 1 1 100%;                       // Full width on mobile
     min-width: 0;
+  }
+  
+  .filter-selections-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .btn--reset-accent {
+    margin-left: 0;
+    margin-top: 0.5rem;
   }
 }
