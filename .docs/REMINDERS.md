@@ -6,13 +6,10 @@ This document consolidates all reminders, future ideas, and planned features for
 
 # Priority Roadmap
 
-### /rules/ page
-- [ ] For Advanced Search, make the filters typeahead the same length and height as the ones used in /rules/ Rule Builder. 
+### /runs/ page
 - [ ] "Advanced Filers" button should be in the same position as Rule Builder's "Open". To the right of the search bar.
 
 ### /rules/ page
-- [ ] In Rule Builder, move "Remove all filters" below the filtered options. So it is consistent with /runs/ Advanced Search.
-- [ ] Character "Weapon / Aspect" not recognizing the ' in "Witch's Staff"
 - [ ] Consider making "Summary Ruleset" easier to read somehow.
 
 ### Metadata
