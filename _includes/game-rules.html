@@ -227,15 +227,17 @@
           </div>
         </div>
         {% endif %}
+
+        <!-- Reset Button (far right) -->
+        <div class="rule-builder__group rule-builder__group--reset">
+          <button type="button" class="btn btn--outline btn--reset" id="rb-reset" style="display: none;">
+            Remove all filters
+          </button>
+        </div>
       </div>
 
-      <!-- Selections row: chips + reset button aligned horizontally (consistent with Advanced Filters) -->
-      <div class="filter-selections-row" id="rb-selections-row">
-        <div class="filter-selections" id="rb-selections"></div>
-        <button type="button" class="btn btn--outline btn--reset" id="rb-reset" style="display: none;">
-          Remove all filters
-        </button>
-      </div>
+      <!-- Unified Selections Display (chips below filters) -->
+      <div class="filter-selections" id="rb-selections"></div>
 
       <!-- Rules Summary Panel -->
       <div class="rule-builder__summary" id="rb-summary" style="display: none;">
@@ -804,9 +806,9 @@ document.addEventListener('DOMContentLoaded', function() {
   ];
 
   // Utility functions
-  // Note: norm() decodes HTML entities (e.g., &#39; -> ') so searches work with special characters
+  // norm() decodes HTML entities (&#39; -> ') so searches work with apostrophes
   function norm(s) { 
-    const txt = document.createElement('textarea');
+    var txt = document.createElement('textarea');
     txt.innerHTML = (s || '').toString();
     return txt.value.trim().toLowerCase();
   }
