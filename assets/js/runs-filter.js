@@ -20,7 +20,6 @@ document.addEventListener('DOMContentLoaded', function() {
   const filterToggle = document.getElementById('filter-toggle');
   const advancedFilters = document.getElementById('advanced-filters');
   const filterSelections = document.getElementById('filter-selections');
-  const filterSelectionsRow = document.getElementById('filter-selections-row');
   const resetBtn = document.getElementById('reset-filters');
   const runsBody = document.getElementById('runs-body');
   const rows = runsBody ? Array.from(runsBody.querySelectorAll('.run-row')) : [];
@@ -63,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // ============================================================
   // Utility Functions
   // ============================================================
-  // Note: norm() decodes HTML entities (e.g., &#39; -> ') so searches work with special characters
+  // norm() decodes HTML entities (&#39; -> ') so searches work with apostrophes
   function norm(s) {
     const txt = document.createElement('textarea');
     txt.innerHTML = (s || '').toString();
@@ -615,7 +614,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // ============================================================
   // Unified Selections Display (chips below filters)
   // Order: Character → Challenges → Restrictions → Glitches
-  // Reset button is in HTML, aligned horizontally with chips
+  // Reset button is now inline with filters (like Rule Builder)
   // ============================================================
   function updateSelections() {
     if (!filterSelections) return;
@@ -624,10 +623,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const hasSelections = selectedCharacter || selectedChallenges.size > 0 || 
                           selectedRestrictions.size > 0 || selectedGlitch;
 
-    // Show/hide the selections row and reset button
-    if (filterSelectionsRow) {
-      filterSelectionsRow.style.display = hasSelections ? '' : 'none';
-    }
+    // Show/hide reset button
     if (resetBtn) {
       resetBtn.style.display = hasSelections ? '' : 'none';
     }
