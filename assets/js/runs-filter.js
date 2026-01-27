@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const filterToggle = document.getElementById('filter-toggle');
   const advancedFilters = document.getElementById('advanced-filters');
   const filterSelections = document.getElementById('filter-selections');
+  const filterSelectionsRow = document.getElementById('filter-selections-row');
   const resetBtn = document.getElementById('reset-filters');
   const runsBody = document.getElementById('runs-body');
   const rows = runsBody ? Array.from(runsBody.querySelectorAll('.run-row')) : [];
@@ -612,9 +613,8 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ============================================================
-  // Unified Selections Display (chips below filters)
+  // Unified Selections Display (chips + reset button below filters)
   // Order: Character → Challenges → Restrictions → Glitches
-  // Reset button is now inline with filters (like Rule Builder)
   // ============================================================
   function updateSelections() {
     if (!filterSelections) return;
@@ -623,9 +623,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const hasSelections = selectedCharacter || selectedChallenges.size > 0 || 
                           selectedRestrictions.size > 0 || selectedGlitch;
 
-    // Show/hide reset button
-    if (resetBtn) {
-      resetBtn.style.display = hasSelections ? '' : 'none';
+    // Show/hide the entire selections row (chips + reset button)
+    if (filterSelectionsRow) {
+      filterSelectionsRow.style.display = hasSelections ? '' : 'none';
     }
 
     if (!hasSelections) return;
