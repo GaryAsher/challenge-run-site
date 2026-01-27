@@ -100,74 +100,14 @@
     <div class="rule-builder-content" id="rule-builder-content" hidden>
       <div class="rule-builder__selections">
 
-        <!-- 1. Run Category Dropdown with Tier Headers -->
+        <!-- 1. Run Category (typeahead single-select) -->
         {% if has_categories %}
-        <div class="rule-builder__group" data-rb-order="1">
-          <label class="rule-builder__label">Run Category</label>
-          <select class="rule-builder__select" id="rb-category">
-            <option value="" data-description="">-- Select Category --</option>
-            {% if game.full_runs and game.full_runs.size > 0 %}
-              <optgroup label="Full Runs">
-                {% for cat in game.full_runs %}
-                  {% if cat.children and cat.children.size > 0 %}
-                    <!-- Parent with children - non-selectable separator -->
-                    <option value="" disabled class="rb-category-parent">── {{ cat.label }} ──</option>
-                    {% for child in cat.children %}
-                      <option value="{{ cat.slug }}/{{ child.slug }}" data-label="{{ child.label }}" data-description="{{ child.description | escape }}" data-tier="full_runs">{{ child.label }}</option>
-                    {% endfor %}
-                  {% else %}
-                    <!-- Category without children - selectable -->
-                    <option value="{{ cat.slug }}" data-label="{{ cat.label }}" data-description="{{ cat.description | escape }}" data-tier="full_runs">{{ cat.label }}</option>
-                  {% endif %}
-                {% endfor %}
-              </optgroup>
-            {% endif %}
-            {% if game.mini_challenges and game.mini_challenges.size > 0 %}
-              <optgroup label="Mini-Challenges">
-                {% for cat in game.mini_challenges %}
-                  {% if cat.children and cat.children.size > 0 %}
-                    <!-- Parent with children - non-selectable separator -->
-                    <option value="" disabled class="rb-category-parent">── {{ cat.label }} ──</option>
-                    {% for child in cat.children %}
-                      <option value="{{ cat.slug }}/{{ child.slug }}" data-label="{{ child.label }}" data-description="{{ child.description | escape }}" data-tier="mini_challenges">{{ child.label }}</option>
-                    {% endfor %}
-                  {% else %}
-                    <!-- Category without children - selectable -->
-                    <option value="{{ cat.slug }}" data-label="{{ cat.label }}" data-description="{{ cat.description | escape }}" data-tier="mini_challenges">{{ cat.label }}</option>
-                  {% endif %}
-                {% endfor %}
-              </optgroup>
-            {% endif %}
-            {% if game.player_made and game.player_made.size > 0 %}
-              <optgroup label="Player-Made">
-                {% for cat in game.player_made %}
-                  {% if cat.children and cat.children.size > 0 %}
-                    <!-- Parent with children - non-selectable separator -->
-                    <option value="" disabled class="rb-category-parent">── {{ cat.label }} ──</option>
-                    {% for child in cat.children %}
-                      <option value="{{ cat.slug }}/{{ child.slug }}" data-label="{{ child.label }}" data-description="{{ child.description | escape }}" data-tier="player_made">{{ child.label }}</option>
-                    {% endfor %}
-                  {% else %}
-                    <!-- Category without children - selectable -->
-                    <option value="{{ cat.slug }}" data-label="{{ cat.label }}" data-description="{{ cat.description | escape }}" data-tier="player_made">{{ cat.label }}</option>
-                  {% endif %}
-                {% endfor %}
-              </optgroup>
-            {% endif %}
-            {% comment %} Legacy fallback for games without tiered structure {% endcomment %}
-            {% if game.full_runs.size == 0 and game.mini_challenges.size == 0 and game.player_made.size == 0 %}
-              {% for cat in game.categories_data %}
-                {% if cat.children and cat.children.size > 0 %}
-                  <option value="" disabled class="rb-category-parent">── {{ cat.label }} ──</option>
-                  {% for child in cat.children %}
-                    <option value="{{ cat.slug }}/{{ child.slug }}" data-label="{{ child.label }}" data-description="{{ child.description | escape }}">{{ child.label }}</option>
-                  {% endfor %}
-                {% else %}
-                  <option value="{{ cat.slug }}" data-label="{{ cat.label }}" data-description="{{ cat.description | escape }}">{{ cat.label }}</option>
-                {% endif %}
-              {% endfor %}
-            {% endif %}
-          </select>
+        <div class="rule-builder__group filter-group" id="rb-category-container" data-rb-order="1">
+          <label class="rule-builder__label filter-group__label">Run Category</label>
+          <div class="filter-input__wrap">
+            <input type="text" id="rb-category-search" class="filter-input__field" placeholder="Type a run category..." autocomplete="off" />
+            <div class="filter-input__suggestions" id="rb-category-suggestions" hidden></div>
+          </div>
         </div>
         {% endif %}
 
@@ -743,7 +683,6 @@ document.addEventListener('DOMContentLoaded', function() {
   const rbCard = document.getElementById('rule-builder-card');
   const rbToggle = document.getElementById('rb-toggle');
   const rbContent = document.getElementById('rule-builder-content');
-  const categorySelect = document.getElementById('rb-category');
   const communitySelect = document.getElementById('rb-community-challenge');
   const resetBtn = document.getElementById('rb-reset');
   const selectionsDiv = document.getElementById('rb-selections');
@@ -753,6 +692,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const findRunnersBtn = document.getElementById('rb-find-runners');
 
   // Typeahead containers
+  const rbCategoryContainer = document.getElementById('rb-category-container');
   const rbCharacterContainer = document.getElementById('rb-character-container');
   const rbChallengeContainer = document.getElementById('rb-challenge-container');
   const rbRestrictionContainer = document.getElementById('rb-restriction-container');
@@ -767,6 +707,44 @@ document.addEventListener('DOMContentLoaded', function() {
   let selectedRestrictions = []; // multi-select
 
   // Available options (from Jekyll data)
+  
+  // Build categories array from tiered structure
+  const availableCategories = [
+    {% if game.full_runs and game.full_runs.size > 0 %}
+      {% for cat in game.full_runs %}
+        {% if cat.children and cat.children.size > 0 %}
+          {% for child in cat.children %}
+    { id: "{{ cat.slug }}/{{ child.slug }}", label: "{{ child.label }}", description: {{ child.description | default: "" | jsonify }}, tier: "full_runs", group: "Full Runs" },
+          {% endfor %}
+        {% else %}
+    { id: "{{ cat.slug }}", label: "{{ cat.label }}", description: {{ cat.description | default: "" | jsonify }}, tier: "full_runs", group: "Full Runs" },
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    {% if game.mini_challenges and game.mini_challenges.size > 0 %}
+      {% for cat in game.mini_challenges %}
+        {% if cat.children and cat.children.size > 0 %}
+          {% for child in cat.children %}
+    { id: "{{ cat.slug }}/{{ child.slug }}", label: "{{ child.label }}", description: {{ child.description | default: "" | jsonify }}, tier: "mini_challenges", group: "Mini-Challenges" },
+          {% endfor %}
+        {% else %}
+    { id: "{{ cat.slug }}", label: "{{ cat.label }}", description: {{ cat.description | default: "" | jsonify }}, tier: "mini_challenges", group: "Mini-Challenges" },
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    {% if game.player_made and game.player_made.size > 0 %}
+      {% for cat in game.player_made %}
+        {% if cat.children and cat.children.size > 0 %}
+          {% for child in cat.children %}
+    { id: "{{ cat.slug }}/{{ child.slug }}", label: "{{ child.label }}", description: {{ child.description | default: "" | jsonify }}, tier: "player_made", group: "Player-Made" },
+          {% endfor %}
+        {% else %}
+    { id: "{{ cat.slug }}", label: "{{ cat.label }}", description: {{ cat.description | default: "" | jsonify }}, tier: "player_made", group: "Player-Made" },
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  ].filter(x => x.id); // Remove any empty entries
+
   const availableCharacters = [
     {% for char in game.characters_data %}
     { id: {{ char.slug | jsonify }}, label: {{ char.label | jsonify }}, description: {{ char.description | default: "" | jsonify }} }{% unless forloop.last %},{% endunless %}
@@ -854,17 +832,36 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!input || !sugEl) return null;
 
     let isOpen = false;
+    const originalPlaceholder = input.placeholder;
 
     function isSelected(id) {
       if (singleSelect) return getValue() && norm(getValue().slug) === norm(id);
       return selectedArray.some(x => norm(x.slug) === norm(id));
     }
 
+    // Update input display for single-select
+    function updateInputDisplay() {
+      if (singleSelect) {
+        const val = getValue();
+        if (val && val.label) {
+          input.value = val.label;
+          input.classList.add('filter-input__field--selected');
+        } else {
+          input.value = '';
+          input.classList.remove('filter-input__field--selected');
+        }
+      }
+    }
+
     function renderSuggestions(query) {
       const q = norm(query);
       sugEl.innerHTML = '';
 
-      const available = items.filter(x => !isSelected(x.id));
+      // For single-select, show all items (including selected) so user can change
+      const available = singleSelect 
+        ? items 
+        : items.filter(x => !isSelected(x.id));
+      
       const filtered = q 
         ? available.filter(x => norm(x.label).includes(q) || norm(x.id).includes(q))
         : available;
@@ -884,17 +881,24 @@ document.addEventListener('DOMContentLoaded', function() {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'filter-suggestion';
+        
+        // Mark currently selected item for single-select
+        if (singleSelect && isSelected(item.id)) {
+          btn.classList.add('filter-suggestion--selected');
+        }
+        
         btn.textContent = item.label;
         btn.dataset.id = item.id;
         
         btn.addEventListener('click', () => {
           if (singleSelect) {
             setValue(item);
+            updateInputDisplay();
           } else {
             selectedArray.push({ slug: item.id, label: item.label, description: item.description || '' });
+            input.value = '';
           }
-          input.value = '';
-          renderSuggestions('');
+          close();
           onUpdate();
         });
         
@@ -904,19 +908,73 @@ document.addEventListener('DOMContentLoaded', function() {
       sugEl.hidden = false;
     }
 
-    function open() { if (isOpen) return; isOpen = true; renderSuggestions(input.value); }
-    function close() { isOpen = false; sugEl.hidden = true; }
+    function open() { 
+      if (isOpen) return; 
+      isOpen = true; 
+      // For single-select, clear input to allow searching
+      if (singleSelect && getValue()) {
+        input.value = '';
+      }
+      renderSuggestions(input.value); 
+    }
+    
+    function close() { 
+      isOpen = false; 
+      sugEl.hidden = true; 
+      // Restore display value for single-select
+      if (singleSelect) {
+        updateInputDisplay();
+      }
+    }
 
     input.addEventListener('focus', open);
     input.addEventListener('input', debounce(() => renderSuggestions(input.value), 100));
     input.addEventListener('keydown', (e) => { if (e.key === 'Escape') { close(); input.blur(); } });
-    document.addEventListener('pointerdown', (e) => { if (!container.contains(e.target)) close(); }, true);
+    input.addEventListener('blur', () => {
+      // Small delay to allow click on suggestions to register
+      setTimeout(() => {
+        if (isOpen) close();
+      }, 150);
+    });
 
-    return { refresh: () => renderSuggestions(input.value), clear: () => { input.value = ''; } };
+    // Initial display
+    updateInputDisplay();
+
+    return { 
+      refresh: () => {
+        updateInputDisplay();
+        if (isOpen) renderSuggestions(input.value);
+      }, 
+      clear: () => { 
+        if (singleSelect) {
+          setValue(null);
+          updateInputDisplay();
+        }
+        input.value = ''; 
+      } 
+    };
   }
 
   // Initialize typeaheads
-  let characterTypeahead, challengeTypeahead, restrictionTypeahead, glitchTypeahead;
+  let categoryTypeahead, characterTypeahead, challengeTypeahead, restrictionTypeahead, glitchTypeahead;
+
+  if (rbCategoryContainer && availableCategories.length > 0) {
+    categoryTypeahead = createTypeahead({
+      container: rbCategoryContainer,
+      items: availableCategories,
+      singleSelect: true,
+      getValue: () => selectedCategory,
+      setValue: (val) => { 
+        selectedCategory = val ? { 
+          slug: val.id, 
+          label: val.label, 
+          description: val.description || '',
+          tier: val.tier || 'full_runs'
+        } : null; 
+      },
+      onUpdate: updateRuleBuilder
+    });
+  }
 
   if (rbCharacterContainer && availableCharacters.length > 0) {
     characterTypeahead = createTypeahead({
@@ -989,21 +1047,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Category select
-  if (categorySelect) {
-    categorySelect.addEventListener('change', function() {
-      const option = this.options[this.selectedIndex];
-      selectedCategory = option.value ? {
-        slug: option.value,
-        label: option.dataset.label || option.text.trim(),
-        description: option.dataset.description || '',
-        tier: option.dataset.tier || 'full_runs'
-      } : null;
-      updateRuleBuilder();
-    });
-  }
-
-  // Community Challenge select
+  // Community Challenge select (kept as regular select since it has optgroups)
   if (communitySelect) {
     communitySelect.addEventListener('change', function() {
       const option = this.options[this.selectedIndex];
@@ -1025,7 +1069,7 @@ document.addEventListener('DOMContentLoaded', function() {
       selectedGlitch = null;
       selectedChallenges.length = 0;
       selectedRestrictions.length = 0;
-      if (categorySelect) categorySelect.value = '';
+      if (categoryTypeahead) categoryTypeahead.clear();
       if (communitySelect) communitySelect.value = '';
       if (characterTypeahead) characterTypeahead.clear();
       if (challengeTypeahead) challengeTypeahead.clear();
@@ -1051,7 +1095,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function removeCategory() {
     selectedCategory = null;
-    if (categorySelect) categorySelect.value = '';
+    if (categoryTypeahead) categoryTypeahead.clear();
     updateRuleBuilder();
   }
 
