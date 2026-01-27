@@ -498,17 +498,15 @@ layout: default
                  </div>
                </div>
                {% endif %}
-
-                <!-- Reset Button (inline with filters, like Rule Builder) -->
-                <div class="filter-group filter-group--reset">
-                  <button type="button" id="reset-filters" class="btn btn--outline btn--reset" style="display: none;">
-                    Remove all filters
-                  </button>
-                </div>
               </div>
 
-              <!-- Selections Display (chips below filters) -->
-              <div class="filter-selections" id="filter-selections"></div>
+              <!-- Selections row: chips + reset button -->
+              <div class="filter-selections-row" id="filter-selections-row" style="display: none;">
+                <div class="filter-selections" id="filter-selections"></div>
+                <button type="button" id="reset-filters" class="btn btn--outline btn--reset-accent">
+                  Remove all filters
+                </button>
+              </div>
             </div>
 
             <div class="results-status" id="results-status">
