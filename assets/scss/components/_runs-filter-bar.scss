@@ -48,26 +48,6 @@
   border-top: 1px solid var(--border);
 }
 
-// Filter selections row (chips + reset)
-.filter-selections-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.75rem;
-  margin-top: 0.75rem;
-}
-
-.filter-selections {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  flex: 1;
-}
-
-.filter-selections:empty {
-  display: none;
-}
-
 // ──────────────────────────────────────────────────────────
 // Main Filter Grid (legacy)
 // ──────────────────────────────────────────────────────────
