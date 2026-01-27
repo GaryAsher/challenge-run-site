@@ -65,7 +65,7 @@
   margin-bottom: 1rem;
 }
 
-// Make Rule Builder filter groups use equal sizing (like Advanced Filters)
+// Make Rule Builder filter groups use equal sizing
 .rule-builder__selections .rule-builder__group,
 .rule-builder__selections .filter-group {
   flex: 1 1 0;
@@ -193,7 +193,7 @@
   border-radius: var(--radius-sm);
 }
 
-// Summary Panel (Your Ruleset)
+// Summary Panel (Your Ruleset) - with visual separator
 .rule-builder__summary {
   margin-top: 1.5rem;
   padding-top: 1.5rem;
@@ -267,7 +267,6 @@
 // ──────────────────────────────────────────────────────────
 // Single-select Input with Selected Value
 // ──────────────────────────────────────────────────────────
-// When a single-select typeahead has a value, show it in the input
 .rule-builder__selections .filter-input__field--selected {
   color: var(--fg);
   font-weight: 500;
