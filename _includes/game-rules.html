@@ -167,17 +167,15 @@
           </div>
         </div>
         {% endif %}
-
-        <!-- Reset Button (far right) -->
-        <div class="rule-builder__group rule-builder__group--reset">
-          <button type="button" class="btn btn--outline btn--reset" id="rb-reset" style="display: none;">
-            Remove all filters
-          </button>
-        </div>
       </div>
 
-      <!-- Unified Selections Display (chips below filters) -->
-      <div class="filter-selections" id="rb-selections"></div>
+      <!-- Selections row: chips + reset button -->
+      <div class="filter-selections-row" id="rb-selections-row" style="display: none;">
+        <div class="filter-selections" id="rb-selections"></div>
+        <button type="button" class="btn btn--outline btn--reset-accent" id="rb-reset">
+          Remove all filters
+        </button>
+      </div>
 
       <!-- Rules Summary Panel -->
       <div class="rule-builder__summary" id="rb-summary" style="display: none;">
@@ -685,6 +683,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const rbContent = document.getElementById('rule-builder-content');
   const communitySelect = document.getElementById('rb-community-challenge');
   const resetBtn = document.getElementById('rb-reset');
+  const selectionsRow = document.getElementById('rb-selections-row');
   const selectionsDiv = document.getElementById('rb-selections');
   const summaryDiv = document.getElementById('rb-summary');
   const summaryContent = document.getElementById('rb-summary-content');
@@ -1121,8 +1120,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const hasContent = selectedCategory || selectedCommunityChallenge || selectedCharacter || 
                        selectedChallenges.length > 0 || selectedRestrictions.length > 0 || selectedGlitch;
 
-    // Show/hide reset button
-    if (resetBtn) resetBtn.style.display = hasContent ? '' : 'none';
+    // Show/hide the entire selections row (chips + reset button)
+    if (selectionsRow) {
+      selectionsRow.style.display = hasContent ? '' : 'none';
+    }
 
     // Update unified selections display (chips below filters)
     // Order: Category -> Community -> Character -> Challenges -> Restrictions -> Glitch
