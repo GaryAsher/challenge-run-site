@@ -6,10 +6,6 @@ This document consolidates all reminders, future ideas, and planned features for
 
 # Priority Roadmap
 
-### /runs/ page
-- [ ] When on mobile, Full Runs and Mini-Challenges' tab header's look off.
-- [ ] Make Category Tiers lightly highlighted, like the game header tabs.
-
 ### /rules/ page
 - [ ] Consider making "Summary Ruleset" easier to read somehow.
 
