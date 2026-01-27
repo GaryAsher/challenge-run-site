@@ -21,10 +21,7 @@
   border-bottom: none;
 }
 
-// ──────────────────────────────────────────────────────────
-// Runs Card (container for runs content)
-// Sits flush below tier navigation
-// ──────────────────────────────────────────────────────────
+// Runs card sits flush below tier navigation
 .runs-card {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
@@ -253,15 +250,11 @@
 // ──────────────────────────────────────────────────────────
 @media (max-width: 600px) {
   .tier-nav {
-    flex-direction: row;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    flex-direction: column;
   }
   
   .tier-nav__tab {
-    flex-shrink: 0;
     justify-content: center;
-    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   }
   
   .tier-cards {
