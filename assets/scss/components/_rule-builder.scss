@@ -66,10 +66,31 @@
 }
 
 // Make Rule Builder filter groups use equal sizing
+// flex-basis of 200px ensures items don't stretch beyond ~25% on wide screens
+// flex-grow: 1 allows them to fill space evenly when there's room
+// max-width: 25% prevents a single item from taking more than its fair share
 .rule-builder__selections .rule-builder__group,
 .rule-builder__selections .filter-group {
-  flex: 1 1 0;
+  flex: 1 1 200px;
   min-width: 150px;
+  max-width: calc(25% - 0.75rem);
+}
+
+// On narrower screens, allow 2 per row (50% each)
+@media (max-width: 900px) {
+  .rule-builder__selections .rule-builder__group,
+  .rule-builder__selections .filter-group {
+    max-width: calc(50% - 0.5rem);
+  }
+}
+
+// On mobile, full width
+@media (max-width: 560px) {
+  .rule-builder__selections .rule-builder__group,
+  .rule-builder__selections .filter-group {
+    flex: 1 1 100%;
+    max-width: none;
+  }
 }
 
 // Standalone groups (dropdowns like category/community)
