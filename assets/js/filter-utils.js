@@ -17,7 +17,7 @@ window.CRCFilters = (function() {
   // Core utilities
   // =========================================================
   
-  // Note: norm() decodes HTML entities (e.g., &#39; -> ') so searches work with special characters
+  // norm() decodes HTML entities (&#39; -> ') so searches work with apostrophes
   function norm(s) {
     var txt = document.createElement('textarea');
     txt.innerHTML = (s || '').toString();
