@@ -6,6 +6,11 @@ This document consolidates all reminders, future ideas, and planned features for
 
 # Priority Roadmap
 
+### /rules/ page
+- [ ] Consider making "Summary Ruleset" easier to read somehow.
+- [ ] Add Run Type selection AND a Run Name section in the Rule Builder for easier navigation.
+  - Currently, there is only one drop-down, which is "Run Category". As more things are added, this gets cluttered easily.
+
 ## Forms & Submissions
 ### New Game Submission form:
 - [ ] Check Discord Webhook. Previously not working, but updated recently.
@@ -58,7 +63,7 @@ featured_runs:
 
 ## Site Features
 - [ ] Add Spanish language accessibility.
-      - Request Community translation early so it can be done in parallel with other changes.
+  - Request Community translation early so it can be done in parallel with other changes.
 - [ ] Dark/light mode toggle
 
 ## Performance Optimizations
@@ -68,17 +73,14 @@ featured_runs:
 
 ### Metadata
 - [ ] How do we find all genres?
-    - Can we find a list of every genre ever?
-    - Do we create a script that finds genres, and validates user-submitted info?
+  - Can we find a list of every genre ever?
+  - Do we create a script that finds genres, and validates user-submitted info?
 
 ## UX Improvements
 - [ ] Loading state indicator/symbol for JavaScript-driven filtering
 - [ ] Add a "Back to Top" button for long pages
 - [ ] Add keyboard navigation for filter dropdowns (arrow keys)
 - [ ] Add "Copy Link" button for sharing specific filtered views
-
-### /rules/ page
-- [ ] Consider making "Summary Ruleset" easier to read somehow.
 
 ---
 
@@ -158,4 +160,4 @@ history:
 
 ---
 
-Last updated: 2026/01/23
+Last updated: 2026/01/27
