@@ -1,0 +1,236 @@
+# =============================================================================
+# Form Fields Order Configuration
+# =============================================================================
+# This file defines the canonical order and naming for form fields across:
+# - Submit run forms (/<game>/submit/)
+# - Rule Builder (/rules/)
+# - Advanced Filters (/runs/)
+# 
+# When adding new fields or changing order, update this file first.
+# Then update the corresponding components to reference this data.
+#
+# FIELD TYPES:
+# - single-select: User picks one option (dropdown or typeahead)
+# - multi-select: User picks multiple options (typeahead with chips)
+# - text: Free text input
+# - url: URL input with validation
+# - date: Date input
+# - time: Time/duration input
+# =============================================================================
+
+# =============================================================================
+# SUBMIT FORM SECTIONS
+# Order determines visual layout on /<game>/submit/ pages
+# =============================================================================
+submit_sections:
+  # 1. Game & Category Selection
+  - key: game
+    order: 1
+    label: "Game"
+    required: true
+    type: single-select
+    description: "Select the game for your run submission."
+    
+  - key: tier
+    order: 2
+    label: "Category Tier"
+    required: true
+    type: single-select
+    description: "Select Full Runs, Mini-Challenges, or Community Created."
+    parent: game  # Shows after game is selected
+    
+  - key: category
+    order: 3
+    label: "Category"
+    required: true
+    type: single-select
+    description: "The specific run category (e.g., Any%, 100%)."
+    parent: tier  # Shows after tier is selected
+    
+  # 2. Standard Challenges
+  - key: challenges
+    order: 4
+    label: "Standard Challenges"
+    required: false  # At least one standard or community challenge is required
+    type: multi-select
+    description: "Multi-select. Click a suggestion to add it, click a chip to remove it."
+    hint: "At least one Standard or Community Challenge is required."
+    examples:
+      - "Damageless"
+      - "Hitless"
+      - "No-Hit / No-Damage"
+      
+  # 3. Community Challenge
+  - key: community_challenge
+    order: 5
+    label: "Community Challenge"
+    required: false
+    type: single-select
+    description: "Optional. Pick one game-specific community challenge."
+    
+  # 4. Character / Weapon / Class
+  - key: character
+    order: 6
+    label: "Character"  # Default label, games can override with character_column.label
+    required: false
+    type: single-select
+    description: "This label changes per game (e.g., 'Weapon / Aspect', 'Class')."
+    conditional: "character_column.enabled"  # Only show if game has this enabled
+    
+  # 5. Glitch Category
+  - key: glitch
+    order: 7
+    label: "Glitch Category"
+    required: false
+    type: single-select
+    description: "Optional. Select the glitch ruleset used."
+    conditional: "glitches_relevant"  # Only show if game has glitches
+    
+  # 6. Restrictions
+  - key: restrictions
+    order: 8
+    label: "Restrictions"
+    required: false
+    type: multi-select
+    description: "Multi-select. Additional restrictions applied to the run."
+    hint: "Game-specific restrictions like 'Arcanaless', 'No Hexes', etc."
+    
+  # 7. Run Details
+  - key: runner_id
+    order: 9
+    label: "Runner ID"
+    required: true
+    type: text
+    description: "Use your CRC runner id (example: gary-asher)."
+    placeholder: "your-runner-id"
+    pattern: "[a-z0-9\\-]+"
+    
+  - key: video_url
+    order: 10
+    label: "Video URL"
+    required: true
+    type: url
+    description: "YouTube, Twitch Highlight, or Bilibili are accepted."
+    placeholder: "https://youtube.com/watch?v=... or https://twitch.tv/videos/..."
+    
+  - key: date_completed
+    order: 11
+    label: "Date Completed"
+    required: false
+    type: date
+    description: "Format: YYYY/MM/DD (optional)."
+    placeholder: "YYYY/MM/DD"
+    
+  - key: run_time
+    order: 12
+    label: "Run Time"
+    required: false
+    type: time
+    description: "Format: HH:MM:SS or MM:SS (optional)"
+    placeholder: "12:34:56"
+    pattern: "^(\\d{1,2}:)?\\d{1,2}:\\d{2}$"
+
+# =============================================================================
+# RULE BUILDER SECTIONS
+# Order determines visual layout on /rules/ pages
+# =============================================================================
+rule_builder_sections:
+  - key: run_type
+    order: 1
+    label: "Run Type"
+    type: single-select
+    description: "Select Full Runs, Mini-Challenges, or Community Created."
+    
+  - key: category
+    order: 2
+    label: "Category"
+    type: single-select
+    description: "The specific run category."
+    
+  - key: community_challenge
+    order: 3
+    label: "Community Challenge"
+    type: single-select
+    description: "Optional game-specific community challenge."
+    conditional: "has_community_challenges"
+    
+  - key: character
+    order: 4
+    label: "Character"  # Default, can be overridden
+    type: single-select
+    description: "Character, weapon, or class selection."
+    conditional: "character_column.enabled"
+    
+  - key: challenges
+    order: 5
+    label: "Challenges"
+    type: multi-select
+    description: "Standard challenge types (Hitless, Damageless, etc.)."
+    
+  - key: restrictions
+    order: 6
+    label: "Restrictions"
+    type: multi-select
+    description: "Game-specific restrictions."
+    
+  - key: glitch
+    order: 7
+    label: "Glitch Rules"
+    type: single-select
+    description: "Glitch ruleset (Unrestricted, NMG, Glitchless)."
+    conditional: "glitches_relevant"
+
+# =============================================================================
+# ADVANCED FILTERS SECTIONS
+# Order determines visual layout in Advanced Filters on /runs/ pages
+# =============================================================================
+advanced_filter_sections:
+  - key: character
+    order: 1
+    label: "Character"  # Default, can be overridden by game
+    type: single-select
+    behavior: "single-select-blur"  # Blur input after selection
+    
+  - key: challenges
+    order: 2
+    label: "Challenges"
+    type: multi-select
+    
+  - key: restrictions
+    order: 3
+    label: "Restrictions"
+    type: multi-select
+    
+  - key: glitch
+    order: 4
+    label: "Glitches Used"
+    type: single-select
+    behavior: "single-select-blur"  # Blur input after selection
+
+# =============================================================================
+# SELECTION CHIPS ORDER
+# Order for displaying active filter chips below filters
+# =============================================================================
+chips_display_order:
+  - character
+  - challenges
+  - restrictions
+  - glitch
+
+# =============================================================================
+# PAYLOAD FIELD ORDER
+# Order for generating JSON payload when submitting runs
+# =============================================================================
+payload_order:
+  - game
+  - tier
+  - category
+  - challenges
+  - community_challenge
+  - character
+  - glitch
+  - restrictions
+  - runner_id
+  - video_url
+  - date_completed
+  - run_time
