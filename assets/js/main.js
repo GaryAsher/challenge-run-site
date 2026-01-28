@@ -669,6 +669,24 @@ const CONFIG = {
   }
 
   // =========================================================
+  // Back to Top Button
+  // =========================================================
+  function initBackToTop() {
+    const btn = $('backToTop');
+    if (!btn) return;
+    
+    // Show/hide based on scroll position
+    window.addEventListener('scroll', () => {
+      btn.hidden = window.scrollY < 300;
+    }, { passive: true });
+    
+    // Scroll to top on click
+    safeOn(btn, 'click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  // =========================================================
   // Initialize everything
   // =========================================================
   document.addEventListener('DOMContentLoaded', () => {
@@ -683,5 +701,6 @@ const CONFIG = {
     initRunsTable(); // Has its own early exit
     initGameTabsNav();
     initKeyboardShortcuts();
+    initBackToTop();
   });
 })();
