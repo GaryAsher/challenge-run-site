@@ -15,10 +15,14 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ### Modded Game Submisson
 - [ ] Allow Modded versions of games to accomodate for the modded community challenges.
-      - These would only be for mods that offer entirely new maps / characters / etc.
-      - QoL Mods, Cosmetic mods, and other things would still be allowed on main pages as the default.
+  - These would only be for mods that offer entirely new maps / characters / etc.
+  - QoL Mods, Cosmetic mods, and other things would still be allowed on main pages as the default.
 - [ ] Link between Modded Games and Main Games on each's page.
 - [ ] These categories would have a "Modded" tag.
+
+### FINAL
+- [ ] Make sure names are consistent across pages.
+  - Use variables instead of plain text?
 
 ## Enhanced Runner Profiles:
 - [ ] Runner profile submission - Self-service profile creation
