@@ -48,15 +48,15 @@ title: Runners
   <div class="grid" id="runner-list">
     {% assign sorted = site.runners | sort: "title" %}
     {% for r in sorted %}
-      {% assign runner_name = r.name | default: r.title | default: "Unknown" %}
-      {% assign avatar = r.cover | default: "/assets/img/site/default-runner.png" %}
+      {% assign runner_name = r.runner_name | default: r.name | default: r.title | default: "Unknown" %}
+      {% assign runner_avatar = r.avatar | default: r.cover | default: "/assets/img/site/default-runner.png" %}
       <a
         class="runner-card runner-item card-lift"
         href="{{ r.url | relative_url }}"
         data-name="{{ runner_name | downcase }}"
         data-letter="{{ runner_name | strip | slice: 0, 1 | upcase }}"
       >
-        <div class="runner-card__bg" data-bg="{{ avatar | relative_url }}"></div>
+        <div class="runner-card__bg" data-bg="{{ runner_avatar | relative_url }}"></div>
         <div class="runner-card__overlay">
           <div class="runner-card__title">{{ runner_name }}</div>
         </div>
