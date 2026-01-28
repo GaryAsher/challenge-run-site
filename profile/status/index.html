@@ -1,0 +1,260 @@
+---
+layout: default
+title: "Profile Status"
+---
+
+<div class="page-width">
+  <p class="muted mb-3">
+    <a href="{{ '/' | relative_url }}">← Home</a>
+  </p>
+
+  <div class="profile-status">
+    <!-- Not signed in -->
+    <div id="not-signed-in" class="card" hidden>
+      <h1>Profile Status</h1>
+      <p class="muted">Please sign in to check your profile status.</p>
+      <a href="{{ '/sign-in/' | relative_url }}" class="btn btn--primary">Sign In</a>
+    </div>
+
+    <!-- No profile -->
+    <div id="no-profile" class="card" hidden>
+      <h1>No Profile Found</h1>
+      <p class="muted">You haven't created a runner profile yet.</p>
+      <a href="{{ '/profile/create/' | relative_url }}" class="btn btn--primary">Create Profile</a>
+    </div>
+
+    <!-- Pending -->
+    <div id="status-pending" class="card" hidden>
+      <div class="status-icon status-icon--pending">⏳</div>
+      <h1>Profile Pending Review</h1>
+      <p class="muted">Your profile has been submitted and is waiting for moderator approval.</p>
+      
+      <div class="status-details">
+        <div class="status-details__row">
+          <span class="status-details__label">Runner ID:</span>
+          <span class="status-details__value" id="pending-runner-id">—</span>
+        </div>
+        <div class="status-details__row">
+          <span class="status-details__label">Display Name:</span>
+          <span class="status-details__value" id="pending-display-name">—</span>
+        </div>
+        <div class="status-details__row">
+          <span class="status-details__label">Submitted:</span>
+          <span class="status-details__value" id="pending-submitted">—</span>
+        </div>
+      </div>
+
+      <div class="status-info">
+        <p><strong>What happens next?</strong></p>
+        <ul>
+          <li>A moderator will review your profile (usually within 1-2 days)</li>
+          <li>You'll receive a notification when your profile is approved</li>
+          <li>Once approved, you can submit runs and appear in the runners list</li>
+        </ul>
+      </div>
+
+      <div class="status-actions">
+        <a href="{{ '/profile/create/' | relative_url }}" class="btn">Edit Submission</a>
+      </div>
+    </div>
+
+    <!-- Approved -->
+    <div id="status-approved" class="card" hidden>
+      <div class="status-icon status-icon--approved">✓</div>
+      <h1>Profile Approved!</h1>
+      <p class="muted">Your runner profile is live and visible to everyone.</p>
+      
+      <div class="status-actions">
+        <a href="#" id="view-profile-btn" class="btn btn--primary">View Your Profile</a>
+        <a href="{{ '/profile/edit/' | relative_url }}" class="btn">Edit Profile</a>
+      </div>
+    </div>
+
+    <!-- Rejected -->
+    <div id="status-rejected" class="card" hidden>
+      <div class="status-icon status-icon--rejected">✗</div>
+      <h1>Profile Not Approved</h1>
+      <p class="muted">Unfortunately, your profile was not approved.</p>
+      
+      <div class="status-details">
+        <div class="status-details__row">
+          <span class="status-details__label">Reason:</span>
+          <span class="status-details__value" id="rejected-reason">No reason provided</span>
+        </div>
+      </div>
+
+      <div class="status-info">
+        <p>You can submit a new profile application with the requested changes.</p>
+      </div>
+
+      <div class="status-actions">
+        <a href="{{ '/profile/create/' | relative_url }}" class="btn btn--primary">Submit New Profile</a>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading-state" class="card">
+      <div class="status-loading">
+        <div class="spinner"></div>
+        <p class="muted">Checking profile status...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.profile-status {
+  max-width: 600px;
+  margin: 0 auto 2rem;
+}
+
+.profile-status .card {
+  text-align: center;
+  padding: 2rem;
+}
+
+.status-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.status-icon--pending {
+  color: var(--warning, #ffc107);
+}
+
+.status-icon--approved {
+  color: var(--success, #28a745);
+}
+
+.status-icon--rejected {
+  color: var(--danger, #dc3545);
+}
+
+.status-details {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1.5rem 0;
+  text-align: left;
+}
+
+.status-details__row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.status-details__row:last-child {
+  border-bottom: none;
+}
+
+.status-details__label {
+  color: var(--muted);
+}
+
+.status-details__value {
+  font-weight: 500;
+}
+
+.status-info {
+  text-align: left;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+}
+
+.status-info ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.status-info li {
+  margin-bottom: 0.5rem;
+}
+
+.status-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.status-loading {
+  padding: 2rem;
+}
+
+@media (max-width: 480px) {
+  .status-actions {
+    flex-direction: column;
+  }
+}
+</style>
+
+<script type="module">
+import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
+
+(async function() {
+  const notSignedIn = document.getElementById('not-signed-in');
+  const noProfile = document.getElementById('no-profile');
+  const statusPending = document.getElementById('status-pending');
+  const statusApproved = document.getElementById('status-approved');
+  const statusRejected = document.getElementById('status-rejected');
+  const loadingState = document.getElementById('loading-state');
+  
+  function showState(state) {
+    notSignedIn.hidden = state !== 'not-signed-in';
+    noProfile.hidden = state !== 'no-profile';
+    statusPending.hidden = state !== 'pending';
+    statusApproved.hidden = state !== 'approved';
+    statusRejected.hidden = state !== 'rejected';
+    loadingState.hidden = state !== 'loading';
+  }
+  
+  function formatDate(dateStr) {
+    if (!dateStr) return '—';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  }
+  
+  try {
+    await CRCAuth.init();
+    
+    if (!CRCAuth.isSignedIn()) {
+      showState('not-signed-in');
+      return;
+    }
+    
+    const profile = CRCAuth.getProfile();
+    
+    if (!profile) {
+      showState('no-profile');
+      return;
+    }
+    
+    if (profile._isPending) {
+      // Pending profile
+      document.getElementById('pending-runner-id').textContent = profile.requested_runner_id || '—';
+      document.getElementById('pending-display-name').textContent = profile.display_name || '—';
+      document.getElementById('pending-submitted').textContent = formatDate(profile.created_at);
+      showState('pending');
+    } else if (profile.status === 'rejected') {
+      // Rejected
+      document.getElementById('rejected-reason').textContent = profile.rejection_reason || 'No reason provided';
+      showState('rejected');
+    } else {
+      // Approved
+      document.getElementById('view-profile-btn').href = `/runners/${profile.runner_id}/`;
+      showState('approved');
+    }
+  } catch (error) {
+    console.error('Status check error:', error);
+    showState('not-signed-in');
+  }
+})();
+</script>
