@@ -240,3 +240,93 @@
     width: 220px;
   }
 }
+
+// ──────────────────────────────────────────────────────────
+// User Account Section
+// ──────────────────────────────────────────────────────────
+.nav-user {
+  margin-left: 0.5rem;
+}
+
+.nav-user__signin {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  padding: 0.35rem 0.75rem;
+  background: var(--accent);
+  color: var(--fg);
+  border: 1px solid var(--accent) !important;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  transition: filter 0.15s ease;
+}
+
+.nav-user__signin:hover {
+  filter: brightness(1.1);
+  text-decoration: none;
+}
+
+.nav-user__dropdown[hidden] {
+  display: none;
+}
+
+.nav-user__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: var(--tap);
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--fg);
+  font-size: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.nav-user__toggle:hover {
+  background: var(--panel);
+}
+
+.nav-user__avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.nav-user__name {
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-dropdown__item--btn {
+  background: none;
+  font-size: inherit;
+  font-family: inherit;
+  cursor: pointer;
+  color: var(--danger, #dc3545);
+}
+
+.nav-dropdown__item--btn:hover {
+  background: var(--panel);
+}
+
+.nav-dropdown__divider {
+  margin: 0.35rem 0;
+  border: none;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 640px) {
+  .nav-user__name {
+    display: none;
+  }
+  
+  .nav-user__toggle {
+    padding: 0.25rem;
+  }
+}
