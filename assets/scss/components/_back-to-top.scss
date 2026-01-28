@@ -2,8 +2,9 @@
 // Back to Top Button
 // ============================================================
 // Fixed floating button that scrolls to page top.
+// Uses CSS transitions for smooth fade in/out.
 //
-// TEST: Scroll down on any long page - button appears
+// TEST: Scroll down on any long page - button appears smoothly
 // ============================================================
 
 .back-to-top {
@@ -28,10 +29,14 @@
   
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   
-  // Smooth transition for all states including hidden
+  // Smooth transition for appearing (ease-in) and disappearing
+  // Using different timing for show vs hide for better UX
   opacity: 1;
   transform: translateY(0);
-  transition: transform 0.3s ease, opacity 0.3s ease, background 0.2s ease;
+  transition: 
+    transform 0.3s ease-out, 
+    opacity 0.4s ease-in,  // Ease-in for appearing
+    background 0.2s ease;
 }
 
 .back-to-top:hover {
@@ -45,12 +50,16 @@
   outline-offset: 2px;
 }
 
-// Hidden state with smooth fade out
+// Hidden state with smooth fade out (ease-out for disappearing)
 .back-to-top[hidden] {
   display: flex; // Override hidden's display:none to allow animation
   opacity: 0;
   pointer-events: none;
   transform: translateY(20px);
+  transition: 
+    transform 0.25s ease-in,  // Faster exit
+    opacity 0.25s ease-out,   // Ease-out for disappearing
+    background 0.2s ease;
 }
 
 @media (max-width: 600px) {
