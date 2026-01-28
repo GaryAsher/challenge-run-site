@@ -1,0 +1,201 @@
+<style>
+.profile-create {
+  max-width: 700px;
+  margin: 0 auto 2rem;
+}
+
+.profile-create__loading {
+  text-align: center;
+  padding: 3rem;
+}
+
+.profile-create__actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.profile-form__section {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.profile-form__section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.profile-form__section-title {
+  font-size: 1.125rem;
+  margin-bottom: 1rem;
+}
+
+.profile-form__oauth-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+}
+
+.profile-form__oauth-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+.profile-form__oauth-name {
+  font-weight: 600;
+  margin: 0;
+}
+
+.profile-form__oauth-provider {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.profile-form__field {
+  margin-bottom: 1.25rem;
+}
+
+.profile-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.profile-form__label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.profile-form__hint {
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+}
+
+.profile-form__input,
+.profile-form__textarea {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  font-size: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.profile-form__input:focus,
+.profile-form__textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-transparent);
+}
+
+.profile-form__input.is-valid {
+  border-color: var(--success);
+}
+
+.profile-form__input.is-invalid {
+  border-color: var(--danger);
+}
+
+.profile-form__validation {
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.profile-form__validation.is-valid {
+  color: var(--success);
+}
+
+.profile-form__validation.is-invalid {
+  color: var(--danger);
+}
+
+.profile-form__char-count {
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: right;
+  margin-top: 0.25rem;
+}
+
+.profile-form__games {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.profile-form__game-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.profile-form__game-checkbox:hover {
+  background: var(--bg-tertiary);
+}
+
+.profile-form__game-checkbox input {
+  margin: 0;
+}
+
+.profile-form__game-checkbox input:checked + span {
+  font-weight: 500;
+}
+
+.profile-form__game-checkbox:has(input:checked) {
+  background: var(--accent-transparent);
+  border-color: var(--accent);
+}
+
+.profile-form__notice {
+  background: var(--bg-secondary);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.profile-form__actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.profile-form__message {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.profile-form__message.is-error {
+  background: var(--danger-bg, rgba(220, 53, 69, 0.1));
+  color: var(--danger);
+}
+
+.profile-form__message.is-success {
+  background: var(--success-bg, rgba(40, 167, 69, 0.1));
+  color: var(--success);
+}
+
+@media (max-width: 600px) {
+  .profile-form__row {
+    grid-template-columns: 1fr;
+  }
+  
+  .profile-create__actions,
+  .profile-form__actions {
+    flex-direction: column;
+  }
+}
+</style>
