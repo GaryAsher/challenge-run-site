@@ -6,21 +6,12 @@ This document consolidates all reminders, future ideas, and planned features for
 
 # Priority Roadmap
 
-### /rules/ page
-- [ ] Consider making "Summary Ruleset" easier to read somehow.
-
-### Metadata
-- [ ] Do not allow "Deathless" for mini-challenges, since it is effectively first-playthrough. Do we add separate set of Standard Challenges for Mini-Challenges and Player-Made Challenges?
-- [ ] How do we find all genres?
-    - Can we find a list of every genre ever?
-    - Do we create a script that finds genres, and validates user-submitted info?
-
 ## Forms & Submissions
 ### New Game Submission form:
 - [ ] Check Discord Webhook. Previously not working, but updated recently.
-- [ ] Update form to use 3-tier category system. (Excluding Player-Made Challenges for now.)
-    - Update Google Apps Script, Google Sheet, and Google Form accordingly.
-    - Change wording in Game Submission form to say Mini-Challenges.
+
+### New Run Submission:
+- [ ] Test variables to ensure there are no errors.
 
 ### Modded Game Submisson
 - [ ] Allow Modded versions of games to accomodate for the modded community challenges.
@@ -71,11 +62,19 @@ featured_runs:
 - [ ] Image optimization - convert game covers to WebP format
 - [ ] Consider prefetching game pages on hover
 
+### Metadata
+- [ ] How do we find all genres?
+    - Can we find a list of every genre ever?
+    - Do we create a script that finds genres, and validates user-submitted info?
+
 ## UX Improvements
 - [ ] Loading state indicator/symbol for JavaScript-driven filtering
 - [ ] Add a "Back to Top" button for long pages
 - [ ] Add keyboard navigation for filter dropdowns (arrow keys)
 - [ ] Add "Copy Link" button for sharing specific filtered views
+
+### /rules/ page
+- [ ] Consider making "Summary Ruleset" easier to read somehow.
 
 ---
 
