@@ -100,13 +100,7 @@
     <div class="rule-builder-content" id="rule-builder-content" hidden>
       <div class="rule-builder__selections">
 
-        <!-- Run Name (text input for quick reference) -->
-        <div class="rule-builder__group" data-rb-order="0">
-          <label class="rule-builder__label">Run Name <span class="muted">(optional)</span></label>
-          <input type="text" id="rb-run-name" class="rule-builder__input" placeholder="e.g. My Hitless Any% Attempt" />
-        </div>
-
-        <!-- 1. Run Type (dropdown: Full Runs, Mini-Challenges, Community Created) -->
+        <!-- 1. Run Type (typeahead single-select: Full Runs, Mini-Challenges, Community Created) -->
         {% assign has_full_runs = false %}
         {% assign has_mini_challenges = false %}
         {% assign has_player_made = false %}
@@ -120,14 +114,12 @@
         {% if has_player_made %}{% assign run_type_count = run_type_count | plus: 1 %}{% endif %}
         
         {% if run_type_count > 1 or has_mini_challenges or has_player_made %}
-        <div class="rule-builder__group" data-rb-order="1">
-          <label class="rule-builder__label">Run Type</label>
-          <select class="rule-builder__select" id="rb-run-type">
-            <option value="">-- Select Run Type --</option>
-            {% if has_full_runs %}<option value="full_runs" selected>🏁 Full Runs</option>{% endif %}
-            {% if has_mini_challenges %}<option value="mini_challenges">⚡ Mini-Challenges</option>{% endif %}
-            {% if has_player_made %}<option value="player_made">🎨 Community Created</option>{% endif %}
-          </select>
+        <div class="rule-builder__group filter-group" id="rb-run-type-container" data-rb-order="1">
+          <label class="rule-builder__label filter-group__label">Run Type</label>
+          <div class="filter-input__wrap">
+            <input type="text" id="rb-run-type-search" class="filter-input__field" placeholder="Select run type..." autocomplete="off" />
+            <div class="filter-input__suggestions" id="rb-run-type-suggestions" hidden></div>
+          </div>
         </div>
         {% endif %}
 
@@ -722,6 +714,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const findRunnersBtn = document.getElementById('rb-find-runners');
 
   // Typeahead containers
+  const rbRunTypeContainer = document.getElementById('rb-run-type-container');
   const rbCategoryContainer = document.getElementById('rb-category-container');
   const rbCharacterContainer = document.getElementById('rb-character-container');
   const rbChallengeContainer = document.getElementById('rb-challenge-container');
@@ -729,13 +722,31 @@ document.addEventListener('DOMContentLoaded', function() {
   const rbGlitchContainer = document.getElementById('rb-glitch-container');
 
   // State
-  let selectedRunType = 'full_runs'; // Default to full_runs
+  let selectedRunType = null; // Will be set to default after availableRunTypes is defined
   let selectedCategory = null;
   let selectedCommunityChallenge = null;
   let selectedCharacter = null;  // single-select
   let selectedGlitch = null;     // single-select
   let selectedChallenges = [];   // multi-select
   let selectedRestrictions = []; // multi-select
+
+  // Available Run Types (from Jekyll data)
+  const availableRunTypes = [
+    {% if game.full_runs and game.full_runs.size > 0 %}
+    { id: 'full_runs', label: '🏁 Full Runs' },
+    {% endif %}
+    {% if game.mini_challenges and game.mini_challenges.size > 0 %}
+    { id: 'mini_challenges', label: '⚡ Mini-Challenges' },
+    {% endif %}
+    {% if game.player_made and game.player_made.size > 0 %}
+    { id: 'player_made', label: '🎨 Community Created' },
+    {% endif %}
+  ].filter(x => x.id);
+
+  // Set default run type
+  if (availableRunTypes.length > 0) {
+    selectedRunType = { id: availableRunTypes[0].id, label: availableRunTypes[0].label };
+  }
   let runName = ''; // Optional run name for reference
 
   // DOM elements for new fields
@@ -978,10 +989,10 @@ document.addEventListener('DOMContentLoaded', function() {
     input.addEventListener('input', debounce(() => renderSuggestions(input.value), 100));
     input.addEventListener('keydown', (e) => { if (e.key === 'Escape') { close(); input.blur(); } });
     input.addEventListener('blur', () => {
-      // Small delay to allow click on suggestions to register
+      // Longer delay to allow click on suggestions to register properly
       setTimeout(() => {
         if (isOpen) close();
-      }, 150);
+      }, 200);
     });
 
     // Initial display
@@ -1022,8 +1033,8 @@ document.addEventListener('DOMContentLoaded', function() {
       onUpdate: updateRuleBuilder,
       filterFn: (item) => {
         // Filter categories by selected run type
-        if (!selectedRunType) return true;
-        return item.tier === selectedRunType;
+        if (!selectedRunType || !selectedRunType.id) return true;
+        return item.tier === selectedRunType.id;
       }
     });
   }
@@ -1099,26 +1110,24 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Community Challenge select (kept as regular select since it has optgroups)
-  // Run Type dropdown change handler
-  if (runTypeSelect) {
-    runTypeSelect.addEventListener('change', function() {
-      selectedRunType = this.value || 'full_runs';
-      // Clear category selection when run type changes
-      selectedCategory = null;
-      if (categoryTypeahead) {
-        categoryTypeahead.clear();
-        categoryTypeahead.refresh();
-      }
-      updateRuleBuilder();
-    });
-  }
-
-  // Run Name input handler
-  if (runNameInput) {
-    runNameInput.addEventListener('input', function() {
-      runName = this.value.trim();
-      updateRuleBuilder();
+  // Run Type typeahead
+  let runTypeTypeahead;
+  if (rbRunTypeContainer && availableRunTypes.length > 1) {
+    runTypeTypeahead = createTypeahead({
+      container: rbRunTypeContainer,
+      items: availableRunTypes,
+      singleSelect: true,
+      getValue: () => selectedRunType,
+      setValue: (val) => { 
+        selectedRunType = val ? { id: val.id, label: val.label } : null;
+        // Clear category selection when run type changes
+        selectedCategory = null;
+        if (categoryTypeahead) {
+          categoryTypeahead.clear();
+          categoryTypeahead.refresh();
+        }
+      },
+      onUpdate: updateRuleBuilder
     });
   }
 
@@ -1139,12 +1148,10 @@ document.addEventListener('DOMContentLoaded', function() {
   if (resetBtn) {
     resetBtn.addEventListener('click', function() {
       // Reset run type to default
-      selectedRunType = 'full_runs';
-      if (runTypeSelect) runTypeSelect.value = 'full_runs';
-      
-      // Reset run name
-      runName = '';
-      if (runNameInput) runNameInput.value = '';
+      if (availableRunTypes.length > 0) {
+        selectedRunType = { id: availableRunTypes[0].id, label: availableRunTypes[0].label };
+      }
+      if (runTypeTypeahead) runTypeTypeahead.refresh();
       
       selectedCategory = null;
       selectedCommunityChallenge = null;
@@ -1226,15 +1233,10 @@ document.addEventListener('DOMContentLoaded', function() {
       if (hasContent) {
         let summaryHtml = '<div class="rule-builder__rules-content">';
 
-        // Show run name if provided
-        if (runName) {
-          summaryHtml += `<p class="rule-builder__rule-item rule-builder__run-name"><strong>📝 ${escapeHtml(runName)}</strong></p>`;
-        }
-
         // Show run type
-        const runTypeLabels = { full_runs: '🏁 Full Run', mini_challenges: '⚡ Mini-Challenge', player_made: '🎨 Community Created' };
-        const runTypeLabel = runTypeLabels[selectedRunType] || selectedRunType;
-        summaryHtml += `<p class="rule-builder__rule-item"><strong>Run Type:</strong> ${escapeHtml(runTypeLabel)}</p>`;
+        if (selectedRunType && selectedRunType.label) {
+          summaryHtml += `<p class="rule-builder__rule-item"><strong>Run Type:</strong> ${escapeHtml(selectedRunType.label)}</p>`;
+        }
 
         if (selectedCategory) {
           summaryHtml += `<p class="rule-builder__rule-item"><strong>Category:</strong> ${escapeHtml(selectedCategory.label)}</p>`;
