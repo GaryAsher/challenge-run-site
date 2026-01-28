@@ -675,10 +675,55 @@ const CONFIG = {
     const btn = $('backToTop');
     if (!btn) return;
     
-    // Show/hide based on scroll position
-    window.addEventListener('scroll', () => {
-      btn.hidden = window.scrollY < 300;
-    }, { passive: true });
+    // Configuration
+    const MIN_PAGE_HEIGHT = 600;    // Minimum scrollable height to show button
+    const SCROLL_PERCENTAGE = 0.75; // Show button at 75% of page scroll
+    const FALLBACK_THRESHOLD = 300; // Fallback for shorter pages
+    
+    /**
+     * Calculate whether to show the button based on scroll position.
+     * - For pages with scrollable height >= MIN_PAGE_HEIGHT: show at SCROLL_PERCENTAGE
+     * - For shorter pages: use FALLBACK_THRESHOLD
+     */
+    function shouldShowButton() {
+      const scrollTop = window.scrollY;
+      const documentHeight = document.documentElement.scrollHeight;
+      const windowHeight = window.innerHeight;
+      const scrollableHeight = documentHeight - windowHeight;
+      
+      // If page isn't scrollable at all, don't show button
+      if (scrollableHeight <= 0) return false;
+      
+      // For pages with enough scrollable content, use percentage-based threshold
+      if (scrollableHeight >= MIN_PAGE_HEIGHT) {
+        const scrollPercentage = scrollTop / scrollableHeight;
+        return scrollPercentage >= SCROLL_PERCENTAGE;
+      }
+      
+      // For shorter pages, use a fixed threshold (but still require some scroll)
+      return scrollTop >= Math.min(FALLBACK_THRESHOLD, scrollableHeight * 0.5);
+    }
+    
+    // Track visibility state for smooth transitions
+    let isVisible = false;
+    
+    function updateButtonVisibility() {
+      const shouldShow = shouldShowButton();
+      
+      if (shouldShow !== isVisible) {
+        isVisible = shouldShow;
+        btn.hidden = !shouldShow;
+      }
+    }
+    
+    // Initial state
+    updateButtonVisibility();
+    
+    // Show/hide based on scroll position with passive listener for performance
+    window.addEventListener('scroll', updateButtonVisibility, { passive: true });
+    
+    // Also update on resize (viewport height changes affect calculations)
+    window.addEventListener('resize', updateButtonVisibility, { passive: true });
     
     // Scroll to top on click
     safeOn(btn, 'click', () => {
