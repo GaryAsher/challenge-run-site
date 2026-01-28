@@ -34,57 +34,61 @@ layout: default
 
     <div class="runner-right">
       <div class="runner-links">
-        {% if page.twitch %}
-          <a class="runner-link" href="{{ page.twitch }}" target="_blank" rel="noreferrer">
+        {% comment %} Support both nested socials and flat fields for backwards compatibility {% endcomment %}
+        {% assign s = page.socials %}
+        
+        {% assign twitch_url = s.twitch | default: page.twitch %}
+        {% assign youtube_url = s.youtube | default: page.youtube %}
+        {% assign discord_url = s.discord | default: page.discord %}
+        {% assign steam_url = s.steam | default: page.steam_id %}
+        {% assign twitter_url = s.twitter | default: page.twitter %}
+        {% assign bluesky_url = s.bluesky | default: page.bluesky %}
+        {% assign website_url = s.website | default: page.personal_website %}
+      
+        {% if twitch_url and twitch_url != "" %}
+          <a class="runner-link" href="{{ twitch_url }}" target="_blank" rel="noreferrer">
             <span>Twitch</span>
           </a>
         {% endif %}
-
-     <div class="runner-links">
-       {% assign s = page.socials %}
-     
-       {% if s.twitch %}
-         <a class="runner-link" href="{{ s.twitch }}" target="_blank" rel="noreferrer">
-           <span>Twitch</span>
-         </a>
-       {% endif %}
-     
-       {% if s.youtube %}
-         <a class="runner-link" href="{{ s.youtube }}" target="_blank" rel="noreferrer">
-           <span>YouTube</span>
-         </a>
-       {% endif %}
-     
-       {% if s.discord %}
-         <a class="runner-link" href="{{ s.discord }}" target="_blank" rel="noreferrer">
-           <span>Discord</span>
-         </a>
-       {% endif %}
-     
-       {% if s.steam %}
-         <a class="runner-link" href="{{ s.steam }}" target="_blank" rel="noreferrer">
-           <span>Steam</span>
-         </a>
-       {% endif %}
-     
-       {% if s.twitter %}
-         <a class="runner-link" href="{{ s.twitter }}" target="_blank" rel="noreferrer">
-           <span>Twitter/X</span>
-         </a>
-       {% endif %}
-     
-       {% if s.bluesky %}
-         <a class="runner-link" href="{{ s.bluesky }}" target="_blank" rel="noreferrer">
-           <span>Bluesky</span>
-         </a>
-       {% endif %}
-     
-       {% if s.website %}
-         <a class="runner-link" href="{{ s.website }}" target="_blank" rel="noreferrer">
-           <span>Website</span>
-         </a>
-       {% endif %}
-     </div>
+      
+        {% if youtube_url and youtube_url != "" %}
+          <a class="runner-link" href="{{ youtube_url }}" target="_blank" rel="noreferrer">
+            <span>YouTube</span>
+          </a>
+        {% endif %}
+      
+        {% if discord_url and discord_url != "" %}
+          <a class="runner-link" href="{{ discord_url }}" target="_blank" rel="noreferrer">
+            <span>Discord</span>
+          </a>
+        {% endif %}
+      
+        {% if steam_url and steam_url != "" %}
+          <a class="runner-link" href="{{ steam_url }}" target="_blank" rel="noreferrer">
+            <span>Steam</span>
+          </a>
+        {% endif %}
+      
+        {% if twitter_url and twitter_url != "" %}
+          <a class="runner-link" href="{{ twitter_url }}" target="_blank" rel="noreferrer">
+            <span>Twitter/X</span>
+          </a>
+        {% endif %}
+      
+        {% if bluesky_url and bluesky_url != "" %}
+          <a class="runner-link" href="{{ bluesky_url }}" target="_blank" rel="noreferrer">
+            <span>Bluesky</span>
+          </a>
+        {% endif %}
+      
+        {% if website_url and website_url != "" %}
+          <a class="runner-link" href="{{ website_url }}" target="_blank" rel="noreferrer">
+            <span>Website</span>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </section>
 
   <!-- ============================================================
        Runner Tabs (Profile / Runs / Other)
