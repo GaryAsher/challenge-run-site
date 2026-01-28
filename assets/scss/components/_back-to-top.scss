@@ -8,7 +8,7 @@
 
 .back-to-top {
   position: fixed;
-  bottom: 2rem;
+  bottom: 5rem; // Moved up to avoid overlapping footer theme picker
   right: 2rem;
   z-index: 90;
   
@@ -27,7 +27,11 @@
   cursor: pointer;
   
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease;
+  
+  // Smooth transition for all states including hidden
+  opacity: 1;
+  transform: translateY(0);
+  transition: transform 0.3s ease, opacity 0.3s ease, background 0.2s ease;
 }
 
 .back-to-top:hover {
@@ -41,7 +45,9 @@
   outline-offset: 2px;
 }
 
+// Hidden state with smooth fade out
 .back-to-top[hidden] {
+  display: flex; // Override hidden's display:none to allow animation
   opacity: 0;
   pointer-events: none;
   transform: translateY(20px);
@@ -49,7 +55,7 @@
 
 @media (max-width: 600px) {
   .back-to-top {
-    bottom: 1rem;
+    bottom: 4rem; // Adjusted for mobile
     right: 1rem;
     width: 44px;
     height: 44px;
