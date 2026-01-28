@@ -32,7 +32,7 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Request community translation help early
 
 ### 4. Glossary Page
-- Terms to define: Hit, Damage, Death, Hard CC, Soft CC, Hitless vs Damageless, Full Run, Mini-Challenge, etc.
+- [ ] Terms to define: Hit, Damage, Death, Hard CC, Soft CC, Hitless vs Damageless, Full Run, Mini-Challenge, etc.
 - [ ] Add content that would work as supporting documents.
 
 ### 5. Support Page
