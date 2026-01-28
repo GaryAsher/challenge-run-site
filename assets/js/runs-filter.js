@@ -217,6 +217,11 @@ document.addEventListener('DOMContentLoaded', function() {
           if (singleSelect) {
             setValue({ id: btn.dataset.id, label: item[labelKey] || item });
             updateInputDisplay();
+            // Blur the input after selection to deactivate the field
+            // This matches Rule Builder behavior - after selection, textbox is no longer active
+            setTimeout(() => {
+              input.blur();
+            }, 0);
           } else {
             selectedSet.add(norm(btn.dataset.id));
             input.value = '';
@@ -253,6 +258,10 @@ document.addEventListener('DOMContentLoaded', function() {
     function toggle() {
       if (isOpen) {
         close();
+        // For single-select, also blur when toggling closed
+        if (singleSelect) {
+          input.blur();
+        }
       } else {
         open();
       }
@@ -277,12 +286,18 @@ document.addEventListener('DOMContentLoaded', function() {
       }, 150);
     });
     input.addEventListener('input', debounce(() => {
+      // For single-select with a value, allow typing to search/change selection
       if (!isOpen) open();
       renderSuggestions(input.value);
     }, 100));
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         close();
+        input.blur();
+      }
+      // For single-select: Enter key should close and blur if suggestions closed
+      if (singleSelect && e.key === 'Enter' && !isOpen) {
+        e.preventDefault();
         input.blur();
       }
     });
