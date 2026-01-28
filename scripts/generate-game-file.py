@@ -7,7 +7,7 @@ Create a standardized CRC game file in _queue_games/<game_id>.md
 This script reads from ENVIRONMENT VARIABLES (set by GitHub Actions):
   - GAME_NAME (required)
   - GAME_ID (required)
-  - CATEGORIES (required, newline-separated)
+  - FULL_RUN_CATEGORIES (required, newline-separated)
   - CHALLENGES (required, comma-separated challenge types)
   - CHAR_ENABLED (optional, "true"/"false")
   - CHAR_LABEL (optional, e.g., "Weapon / Aspect")
@@ -25,15 +25,16 @@ Section Order (matches website navigation):
   2. Game Info (name, aliases, genres, platforms)
   3. Tabs
   4. General Rules
-  5. Standard Challenges
-  6. Community Challenges
-  7. Restrictions
-  8. Glitch Categories
-  9. Run Categories
-  10. Timing Method
-  11. Character Options
-  12. Cover/Display
-  13. Submission Metadata
+  5. Challenges (Full Runs)
+  6. Restrictions & Conditions
+  7. Glitch Categories
+  8. Full Runs
+  9. Mini-Challenges
+  10. Community Created Runs
+  11. Timing Method
+  12. Character Options
+  13. Cover/Display
+  14. Submission Metadata
 """
 
 from __future__ import annotations
@@ -124,7 +125,7 @@ def build_yaml_list(items: List[str], indent: int = 0) -> List[str]:
 
 
 def build_categories_yaml(categories: List[str]) -> List[str]:
-    """Build categories_data YAML section."""
+    """Build categories YAML section."""
     lines = []
     for cat in categories:
         slug = slugify(cat)
@@ -155,7 +156,7 @@ def main() -> None:
     # Read environment variables
     game_name = os.environ.get("GAME_NAME", "").strip()
     game_id = os.environ.get("GAME_ID", "").strip()
-    categories_raw = os.environ.get("CATEGORIES", "").strip()
+    full_run_categories_raw = os.environ.get("FULL_RUN_CATEGORIES", "").strip()
     challenges_raw = os.environ.get("CHALLENGES", "").strip()
     char_enabled = as_bool(os.environ.get("CHAR_ENABLED", "false"))
     char_label = os.environ.get("CHAR_LABEL", "Character").strip()
@@ -173,8 +174,8 @@ def main() -> None:
     if not game_id:
         print("ERROR: Could not generate GAME_ID", file=sys.stderr)
         sys.exit(1)
-    if not categories_raw:
-        print("ERROR: CATEGORIES is required", file=sys.stderr)
+    if not full_run_categories_raw:
+        print("ERROR: FULL_RUN_CATEGORIES is required", file=sys.stderr)
         sys.exit(1)
     if not out_file:
         print("ERROR: OUT_FILE is required", file=sys.stderr)
@@ -187,7 +188,7 @@ def main() -> None:
         details = {}
 
     # Parse lists
-    categories = parse_newline_list(categories_raw)
+    full_run_categories = parse_newline_list(full_run_categories_raw)
     challenges = parse_comma_list(challenges_raw)
 
     # Extract additional fields from details
@@ -199,6 +200,10 @@ def main() -> None:
     
     restrictions_raw = details.get("restrictions", "")
     restrictions = parse_newline_list(restrictions_raw) if restrictions_raw else []
+    
+    # Mini-challenge categories from details
+    mini_challenge_categories_raw = details.get("mini_challenge_categories", "")
+    mini_challenge_categories = parse_newline_list(mini_challenge_categories_raw) if mini_challenge_categories_raw else []
     
     glitch_structure = details.get("glitch_category_structure", "")
     glitch_docs = details.get("glitches_doc", "")
@@ -267,9 +272,10 @@ def main() -> None:
     lines.append('general_rules: ""')
     
     # -------------------------------------------------------------------------
-    # STANDARD CHALLENGES
+    # CHALLENGES (FULL RUNS)
     # -------------------------------------------------------------------------
-    lines.extend(section_header("STANDARD CHALLENGE TYPES"))
+    lines.extend(section_header("CHALLENGES (FULL RUNS)"))
+    lines.append("# Challenge types that can be stacked on Full Runs")
     lines.append("challenges_data:")
     if challenges:
         lines.extend(build_challenges_yaml(challenges))
@@ -277,15 +283,9 @@ def main() -> None:
         lines.append("  []")
     
     # -------------------------------------------------------------------------
-    # COMMUNITY CHALLENGES
+    # RESTRICTIONS & CONDITIONS
     # -------------------------------------------------------------------------
-    lines.extend(section_header("COMMUNITY CHALLENGES"))
-    lines.append("community_challenges: []")
-    
-    # -------------------------------------------------------------------------
-    # RESTRICTIONS
-    # -------------------------------------------------------------------------
-    lines.extend(section_header("OPTIONAL RESTRICTIONS"))
+    lines.extend(section_header("RESTRICTIONS & CONDITIONS"))
     lines.append("restrictions_data:")
     if restrictions:
         for r in restrictions:
@@ -329,14 +329,50 @@ def main() -> None:
             lines.append(f"# - {doc_line}")
     
     # -------------------------------------------------------------------------
-    # RUN CATEGORIES
+    # FULL RUNS
     # -------------------------------------------------------------------------
-    lines.extend(section_header("RUN CATEGORIES"))
-    lines.append("categories_data:")
-    if categories:
-        lines.extend(build_categories_yaml(categories))
+    lines.extend(section_header("FULL RUNS"))
+    lines.append("# Run Type: Full Runs - require reaching some kind of ending")
+    lines.append("full_runs:")
+    if full_run_categories:
+        lines.extend(build_categories_yaml(full_run_categories))
     else:
         lines.append("  []")
+    
+    # -------------------------------------------------------------------------
+    # MINI-CHALLENGES
+    # -------------------------------------------------------------------------
+    lines.extend(section_header("MINI-CHALLENGES"))
+    lines.append("# Run Type: Mini-Challenges - individual level, boss, or short segments")
+    lines.append("# Challenges for Mini-Challenges are configured separately by moderators")
+    lines.append("# Note: Deathless is excluded by default for Mini-Challenges")
+    lines.append("mini_challenges:")
+    if mini_challenge_categories:
+        lines.extend(build_categories_yaml(mini_challenge_categories))
+    else:
+        lines.append("  []")
+    lines.append("")
+    lines.append("# Challenges allowed for Mini-Challenges (moderators configure this)")
+    lines.append("# Deathless is excluded by default")
+    lines.append("mini_challenges_allowed_challenges: []")
+    
+    # -------------------------------------------------------------------------
+    # COMMUNITY CREATED RUNS
+    # -------------------------------------------------------------------------
+    lines.extend(section_header("COMMUNITY CREATED RUNS"))
+    lines.append("# Run Type: Community Created - player-made challenges promoted from forum")
+    lines.append("# These are unique challenges made by community members")
+    lines.append("community_created: []")
+    lines.append("# Example:")
+    lines.append("#   - slug: no-dash")
+    lines.append('#     label: "No Dash"')
+    lines.append('#     description: "Complete a run without using the dash ability."')
+    lines.append("#     creator: runner-slug")
+    lines.append("#     created_date: 2026-01-15")
+    lines.append("#     promoted_from_forum: true")
+    lines.append("")
+    lines.append("# Challenges allowed for Community Created Runs (moderators configure this)")
+    lines.append("community_created_allowed_challenges: []")
     
     # -------------------------------------------------------------------------
     # TIMING METHOD
