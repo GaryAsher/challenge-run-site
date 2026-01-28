@@ -1,0 +1,134 @@
+---
+layout: default
+title: "Signing In..."
+---
+
+<div class="page-width">
+  <div class="auth-callback">
+    <div class="auth-callback__content">
+      <div class="auth-callback__spinner">
+        <div class="spinner spinner--large"></div>
+      </div>
+      <h1 class="auth-callback__title">Signing you in...</h1>
+      <p class="auth-callback__message muted" id="auth-message">Please wait while we complete the sign-in process.</p>
+    </div>
+  </div>
+</div>
+
+<style>
+.auth-callback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+}
+
+.auth-callback__content {
+  max-width: 400px;
+  padding: 2rem;
+}
+
+.auth-callback__spinner {
+  margin-bottom: 1.5rem;
+}
+
+.spinner--large {
+  width: 48px;
+  height: 48px;
+  border-width: 4px;
+}
+
+.auth-callback__title {
+  margin-bottom: 0.5rem;
+}
+
+.auth-callback__message {
+  margin-bottom: 1rem;
+}
+
+.auth-callback__error {
+  color: var(--danger);
+  background: var(--danger-bg, rgba(220, 53, 69, 0.1));
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.auth-callback__actions {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+</style>
+
+<script type="module">
+import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
+
+(async function() {
+  const messageEl = document.getElementById('auth-message');
+  
+  try {
+    // Initialize auth (this handles the OAuth callback automatically)
+    await CRCAuth.init();
+    
+    // Small delay to ensure session is processed
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Check if we're now signed in
+    if (CRCAuth.isSignedIn()) {
+      const user = CRCAuth.getUser();
+      const profile = CRCAuth.getProfile();
+      const metadata = CRCAuth.getProviderMetadata();
+      
+      messageEl.textContent = `Welcome, ${metadata.providerUsername || 'Runner'}!`;
+      
+      // Determine where to redirect
+      let redirectUrl = '/';
+      
+      // Check for stored redirect URL
+      const storedRedirect = sessionStorage.getItem('crc_auth_redirect');
+      if (storedRedirect) {
+        redirectUrl = storedRedirect;
+        sessionStorage.removeItem('crc_auth_redirect');
+      }
+      // If no profile, redirect to create profile
+      else if (!profile) {
+        redirectUrl = '/profile/create/';
+      }
+      // If pending profile, redirect to profile status
+      else if (profile._isPending) {
+        redirectUrl = '/profile/status/';
+      }
+      // Otherwise go to their profile
+      else {
+        redirectUrl = `/runners/${profile.runner_id}/`;
+      }
+      
+      // Add slight delay so user sees the welcome message
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      window.location.href = redirectUrl;
+    } else {
+      // Not signed in - might be an error
+      throw new Error('Sign-in was not completed');
+    }
+  } catch (error) {
+    console.error('Auth callback error:', error);
+    
+    document.querySelector('.auth-callback__spinner').style.display = 'none';
+    document.querySelector('.auth-callback__title').textContent = 'Sign-in Failed';
+    
+    messageEl.innerHTML = `
+      <div class="auth-callback__error">
+        ${error.message || 'An error occurred during sign-in. Please try again.'}
+      </div>
+      <div class="auth-callback__actions">
+        <a href="/sign-in/" class="btn btn--primary">Try Again</a>
+        <a href="/" class="btn">Go Home</a>
+      </div>
+    `;
+  }
+})();
+</script>
