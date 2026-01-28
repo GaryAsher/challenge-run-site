@@ -1,0 +1,418 @@
+---
+layout: default
+title: "Create Runner Profile"
+---
+
+<div class="page-width">
+  <p class="muted mb-3">
+    <a href="{{ '/sign-in/' | relative_url }}">← Back to Sign In</a>
+  </p>
+
+  <div class="profile-create">
+    <!-- Not signed in state -->
+    <div id="not-signed-in" class="card" hidden>
+      <h1>Create Runner Profile</h1>
+      <p class="muted">You need to sign in before creating a profile.</p>
+      <a href="{{ '/sign-in/' | relative_url }}" class="btn btn--primary">Sign In</a>
+    </div>
+
+    <!-- Already has profile state -->
+    <div id="has-profile" class="card" hidden>
+      <h1>You Already Have a Profile</h1>
+      <p class="muted">You can view or edit your existing profile.</p>
+      <div class="profile-create__actions">
+        <a href="#" id="view-profile-link" class="btn btn--primary">View Profile</a>
+        <a href="{{ '/profile/edit/' | relative_url }}" class="btn">Edit Profile</a>
+      </div>
+    </div>
+
+    <!-- Has pending profile state -->
+    <div id="has-pending" class="card" hidden>
+      <h1>Profile Pending Approval</h1>
+      <p class="muted">Your profile is awaiting moderator review. You'll be notified once it's approved.</p>
+      <a href="{{ '/profile/status/' | relative_url }}" class="btn btn--primary">Check Status</a>
+    </div>
+
+    <!-- Create profile form -->
+    <div id="create-form-container" hidden>
+      <div class="card">
+        <h1>Create Your Runner Profile</h1>
+        <p class="muted mb-4">
+          Fill out the form below to create your runner profile. Your profile will be reviewed by a moderator before it goes live.
+          <span class="required-hint"><span class="required-marker">*</span> indicates required fields</span>
+        </p>
+
+        <form id="create-profile-form" class="profile-form" novalidate>
+          <!-- Account Info (from OAuth) -->
+          <div class="profile-form__section">
+            <h2 class="profile-form__section-title">Linked Account</h2>
+            <div class="profile-form__oauth-info">
+              <img id="oauth-avatar" class="profile-form__oauth-avatar" src="/assets/img/site/default-runner.png" alt="" />
+              <div class="profile-form__oauth-details">
+                <p class="profile-form__oauth-name" id="oauth-name">Loading...</p>
+                <p class="profile-form__oauth-provider muted" id="oauth-provider">via Discord</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Basic Info -->
+          <div class="profile-form__section">
+            <h2 class="profile-form__section-title">Basic Info</h2>
+
+            <div class="profile-form__field">
+              <label for="runner_id" class="profile-form__label">
+                Runner ID <span class="required-marker">*</span>
+              </label>
+              <div class="profile-form__hint">
+                This will be your unique URL: <code>challengeruncentral.com/runners/<span id="runner-id-preview">your-id</span>/</code>
+              </div>
+              <input 
+                type="text" 
+                id="runner_id" 
+                name="runner_id"
+                class="profile-form__input"
+                placeholder="your-runner-id"
+                required
+                autocomplete="off"
+              />
+              <div class="profile-form__validation" id="runner-id-validation"></div>
+            </div>
+
+            <div class="profile-form__field">
+              <label for="display_name" class="profile-form__label">
+                Display Name <span class="required-marker">*</span>
+              </label>
+              <div class="profile-form__hint">How your name appears on the site (2-50 characters)</div>
+              <input 
+                type="text" 
+                id="display_name" 
+                name="display_name"
+                class="profile-form__input"
+                placeholder="Your Display Name"
+                minlength="2"
+                maxlength="50"
+                required
+              />
+            </div>
+
+            <div class="profile-form__row">
+              <div class="profile-form__field">
+                <label for="pronouns" class="profile-form__label">Pronouns</label>
+                <input 
+                  type="text" 
+                  id="pronouns" 
+                  name="pronouns"
+                  class="profile-form__input"
+                  placeholder="e.g., they/them"
+                  maxlength="30"
+                />
+              </div>
+
+              <div class="profile-form__field">
+                <label for="location" class="profile-form__label">Location</label>
+                <input 
+                  type="text" 
+                  id="location" 
+                  name="location"
+                  class="profile-form__input"
+                  placeholder="e.g., United States"
+                  maxlength="50"
+                />
+              </div>
+            </div>
+
+            <div class="profile-form__field">
+              <label for="bio" class="profile-form__label">Bio</label>
+              <div class="profile-form__hint">Tell us about yourself (max 1000 characters)</div>
+              <textarea 
+                id="bio" 
+                name="bio"
+                class="profile-form__textarea"
+                placeholder="A short bio about yourself..."
+                maxlength="1000"
+                rows="4"
+              ></textarea>
+              <div class="profile-form__char-count"><span id="bio-count">0</span>/1000</div>
+            </div>
+          </div>
+
+          <!-- Social Links -->
+          <div class="profile-form__section">
+            <h2 class="profile-form__section-title">Social Links</h2>
+            <p class="muted mb-3">Add links to your social profiles (all optional)</p>
+
+            <div class="profile-form__field">
+              <label for="social_twitch" class="profile-form__label">Twitch</label>
+              <input type="url" id="social_twitch" name="social_twitch" class="profile-form__input" placeholder="https://www.twitch.tv/your_username" />
+            </div>
+
+            <div class="profile-form__field">
+              <label for="social_youtube" class="profile-form__label">YouTube</label>
+              <input type="url" id="social_youtube" name="social_youtube" class="profile-form__input" placeholder="https://www.youtube.com/@your_channel" />
+            </div>
+
+            <div class="profile-form__field">
+              <label for="social_twitter" class="profile-form__label">Twitter / X</label>
+              <input type="url" id="social_twitter" name="social_twitter" class="profile-form__input" placeholder="https://twitter.com/your_handle" />
+            </div>
+
+            <div class="profile-form__field">
+              <label for="social_bluesky" class="profile-form__label">Bluesky</label>
+              <input type="url" id="social_bluesky" name="social_bluesky" class="profile-form__input" placeholder="https://bsky.app/profile/your.handle" />
+            </div>
+
+            <div class="profile-form__field">
+              <label for="social_discord" class="profile-form__label">Discord Server</label>
+              <input type="url" id="social_discord" name="social_discord" class="profile-form__input" placeholder="https://discord.gg/invite_code" />
+            </div>
+
+            <div class="profile-form__field">
+              <label for="social_website" class="profile-form__label">Personal Website</label>
+              <input type="url" id="social_website" name="social_website" class="profile-form__input" placeholder="https://your-website.com" />
+            </div>
+          </div>
+
+          <!-- Games -->
+          <div class="profile-form__section">
+            <h2 class="profile-form__section-title">Games You Play</h2>
+            <p class="muted mb-3">Select games you're interested in running (can be changed later)</p>
+            <div class="profile-form__games" id="games-list">
+              <p class="muted">Loading games...</p>
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <div class="profile-form__section">
+            <div class="profile-form__notice">
+              <strong>📋 Moderation Notice</strong>
+              <p class="muted mb-0">
+                Your profile will be reviewed by a moderator before it appears on the site. 
+                This usually takes 1-2 days. You'll be able to submit runs once approved.
+              </p>
+            </div>
+
+            <div class="profile-form__actions">
+              <button type="submit" class="btn btn--primary" id="submit-btn">
+                <span class="btn__text">Submit for Review</span>
+                <span class="btn__loading" hidden>
+                  <span class="spinner" aria-hidden="true"></span>
+                  Submitting...
+                </span>
+              </button>
+            </div>
+
+            <div class="profile-form__message" id="form-message" hidden></div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <div id="loading-state" class="card">
+      <div class="profile-create__loading">
+        <div class="spinner"></div>
+        <p class="muted">Loading...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% include profile-form-styles.html %}
+
+<script type="module">
+import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
+
+(async function() {
+  const notSignedIn = document.getElementById('not-signed-in');
+  const hasProfile = document.getElementById('has-profile');
+  const hasPending = document.getElementById('has-pending');
+  const createFormContainer = document.getElementById('create-form-container');
+  const loadingState = document.getElementById('loading-state');
+  
+  const form = document.getElementById('create-profile-form');
+  const runnerIdInput = document.getElementById('runner_id');
+  const runnerIdPreview = document.getElementById('runner-id-preview');
+  const runnerIdValidation = document.getElementById('runner-id-validation');
+  const displayNameInput = document.getElementById('display_name');
+  const bioInput = document.getElementById('bio');
+  const bioCount = document.getElementById('bio-count');
+  const gamesList = document.getElementById('games-list');
+  const submitBtn = document.getElementById('submit-btn');
+  const formMessage = document.getElementById('form-message');
+  
+  const oauthAvatar = document.getElementById('oauth-avatar');
+  const oauthName = document.getElementById('oauth-name');
+  const oauthProvider = document.getElementById('oauth-provider');
+  const viewProfileLink = document.getElementById('view-profile-link');
+  
+  let runnerIdCheckTimeout = null;
+  let isRunnerIdAvailable = false;
+  
+  function showState(state) {
+    notSignedIn.hidden = state !== 'not-signed-in';
+    hasProfile.hidden = state !== 'has-profile';
+    hasPending.hidden = state !== 'has-pending';
+    createFormContainer.hidden = state !== 'create-form';
+    loadingState.hidden = state !== 'loading';
+  }
+  
+  // Initialize
+  try {
+    await CRCAuth.init();
+    
+    if (!CRCAuth.isSignedIn()) {
+      showState('not-signed-in');
+      return;
+    }
+    
+    const profile = CRCAuth.getProfile();
+    
+    if (profile && !profile._isPending) {
+      viewProfileLink.href = `/runners/${profile.runner_id}/`;
+      showState('has-profile');
+      return;
+    }
+    
+    if (profile && profile._isPending) {
+      showState('has-pending');
+      return;
+    }
+    
+    // Show create form
+    const metadata = CRCAuth.getProviderMetadata();
+    oauthAvatar.src = metadata.providerAvatar || '/assets/img/site/default-runner.png';
+    oauthName.textContent = metadata.providerUsername || 'User';
+    oauthProvider.textContent = `via ${metadata.provider ? metadata.provider.charAt(0).toUpperCase() + metadata.provider.slice(1) : 'OAuth'}`;
+    
+    if (metadata.providerUsername) {
+      displayNameInput.value = metadata.providerUsername;
+    }
+    
+    await loadGames();
+    showState('create-form');
+  } catch (error) {
+    console.error('Init error:', error);
+    showState('not-signed-in');
+  }
+  
+  async function loadGames() {
+    try {
+      const response = await fetch('{{ "/assets/generated/form-index.json" | relative_url }}');
+      const data = await response.json();
+      
+      if (data.games && data.games.length > 0) {
+        gamesList.innerHTML = '';
+        data.games.forEach(game => {
+          const label = document.createElement('label');
+          label.className = 'profile-form__game-checkbox';
+          label.innerHTML = `<input type="checkbox" name="games" value="${game.id}" /><span>${game.name}</span>`;
+          gamesList.appendChild(label);
+        });
+      } else {
+        gamesList.innerHTML = '<p class="muted">No games available yet.</p>';
+      }
+    } catch (error) {
+      console.error('Error loading games:', error);
+      gamesList.innerHTML = '<p class="muted">Could not load games.</p>';
+    }
+  }
+  
+  // Runner ID validation
+  runnerIdInput.addEventListener('input', (e) => {
+    let value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+    value = value.replace(/^-+|-+$/g, '').replace(/-{2,}/g, '-');
+    e.target.value = value;
+    runnerIdPreview.textContent = value || 'your-id';
+    
+    runnerIdInput.classList.remove('is-valid', 'is-invalid');
+    runnerIdValidation.textContent = '';
+    runnerIdValidation.className = 'profile-form__validation';
+    isRunnerIdAvailable = false;
+    
+    clearTimeout(runnerIdCheckTimeout);
+    
+    if (value.length >= 2) {
+      runnerIdValidation.textContent = 'Checking availability...';
+      runnerIdCheckTimeout = setTimeout(async () => {
+        const available = await CRCAuth.isRunnerIdAvailable(value);
+        if (available) {
+          runnerIdInput.classList.add('is-valid');
+          runnerIdValidation.textContent = '✓ Available!';
+          runnerIdValidation.className = 'profile-form__validation is-valid';
+          isRunnerIdAvailable = true;
+        } else {
+          runnerIdInput.classList.add('is-invalid');
+          runnerIdValidation.textContent = '✗ Already taken';
+          runnerIdValidation.className = 'profile-form__validation is-invalid';
+          isRunnerIdAvailable = false;
+        }
+      }, 500);
+    }
+  });
+  
+  bioInput.addEventListener('input', () => {
+    bioCount.textContent = bioInput.value.length;
+  });
+  
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    if (!isRunnerIdAvailable) {
+      showMessage('Please choose an available Runner ID.', 'error');
+      runnerIdInput.focus();
+      return;
+    }
+    
+    if (!displayNameInput.value.trim()) {
+      showMessage('Display Name is required.', 'error');
+      displayNameInput.focus();
+      return;
+    }
+    
+    const formData = new FormData(form);
+    const profileData = {
+      runner_id: formData.get('runner_id'),
+      display_name: formData.get('display_name'),
+      pronouns: formData.get('pronouns') || null,
+      location: formData.get('location') || null,
+      bio: formData.get('bio') || null,
+      socials: {},
+      games: formData.getAll('games')
+    };
+    
+    ['twitch', 'youtube', 'twitter', 'bluesky', 'discord', 'website'].forEach(key => {
+      const val = formData.get(`social_${key}`);
+      if (val) profileData.socials[key] = val;
+    });
+    
+    setSubmitting(true);
+    
+    try {
+      const { data, error } = await CRCAuth.submitProfile(profileData);
+      if (error) {
+        showMessage(error.message, 'error');
+        return;
+      }
+      showMessage('Profile submitted successfully! Redirecting...', 'success');
+      setTimeout(() => { window.location.href = '/profile/status/'; }, 1500);
+    } catch (err) {
+      showMessage(err.message || 'An error occurred. Please try again.', 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  });
+  
+  function setSubmitting(isSubmitting) {
+    submitBtn.disabled = isSubmitting;
+    submitBtn.querySelector('.btn__text').hidden = isSubmitting;
+    submitBtn.querySelector('.btn__loading').hidden = !isSubmitting;
+  }
+  
+  function showMessage(text, type) {
+    formMessage.textContent = text;
+    formMessage.className = `profile-form__message is-${type}`;
+    formMessage.hidden = false;
+    if (type === 'error') formMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+})();
+</script>
