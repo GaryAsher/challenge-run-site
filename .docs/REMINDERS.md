@@ -34,6 +34,7 @@ This document consolidates all reminders, future ideas, and planned features for
 ### 4. Glossary Page
 - [ ] Terms to define: Hit, Damage, Death, Hard CC, Soft CC, Hitless vs Damageless, Full Run, Mini-Challenge, etc.
 - [ ] Add content that would work as supporting documents.
+  - Ask creator first.
 
 ### 5. Support Page
 - [ ] Add Staff section
@@ -50,11 +51,11 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Store preference in localStorage
 - [ ] Respect `prefers-color-scheme`
 
-### 7. News & History Integration (on hold)
+### 7. News & History Integration
 - Requires News page activity first
 - Combine news posts with game history for unified timeline
 
-### 8. History Tab Refinement (on hold)
+### 8. History Tab Refinement
 - Needs Runner Profiles with Badges first
 - Focus on: rule changes, discussions, community milestones
 - NOT global submissions from anyone
