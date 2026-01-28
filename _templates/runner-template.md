@@ -1,18 +1,24 @@
 ---
 layout: runner
 runner_id: runner-id-here
-name: "Display Name Here"
+runner_name: "Display Name Here"
 # Optional fields below - delete what you don't need
 pronouns: ""
 location: ""
 bio: ""
-cover: /assets/img/runners/FIRST_LETTER/runner-id-here.png
+avatar: /assets/img/runners/FIRST_LETTER/runner-id-here.png
 cover_position: center
-# Social links (use username only, not full URL, except YouTube)
-twitch: ""
-youtube: ""
-twitter: ""
-discord: ""
+
+# Social links - use full URLs
+socials:
+  twitch: ""      # https://www.twitch.tv/username
+  youtube: ""     # https://www.youtube.com/@username
+  discord: ""     # Discord server invite link
+  steam: ""       # https://steamcommunity.com/id/username
+  twitter: ""     # https://twitter.com/username
+  bluesky: ""     # https://bsky.app/profile/username
+  website: ""     # Personal website URL
+
 # Games this runner participates in (list of game_ids)
 games:
   - hades-2
