@@ -13,12 +13,12 @@ on:
         description: "Game ID (slug)"
         required: false
         type: string
-      categories:
-        description: "Categories (newline separated)"
+      full_run_categories:
+        description: "Full Run Categories (newline separated)"
         required: true
         type: string
-      standard_challenges:
-        description: "Challenge types (comma separated)"
+      challenges:
+        description: "Challenge types for Full Runs (comma separated)"
         required: true
         type: string
       character_column:
@@ -76,8 +76,8 @@ jobs:
           DETAILS_IN: ${{ github.event.client_payload.details || inputs.details || '{}' }}
           GAME_NAME: ${{ github.event.client_payload.game_name || inputs.game_name }}
           GAME_ID_INPUT: ${{ github.event.client_payload.game_id || inputs.game_id }}
-          CATEGORIES: ${{ github.event.client_payload.categories || inputs.categories }}
-          CHALLENGES: ${{ github.event.client_payload.standard_challenges || inputs.standard_challenges }}
+          FULL_RUN_CATEGORIES: ${{ github.event.client_payload.full_run_categories || inputs.full_run_categories }}
+          CHALLENGES: ${{ github.event.client_payload.challenges || inputs.challenges }}
           CHAR_ENABLED: ${{ github.event.client_payload.character_column || inputs.character_column || 'false' }}
           CHAR_LABEL: ${{ github.event.client_payload.character_label || inputs.character_label || 'Character' }}
           SUBMITTER: ${{ github.event.client_payload.submitter_handle || inputs.submitter_handle }}
@@ -90,13 +90,13 @@ jobs:
             exit 1
           fi
           
-          if [ -z "${CATEGORIES:-}" ]; then 
-            echo "::error::CATEGORIES is empty"
+          if [ -z "${FULL_RUN_CATEGORIES:-}" ]; then 
+            echo "::error::FULL_RUN_CATEGORIES is empty"
             exit 1
           fi
           
           if [ -z "${CHALLENGES:-}" ]; then 
-            echo "::error::STANDARD_CHALLENGES is empty"
+            echo "::error::CHALLENGES is empty"
             exit 1
           fi
           
@@ -126,7 +126,7 @@ jobs:
             DETAILS_IN="{}"
           fi
           
-          export GAME_NAME GAME_ID FIRST_LETTER CATEGORIES CHALLENGES
+          export GAME_NAME GAME_ID FIRST_LETTER FULL_RUN_CATEGORIES CHALLENGES
           export CHAR_ENABLED CHAR_LABEL SUBMITTER CREDIT_REQUESTED
           export DETAILS_IN OUT_FILE
           
@@ -160,6 +160,7 @@ jobs:
 
             - [ ] Verify game info looks correct.
             - [ ] Edit file and add genre tags.
+            - [ ] Configure Mini-Challenge allowed challenges (if Mini-Challenges exist).
             - [ ] Find game image, compress via https://tinypng.com/, then upload it to  
             `assets/img/games/${{ steps.generate.outputs.first_letter }}/${{ steps.generate.outputs.game_id }}.jpg`
 
