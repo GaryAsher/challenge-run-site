@@ -130,6 +130,11 @@
   color: var(--fg);
 }
 
+.rule-builder__label .muted {
+  font-weight: 400;
+  font-size: 0.8rem;
+}
+
 .rule-builder__select {
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--border);
@@ -144,6 +149,35 @@
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 2px var(--focus-2);
+}
+
+// Text input for Run Name
+.rule-builder__input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 0.9rem;
+  width: 100%;
+}
+
+.rule-builder__input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--focus-2);
+}
+
+.rule-builder__input::placeholder {
+  color: var(--text-muted);
+}
+
+// Run Name display in summary
+.rule-builder__run-name {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
 }
 
 // ──────────────────────────────────────────────────────────
