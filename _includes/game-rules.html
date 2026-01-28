@@ -100,20 +100,51 @@
     <div class="rule-builder-content" id="rule-builder-content" hidden>
       <div class="rule-builder__selections">
 
-        <!-- 1. Run Category (typeahead single-select) -->
+        <!-- Run Name (text input for quick reference) -->
+        <div class="rule-builder__group" data-rb-order="0">
+          <label class="rule-builder__label">Run Name <span class="muted">(optional)</span></label>
+          <input type="text" id="rb-run-name" class="rule-builder__input" placeholder="e.g. My Hitless Any% Attempt" />
+        </div>
+
+        <!-- 1. Run Type (dropdown: Full Runs, Mini-Challenges, Community Created) -->
+        {% assign has_full_runs = false %}
+        {% assign has_mini_challenges = false %}
+        {% assign has_player_made = false %}
+        {% if game.full_runs and game.full_runs.size > 0 %}{% assign has_full_runs = true %}{% endif %}
+        {% if game.mini_challenges and game.mini_challenges.size > 0 %}{% assign has_mini_challenges = true %}{% endif %}
+        {% if game.player_made and game.player_made.size > 0 %}{% assign has_player_made = true %}{% endif %}
+        
+        {% assign run_type_count = 0 %}
+        {% if has_full_runs %}{% assign run_type_count = run_type_count | plus: 1 %}{% endif %}
+        {% if has_mini_challenges %}{% assign run_type_count = run_type_count | plus: 1 %}{% endif %}
+        {% if has_player_made %}{% assign run_type_count = run_type_count | plus: 1 %}{% endif %}
+        
+        {% if run_type_count > 1 or has_mini_challenges or has_player_made %}
+        <div class="rule-builder__group" data-rb-order="1">
+          <label class="rule-builder__label">Run Type</label>
+          <select class="rule-builder__select" id="rb-run-type">
+            <option value="">-- Select Run Type --</option>
+            {% if has_full_runs %}<option value="full_runs" selected>🏁 Full Runs</option>{% endif %}
+            {% if has_mini_challenges %}<option value="mini_challenges">⚡ Mini-Challenges</option>{% endif %}
+            {% if has_player_made %}<option value="player_made">🎨 Community Created</option>{% endif %}
+          </select>
+        </div>
+        {% endif %}
+
+        <!-- 2. Category Name (typeahead single-select, filtered by Run Type) -->
         {% if has_categories %}
-        <div class="rule-builder__group filter-group" id="rb-category-container" data-rb-order="1">
-          <label class="rule-builder__label filter-group__label">Run Category</label>
+        <div class="rule-builder__group filter-group" id="rb-category-container" data-rb-order="2">
+          <label class="rule-builder__label filter-group__label">Category</label>
           <div class="filter-input__wrap">
-            <input type="text" id="rb-category-search" class="filter-input__field" placeholder="Type a run category..." autocomplete="off" />
+            <input type="text" id="rb-category-search" class="filter-input__field" placeholder="Type a category..." autocomplete="off" />
             <div class="filter-input__suggestions" id="rb-category-suggestions" hidden></div>
           </div>
         </div>
         {% endif %}
 
-        <!-- 2. Community Challenges Dropdown (if applicable) -->
+        <!-- 3. Community Challenges Dropdown (if applicable) -->
         {% if has_community_challenges %}
-        <div class="rule-builder__group" data-rb-order="2">
+        <div class="rule-builder__group" data-rb-order="3">
           <label class="rule-builder__label">Community Challenge</label>
           <select class="rule-builder__select" id="rb-community-challenge">
             <option value="" data-description="">-- Select Community Challenge --</option>
@@ -124,9 +155,9 @@
         </div>
         {% endif %}
 
-        <!-- 3. Character/Weapon/Aspect (typeahead single-select) -->
+        <!-- 4. Character/Weapon/Aspect (typeahead single-select) -->
         {% if has_character and game.characters_data and game.characters_data.size > 0 %}
-        <div class="rule-builder__group filter-group" id="rb-character-container" data-rb-order="3">
+        <div class="rule-builder__group filter-group" id="rb-character-container" data-rb-order="4">
           <label class="rule-builder__label filter-group__label">{{ character_label }}</label>
           <div class="filter-input__wrap">
             <input type="text" id="rb-character-search" class="filter-input__field" placeholder="Type a {{ character_label | downcase }}..." autocomplete="off" />
@@ -135,10 +166,10 @@
         </div>
         {% endif %}
 
-        <!-- 4. Standard Challenge Type(s) (typeahead multi-select) -->
+        <!-- 5. Challenge Type(s) (typeahead multi-select) -->
         {% if has_challenges %}
-        <div class="rule-builder__group filter-group" id="rb-challenge-container" data-rb-order="4">
-          <label class="rule-builder__label filter-group__label">Challenge</label>
+        <div class="rule-builder__group filter-group" id="rb-challenge-container" data-rb-order="5">
+          <label class="rule-builder__label filter-group__label">Challenges</label>
           <div class="filter-input__wrap">
             <input type="text" id="rb-challenge-search" class="filter-input__field" placeholder="Type a challenge..." autocomplete="off" />
             <div class="filter-input__suggestions" id="rb-challenge-suggestions" hidden></div>
@@ -146,9 +177,9 @@
         </div>
         {% endif %}
 
-        <!-- 5. Restrictions (typeahead multi-select) -->
+        <!-- 6. Restrictions (typeahead multi-select) -->
         {% if has_restrictions %}
-        <div class="rule-builder__group filter-group" id="rb-restriction-container" data-rb-order="5">
+        <div class="rule-builder__group filter-group" id="rb-restriction-container" data-rb-order="6">
           <label class="rule-builder__label filter-group__label">Restrictions</label>
           <div class="filter-input__wrap">
             <input type="text" id="rb-restriction-search" class="filter-input__field" placeholder="Type a restriction..." autocomplete="off" />
@@ -157,9 +188,9 @@
         </div>
         {% endif %}
 
-        <!-- 6. Glitch Rules (typeahead single-select) -->
+        <!-- 7. Glitch Rules (typeahead single-select) -->
         {% if has_glitches %}
-        <div class="rule-builder__group filter-group" id="rb-glitch-container" data-rb-order="6">
+        <div class="rule-builder__group filter-group" id="rb-glitch-container" data-rb-order="7">
           <label class="rule-builder__label filter-group__label">Glitches Used</label>
           <div class="filter-input__wrap">
             <input type="text" id="rb-glitch-search" class="filter-input__field" placeholder="Type a glitch category..." autocomplete="off" />
@@ -698,12 +729,18 @@ document.addEventListener('DOMContentLoaded', function() {
   const rbGlitchContainer = document.getElementById('rb-glitch-container');
 
   // State
+  let selectedRunType = 'full_runs'; // Default to full_runs
   let selectedCategory = null;
   let selectedCommunityChallenge = null;
   let selectedCharacter = null;  // single-select
   let selectedGlitch = null;     // single-select
   let selectedChallenges = [];   // multi-select
   let selectedRestrictions = []; // multi-select
+  let runName = ''; // Optional run name for reference
+
+  // DOM elements for new fields
+  const runTypeSelect = document.getElementById('rb-run-type');
+  const runNameInput = document.getElementById('rb-run-name');
 
   // Available options (from Jekyll data)
   
@@ -823,7 +860,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Typeahead component
   function createTypeahead(config) {
-    const { container, items, singleSelect, getValue, setValue, selectedArray, onUpdate } = config;
+    const { container, items, singleSelect, getValue, setValue, selectedArray, onUpdate, filterFn } = config;
     if (!container) return null;
 
     const input = container.querySelector('input[type="text"]');
@@ -836,6 +873,14 @@ document.addEventListener('DOMContentLoaded', function() {
     function isSelected(id) {
       if (singleSelect) return getValue() && norm(getValue().slug) === norm(id);
       return selectedArray.some(x => norm(x.slug) === norm(id));
+    }
+
+    // Get filtered items based on external filter function
+    function getFilteredItems() {
+      if (filterFn) {
+        return items.filter(filterFn);
+      }
+      return items;
     }
 
     // Update input display for single-select
@@ -856,10 +901,13 @@ document.addEventListener('DOMContentLoaded', function() {
       const q = norm(query);
       sugEl.innerHTML = '';
 
+      // Get items filtered by external filterFn (e.g., run type)
+      const baseItems = getFilteredItems();
+
       // For single-select, show all items (including selected) so user can change
       const available = singleSelect 
-        ? items 
-        : items.filter(x => !isSelected(x.id));
+        ? baseItems 
+        : baseItems.filter(x => !isSelected(x.id));
       
       const filtered = q 
         ? available.filter(x => norm(x.label).includes(q) || norm(x.id).includes(q))
@@ -971,7 +1019,12 @@ document.addEventListener('DOMContentLoaded', function() {
           tier: val.tier || 'full_runs'
         } : null; 
       },
-      onUpdate: updateRuleBuilder
+      onUpdate: updateRuleBuilder,
+      filterFn: (item) => {
+        // Filter categories by selected run type
+        if (!selectedRunType) return true;
+        return item.tier === selectedRunType;
+      }
     });
   }
 
@@ -1047,6 +1100,29 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Community Challenge select (kept as regular select since it has optgroups)
+  // Run Type dropdown change handler
+  if (runTypeSelect) {
+    runTypeSelect.addEventListener('change', function() {
+      selectedRunType = this.value || 'full_runs';
+      // Clear category selection when run type changes
+      selectedCategory = null;
+      if (categoryTypeahead) {
+        categoryTypeahead.clear();
+        categoryTypeahead.refresh();
+      }
+      updateRuleBuilder();
+    });
+  }
+
+  // Run Name input handler
+  if (runNameInput) {
+    runNameInput.addEventListener('input', function() {
+      runName = this.value.trim();
+      updateRuleBuilder();
+    });
+  }
+
+  // Community Challenge dropdown
   if (communitySelect) {
     communitySelect.addEventListener('change', function() {
       const option = this.options[this.selectedIndex];
@@ -1062,6 +1138,14 @@ document.addEventListener('DOMContentLoaded', function() {
   // Reset all
   if (resetBtn) {
     resetBtn.addEventListener('click', function() {
+      // Reset run type to default
+      selectedRunType = 'full_runs';
+      if (runTypeSelect) runTypeSelect.value = 'full_runs';
+      
+      // Reset run name
+      runName = '';
+      if (runNameInput) runNameInput.value = '';
+      
       selectedCategory = null;
       selectedCommunityChallenge = null;
       selectedCharacter = null;
@@ -1141,6 +1225,16 @@ document.addEventListener('DOMContentLoaded', function() {
     if (summaryDiv && summaryContent) {
       if (hasContent) {
         let summaryHtml = '<div class="rule-builder__rules-content">';
+
+        // Show run name if provided
+        if (runName) {
+          summaryHtml += `<p class="rule-builder__rule-item rule-builder__run-name"><strong>📝 ${escapeHtml(runName)}</strong></p>`;
+        }
+
+        // Show run type
+        const runTypeLabels = { full_runs: '🏁 Full Run', mini_challenges: '⚡ Mini-Challenge', player_made: '🎨 Community Created' };
+        const runTypeLabel = runTypeLabels[selectedRunType] || selectedRunType;
+        summaryHtml += `<p class="rule-builder__rule-item"><strong>Run Type:</strong> ${escapeHtml(runTypeLabel)}</p>`;
 
         if (selectedCategory) {
           summaryHtml += `<p class="rule-builder__rule-item"><strong>Category:</strong> ${escapeHtml(selectedCategory.label)}</p>`;
