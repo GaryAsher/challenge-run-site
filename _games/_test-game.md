@@ -1,6 +1,7 @@
 ---
 layout: game
 game_id: test-game
+reviewers: []
 game_name: "Test Game (Admin Only)"
 published: false
 test_only: true
