@@ -143,6 +143,10 @@ title: Games
   <div class="grid" id="game-list">
     {% assign sorted = site.games | sort: "game_name" %}
     {% for g in sorted %}
+      {% comment %}Skip test-only and unpublished games in the public listing{% endcomment %}
+      {% if g.test_only == true or g.published == false %}
+        {% continue %}
+      {% endif %}
       <a
         class="game-card game-item card-lift"
         href="{{ g.url | relative_url }}"
