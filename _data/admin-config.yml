@@ -1,0 +1,15 @@
+# Admin Configuration
+# Users listed here have admin privileges
+
+admins:
+  - runner_id: gary-asher
+    discord_id: null  # Fill in your Discord user ID if you want
+    twitch_id: null   # Fill in your Twitch user ID if you want
+    permissions:
+      - all  # Full admin access
+
+# Test mode settings
+test_mode:
+  # Runner IDs that can see test/hidden content
+  allowed_testers:
+    - gary-asher
