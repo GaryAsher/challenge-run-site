@@ -1,0 +1,431 @@
+---
+layout: default
+title: "Profile Settings"
+---
+
+<div class="page-width">
+  <p class="muted mb-3">
+    <a href="javascript:history.back()">← Back</a>
+  </p>
+
+  <div class="profile-settings">
+    <!-- Loading state -->
+    <div id="loading-state" class="card">
+      <div class="sign-in-loading">
+        <div class="spinner"></div>
+        <p class="muted">Loading...</p>
+      </div>
+    </div>
+
+    <!-- Not signed in state -->
+    <div id="not-signed-in" class="card" hidden>
+      <h1>Profile Settings</h1>
+      <p class="muted">You need to sign in to access settings.</p>
+      <a href="{{ '/sign-in/' | relative_url }}" class="btn btn--primary">Sign In</a>
+    </div>
+
+    <!-- Settings content -->
+    <div id="settings-content" hidden>
+      <h1>Profile Settings</h1>
+      
+      <!-- Linked Accounts Section -->
+      <div class="card mb-4">
+        <h2>🔗 Linked Accounts</h2>
+        <p class="muted mb-3">
+          Link multiple accounts to sign in with either Discord or Twitch. 
+          Your profile stays the same regardless of which you use.
+        </p>
+        
+        <div class="linked-accounts" id="linked-accounts">
+          <!-- Populated by JS -->
+        </div>
+        
+        <div class="link-account-actions" id="link-actions">
+          <!-- Populated by JS -->
+        </div>
+        
+        <div id="link-message" class="settings-message" hidden></div>
+      </div>
+      
+      <!-- Profile Info Section -->
+      <div class="card mb-4">
+        <h2>👤 Profile Information</h2>
+        <div id="profile-info">
+          <p class="muted">Loading profile...</p>
+        </div>
+        <div class="profile-actions" style="margin-top: 1rem;">
+          <a href="/profile/edit/" class="btn">Edit Profile</a>
+        </div>
+      </div>
+      
+      <!-- Danger Zone -->
+      <div class="card card--danger">
+        <h2>⚠️ Danger Zone</h2>
+        <p class="muted mb-3">These actions are irreversible. Be careful!</p>
+        
+        <div class="danger-actions">
+          <button type="button" class="btn btn--danger" id="sign-out-all-btn">
+            Sign Out of All Devices
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.profile-settings {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.linked-accounts {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.linked-account {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.linked-account__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.linked-account__icon--discord {
+  background: #5865F2;
+}
+
+.linked-account__icon--twitch {
+  background: #9146FF;
+}
+
+.linked-account__icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.linked-account__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.linked-account__username {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.linked-account__provider {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.linked-account__badge {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.linked-account__badge--primary {
+  background: var(--accent);
+}
+
+.link-account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.link-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.15s ease;
+}
+
+.link-btn:hover {
+  border-style: solid;
+  background: var(--surface);
+}
+
+.link-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.link-btn--discord:hover {
+  border-color: #5865F2;
+  color: #5865F2;
+}
+
+.link-btn--twitch:hover {
+  border-color: #9146FF;
+  color: #9146FF;
+}
+
+.settings-message {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+}
+
+.settings-message.is-success {
+  background: rgba(40, 167, 69, 0.1);
+  color: #28a745;
+  border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+.settings-message.is-error {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+  border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+.card--danger {
+  border-color: rgba(220, 53, 69, 0.3);
+}
+
+.card--danger h2 {
+  color: #dc3545;
+}
+
+.btn--danger {
+  background: transparent;
+  border: 1px solid #dc3545;
+  color: #dc3545;
+}
+
+.btn--danger:hover {
+  background: #dc3545;
+  color: white;
+}
+
+.profile-info-item {
+  display: flex;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.profile-info-item:last-child {
+  border-bottom: none;
+}
+
+.profile-info-label {
+  font-weight: 600;
+  min-width: 120px;
+  color: var(--text-muted);
+}
+</style>
+
+<script type="module">
+import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
+
+const loadingState = document.getElementById('loading-state');
+const notSignedIn = document.getElementById('not-signed-in');
+const settingsContent = document.getElementById('settings-content');
+const linkedAccountsEl = document.getElementById('linked-accounts');
+const linkActionsEl = document.getElementById('link-actions');
+const linkMessage = document.getElementById('link-message');
+const profileInfo = document.getElementById('profile-info');
+const signOutAllBtn = document.getElementById('sign-out-all-btn');
+
+// SVG icons
+const ICONS = {
+  discord: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>`,
+  twitch: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>`
+};
+
+function showState(state) {
+  loadingState.hidden = state !== 'loading';
+  notSignedIn.hidden = state !== 'not-signed-in';
+  settingsContent.hidden = state !== 'settings';
+}
+
+function showMessage(text, type) {
+  linkMessage.textContent = text;
+  linkMessage.className = `settings-message is-${type}`;
+  linkMessage.hidden = false;
+  setTimeout(() => { linkMessage.hidden = true; }, 5000);
+}
+
+function renderLinkedAccounts(linkedAccounts, primaryProvider) {
+  // Render current linked accounts
+  linkedAccountsEl.innerHTML = '';
+  
+  if (linkedAccounts.length === 0) {
+    linkedAccountsEl.innerHTML = '<p class="muted">No accounts linked yet.</p>';
+  } else {
+    linkedAccounts.forEach(account => {
+      const isPrimary = account.provider === primaryProvider;
+      const div = document.createElement('div');
+      div.className = 'linked-account';
+      div.innerHTML = `
+        <div class="linked-account__icon linked-account__icon--${account.provider}">
+          ${ICONS[account.provider] || ''}
+        </div>
+        <div class="linked-account__info">
+          <div class="linked-account__username">${account.provider_username || 'Unknown'}</div>
+          <div class="linked-account__provider">${account.provider.charAt(0).toUpperCase() + account.provider.slice(1)}</div>
+        </div>
+        ${isPrimary ? '<span class="linked-account__badge linked-account__badge--primary">Primary</span>' : ''}
+      `;
+      linkedAccountsEl.appendChild(div);
+    });
+  }
+  
+  // Render link buttons for providers not yet linked
+  linkActionsEl.innerHTML = '';
+  const linkedProviders = new Set(linkedAccounts.map(a => a.provider));
+  
+  ['discord', 'twitch'].forEach(provider => {
+    if (!linkedProviders.has(provider)) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `link-btn link-btn--${provider}`;
+      btn.innerHTML = `${ICONS[provider]} Link ${provider.charAt(0).toUpperCase() + provider.slice(1)}`;
+      btn.addEventListener('click', () => linkAccount(provider));
+      linkActionsEl.appendChild(btn);
+    }
+  });
+  
+  if (linkedProviders.size >= 2) {
+    linkActionsEl.innerHTML = '<p class="muted" style="margin: 0;">All supported accounts are linked!</p>';
+  }
+}
+
+async function linkAccount(provider) {
+  // Store that we're linking, not creating a new account
+  sessionStorage.setItem('crc_linking_account', 'true');
+  sessionStorage.setItem('crc_link_provider', provider);
+  
+  const supabase = CRCAuth.getSupabaseClient();
+  if (!supabase) {
+    showMessage('Auth not initialized', 'error');
+    return;
+  }
+  
+  // Use Supabase's linkIdentity method
+  const { data, error } = await supabase.auth.linkIdentity({
+    provider: provider,
+    options: {
+      redirectTo: window.location.origin + '/profile/settings/link-callback/'
+    }
+  });
+  
+  if (error) {
+    showMessage(`Failed to link ${provider}: ${error.message}`, 'error');
+    return;
+  }
+  
+  // If we get here without redirect, something went wrong
+  // The user should be redirected to the provider
+}
+
+function renderProfileInfo(profile, metadata) {
+  if (!profile && !metadata) {
+    profileInfo.innerHTML = '<p class="muted">No profile found.</p>';
+    return;
+  }
+  
+  const items = [];
+  
+  if (profile?.runner_id) {
+    items.push({ label: 'Runner ID', value: profile.runner_id });
+  }
+  if (profile?.display_name) {
+    items.push({ label: 'Display Name', value: profile.display_name });
+  }
+  if (metadata?.email) {
+    items.push({ label: 'Email', value: metadata.email });
+  }
+  if (profile?._isPending) {
+    items.push({ label: 'Status', value: '⏳ Pending Approval' });
+  }
+  
+  profileInfo.innerHTML = items.map(item => `
+    <div class="profile-info-item">
+      <span class="profile-info-label">${item.label}</span>
+      <span>${item.value}</span>
+    </div>
+  `).join('');
+}
+
+// Initialize
+(async function() {
+  showState('loading');
+  
+  await CRCAuth.init();
+  
+  if (!CRCAuth.isSignedIn()) {
+    showState('not-signed-in');
+    return;
+  }
+  
+  const user = CRCAuth.getUser();
+  const profile = CRCAuth.getProfile();
+  const metadata = CRCAuth.getProviderMetadata();
+  
+  // Get linked accounts from user identities
+  const identities = user?.identities || [];
+  const linkedAccounts = identities.map(id => ({
+    provider: id.provider,
+    provider_username: id.identity_data?.full_name || id.identity_data?.name || id.identity_data?.preferred_username,
+    provider_user_id: id.id
+  }));
+  
+  const primaryProvider = user?.app_metadata?.provider;
+  
+  renderLinkedAccounts(linkedAccounts, primaryProvider);
+  renderProfileInfo(profile, metadata);
+  
+  showState('settings');
+  
+  // Check if we just completed a link
+  const justLinked = sessionStorage.getItem('crc_just_linked');
+  if (justLinked) {
+    sessionStorage.removeItem('crc_just_linked');
+    showMessage(`Successfully linked ${justLinked} account!`, 'success');
+  }
+})();
+
+// Sign out of all devices
+signOutAllBtn.addEventListener('click', async () => {
+  if (!confirm('This will sign you out of all devices. Continue?')) return;
+  
+  signOutAllBtn.disabled = true;
+  signOutAllBtn.textContent = 'Signing out...';
+  
+  const supabase = CRCAuth.getSupabaseClient();
+  if (supabase) {
+    await supabase.auth.signOut({ scope: 'global' });
+  }
+  
+  window.location.href = '/sign-in/';
+});
+</script>
