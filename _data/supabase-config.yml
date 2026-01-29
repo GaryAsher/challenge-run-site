@@ -1,0 +1,20 @@
+```yaml
+# Supabase Configuration (PUBLIC values only!)
+# Never put secret keys in this file
+
+supabase_url: "https://riwcekvwpwmbtihjqhmh.supabase.co"
+supabase_anon_key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpd2Nla3Z3cHdtYnRpaGpxaG1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2MzU0MTksImV4cCI6MjA4NTIxMTQxOX0.eSO-2YiD_bbSMhU72LiyI0OnRqOOtapA2A2hUqaXYOM"
+
+# OAuth Providers enabled
+providers:
+  discord: true
+  twitch: true
+
+# Site URLs for redirects
+site_url: "https://www.challengerun.net"
+auth_callback_url: "/auth/callback"
+
+# Profile settings
+profile_approval_required: true
+min_account_age_days: 30
+```
