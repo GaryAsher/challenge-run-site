@@ -25,10 +25,10 @@
 // Configuration
 // =============================================================================
 
-// These values should be set from your site's config
-// In production, inject these from Jekyll or environment variables
-const SUPABASE_URL = window.CRC_SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = window.CRC_SUPABASE_ANON_KEY || '';
+// These values will be read from window at init time (set by Jekyll from _data/supabase-config.yml)
+// Do NOT read them here - they may not be set yet when the module is parsed
+let SUPABASE_URL = '';
+let SUPABASE_ANON_KEY = '';
 
 // Auth configuration
 const AUTH_CONFIG = {
@@ -36,7 +36,9 @@ const AUTH_CONFIG = {
   minAccountAgeDays: 30,
   
   // Redirect URL after OAuth
-  redirectTo: window.location.origin + '/auth/callback/',
+  get redirectTo() {
+    return window.location.origin + '/auth/callback/';
+  },
   
   // Scopes to request from providers
   scopes: {
@@ -61,8 +63,14 @@ let authStateListeners = [];
 async function initSupabase() {
   if (supabase) return supabase;
   
+  // Read credentials at init time (not module load time)
+  SUPABASE_URL = window.CRC_SUPABASE_URL || '';
+  SUPABASE_ANON_KEY = window.CRC_SUPABASE_ANON_KEY || '';
+  
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    console.error('CRCAuth: Supabase credentials not configured');
+    console.error('CRCAuth: Supabase credentials not configured. Make sure _data/supabase-config.yml exists and has supabase_url and supabase_anon_key.');
+    console.error('CRCAuth: window.CRC_SUPABASE_URL =', window.CRC_SUPABASE_URL);
+    console.error('CRCAuth: window.CRC_SUPABASE_ANON_KEY =', window.CRC_SUPABASE_ANON_KEY ? '[SET]' : '[NOT SET]');
     return null;
   }
   
