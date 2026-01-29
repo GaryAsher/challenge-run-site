@@ -271,18 +271,46 @@
           <p id="run-details-title" class="submit-section__title">Run Details <span class="required-marker">*</span></p>
           <p class="submit-section__sub">Runner information, video proof, and timing.</p>
 
+          <!-- Auth-aware Runner ID Section -->
           <div class="submit-field">
             <label for="runnerId" class="submit-label">Runner ID <span class="required-marker">*</span></label>
-            <div class="submit-hint">Use your CRC runner id (example: <code>gary-asher</code>).</div>
-            <input 
-              id="runnerId" 
-              type="text" 
-              placeholder="your-runner-id" 
-              required
-              aria-required="true"
-              aria-describedby="runnerId-hint"
-              pattern="[a-z0-9\-]+"
-            />
+            
+            <!-- Signed-in state (shown when user has a profile) -->
+            <div id="runner-auth-signed-in" class="runner-auth-info" hidden>
+              <div class="runner-auth-badge">
+                <img id="runner-auth-avatar" class="runner-auth-avatar" src="/assets/img/site/default-runner.png" alt="" />
+                <div class="runner-auth-details">
+                  <span id="runner-auth-name" class="runner-auth-name">Runner Name</span>
+                  <span id="runner-auth-id" class="runner-auth-id muted">runner-id</span>
+                </div>
+                <span class="runner-auth-verified" title="Verified account">✓</span>
+              </div>
+              <input 
+                id="runnerId" 
+                type="text" 
+                required
+                aria-required="true"
+                readonly
+                class="runner-id-readonly"
+              />
+            </div>
+            
+            <!-- Not signed in state -->
+            <div id="runner-auth-guest" class="runner-auth-guest">
+              <div class="submit-hint">
+                <a href="/sign-in/" class="runner-auth-link">Sign in</a> to link this run to your profile, or enter a Runner ID manually.
+              </div>
+              <input 
+                id="runnerIdGuest" 
+                type="text" 
+                placeholder="your-runner-id" 
+                required
+                aria-required="true"
+                aria-describedby="runnerId-hint"
+                pattern="[a-z0-9\-]+"
+              />
+            </div>
+            
             <span class="field-error" id="runnerId-error" role="alert" hidden></span>
           </div>
 
@@ -376,5 +404,63 @@
   window.CRC_PRESET_GAME_ID = {{ preset_game.game_id | jsonify }};
 </script>
 {% endif %}
+
+<!-- Auth integration for runner ID -->
+<script type="module">
+import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
+
+(async function() {
+  const signedInEl = document.getElementById('runner-auth-signed-in');
+  const guestEl = document.getElementById('runner-auth-guest');
+  const runnerIdInput = document.getElementById('runnerId');
+  const runnerIdGuestInput = document.getElementById('runnerIdGuest');
+  const avatarEl = document.getElementById('runner-auth-avatar');
+  const nameEl = document.getElementById('runner-auth-name');
+  const idEl = document.getElementById('runner-auth-id');
+  
+  try {
+    await CRCAuth.init();
+    
+    if (CRCAuth.isSignedIn() && CRCAuth.hasProfile()) {
+      // User is signed in with an approved profile
+      const profile = CRCAuth.getProfile();
+      const metadata = CRCAuth.getProviderMetadata();
+      
+      // Show signed-in state
+      signedInEl.hidden = false;
+      guestEl.hidden = true;
+      
+      // Fill in profile info
+      avatarEl.src = profile.avatar_url || metadata.providerAvatar || '/assets/img/site/default-runner.png';
+      nameEl.textContent = profile.display_name || metadata.providerUsername || 'Runner';
+      idEl.textContent = profile.runner_id;
+      runnerIdInput.value = profile.runner_id;
+      
+      // Remove the guest input from the DOM to avoid confusion
+      if (runnerIdGuestInput) {
+        runnerIdGuestInput.removeAttribute('required');
+        runnerIdGuestInput.name = '';
+      }
+    } else {
+      // Not signed in or no profile - show guest mode
+      signedInEl.hidden = true;
+      guestEl.hidden = false;
+      
+      // Make sure the guest input is used for validation
+      if (runnerIdInput) {
+        runnerIdInput.removeAttribute('required');
+      }
+      if (runnerIdGuestInput) {
+        runnerIdGuestInput.id = 'runnerId';
+      }
+    }
+  } catch (error) {
+    console.error('Auth init error on submit form:', error);
+    // Fall back to guest mode
+    signedInEl.hidden = true;
+    guestEl.hidden = false;
+  }
+})();
+</script>
 
 <script src="{{ '/assets/js/submit-run.js' | relative_url }}"></script>
