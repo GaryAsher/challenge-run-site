@@ -258,14 +258,20 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
   
   // Initialize
   try {
+    console.log('Profile create page: Starting init...');
     await CRCAuth.init();
     
-    if (!CRCAuth.isSignedIn()) {
+    const isSignedIn = CRCAuth.isSignedIn();
+    console.log('Profile create page: isSignedIn =', isSignedIn);
+    
+    if (!isSignedIn) {
+      console.log('Profile create page: Not signed in, showing sign-in prompt');
       showState('not-signed-in');
       return;
     }
     
     const profile = CRCAuth.getProfile();
+    console.log('Profile create page: profile =', profile);
     
     if (profile && !profile._isPending) {
       viewProfileLink.href = `/runners/${profile.runner_id}/`;
@@ -280,6 +286,7 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
     
     // Show create form
     const metadata = CRCAuth.getProviderMetadata();
+    console.log('Profile create page: metadata =', metadata);
     oauthAvatar.src = metadata.providerAvatar || '/assets/img/site/default-runner.png';
     oauthName.textContent = metadata.providerUsername || 'User';
     oauthProvider.textContent = `via ${metadata.provider ? metadata.provider.charAt(0).toUpperCase() + metadata.provider.slice(1) : 'OAuth'}`;
@@ -291,7 +298,7 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
     await loadGames();
     showState('create-form');
   } catch (error) {
-    console.error('Init error:', error);
+    console.error('Profile create page init error:', error);
     showState('not-signed-in');
   }
   
