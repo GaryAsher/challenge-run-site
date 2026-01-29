@@ -224,6 +224,84 @@ async function syncLinkedAccount(session) {
   }
 }
 
+/**
+ * Open OAuth flow in a popup window
+ * @param {string} url - The OAuth URL to open
+ * @param {string} title - Window title
+ * @returns {Promise<{data: Object|null, error: Error|null}>}
+ */
+function openAuthPopup(url, title = 'Sign In') {
+  return new Promise((resolve) => {
+    // Calculate popup position (centered)
+    const width = 500;
+    const height = 700;
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2;
+    
+    // Open the popup
+    const popup = window.open(
+      url,
+      title,
+      `width=${width},height=${height},left=${left},top=${top},scrollbars=yes,resizable=yes`
+    );
+    
+    if (!popup) {
+      resolve({ data: null, error: new Error('Popup was blocked. Please allow popups for this site.') });
+      return;
+    }
+    
+    // Poll for popup close and auth state change
+    let resolved = false;
+    
+    const checkClosed = setInterval(() => {
+      if (popup.closed) {
+        clearInterval(checkClosed);
+        if (!resolved) {
+          // Give a moment for the auth state to update
+          setTimeout(async () => {
+            if (!resolved) {
+              // Check if we got signed in
+              const { data: { session } } = await supabase.auth.getSession();
+              if (session) {
+                resolved = true;
+                resolve({ data: session, error: null });
+              } else {
+                resolved = true;
+                resolve({ data: null, error: new Error('Sign in was cancelled or failed') });
+              }
+            }
+          }, 500);
+        }
+      }
+    }, 500);
+    
+    // Listen for auth state change (fires when callback completes)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session && !resolved) {
+        resolved = true;
+        clearInterval(checkClosed);
+        subscription.unsubscribe();
+        
+        // Close the popup
+        try { popup.close(); } catch (e) { /* ignore */ }
+        
+        resolve({ data: session, error: null });
+      }
+    });
+    
+    // Timeout after 5 minutes
+    setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        clearInterval(checkClosed);
+        subscription.unsubscribe();
+        try { popup.close(); } catch (e) { /* ignore */ }
+        resolve({ data: null, error: new Error('Sign in timed out') });
+      }
+    }, 5 * 60 * 1000);
+  });
+}
+
 // =============================================================================
 // Public API
 // =============================================================================
@@ -239,43 +317,65 @@ export const CRCAuth = {
   },
   
   /**
-   * Sign in with Discord OAuth
-   * @returns {Promise<{error: Error|null}>}
+   * Sign in with Discord OAuth (popup window)
+   * @returns {Promise<{data: Object|null, error: Error|null}>}
    */
   async signInWithDiscord() {
     if (!supabase) {
-      return { error: new Error('Auth not initialized') };
+      return { data: null, error: new Error('Auth not initialized') };
     }
     
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'discord',
       options: {
         redirectTo: AUTH_CONFIG.redirectTo,
-        scopes: AUTH_CONFIG.scopes.discord
+        scopes: AUTH_CONFIG.scopes.discord,
+        skipBrowserRedirect: true // Don't redirect, we'll handle it with a popup
       }
     });
     
-    return { data, error };
+    if (error) {
+      return { data: null, error };
+    }
+    
+    // Open popup window
+    if (data?.url) {
+      const result = await openAuthPopup(data.url, 'Discord Sign In');
+      return result;
+    }
+    
+    return { data: null, error: new Error('No auth URL returned') };
   },
   
   /**
-   * Sign in with Twitch OAuth
-   * @returns {Promise<{error: Error|null}>}
+   * Sign in with Twitch OAuth (popup window)
+   * @returns {Promise<{data: Object|null, error: Error|null}>}
    */
   async signInWithTwitch() {
     if (!supabase) {
-      return { error: new Error('Auth not initialized') };
+      return { data: null, error: new Error('Auth not initialized') };
     }
     
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'twitch',
       options: {
         redirectTo: AUTH_CONFIG.redirectTo,
-        scopes: AUTH_CONFIG.scopes.twitch
+        scopes: AUTH_CONFIG.scopes.twitch,
+        skipBrowserRedirect: true // Don't redirect, we'll handle it with a popup
       }
     });
     
-    return { data, error };
+    if (error) {
+      return { data: null, error };
+    }
+    
+    // Open popup window
+    if (data?.url) {
+      const result = await openAuthPopup(data.url, 'Twitch Sign In');
+      return result;
+    }
+    
+    return { data: null, error: new Error('No auth URL returned') };
   },
   
   /**
