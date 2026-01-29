@@ -51,6 +51,14 @@
   <!-- Back to Top Button -->
   <button class="back-to-top" id="backToTop" hidden aria-label="Back to top">↑</button>
   
+  <!-- Supabase Configuration (injected from _data/supabase-config.yml) -->
+  {% if site.data.supabase-config %}
+  <script>
+    window.CRC_SUPABASE_URL = {{ site.data.supabase-config.supabase_url | jsonify }};
+    window.CRC_SUPABASE_ANON_KEY = {{ site.data.supabase-config.supabase_anon_key | jsonify }};
+  </script>
+  {% endif %}
+  
   <!-- JS -->
   <script src="{{ '/assets/js/main.js' | relative_url }}" defer></script>
 </body>
