@@ -312,6 +312,12 @@ function main() {
 
     const game_id = String(data.game_id || "").trim();
     if (!game_id) continue;
+    
+    // Skip test-only and unpublished games from public form index
+    if (data.test_only === true || data.published === false) {
+      console.log(`  Skipping ${game_id} (test_only or unpublished)`);
+      continue;
+    }
 
     const title = String(data.game_name || data.name || data.title || game_id).trim();
     
