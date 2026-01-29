@@ -381,18 +381,18 @@ export const CRCAuth = {
     
     // Validate runner ID:
     // - Min 3 characters
-    // - Only lowercase letters, numbers, hyphens, underscores
-    // - Cannot start or end with - or _
+    // - Only lowercase letters, numbers, hyphens (no underscores)
+    // - Cannot start or end with hyphen
     if (!runnerId || runnerId.length < 3) {
       return { data: null, error: new Error('Runner ID must be at least 3 characters') };
     }
     
-    if (!/^[a-z0-9_-]+$/.test(runnerId)) {
-      return { data: null, error: new Error('Runner ID can only contain lowercase letters, numbers, hyphens, and underscores') };
+    if (!/^[a-z0-9-]+$/.test(runnerId)) {
+      return { data: null, error: new Error('Runner ID can only contain lowercase letters, numbers, and hyphens') };
     }
     
-    if (/^[-_]|[-_]$/.test(runnerId)) {
-      return { data: null, error: new Error('Runner ID cannot start or end with - or _') };
+    if (/^-|-$/.test(runnerId)) {
+      return { data: null, error: new Error('Runner ID cannot start or end with a hyphen') };
     }
     
     try {
