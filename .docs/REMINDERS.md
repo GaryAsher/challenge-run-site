@@ -10,26 +10,25 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ## Immediate Priorities
 
-### 1. Forms & Submissions
+### 1. Authentication & Profiles
+- [ ] Account linking (connect multiple providers to one account)
+- [ ] Profile edit page
+- [ ] Admin profile approval workflow
+
+### 2. Forms & Submissions
 - [ ] New Game Submission form
   - Check Discord Webhook by submitting a new game. Has been updated, but not tested.
 - [ ] New Run Submission 
   - Test variables. Update if needed.
+  - Link runner_id to authenticated user
 
-### 2. Runner Profiles
-- [ ] Runner profile submission form (self-service)
+### 3. Runner Profiles
 - [ ] Badges placeholder structure
 - [ ] Featured runs section refinement
 
 ---
 
 ## Short-Term Priorities
-
-### 3. Spanish Language Support
-- [ ] Create `_data/i18n/es.yml` with translations
-- [ ] Add language toggle to header
-- [ ] Create Spanish versions of key pages or use Liquid variables
-- [ ] Request community translation help early
 
 ### 4. Glossary Page
 - [ ] Terms to define: Hit, Damage, Death, Hard CC, Soft CC, Hitless vs Damageless, Full Run, Mini-Challenge, etc.
@@ -41,26 +40,43 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Add FAQ content
 - [ ] Add contact links
 
+### 6. Spanish Language Support
+- [ ] Create `_data/i18n/es.yml` with translations
+- [ ] Add language toggle to header
+- [ ] Create Spanish versions of key pages or use Liquid variables
+- [ ] Request community translation help early
+
 ---
 
 ## Medium-Term Priorities
 
-### 6. Dark/Light Mode Toggle and other themes.
+### 7. SvelteKit Migration 
+**Target: When site has 10+ active games or needs real-time features**
+
+Migration plan:
+- [ ] Set up SvelteKit project with Supabase
+- [ ] Migrate static content (games, runners, runs)
+- [ ] Implement auth with server-side sessions
+- [ ] Build admin dashboard
+- [ ] Add real-time run verification
+- [ ] Deploy to Vercel or similar
+
+### 8. Dark/Light Mode Toggle and other themes.
 - [ ] Add light mode CSS variables
 - [ ] Add toggle button to header
 - [ ] Store preference in localStorage
 - [ ] Respect `prefers-color-scheme`
 
-### 7. News & History Integration
+### 9. News & History Integration
 - Requires News page activity first
 - Combine news posts with game history for unified timeline
 
-### 8. History Tab Refinement
+### 10. History Tab Refinement
 - Needs Runner Profiles with Badges first
 - Focus on: rule changes, discussions, community milestones
 - NOT global submissions from anyone
 
-### 9. Forum Integration
+### 11. Forum Integration
 Decision needed: GitHub Discussions vs Discord
 
 ---
