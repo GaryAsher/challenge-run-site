@@ -5,6 +5,10 @@ runner_name: Gary_Asher
 avatar: /assets/img/runners/g/gary-asher.png
 cover_position: center
 
+# Admin privileges
+is_admin: true
+can_view_test_content: true
+
 socials:
   twitch: https://www.twitch.tv/gary_asher
   youtube: https://www.youtube.com/@gary_asher
@@ -17,7 +21,7 @@ socials:
   other_gaming_profile3:
   personal_website:
   
-bio: "Short bio about the runner"
+bio: "Site administrator and challenge runner"
 
 featured_runs:
   - game_id: hades-2
