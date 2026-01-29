@@ -1,4 +1,3 @@
-```yaml
 # Supabase Configuration (PUBLIC values only!)
 # Never put secret keys in this file
 
@@ -17,4 +16,3 @@ auth_callback_url: "/auth/callback"
 # Profile settings
 profile_approval_required: true
 min_account_age_days: 30
-```
