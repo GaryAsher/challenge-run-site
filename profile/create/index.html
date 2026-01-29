@@ -9,6 +9,14 @@ title: "Create Runner Profile"
   </p>
 
   <div class="profile-create">
+    <!-- Loading state -->
+    <div id="loading-state" class="card">
+      <div class="sign-in-loading">
+        <div class="spinner"></div>
+        <p class="muted">Loading...</p>
+      </div>
+    </div>
+
     <!-- Not signed in state -->
     <div id="not-signed-in" class="card" hidden>
       <h1>Create Runner Profile</h1>
@@ -74,7 +82,11 @@ title: "Create Runner Profile"
                 placeholder="your-runner-id"
                 required
                 autocomplete="off"
+                minlength="3"
               />
+              <div class="profile-form__char-rules" id="runner-id-rules">
+                Allowed: lowercase letters (a-z), numbers (0-9), hyphens (-), underscores (_). Min 3 characters. Cannot start/end with - or _.
+              </div>
               <div class="profile-form__validation" id="runner-id-validation"></div>
             </div>
 
@@ -162,22 +174,8 @@ title: "Create Runner Profile"
             </div>
 
             <div class="profile-form__field">
-              <label for="social_discord" class="profile-form__label">Discord Server</label>
-              <input type="url" id="social_discord" name="social_discord" class="profile-form__input" placeholder="https://discord.gg/invite_code" />
-            </div>
-
-            <div class="profile-form__field">
-              <label for="social_website" class="profile-form__label">Personal Website</label>
-              <input type="url" id="social_website" name="social_website" class="profile-form__input" placeholder="https://your-website.com" />
-            </div>
-          </div>
-
-          <!-- Games -->
-          <div class="profile-form__section">
-            <h2 class="profile-form__section-title">Games You Play</h2>
-            <p class="muted mb-3">Select games you're interested in running (can be changed later)</p>
-            <div class="profile-form__games" id="games-list">
-              <p class="muted">Loading games...</p>
+              <label for="social_other" class="profile-form__label">Other (optional)</label>
+              <input type="url" id="social_other" name="social_other" class="profile-form__input" placeholder="https://your-website-or-social.com" />
             </div>
           </div>
 
@@ -206,18 +204,23 @@ title: "Create Runner Profile"
         </form>
       </div>
     </div>
-
-    <!-- Loading state -->
-    <div id="loading-state" class="card">
-      <div class="profile-create__loading">
-        <div class="spinner"></div>
-        <p class="muted">Loading...</p>
-      </div>
-    </div>
   </div>
 </div>
 
 {% include profile-form-styles.html %}
+
+<style>
+.profile-form__char-rules {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--accent);
+}
+</style>
 
 <script type="module">
 import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
@@ -236,7 +239,6 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
   const displayNameInput = document.getElementById('display_name');
   const bioInput = document.getElementById('bio');
   const bioCount = document.getElementById('bio-count');
-  const gamesList = document.getElementById('games-list');
   const submitBtn = document.getElementById('submit-btn');
   const formMessage = document.getElementById('form-message');
   
@@ -247,31 +249,73 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
   
   let runnerIdCheckTimeout = null;
   let isRunnerIdAvailable = false;
+  let isRunnerIdValid = false;
   
   function showState(state) {
+    loadingState.hidden = state !== 'loading';
     notSignedIn.hidden = state !== 'not-signed-in';
     hasProfile.hidden = state !== 'has-profile';
     hasPending.hidden = state !== 'has-pending';
     createFormContainer.hidden = state !== 'create-form';
-    loadingState.hidden = state !== 'loading';
+  }
+  
+  /**
+   * Generate a runner ID from username
+   * - Converts to lowercase
+   * - Replaces spaces with hyphens
+   * - Removes invalid characters
+   * - Trims leading/trailing hyphens/underscores
+   */
+  function generateRunnerId(username) {
+    if (!username) return '';
+    
+    return username
+      .toLowerCase()
+      .replace(/\s+/g, '-')           // spaces to hyphens
+      .replace(/[^a-z0-9_-]/g, '')    // remove invalid chars
+      .replace(/^[-_]+|[-_]+$/g, '')  // trim leading/trailing - or _
+      .replace(/[-_]{2,}/g, '-');     // collapse multiple separators
+  }
+  
+  /**
+   * Validate runner ID format
+   * Returns { valid: boolean, error: string|null }
+   */
+  function validateRunnerIdFormat(value) {
+    if (!value) {
+      return { valid: false, error: 'Runner ID is required' };
+    }
+    
+    if (value.length < 3) {
+      return { valid: false, error: 'Must be at least 3 characters' };
+    }
+    
+    // Check for invalid characters
+    if (!/^[a-z0-9_-]+$/.test(value)) {
+      return { valid: false, error: 'Only lowercase letters, numbers, hyphens, and underscores allowed' };
+    }
+    
+    // Check for leading/trailing - or _
+    if (/^[-_]|[-_]$/.test(value)) {
+      return { valid: false, error: 'Cannot start or end with - or _' };
+    }
+    
+    return { valid: true, error: null };
   }
   
   // Initialize
   try {
-    console.log('Profile create page: Starting init...');
+    showState('loading');
     await CRCAuth.init();
     
     const isSignedIn = CRCAuth.isSignedIn();
-    console.log('Profile create page: isSignedIn =', isSignedIn);
     
     if (!isSignedIn) {
-      console.log('Profile create page: Not signed in, showing sign-in prompt');
       showState('not-signed-in');
       return;
     }
     
     const profile = CRCAuth.getProfile();
-    console.log('Profile create page: profile =', profile);
     
     if (profile && !profile._isPending) {
       viewProfileLink.href = `/runners/${profile.runner_id}/`;
@@ -286,75 +330,80 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
     
     // Show create form
     const metadata = CRCAuth.getProviderMetadata();
-    console.log('Profile create page: metadata =', metadata);
     oauthAvatar.src = metadata.providerAvatar || '/assets/img/site/default-runner.png';
     oauthName.textContent = metadata.providerUsername || 'User';
     oauthProvider.textContent = `via ${metadata.provider ? metadata.provider.charAt(0).toUpperCase() + metadata.provider.slice(1) : 'OAuth'}`;
     
+    // Auto-fill display name from provider
     if (metadata.providerUsername) {
       displayNameInput.value = metadata.providerUsername;
+      
+      // Auto-generate runner ID from username
+      const generatedId = generateRunnerId(metadata.providerUsername);
+      if (generatedId.length >= 3) {
+        runnerIdInput.value = generatedId;
+        runnerIdPreview.textContent = generatedId;
+        
+        // Trigger validation
+        runnerIdInput.dispatchEvent(new Event('input'));
+      }
     }
     
-    await loadGames();
     showState('create-form');
   } catch (error) {
     console.error('Profile create page init error:', error);
     showState('not-signed-in');
   }
   
-  async function loadGames() {
-    try {
-      const response = await fetch('{{ "/assets/generated/form-index.json" | relative_url }}');
-      const data = await response.json();
-      
-      if (data.games && data.games.length > 0) {
-        gamesList.innerHTML = '';
-        data.games.forEach(game => {
-          const label = document.createElement('label');
-          label.className = 'profile-form__game-checkbox';
-          label.innerHTML = `<input type="checkbox" name="games" value="${game.id}" /><span>${game.name}</span>`;
-          gamesList.appendChild(label);
-        });
-      } else {
-        gamesList.innerHTML = '<p class="muted">No games available yet.</p>';
-      }
-    } catch (error) {
-      console.error('Error loading games:', error);
-      gamesList.innerHTML = '<p class="muted">Could not load games.</p>';
-    }
-  }
-  
   // Runner ID validation
   runnerIdInput.addEventListener('input', (e) => {
-    let value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
-    value = value.replace(/^-+|-+$/g, '').replace(/-{2,}/g, '-');
+    // Allow: lowercase letters, numbers, hyphens, underscores
+    // Convert to lowercase, but don't strip hyphens during typing
+    let value = e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    
+    // Collapse multiple consecutive separators
+    value = value.replace(/[-_]{2,}/g, match => match[0]);
+    
     e.target.value = value;
     runnerIdPreview.textContent = value || 'your-id';
     
+    // Clear previous state
     runnerIdInput.classList.remove('is-valid', 'is-invalid');
     runnerIdValidation.textContent = '';
     runnerIdValidation.className = 'profile-form__validation';
     isRunnerIdAvailable = false;
+    isRunnerIdValid = false;
     
     clearTimeout(runnerIdCheckTimeout);
     
-    if (value.length >= 2) {
-      runnerIdValidation.textContent = 'Checking availability...';
-      runnerIdCheckTimeout = setTimeout(async () => {
-        const available = await CRCAuth.isRunnerIdAvailable(value);
-        if (available) {
-          runnerIdInput.classList.add('is-valid');
-          runnerIdValidation.textContent = '✓ Available!';
-          runnerIdValidation.className = 'profile-form__validation is-valid';
-          isRunnerIdAvailable = true;
-        } else {
-          runnerIdInput.classList.add('is-invalid');
-          runnerIdValidation.textContent = '✗ Already taken';
-          runnerIdValidation.className = 'profile-form__validation is-invalid';
-          isRunnerIdAvailable = false;
-        }
-      }, 500);
+    // Validate format
+    const formatCheck = validateRunnerIdFormat(value);
+    
+    if (!formatCheck.valid) {
+      runnerIdInput.classList.add('is-invalid');
+      runnerIdValidation.textContent = '✗ ' + formatCheck.error;
+      runnerIdValidation.className = 'profile-form__validation is-invalid';
+      return;
     }
+    
+    // Check availability
+    runnerIdValidation.textContent = 'Checking availability...';
+    runnerIdCheckTimeout = setTimeout(async () => {
+      const available = await CRCAuth.isRunnerIdAvailable(value);
+      if (available) {
+        runnerIdInput.classList.add('is-valid');
+        runnerIdValidation.textContent = '✓ Available!';
+        runnerIdValidation.className = 'profile-form__validation is-valid';
+        isRunnerIdAvailable = true;
+        isRunnerIdValid = true;
+      } else {
+        runnerIdInput.classList.add('is-invalid');
+        runnerIdValidation.textContent = '✗ Already taken';
+        runnerIdValidation.className = 'profile-form__validation is-invalid';
+        isRunnerIdAvailable = false;
+        isRunnerIdValid = false;
+      }
+    }, 500);
   });
   
   bioInput.addEventListener('input', () => {
@@ -363,6 +412,16 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
   
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    
+    // Final validation on the runner ID (strip trailing - or _)
+    let finalRunnerId = runnerIdInput.value.replace(/[-_]+$/, '');
+    
+    const formatCheck = validateRunnerIdFormat(finalRunnerId);
+    if (!formatCheck.valid) {
+      showMessage(formatCheck.error, 'error');
+      runnerIdInput.focus();
+      return;
+    }
     
     if (!isRunnerIdAvailable) {
       showMessage('Please choose an available Runner ID.', 'error');
@@ -378,16 +437,17 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
     
     const formData = new FormData(form);
     const profileData = {
-      runner_id: formData.get('runner_id'),
+      runner_id: finalRunnerId,
       display_name: formData.get('display_name'),
       pronouns: formData.get('pronouns') || null,
       location: formData.get('location') || null,
       bio: formData.get('bio') || null,
       socials: {},
-      games: formData.getAll('games')
+      games: []
     };
     
-    ['twitch', 'youtube', 'twitter', 'bluesky', 'discord', 'website'].forEach(key => {
+    // Collect social links
+    ['twitch', 'youtube', 'twitter', 'bluesky', 'other'].forEach(key => {
       const val = formData.get(`social_${key}`);
       if (val) profileData.socials[key] = val;
     });
