@@ -1,0 +1,125 @@
+---
+layout: default
+title: "Linking Account..."
+---
+
+<div class="page-width">
+  <div class="auth-callback">
+    <div class="auth-callback__content">
+      <div class="auth-callback__spinner" id="spinner">
+        <div class="spinner spinner--large"></div>
+      </div>
+      <h1 class="auth-callback__title" id="title">Linking account...</h1>
+      <p class="auth-callback__message muted" id="message">Please wait while we link your account.</p>
+      <div class="auth-callback__actions" id="actions" hidden></div>
+    </div>
+  </div>
+</div>
+
+<style>
+.auth-callback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+}
+
+.auth-callback__content {
+  max-width: 400px;
+  padding: 2rem;
+}
+
+.auth-callback__spinner {
+  margin-bottom: 1.5rem;
+}
+
+.spinner--large {
+  width: 48px;
+  height: 48px;
+  border-width: 4px;
+}
+
+.auth-callback__title {
+  margin-bottom: 0.5rem;
+}
+
+.auth-callback__message {
+  margin-bottom: 1rem;
+}
+
+.auth-callback__success {
+  color: #28a745;
+}
+
+.auth-callback__error {
+  color: var(--danger);
+  background: var(--danger-bg, rgba(220, 53, 69, 0.1));
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.auth-callback__actions {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+</style>
+
+<script type="module">
+import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
+
+const spinner = document.getElementById('spinner');
+const title = document.getElementById('title');
+const message = document.getElementById('message');
+const actions = document.getElementById('actions');
+
+function showSuccess(provider) {
+  spinner.innerHTML = '<span style="font-size: 3rem;">✓</span>';
+  title.textContent = 'Account Linked!';
+  title.className = 'auth-callback__title auth-callback__success';
+  message.textContent = `Your ${provider} account has been linked successfully.`;
+  
+  // Store for the settings page to show a message
+  sessionStorage.setItem('crc_just_linked', provider);
+  
+  setTimeout(() => {
+    window.location.href = '/profile/settings/';
+  }, 1500);
+}
+
+function showError(text) {
+  spinner.style.display = 'none';
+  title.textContent = 'Linking Failed';
+  message.innerHTML = `<div class="auth-callback__error">${text}</div>`;
+  actions.hidden = false;
+  actions.innerHTML = `
+    <a href="/profile/settings/" class="btn btn--primary">Back to Settings</a>
+  `;
+}
+
+(async function() {
+  try {
+    await CRCAuth.init();
+    
+    // Small delay to ensure session is processed
+    await new Promise(r => setTimeout(r, 500));
+    
+    if (CRCAuth.isSignedIn()) {
+      const provider = sessionStorage.getItem('crc_link_provider') || 'account';
+      sessionStorage.removeItem('crc_link_provider');
+      sessionStorage.removeItem('crc_linking_account');
+      
+      showSuccess(provider);
+    } else {
+      showError('Account linking failed. Please try again.');
+    }
+  } catch (error) {
+    console.error('Link callback error:', error);
+    showError(error.message || 'An unexpected error occurred.');
+  }
+})();
+</script>
