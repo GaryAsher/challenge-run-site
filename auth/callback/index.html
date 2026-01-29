@@ -6,11 +6,12 @@ title: "Signing In..."
 <div class="page-width">
   <div class="auth-callback">
     <div class="auth-callback__content">
-      <div class="auth-callback__spinner">
+      <div class="auth-callback__spinner" id="spinner">
         <div class="spinner spinner--large"></div>
       </div>
-      <h1 class="auth-callback__title">Signing you in...</h1>
-      <p class="auth-callback__message muted" id="auth-message">Please wait while we complete the sign-in process.</p>
+      <h1 class="auth-callback__title" id="title">Signing you in...</h1>
+      <p class="auth-callback__message muted" id="message">Please wait while we complete the sign-in process.</p>
+      <div class="auth-callback__actions" id="actions" hidden></div>
     </div>
   </div>
 </div>
@@ -52,7 +53,7 @@ title: "Signing In..."
   background: var(--danger-bg, rgba(220, 53, 69, 0.1));
   padding: 1rem;
   border-radius: 8px;
-  margin-top: 1rem;
+  margin-bottom: 1rem;
 }
 
 .auth-callback__actions {
@@ -60,104 +61,82 @@ title: "Signing In..."
   display: flex;
   gap: 1rem;
   justify-content: center;
+  flex-wrap: wrap;
 }
 </style>
 
 <script type="module">
 import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
 
+const spinner = document.getElementById('spinner');
+const title = document.getElementById('title');
+const message = document.getElementById('message');
+const actions = document.getElementById('actions');
+
+function showSuccess(text, redirectUrl) {
+  spinner.innerHTML = '<span style="font-size: 3rem;">✓</span>';
+  title.textContent = 'Success!';
+  message.textContent = text;
+  
+  setTimeout(() => {
+    window.location.href = redirectUrl;
+  }, 1500);
+}
+
+function showError(text) {
+  spinner.style.display = 'none';
+  title.textContent = 'Sign-in Failed';
+  message.innerHTML = `<div class="auth-callback__error">${text}</div>`;
+  actions.hidden = false;
+  actions.innerHTML = `
+    <a href="/sign-in/" class="btn btn--primary">Try Again</a>
+    <a href="/" class="btn">Go Home</a>
+  `;
+}
+
 (async function() {
-  const messageEl = document.getElementById('auth-message');
-  
-  // Check if we're running in a popup window
-  const isPopup = window.opener && window.opener !== window;
-  
   try {
-    // Initialize auth (this handles the OAuth callback automatically)
+    // Initialize auth - this will process the OAuth callback in the URL
     await CRCAuth.init();
     
-    // Small delay to ensure session is processed
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Small delay to ensure session is fully processed
+    await new Promise(r => setTimeout(r, 300));
     
-    // Check if we're now signed in
+    // Check if signed in
     if (CRCAuth.isSignedIn()) {
-      const user = CRCAuth.getUser();
-      const profile = CRCAuth.getProfile();
       const metadata = CRCAuth.getProviderMetadata();
+      const profile = CRCAuth.getProfile();
       
-      messageEl.textContent = `Welcome, ${metadata.providerUsername || 'Runner'}!`;
-      
-      // If this is a popup window, just close it
-      // The parent window will detect the session from localStorage
-      if (isPopup) {
-        messageEl.textContent = `Welcome, ${metadata.providerUsername || 'Runner'}! You can close this window.`;
-        
-        // Brief delay so user sees the message, then close
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        // Try to close the popup
-        window.close();
-        
-        // If window.close() didn't work (some browsers block it),
-        // show a message telling the user to close manually
-        setTimeout(() => {
-          messageEl.textContent = 'Sign-in complete! You can close this window and return to the main page.';
-        }, 500);
-        
-        return;
-      }
-      
-      // Not a popup - this is a full page redirect flow
-      // Determine where to redirect
+      // Determine redirect
       let redirectUrl = '/';
       
-      // Check for stored redirect URL
-      const storedRedirect = sessionStorage.getItem('crc_auth_redirect');
-      if (storedRedirect) {
-        redirectUrl = storedRedirect;
-        sessionStorage.removeItem('crc_auth_redirect');
-      }
-      // If no profile, redirect to create profile
-      else if (!profile) {
-        redirectUrl = '/profile/create/';
-      }
-      // If pending profile, redirect to profile status
-      else if (profile._isPending) {
-        redirectUrl = '/profile/status/';
-      }
-      // Otherwise go to their profile
-      else {
-        redirectUrl = `/runners/${profile.runner_id}/`;
+      // Check for stored redirect
+      try {
+        const stored = sessionStorage.getItem('crc_auth_redirect');
+        if (stored && stored !== '/sign-in/' && stored !== '/auth/callback/') {
+          redirectUrl = stored;
+          sessionStorage.removeItem('crc_auth_redirect');
+        }
+      } catch (e) { /* ignore */ }
+      
+      // If no stored redirect, go based on profile status
+      if (redirectUrl === '/') {
+        if (!profile) {
+          redirectUrl = '/profile/create/';
+        } else if (profile._isPending) {
+          redirectUrl = '/profile/status/';
+        } else {
+          redirectUrl = `/runners/${profile.runner_id}/`;
+        }
       }
       
-      // Add slight delay so user sees the welcome message
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      window.location.href = redirectUrl;
+      showSuccess(`Welcome, ${metadata.providerUsername || 'Runner'}! Redirecting...`, redirectUrl);
     } else {
-      // Not signed in - might be an error
-      throw new Error('Sign-in was not completed');
+      showError('Sign-in was not completed. Please try again.');
     }
   } catch (error) {
     console.error('Auth callback error:', error);
-    
-    document.querySelector('.auth-callback__spinner').style.display = 'none';
-    document.querySelector('.auth-callback__title').textContent = 'Sign-in Failed';
-    
-    // If in popup, provide option to close
-    const closeAction = isPopup 
-      ? '<button type="button" class="btn" onclick="window.close()">Close Window</button>'
-      : '<a href="/" class="btn">Go Home</a>';
-    
-    messageEl.innerHTML = `
-      <div class="auth-callback__error">
-        ${error.message || 'An error occurred during sign-in. Please try again.'}
-      </div>
-      <div class="auth-callback__actions">
-        <a href="/sign-in/" class="btn btn--primary">Try Again</a>
-        ${closeAction}
-      </div>
-    `;
+    showError(error.message || 'An unexpected error occurred.');
   }
 })();
 </script>
