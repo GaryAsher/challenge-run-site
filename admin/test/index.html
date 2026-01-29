@@ -1,0 +1,160 @@
+---
+layout: default
+title: "Admin Test Dashboard"
+---
+
+<div class="page-width">
+  <h1>🔒 Admin Test Dashboard</h1>
+  
+  <div id="auth-check">
+    <div class="card">
+      <div class="sign-in-loading">
+        <div class="spinner"></div>
+        <p class="muted">Checking access...</p>
+      </div>
+    </div>
+  </div>
+  
+  <div id="not-authorized" class="card" hidden>
+    <h2>Access Denied</h2>
+    <p class="muted">You don't have permission to view this page.</p>
+    <a href="/" class="btn btn--primary">Go Home</a>
+  </div>
+  
+  <div id="admin-content" hidden>
+    <p class="muted mb-4">
+      This page is only visible to administrators. Use it to test features and access hidden content.
+    </p>
+    
+    <div class="admin-grid">
+      <!-- Test Games Section -->
+      <div class="card">
+        <h2>🎮 Test Games</h2>
+        <p class="muted">Hidden games for testing functionality.</p>
+        <ul>
+          {% for g in site.games %}
+            {% if g.test_only == true or g.published == false %}
+              <li>
+                <a href="{{ g.url | relative_url }}">{{ g.game_name }}</a>
+                {% if g.test_only %}<span class="tag tag--small">test-only</span>{% endif %}
+                {% if g.published == false %}<span class="tag tag--small">unpublished</span>{% endif %}
+              </li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+        <p class="muted" style="font-size: 0.85rem;">
+          These games are hidden from public listings but accessible via direct URL.
+        </p>
+      </div>
+      
+      <!-- Quick Actions -->
+      <div class="card">
+        <h2>⚡ Quick Actions</h2>
+        <p class="muted">Common admin tasks.</p>
+        <div class="admin-actions">
+          <a href="/admin/profiles/" class="btn">Pending Profiles</a>
+          <a href="/games/test-game/submit/" class="btn">Test Submit Form</a>
+          <a href="/profile/create/" class="btn">Test Profile Creation</a>
+        </div>
+      </div>
+      
+      <!-- Auth Debug -->
+      <div class="card">
+        <h2>🔍 Auth Debug</h2>
+        <p class="muted">Current authentication status.</p>
+        <pre id="auth-debug" style="background: var(--surface); padding: 1rem; border-radius: 8px; overflow: auto; font-size: 0.8rem;"></pre>
+        <button type="button" class="btn" id="sign-out-btn" style="margin-top: 1rem;">Sign Out</button>
+      </div>
+      
+      <!-- Test Profiles Section -->
+      <div class="card">
+        <h2>👤 Test Profiles</h2>
+        <p class="muted">Create test runner profiles for development.</p>
+        <p class="muted" style="font-size: 0.85rem;">
+          As an admin, you can delete and recreate your profile as needed for testing.
+          Your profile data:
+        </p>
+        <ul>
+          <li>Runner ID: <code>gary-asher</code></li>
+          <li>Admin: Yes</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.admin-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.admin-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin-actions .btn {
+  text-align: left;
+}
+
+.tag--small {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.4rem;
+  margin-left: 0.5rem;
+  background: var(--accent);
+  color: var(--bg);
+  border-radius: 4px;
+}
+</style>
+
+<script type="module">
+import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
+
+const authCheck = document.getElementById('auth-check');
+const notAuthorized = document.getElementById('not-authorized');
+const adminContent = document.getElementById('admin-content');
+const authDebug = document.getElementById('auth-debug');
+const signOutBtn = document.getElementById('sign-out-btn');
+
+// List of admin runner IDs (should match _data/admin-config.yml)
+const ADMIN_IDS = ['gary-asher'];
+
+(async function() {
+  await CRCAuth.init();
+  
+  const isSignedIn = CRCAuth.isSignedIn();
+  const profile = CRCAuth.getProfile();
+  const user = CRCAuth.getUser();
+  const metadata = CRCAuth.getProviderMetadata();
+  
+  // Check if user is admin
+  // For now, check if they have gary-asher profile or matching provider username
+  const isAdmin = profile?.runner_id && ADMIN_IDS.includes(profile.runner_id);
+  const isAdminByUsername = metadata?.providerUsername?.toLowerCase() === 'gary_asher';
+  
+  // Show debug info
+  authDebug.textContent = JSON.stringify({
+    isSignedIn,
+    isAdmin: isAdmin || isAdminByUsername,
+    profile: profile ? { runner_id: profile.runner_id, _isPending: profile._isPending } : null,
+    metadata: metadata,
+    user_id: user?.id || null
+  }, null, 2);
+  
+  authCheck.hidden = true;
+  
+  if (isSignedIn && (isAdmin || isAdminByUsername)) {
+    adminContent.hidden = false;
+  } else {
+    notAuthorized.hidden = false;
+  }
+})();
+
+signOutBtn.addEventListener('click', async () => {
+  await CRCAuth.signOut();
+  window.location.href = '/sign-in/';
+});
+</script>
