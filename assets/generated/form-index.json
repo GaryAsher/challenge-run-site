@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-01-29T00:28:34.273Z",
+  "generated_at": "2026-01-29T21:20:05.159Z",
   "games": [
     {
       "game_id": "celeste",
@@ -752,6 +752,31 @@
       },
       "characters": [],
       "timing_method": "LRT",
+      "timing_method_secondary": ""
+    },
+    {
+      "game_id": "test-game",
+      "title": "Test Game (Admin Only)",
+      "category_tiers": {
+        "full_runs": [],
+        "mini_challenges": [],
+        "player_made": []
+      },
+      "categories": [],
+      "standard_challenges": [],
+      "glitches": [],
+      "restrictions": [
+        {
+          "id": "object-object",
+          "name": "[object Object]"
+        }
+      ],
+      "character_column": {
+        "enabled": false,
+        "label": "Character"
+      },
+      "characters": [],
+      "timing_method": "",
       "timing_method_secondary": ""
     },
     {
