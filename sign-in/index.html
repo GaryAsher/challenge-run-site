@@ -6,7 +6,7 @@ title: "Sign In"
 <div class="page-width">
   <div class="sign-in-page">
     <div class="sign-in-card card">
-      <h1>Sign In to Challenge Run Community</h1>
+      <h1>Sign In to Challenge Run Central</h1>
       <p class="muted sign-in-intro">
         Sign in with your Discord or Twitch account to create a runner profile, submit runs, and track your achievements.
       </p>
@@ -338,33 +338,27 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
   discordBtn.addEventListener('click', async () => {
     showState('loading');
     
-    // Store current URL to redirect back after auth (optional)
-    const returnTo = new URLSearchParams(window.location.search).get('return');
-    if (returnTo) {
-      sessionStorage.setItem('crc_auth_redirect', returnTo);
-    }
-    
-    const { error } = await CRCAuth.signInWithDiscord();
+    const { data, error } = await CRCAuth.signInWithDiscord();
     
     if (error) {
       showError(error.message || 'Failed to connect to Discord');
+    } else if (data) {
+      // Successfully signed in via popup
+      updateSignedInUI();
     }
-    // If successful, user will be redirected to Discord
   });
   
   // Twitch sign-in
   twitchBtn.addEventListener('click', async () => {
     showState('loading');
     
-    const returnTo = new URLSearchParams(window.location.search).get('return');
-    if (returnTo) {
-      sessionStorage.setItem('crc_auth_redirect', returnTo);
-    }
-    
-    const { error } = await CRCAuth.signInWithTwitch();
+    const { data, error } = await CRCAuth.signInWithTwitch();
     
     if (error) {
       showError(error.message || 'Failed to connect to Twitch');
+    } else if (data) {
+      // Successfully signed in via popup
+      updateSignedInUI();
     }
   });
   
