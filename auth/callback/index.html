@@ -69,6 +69,9 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
 (async function() {
   const messageEl = document.getElementById('auth-message');
   
+  // Check if we're running in a popup window
+  const isPopup = window.opener && window.opener !== window;
+  
   try {
     // Initialize auth (this handles the OAuth callback automatically)
     await CRCAuth.init();
@@ -84,6 +87,27 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
       
       messageEl.textContent = `Welcome, ${metadata.providerUsername || 'Runner'}!`;
       
+      // If this is a popup window, just close it
+      // The parent window will detect the session from localStorage
+      if (isPopup) {
+        messageEl.textContent = `Welcome, ${metadata.providerUsername || 'Runner'}! You can close this window.`;
+        
+        // Brief delay so user sees the message, then close
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        // Try to close the popup
+        window.close();
+        
+        // If window.close() didn't work (some browsers block it),
+        // show a message telling the user to close manually
+        setTimeout(() => {
+          messageEl.textContent = 'Sign-in complete! You can close this window and return to the main page.';
+        }, 500);
+        
+        return;
+      }
+      
+      // Not a popup - this is a full page redirect flow
       // Determine where to redirect
       let redirectUrl = '/';
       
@@ -120,13 +144,18 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
     document.querySelector('.auth-callback__spinner').style.display = 'none';
     document.querySelector('.auth-callback__title').textContent = 'Sign-in Failed';
     
+    // If in popup, provide option to close
+    const closeAction = isPopup 
+      ? '<button type="button" class="btn" onclick="window.close()">Close Window</button>'
+      : '<a href="/" class="btn">Go Home</a>';
+    
     messageEl.innerHTML = `
       <div class="auth-callback__error">
         ${error.message || 'An error occurred during sign-in. Please try again.'}
       </div>
       <div class="auth-callback__actions">
         <a href="/sign-in/" class="btn btn--primary">Try Again</a>
-        <a href="/" class="btn">Go Home</a>
+        ${closeAction}
       </div>
     `;
   }
