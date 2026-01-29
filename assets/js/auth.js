@@ -84,7 +84,10 @@ async function initSupabase() {
     auth: {
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: true
+      detectSessionInUrl: true,
+      // Use localStorage for session persistence
+      storage: window.localStorage,
+      storageKey: 'sb-' + SUPABASE_URL.split('//')[1].split('.')[0] + '-auth-token'
     }
   });
   
@@ -92,10 +95,31 @@ async function initSupabase() {
   supabase.auth.onAuthStateChange(handleAuthStateChange);
   
   // Check for existing session
-  const { data: { session } } = await supabase.auth.getSession();
+  // Try multiple times in case of timing issues with localStorage
+  let session = null;
+  let attempts = 0;
+  const maxAttempts = 3;
+  
+  while (!session && attempts < maxAttempts) {
+    const { data, error } = await supabase.auth.getSession();
+    if (error) {
+      console.error('CRCAuth: Error getting session:', error);
+    }
+    session = data?.session;
+    
+    if (!session && attempts < maxAttempts - 1) {
+      // Wait a bit and try again - sometimes localStorage needs time to sync
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    attempts++;
+  }
+  
   if (session) {
+    console.log('CRCAuth: Session found, user:', session.user?.email || session.user?.id);
     currentUser = session.user;
     await loadProfile();
+  } else {
+    console.log('CRCAuth: No session found after', attempts, 'attempts');
   }
   
   return supabase;
@@ -253,36 +277,49 @@ function openAuthPopup(url, title = 'Sign In') {
     // Poll for popup close and auth state change
     let resolved = false;
     
-    const checkClosed = setInterval(() => {
+    const checkClosed = setInterval(async () => {
       if (popup.closed) {
         clearInterval(checkClosed);
         if (!resolved) {
-          // Give a moment for the auth state to update
-          setTimeout(async () => {
-            if (!resolved) {
-              // Check if we got signed in
-              const { data: { session } } = await supabase.auth.getSession();
-              if (session) {
-                resolved = true;
-                resolve({ data: session, error: null });
-              } else {
-                resolved = true;
-                resolve({ data: null, error: new Error('Sign in was cancelled or failed') });
+          resolved = true;
+          
+          // Give localStorage time to sync across windows
+          await new Promise(r => setTimeout(r, 300));
+          
+          // Force the Supabase client to re-check the session from storage
+          // The popup window stored the session in localStorage, so we need to refresh
+          const { data: { session }, error } = await supabase.auth.getSession();
+          
+          if (session) {
+            // Update our local state
+            currentUser = session.user;
+            await loadProfile();
+            
+            // Notify listeners manually since we're checking storage, not getting a real-time event
+            authStateListeners.forEach(listener => {
+              try {
+                listener('SIGNED_IN', currentUser, currentProfile);
+              } catch (err) {
+                console.error('Auth state listener error:', err);
               }
-            }
-          }, 500);
+            });
+            
+            resolve({ data: session, error: null });
+          } else {
+            resolve({ data: null, error: new Error('Sign in was cancelled or failed') });
+          }
         }
       }
     }, 500);
     
-    // Listen for auth state change (fires when callback completes)
+    // Also listen for auth state change (may fire in some cases)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session && !resolved) {
         resolved = true;
         clearInterval(checkClosed);
         subscription.unsubscribe();
         
-        // Close the popup
+        // Close the popup if it's still open
         try { popup.close(); } catch (e) { /* ignore */ }
         
         resolve({ data: session, error: null });
