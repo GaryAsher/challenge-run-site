@@ -109,3 +109,75 @@
 .form-grid input {
   min-height: var(--tap);
 }
+
+// ──────────────────────────────────────────────────────────
+// Runner Auth Section (Submit Form)
+// ──────────────────────────────────────────────────────────
+.runner-auth-info {
+  margin-bottom: 0.5rem;
+}
+
+.runner-auth-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.5rem;
+}
+
+.runner-auth-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--bg);
+}
+
+.runner-auth-details {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.runner-auth-name {
+  font-weight: 600;
+  color: var(--fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.runner-auth-id {
+  font-size: 0.85rem;
+  font-family: var(--font-mono, monospace);
+}
+
+.runner-auth-verified {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.runner-id-readonly {
+  background: var(--surface) !important;
+  color: var(--text-muted) !important;
+  cursor: not-allowed;
+}
+
+.runner-auth-guest {
+  display: block;
+}
+
+.runner-auth-link {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: underline;
+  
+  &:hover {
+    opacity: 0.8;
+  }
+}
