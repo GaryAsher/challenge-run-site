@@ -69,8 +69,6 @@ async function initSupabase() {
   
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     console.error('CRCAuth: Supabase credentials not configured. Make sure _data/supabase-config.yml exists and has supabase_url and supabase_anon_key.');
-    console.error('CRCAuth: window.CRC_SUPABASE_URL =', window.CRC_SUPABASE_URL);
-    console.error('CRCAuth: window.CRC_SUPABASE_ANON_KEY =', window.CRC_SUPABASE_ANON_KEY ? '[SET]' : '[NOT SET]');
     return null;
   }
   
@@ -84,10 +82,7 @@ async function initSupabase() {
     auth: {
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: true,
-      // Use localStorage for session persistence
-      storage: window.localStorage,
-      storageKey: 'sb-' + SUPABASE_URL.split('//')[1].split('.')[0] + '-auth-token'
+      detectSessionInUrl: true
     }
   });
   
@@ -95,31 +90,15 @@ async function initSupabase() {
   supabase.auth.onAuthStateChange(handleAuthStateChange);
   
   // Check for existing session
-  // Try multiple times in case of timing issues with localStorage
-  let session = null;
-  let attempts = 0;
-  const maxAttempts = 3;
+  const { data: { session }, error } = await supabase.auth.getSession();
   
-  while (!session && attempts < maxAttempts) {
-    const { data, error } = await supabase.auth.getSession();
-    if (error) {
-      console.error('CRCAuth: Error getting session:', error);
-    }
-    session = data?.session;
-    
-    if (!session && attempts < maxAttempts - 1) {
-      // Wait a bit and try again - sometimes localStorage needs time to sync
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-    attempts++;
+  if (error) {
+    console.error('CRCAuth: Error getting session:', error);
   }
   
   if (session) {
-    console.log('CRCAuth: Session found, user:', session.user?.email || session.user?.id);
     currentUser = session.user;
     await loadProfile();
-  } else {
-    console.log('CRCAuth: No session found after', attempts, 'attempts');
   }
   
   return supabase;
