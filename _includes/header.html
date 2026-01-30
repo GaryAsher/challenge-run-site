@@ -50,20 +50,35 @@
       <!-- Signed out state -->
       <a href="{{ '/sign-in/' | relative_url }}" class="nav-user__signin" id="nav-signin">Sign In</a>
       
-      <!-- Signed in state (hidden by default, shown via JS) -->
-      <div class="nav-dropdown nav-user__dropdown" id="nav-user-dropdown" hidden>
-        <button type="button" class="nav-user__toggle" aria-expanded="false" aria-haspopup="true">
-          <img class="nav-user__avatar" id="nav-user-avatar" src="/assets/img/site/default-runner.png" alt="" />
-          <span class="nav-user__name" id="nav-user-name">User</span>
-          <span class="nav-dropdown__caret">▾</span>
-        </button>
-        <div class="nav-dropdown__menu" hidden>
-          <a href="#" class="nav-dropdown__item" id="nav-profile-link">My Profile</a>
-          <a href="{{ '/profile/settings/' | relative_url }}" class="nav-dropdown__item">Settings</a>
-          <hr class="nav-dropdown__divider">
-          <a href="{{ '/submit/' | relative_url }}" class="nav-dropdown__item">Submit a Run</a>
-          <hr class="nav-dropdown__divider">
-          <button type="button" class="nav-dropdown__item nav-dropdown__item--btn" id="nav-signout">Sign Out</button>
+      <!-- Signed in state - Avatar button (hidden by default, shown via JS) -->
+      <button type="button" class="nav-user__avatar-btn" id="nav-user-avatar-btn" hidden aria-label="Account menu" aria-expanded="false" aria-haspopup="true">
+        <img class="nav-user__avatar" id="nav-user-avatar" src="/assets/img/site/default-runner.png" alt="" />
+      </button>
+      
+      <!-- User dropdown menu (appears when avatar is clicked) -->
+      <div class="nav-user__menu" id="nav-user-menu" hidden>
+        <div class="nav-user__menu-header">
+          <img class="nav-user__menu-avatar" id="nav-user-menu-avatar" src="/assets/img/site/default-runner.png" alt="" />
+          <div class="nav-user__menu-info">
+            <span class="nav-user__menu-name" id="nav-user-menu-name">User</span>
+            <span class="nav-user__menu-status" id="nav-user-menu-status">Signed In</span>
+          </div>
+        </div>
+        <div class="nav-user__menu-items">
+          <a href="#" class="nav-user__menu-item" id="nav-profile-link">
+            <span class="nav-user__menu-icon">👤</span> My Profile
+          </a>
+          <a href="{{ '/profile/settings/' | relative_url }}" class="nav-user__menu-item">
+            <span class="nav-user__menu-icon">⚙️</span> Settings
+          </a>
+          <hr class="nav-user__menu-divider">
+          <a href="{{ '/submit/' | relative_url }}" class="nav-user__menu-item">
+            <span class="nav-user__menu-icon">🎮</span> Submit a Run
+          </a>
+          <hr class="nav-user__menu-divider">
+          <button type="button" class="nav-user__menu-item nav-user__menu-item--btn" id="nav-signout">
+            <span class="nav-user__menu-icon">🚪</span> Sign Out
+          </button>
         </div>
       </div>
     </div>
@@ -297,18 +312,44 @@
 // Header User Auth State
 (function() {
   var signinLink = document.getElementById('nav-signin');
-  var userDropdown = document.getElementById('nav-user-dropdown');
+  var avatarBtn = document.getElementById('nav-user-avatar-btn');
   var userAvatar = document.getElementById('nav-user-avatar');
-  var userName = document.getElementById('nav-user-name');
+  var userMenu = document.getElementById('nav-user-menu');
+  var menuAvatar = document.getElementById('nav-user-menu-avatar');
+  var menuName = document.getElementById('nav-user-menu-name');
+  var menuStatus = document.getElementById('nav-user-menu-status');
   var profileLink = document.getElementById('nav-profile-link');
   var signoutBtn = document.getElementById('nav-signout');
   
-  if (!signinLink || !userDropdown) return;
+  if (!signinLink || !avatarBtn) return;
+  
+  // Toggle user menu
+  avatarBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    var isOpen = !userMenu.hidden;
+    userMenu.hidden = isOpen;
+    avatarBtn.setAttribute('aria-expanded', !isOpen);
+  });
+  
+  // Close menu when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!userMenu.hidden && !userMenu.contains(e.target) && e.target !== avatarBtn) {
+      userMenu.hidden = true;
+      avatarBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+  
+  // Close on Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && !userMenu.hidden) {
+      userMenu.hidden = true;
+      avatarBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
   
   // Check if CRCAuth is available (loaded via module in pages that need it)
   function initAuthUI() {
     if (typeof window.CRCAuth === 'undefined') {
-      // Try to init from global if auth.js was loaded
       return;
     }
     
@@ -318,20 +359,30 @@
       var metadata = auth.getProviderMetadata();
       var profile = auth.getProfile();
       
+      // Hide sign in, show avatar
       signinLink.hidden = true;
-      userDropdown.hidden = false;
+      avatarBtn.hidden = false;
       
-      userAvatar.src = metadata.providerAvatar || '/assets/img/site/default-runner.png';
-      userName.textContent = metadata.providerUsername || 'User';
+      // Set avatar images
+      var avatarUrl = metadata.providerAvatar || '/assets/img/site/default-runner.png';
+      userAvatar.src = avatarUrl;
+      menuAvatar.src = avatarUrl;
+      
+      // Set name and status
+      menuName.textContent = profile?.display_name || metadata.providerUsername || 'User';
       
       if (profile && !profile._isPending) {
+        menuStatus.textContent = 'Runner';
         profileLink.href = '/runners/' + profile.runner_id + '/';
+        profileLink.innerHTML = '<span class="nav-user__menu-icon">👤</span> My Profile';
       } else if (profile && profile._isPending) {
+        menuStatus.textContent = '⏳ Profile Pending';
         profileLink.href = '/profile/status/';
-        profileLink.textContent = 'Profile Status';
+        profileLink.innerHTML = '<span class="nav-user__menu-icon">⏳</span> Profile Status';
       } else {
+        menuStatus.textContent = 'No Profile';
         profileLink.href = '/profile/create/';
-        profileLink.textContent = 'Create Profile';
+        profileLink.innerHTML = '<span class="nav-user__menu-icon">➕</span> Create Profile';
       }
     }
     
@@ -339,10 +390,11 @@
     auth.onAuthStateChange(function(event, user, profile) {
       if (event === 'SIGNED_IN') {
         signinLink.hidden = true;
-        userDropdown.hidden = false;
+        avatarBtn.hidden = false;
       } else if (event === 'SIGNED_OUT') {
         signinLink.hidden = false;
-        userDropdown.hidden = true;
+        avatarBtn.hidden = true;
+        userMenu.hidden = true;
       }
     });
   }
@@ -354,19 +406,6 @@
         await window.CRCAuth.signOut();
         window.location.href = '/';
       }
-    });
-  }
-  
-  // User dropdown toggle
-  var userToggle = userDropdown.querySelector('.nav-user__toggle');
-  var userMenu = userDropdown.querySelector('.nav-dropdown__menu');
-  
-  if (userToggle && userMenu) {
-    userToggle.addEventListener('click', function(e) {
-      e.stopPropagation();
-      var isOpen = !userMenu.hidden;
-      userMenu.hidden = isOpen;
-      userToggle.setAttribute('aria-expanded', !isOpen);
     });
   }
   
