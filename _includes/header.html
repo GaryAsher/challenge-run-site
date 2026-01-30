@@ -60,6 +60,9 @@
           <a href="{{ '/profile/settings/' | relative_url }}" class="nav-user__menu-item">
             <span class="nav-user__menu-icon">⚙️</span> Account Settings
           </a>
+          <a href="{{ '/profile/theme/' | relative_url }}" class="nav-user__menu-item">
+            <span class="nav-user__menu-icon">🎨</span> Theme
+          </a>
           <a href="#" class="nav-user__menu-item nav-user__menu-item--disabled" id="nav-messages-link">
             <span class="nav-user__menu-icon">💬</span> Messages
             <span class="nav-user__menu-soon">Soon</span>
@@ -93,6 +96,12 @@
       <button type="button" class="admin-panel__close" id="admin-panel-close">&times;</button>
     </div>
     <nav class="admin-panel__nav">
+      <!-- Dashboard at TOP -->
+      <a href="/admin/test/" class="admin-panel__item admin-panel__item--highlight">
+        <span class="admin-panel__icon">📊</span>
+        <span class="admin-panel__text">Dashboard</span>
+      </a>
+      <hr class="admin-panel__divider">
       <a href="/admin/profiles/" class="admin-panel__item">
         <span class="admin-panel__icon">👥</span>
         <span class="admin-panel__text">Pending Profiles</span>
@@ -118,11 +127,6 @@
         <span class="admin-panel__icon">⚠️</span>
         <span class="admin-panel__text">User Reports</span>
         <span class="admin-panel__badge" id="admin-reports-badge" hidden>0</span>
-      </a>
-      <hr class="admin-panel__divider">
-      <a href="/admin/test/" class="admin-panel__item">
-        <span class="admin-panel__icon">🔧</span>
-        <span class="admin-panel__text">Test Dashboard</span>
       </a>
     </nav>
   </aside>
@@ -153,56 +157,47 @@
 @keyframes adminSlideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
 .admin-panel__header { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid var(--border); background: var(--bg); }
 .admin-panel__title { display: flex; align-items: center; gap: 8px; font-weight: 600; }
-.admin-badge { background: var(--accent); color: var(--bg); font-size: 0.65rem; font-weight: 700; padding: 3px 6px; border-radius: 4px; text-transform: uppercase; }
-.admin-panel__close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); line-height: 1; }
-.admin-panel__nav { padding: 0.5rem 0; flex: 1; overflow-y: auto; }
-.admin-panel__item { display: flex; align-items: center; gap: 12px; padding: 0.75rem 1rem; color: var(--fg); text-decoration: none; transition: background 0.1s; }
-.admin-panel__item:hover { background: var(--bg); text-decoration: none; }
+.admin-panel__close { background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; padding: 0.25rem; line-height: 1; }
+.admin-panel__nav { padding: 0.75rem 0; overflow-y: auto; flex: 1; }
+.admin-panel__item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: var(--fg); text-decoration: none; transition: background 0.15s ease; }
+.admin-panel__item:hover { background: var(--bg-hover); }
+.admin-panel__item--highlight { background: rgba(var(--accent-rgb), 0.1); border-left: 3px solid var(--accent); }
+.admin-panel__item--highlight:hover { background: rgba(var(--accent-rgb), 0.2); }
 .admin-panel__icon { font-size: 1.1rem; width: 24px; text-align: center; }
 .admin-panel__text { flex: 1; }
-.admin-panel__badge { background: #dc3545; color: white; font-size: 0.7rem; font-weight: 600; padding: 2px 6px; border-radius: 10px; min-width: 18px; text-align: center; }
+.admin-panel__badge { background: #dc3545; color: white; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 10px; min-width: 18px; text-align: center; }
 .admin-panel__badge[hidden] { display: none; }
 .admin-panel__divider { margin: 0.5rem 1rem; border: none; border-top: 1px solid var(--border); }
+.admin-badge { background: var(--accent); color: var(--bg); font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-/* User Menu Additions */
-.nav-user__menu-section { padding: 0.5rem 1rem; }
-.nav-user__menu-section-title { display: block; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; }
-.nav-user__submissions { font-size: 0.85rem; }
-.nav-user__menu-muted { color: var(--text-muted); font-size: 0.85rem; }
-.nav-user__menu-item--disabled { opacity: 0.6; cursor: not-allowed; pointer-events: none; }
-.nav-user__menu-soon { font-size: 0.65rem; background: var(--border); color: var(--text-muted); padding: 2px 5px; border-radius: 4px; margin-left: auto; }
-.nav-user__menu-item--signout { color: #dc3545 !important; }
-.nav-user__menu-item--signout:hover { background: rgba(220, 53, 69, 0.1) !important; }
-.nav-user__submission-item { display: flex; align-items: center; gap: 8px; padding: 0.4rem 0; font-size: 0.85rem; color: var(--fg); text-decoration: none; }
-.nav-user__submission-item:hover { color: var(--accent); }
-.nav-user__submission-status { font-size: 0.65rem; padding: 2px 5px; border-radius: 4px; background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+/* Nav dropdown (copied from original for completeness) */
+.nav-dropdown { position: relative; }
+.nav-dropdown__toggle { background: none; border: none; color: var(--fg); cursor: pointer; padding: 0.5rem; font-size: inherit; display: flex; align-items: center; gap: 4px; }
+.nav-dropdown__toggle:hover { color: var(--accent); }
+.nav-dropdown__caret { font-size: 0.75em; }
+.nav-dropdown__menu { position: absolute; top: 100%; right: 0; min-width: 180px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: 0 4px 12px rgba(0,0,0,0.3); padding: 0.5rem 0; z-index: 100; }
+.nav-dropdown__menu[hidden] { display: none; }
+.nav-dropdown__item { display: block; padding: 0.5rem 1rem; color: var(--fg); text-decoration: none; }
+.nav-dropdown__item:hover { background: var(--bg-hover); }
+.nav-dropdown__divider { margin: 0.5rem 0; border: none; border-top: 1px solid var(--border); }
 </style>
 
 <script>
-// Dropdown toggles
+// Header search
 (function() {
-  document.querySelectorAll('.nav-dropdown__toggle').forEach(function(btn) {
-    var menu = btn.nextElementSibling;
-    btn.addEventListener('click', function(e) { e.stopPropagation(); menu.hidden = !menu.hidden; btn.setAttribute('aria-expanded', !menu.hidden); });
-  });
-  document.addEventListener('click', function() { document.querySelectorAll('.nav-dropdown__menu').forEach(function(m) { m.hidden = true; }); });
-  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') document.querySelectorAll('.nav-dropdown__menu').forEach(function(m) { m.hidden = true; }); });
-})();
-
-// Search
-(function() {
-  var input = document.getElementById('header-search'), results = document.getElementById('header-search-results'), dataEl = document.getElementById('header-search-data');
-  if (!input || !results || !dataEl) return;
-  var data; try { data = JSON.parse(dataEl.textContent); } catch(e) { return; }
+  var data, input = document.getElementById('header-search'), results = document.getElementById('header-search-results');
+  if (!input || !results) return;
+  try { data = JSON.parse(document.getElementById('header-search-data')?.textContent || '{}'); } catch { return; }
   function search(q) {
-    q = (q||'').toLowerCase(); if (q.length < 2) return {games:[],runners:[],teams:[]};
-    var out = {games:[],runners:[],teams:[]};
-    (data.games||[]).forEach(function(g){ if ((g.name||'').toLowerCase().indexOf(q)!==-1 || (g.id||'').toLowerCase().indexOf(q)!==-1) out.games.push(g); });
-    (data.runners||[]).forEach(function(r){ if ((r.name||'').toLowerCase().indexOf(q)!==-1 || (r.id||'').toLowerCase().indexOf(q)!==-1) out.runners.push(r); });
-    (data.teams||[]).forEach(function(t){ if ((t.name||'').toLowerCase().indexOf(q)!==-1 || (t.id||'').toLowerCase().indexOf(q)!==-1) out.teams.push(t); });
-    return {games:out.games.slice(0,5),runners:out.runners.slice(0,5),teams:out.teams.slice(0,3)};
+    if (!q || q.length < 2) return { games: [], runners: [], teams: [] };
+    q = q.toLowerCase();
+    return {
+      games: (data.games || []).filter(function(g) { return g.name.toLowerCase().includes(q) || (g.aliases || []).some(function(a){return a.toLowerCase().includes(q);}); }).slice(0,5),
+      runners: (data.runners || []).filter(function(r) { return r.name.toLowerCase().includes(q) || r.id.toLowerCase().includes(q); }).slice(0,5),
+      teams: (data.teams || []).filter(function(t) { return t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q); }).slice(0,5)
+    };
   }
-  function render(r,q) {
+  function render(r, q) {
     if (!q || q.length<2) { results.hidden=true; return; }
     var total = r.games.length + r.runners.length + r.teams.length;
     if (!total) { results.innerHTML='<div class="search-no-results">No results</div>'; results.hidden=false; return; }
@@ -234,6 +229,22 @@
   document.getElementById('admin-panel-backdrop')?.addEventListener('click', function() { panel.hidden = true; });
   document.getElementById('admin-panel-close')?.addEventListener('click', function() { panel.hidden = true; });
   document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && !panel.hidden) panel.hidden = true; });
+})();
+
+// Apply saved theme on page load
+(function() {
+  var saved = localStorage.getItem('crc-theme');
+  if (saved) {
+    try {
+      var theme = JSON.parse(saved);
+      if (theme.accent) document.documentElement.style.setProperty('--accent', theme.accent);
+      if (theme.accentRgb) document.documentElement.style.setProperty('--accent-rgb', theme.accentRgb);
+      if (theme.bg) document.documentElement.style.setProperty('--bg', theme.bg);
+      if (theme.surface) document.documentElement.style.setProperty('--surface', theme.surface);
+      if (theme.bgImage) document.body.style.backgroundImage = 'url(' + theme.bgImage + ')';
+      if (theme.bgOpacity) document.body.style.setProperty('--theme-bg-opacity', theme.bgOpacity);
+    } catch (e) {}
+  }
 })();
 </script>
 
