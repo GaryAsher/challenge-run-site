@@ -9,13 +9,12 @@
      FORM ORDER (matches payload):
      1. Game + Category
      2. Challenges
-     3. Community Challenge
-     4. Character
-     5. Glitch Category
-     6. Restrictions
-     7. Run Details (runner_id, video_url, date_completed, run_time)
-     8. Captcha
-     9. Submit
+     3. Character
+     4. Glitch Category
+     5. Restrictions
+     6. Run Details (runner_id, video_url, date_completed, run_time)
+     7. Captcha
+     8. Submit
      ========================= -->
 
 {% if preset_game and preset_game.game_id %}
@@ -83,12 +82,12 @@
         {% endunless %}
 
         <div class="submit-section" aria-labelledby="category-section-title">
-          <p id="category-section-title" class="submit-section__title">Category <span class="required-marker">*</span></p>
-          <p class="submit-section__sub">Select the tier and category for your run.</p>
+          <p id="category-section-title" class="submit-section__title">Run Category <span class="required-marker">*</span></p>
+          <p class="submit-section__sub">Select the type and category for your run.</p>
 
           <div class="submit-row-2">
             <div class="submit-field">
-              <label for="tierSelect" class="submit-label muted">Category Tier <span class="required-marker">*</span></label>
+              <label for="tierSelect" class="submit-label muted">Run Type <span class="required-marker">*</span></label>
               <select 
                 id="tierSelect" 
                 class="select" 
@@ -96,7 +95,7 @@
                 aria-label="Select category tier"
                 aria-required="true"
               >
-                <option value="">Select tier...</option>
+                <option value="">Select type...</option>
               </select>
               <span class="field-error" id="tierSelect-error" role="alert" hidden></span>
             </div>
@@ -118,13 +117,13 @@
         </div>
 
         <!-- =========================
-             2. STANDARD CHALLENGES
+             2. CHALLENGES
              ========================= -->
         <div class="submit-section" aria-labelledby="standard-challenges-title">
-          <p id="standard-challenges-title" class="submit-section__title">Standard Challenges</p>
+          <p id="standard-challenges-title" class="submit-section__title">Challenges</p>
           <p class="submit-section__sub">
             Multi-select. Click a suggestion to add it, click a chip to remove it.
-            <br><em>At least one Standard or Community Challenge is required.</em>
+            <br><em>At least one Challenges is required.</em>
           </p>
 
           <div class="multi-pick" id="standardChallengePicker" data-kind="standard-challenges" role="group" aria-labelledby="standard-challenges-title">
@@ -154,7 +153,7 @@
             </div>
 
             <div class="multi-pick__help">
-              Examples: Damageless, Hitless, No-Hit / No-Damage
+              Examples: Blindfolded, Damageless, Hitless
             </div>
           </div>
 
@@ -162,26 +161,7 @@
         </div>
 
         <!-- =========================
-             3. COMMUNITY CHALLENGE
-             ========================= -->
-        <div class="submit-section" aria-labelledby="community-challenges-title">
-          <p id="community-challenges-title" class="submit-section__title">Community Challenge</p>
-          <p class="submit-section__sub">Optional. Pick one game-specific community challenge.</p>
-
-          <div class="submit-field">
-            <label for="communityChallengeSelect" class="submit-label muted">Community Challenge</label>
-            <select 
-              id="communityChallengeSelect" 
-              class="select"
-              aria-label="Select community challenge (optional)"
-            >
-              <option value="">None selected</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- =========================
-             4. CHARACTER / WEAPON / CLASS
+             3. CHARACTER / WEAPON / CLASS
              ========================= -->
         <div class="submit-section" aria-labelledby="character-title" id="characterSection">
           <p id="character-title" class="submit-section__title">Character</p>
@@ -203,7 +183,7 @@
         </div>
 
         <!-- =========================
-             5. GLITCH CATEGORY
+             4. GLITCH CATEGORY
              ========================= -->
         <div class="submit-section" aria-labelledby="glitch-title" id="glitchSection">
           <p id="glitch-title" class="submit-section__title">Glitch Category</p>
@@ -222,7 +202,7 @@
         </div>
 
         <!-- =========================
-             6. RESTRICTIONS
+             5. RESTRICTIONS
              ========================= -->
         <div class="submit-section" aria-labelledby="restrictions-title">
           <p id="restrictions-title" class="submit-section__title">Restrictions</p>
@@ -265,7 +245,7 @@
         </div>
 
         <!-- =========================
-             7. RUN DETAILS
+             6. RUN DETAILS
              ========================= -->
         <div class="submit-section" aria-labelledby="run-details-title">
           <p id="run-details-title" class="submit-section__title">Run Details <span class="required-marker">*</span></p>
@@ -363,12 +343,12 @@
         </div>
            
         <!-- =========================
-             8. CAPTCHA VERIFICATION
+             7. CAPTCHA VERIFICATION
              ========================= -->
         {% include turnstile.html %}
            
         <!-- =========================
-             9. ACTIONS + OUTPUT
+             8. ACTIONS + OUTPUT
              ========================= -->
         <div class="submit-section" aria-labelledby="submit-section-title">
           <p id="submit-section-title" class="submit-section__title">Submit</p>
