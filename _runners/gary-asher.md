@@ -1,6 +1,6 @@
 ---
 layout: runner
-runner_id: garyasher
+runner_id: gary-asher
 runner_name: Gary_Asher
 avatar: /assets/img/runners/g/gary-asher.png
 cover_position: center
