@@ -1,5 +1,4 @@
 ---
-layout: run
 game_id: "hades-2"
 runner_id: "gary-asher"
 category_slug: "underworld-any"
