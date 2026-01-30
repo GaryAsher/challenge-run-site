@@ -1,0 +1,372 @@
+---
+layout: default
+title: "Theme Settings"
+---
+
+<div class="page-width">
+  <p class="muted mb-3">
+    <a href="javascript:history.back()">← Back</a>
+  </p>
+
+  <div class="theme-settings">
+    <h1>🎨 Theme Settings</h1>
+    <p class="muted mb-4">Customize the appearance of CRC to match your style.</p>
+    
+    <!-- Preview Card -->
+    <div class="card theme-preview-card mb-4">
+      <h3>Preview</h3>
+      <div class="theme-preview" id="theme-preview">
+        <div class="preview-header">
+          <span class="preview-brand">CRC</span>
+          <span class="preview-nav">Games · Runners · Teams</span>
+        </div>
+        <div class="preview-content">
+          <div class="preview-card">
+            <div class="preview-title">Sample Card</div>
+            <div class="preview-text">This is how your theme will look.</div>
+            <button class="preview-btn">Action Button</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Preset Themes -->
+    <div class="card mb-4">
+      <h2>🎯 Preset Themes</h2>
+      <p class="muted mb-3">Quick theme presets to get started.</p>
+      
+      <div class="preset-grid">
+        <button class="preset-btn" data-preset="default">
+          <span class="preset-swatch" style="background: #3BC36E"></span>
+          <span class="preset-name">Default (Green)</span>
+        </button>
+        <button class="preset-btn" data-preset="pink">
+          <span class="preset-swatch" style="background: #E91E8C"></span>
+          <span class="preset-name">Pink</span>
+        </button>
+        <button class="preset-btn" data-preset="blue">
+          <span class="preset-swatch" style="background: #3B82F6"></span>
+          <span class="preset-name">Blue</span>
+        </button>
+        <button class="preset-btn" data-preset="purple">
+          <span class="preset-swatch" style="background: #8B5CF6"></span>
+          <span class="preset-name">Purple</span>
+        </button>
+        <button class="preset-btn" data-preset="red">
+          <span class="preset-swatch" style="background: #EF4444"></span>
+          <span class="preset-name">Red</span>
+        </button>
+        <button class="preset-btn" data-preset="gold">
+          <span class="preset-swatch" style="background: #F59E0B"></span>
+          <span class="preset-name">Gold</span>
+        </button>
+        <button class="preset-btn" data-preset="cyan">
+          <span class="preset-swatch" style="background: #06B6D4"></span>
+          <span class="preset-name">Cyan</span>
+        </button>
+        <button class="preset-btn" data-preset="lime">
+          <span class="preset-swatch" style="background: #84CC16"></span>
+          <span class="preset-name">Lime</span>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Custom Colors -->
+    <div class="card mb-4">
+      <h2>🖌️ Custom Colors</h2>
+      <p class="muted mb-3">Fine-tune your theme colors.</p>
+      
+      <div class="color-controls">
+        <div class="color-control">
+          <label class="color-label">Accent Color</label>
+          <div class="color-input-wrap">
+            <input type="color" id="color-accent" class="color-picker" value="#3BC36E" />
+            <input type="text" id="color-accent-hex" class="color-hex" value="#3BC36E" maxlength="7" />
+          </div>
+          <p class="color-help">Used for buttons, links, and highlights</p>
+        </div>
+        
+        <div class="color-control">
+          <label class="color-label">Background</label>
+          <div class="color-input-wrap">
+            <input type="color" id="color-bg" class="color-picker" value="#0f0f0f" />
+            <input type="text" id="color-bg-hex" class="color-hex" value="#0f0f0f" maxlength="7" />
+          </div>
+          <p class="color-help">Main page background color</p>
+        </div>
+        
+        <div class="color-control">
+          <label class="color-label">Surface</label>
+          <div class="color-input-wrap">
+            <input type="color" id="color-surface" class="color-picker" value="#0b0b0b" />
+            <input type="text" id="color-surface-hex" class="color-hex" value="#0b0b0b" maxlength="7" />
+          </div>
+          <p class="color-help">Card and panel backgrounds</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Background Image -->
+    <div class="card mb-4">
+      <h2>🖼️ Background Image</h2>
+      <p class="muted mb-3">Add a custom background image with adjustable opacity.</p>
+      
+      <div class="bg-image-controls">
+        <div class="form-group">
+          <label class="form-label">Image URL</label>
+          <input type="url" id="bg-image-url" class="form-input" placeholder="https://example.com/image.jpg" />
+          <p class="form-help">Enter a URL to an image (recommended: 1920x1080 or larger)</p>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Opacity: <span id="bg-opacity-value">15%</span></label>
+          <input type="range" id="bg-opacity" class="opacity-slider" min="0" max="50" value="15" />
+          <p class="form-help">How visible the background image should be</p>
+        </div>
+        
+        <div class="bg-preview" id="bg-preview">
+          <span class="bg-preview-label">No image set</span>
+        </div>
+        
+        <button type="button" class="btn" id="clear-bg-image">Clear Image</button>
+      </div>
+    </div>
+    
+    <!-- Actions -->
+    <div class="theme-actions">
+      <button type="button" class="btn btn--primary" id="save-theme">💾 Save Theme</button>
+      <button type="button" class="btn" id="reset-theme">🔄 Reset to Default</button>
+    </div>
+    
+    <div id="theme-message" class="theme-message" hidden></div>
+    
+    <!-- Info -->
+    <div class="card card--muted mt-4">
+      <h3>ℹ️ About Themes</h3>
+      <p class="muted">
+        Your theme settings are saved locally in your browser. They apply across all pages 
+        on this device. Other users won't see your custom theme - it's just for you!
+      </p>
+      <p class="muted mt-2">
+        <strong>Future feature:</strong> Save themes to your account to sync across devices.
+      </p>
+    </div>
+  </div>
+</div>
+
+<style>
+.theme-settings { max-width: 700px; margin: 0 auto; }
+.theme-preview-card h3 { margin-bottom: 1rem; }
+.theme-preview { background: var(--theme-preview-bg, var(--bg)); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+.preview-header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; background: var(--theme-preview-surface, var(--surface)); border-bottom: 1px solid var(--border); }
+.preview-brand { font-weight: 800; color: var(--theme-preview-accent, var(--accent)); }
+.preview-nav { font-size: 0.85rem; color: var(--text-muted); }
+.preview-content { padding: 1.5rem; }
+.preview-card { background: var(--theme-preview-surface, var(--surface)); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; }
+.preview-title { font-weight: 600; margin-bottom: 0.5rem; }
+.preview-text { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem; }
+.preview-btn { padding: 0.5rem 1rem; background: var(--theme-preview-accent, var(--accent)); color: var(--bg); border: none; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; }
+.preset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; }
+.preset-btn { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--fg); cursor: pointer; transition: all 0.15s ease; }
+.preset-btn:hover { border-color: var(--accent); }
+.preset-btn.active { border-color: var(--accent); background: rgba(var(--accent-rgb), 0.1); }
+.preset-swatch { width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; }
+.preset-name { font-size: 0.9rem; }
+.color-controls { display: flex; flex-direction: column; gap: 1.5rem; }
+.color-label { display: block; font-weight: 600; margin-bottom: 0.5rem; }
+.color-input-wrap { display: flex; gap: 0.75rem; align-items: center; }
+.color-picker { width: 50px; height: 40px; border: none; border-radius: var(--radius-sm); cursor: pointer; padding: 0; background: transparent; }
+.color-picker::-webkit-color-swatch-wrapper { padding: 0; }
+.color-picker::-webkit-color-swatch { border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.color-hex { width: 100px; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--fg); font-family: 'SF Mono', Monaco, monospace; font-size: 0.9rem; }
+.color-help { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.35rem; }
+.bg-image-controls { display: flex; flex-direction: column; gap: 1rem; }
+.opacity-slider { width: 100%; height: 8px; border-radius: 4px; background: var(--surface); appearance: none; cursor: pointer; }
+.opacity-slider::-webkit-slider-thumb { appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); cursor: pointer; }
+.bg-preview { width: 100%; height: 120px; border: 1px dashed var(--border); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; background-size: cover; background-position: center; position: relative; }
+.bg-preview-label { color: var(--text-muted); font-size: 0.9rem; }
+.bg-preview.has-image .bg-preview-label { display: none; }
+.theme-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.theme-message { margin-top: 1rem; padding: 0.75rem 1rem; border-radius: var(--radius-sm); }
+.theme-message.is-success { background: rgba(40, 167, 69, 0.1); color: #28a745; border: 1px solid rgba(40, 167, 69, 0.3); }
+.theme-message.is-error { background: rgba(220, 53, 69, 0.1); color: #dc3545; border: 1px solid rgba(220, 53, 69, 0.3); }
+.card--muted { background: var(--bg); border: 1px dashed var(--border); }
+.card--muted h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+.form-group { margin-bottom: 0; }
+.form-label { display: block; font-weight: 600; margin-bottom: 0.5rem; }
+.form-input { width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--fg); }
+.form-help { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.35rem; }
+</style>
+
+<script>
+const PRESETS = {
+  default: { accent: '#3BC36E', accentRgb: '59, 195, 110', bg: '#0f0f0f', surface: '#0b0b0b' },
+  pink: { accent: '#E91E8C', accentRgb: '233, 30, 140', bg: '#0f0f0f', surface: '#0b0b0b' },
+  blue: { accent: '#3B82F6', accentRgb: '59, 130, 246', bg: '#0f0f0f', surface: '#0b0b0b' },
+  purple: { accent: '#8B5CF6', accentRgb: '139, 92, 246', bg: '#0f0f0f', surface: '#0b0b0b' },
+  red: { accent: '#EF4444', accentRgb: '239, 68, 68', bg: '#0f0f0f', surface: '#0b0b0b' },
+  gold: { accent: '#F59E0B', accentRgb: '245, 158, 11', bg: '#0f0f0f', surface: '#0b0b0b' },
+  cyan: { accent: '#06B6D4', accentRgb: '6, 182, 212', bg: '#0f0f0f', surface: '#0b0b0b' },
+  lime: { accent: '#84CC16', accentRgb: '132, 204, 22', bg: '#0f0f0f', surface: '#0b0b0b' }
+};
+
+let currentTheme = { accent: '#3BC36E', accentRgb: '59, 195, 110', bg: '#0f0f0f', surface: '#0b0b0b', bgImage: null, bgOpacity: 15 };
+
+const colorAccent = document.getElementById('color-accent');
+const colorAccentHex = document.getElementById('color-accent-hex');
+const colorBg = document.getElementById('color-bg');
+const colorBgHex = document.getElementById('color-bg-hex');
+const colorSurface = document.getElementById('color-surface');
+const colorSurfaceHex = document.getElementById('color-surface-hex');
+const bgImageUrl = document.getElementById('bg-image-url');
+const bgOpacity = document.getElementById('bg-opacity');
+const bgOpacityValue = document.getElementById('bg-opacity-value');
+const bgPreview = document.getElementById('bg-preview');
+const themeMessage = document.getElementById('theme-message');
+
+function hexToRgb(hex) {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : null;
+}
+
+function updatePreview() {
+  const preview = document.getElementById('theme-preview');
+  preview.style.setProperty('--theme-preview-accent', currentTheme.accent);
+  preview.style.setProperty('--theme-preview-bg', currentTheme.bg);
+  preview.style.setProperty('--theme-preview-surface', currentTheme.surface);
+  if (currentTheme.bgImage) {
+    preview.style.backgroundImage = `linear-gradient(${currentTheme.bg}e6, ${currentTheme.bg}e6), url(${currentTheme.bgImage})`;
+    preview.style.backgroundSize = 'cover';
+  } else {
+    preview.style.backgroundImage = 'none';
+  }
+}
+
+function applyThemeToPage() {
+  document.documentElement.style.setProperty('--accent', currentTheme.accent);
+  document.documentElement.style.setProperty('--accent-rgb', currentTheme.accentRgb);
+  document.documentElement.style.setProperty('--bg', currentTheme.bg);
+  document.documentElement.style.setProperty('--surface', currentTheme.surface);
+  const rgb = hexToRgb(currentTheme.accent);
+  if (rgb) {
+    document.documentElement.style.setProperty('--focus', `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.6)`);
+    document.documentElement.style.setProperty('--focus-2', `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.35)`);
+  }
+  if (currentTheme.bgImage) {
+    document.body.style.backgroundImage = `url(${currentTheme.bgImage})`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center';
+    document.body.style.backgroundAttachment = 'fixed';
+    document.body.classList.add('has-bg-image');
+    document.documentElement.style.setProperty('--theme-bg-opacity', currentTheme.bgOpacity / 100);
+  } else {
+    document.body.style.backgroundImage = 'none';
+    document.body.classList.remove('has-bg-image');
+  }
+}
+
+function updateFormFromTheme() {
+  colorAccent.value = currentTheme.accent;
+  colorAccentHex.value = currentTheme.accent;
+  colorBg.value = currentTheme.bg;
+  colorBgHex.value = currentTheme.bg;
+  colorSurface.value = currentTheme.surface;
+  colorSurfaceHex.value = currentTheme.surface;
+  bgImageUrl.value = currentTheme.bgImage || '';
+  bgOpacity.value = currentTheme.bgOpacity;
+  bgOpacityValue.textContent = currentTheme.bgOpacity + '%';
+  if (currentTheme.bgImage) {
+    bgPreview.style.backgroundImage = `url(${currentTheme.bgImage})`;
+    bgPreview.classList.add('has-image');
+  } else {
+    bgPreview.style.backgroundImage = 'none';
+    bgPreview.classList.remove('has-image');
+  }
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    const preset = PRESETS[btn.dataset.preset];
+    btn.classList.toggle('active', preset.accent === currentTheme.accent);
+  });
+}
+
+function showMessage(text, type) {
+  themeMessage.textContent = text;
+  themeMessage.className = `theme-message is-${type}`;
+  themeMessage.hidden = false;
+  setTimeout(() => { themeMessage.hidden = true; }, 3000);
+}
+
+function loadSavedTheme() {
+  const saved = localStorage.getItem('crc-theme');
+  if (saved) { try { currentTheme = { ...currentTheme, ...JSON.parse(saved) }; } catch (e) {} }
+  updateFormFromTheme();
+  updatePreview();
+}
+
+function saveTheme() {
+  localStorage.setItem('crc-theme', JSON.stringify(currentTheme));
+  applyThemeToPage();
+  showMessage('Theme saved successfully!', 'success');
+}
+
+function resetTheme() {
+  currentTheme = { ...PRESETS.default, bgImage: null, bgOpacity: 15 };
+  localStorage.removeItem('crc-theme');
+  updateFormFromTheme();
+  updatePreview();
+  applyThemeToPage();
+  showMessage('Theme reset to default', 'success');
+}
+
+document.querySelectorAll('.preset-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentTheme = { ...currentTheme, ...PRESETS[btn.dataset.preset] };
+    updateFormFromTheme();
+    updatePreview();
+  });
+});
+
+colorAccent.addEventListener('input', (e) => {
+  currentTheme.accent = e.target.value;
+  colorAccentHex.value = e.target.value;
+  const rgb = hexToRgb(e.target.value);
+  if (rgb) currentTheme.accentRgb = `${rgb.r}, ${rgb.g}, ${rgb.b}`;
+  updatePreview();
+});
+
+colorAccentHex.addEventListener('change', (e) => {
+  if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) {
+    currentTheme.accent = e.target.value;
+    colorAccent.value = e.target.value;
+    const rgb = hexToRgb(e.target.value);
+    if (rgb) currentTheme.accentRgb = `${rgb.r}, ${rgb.g}, ${rgb.b}`;
+    updatePreview();
+  }
+});
+
+colorBg.addEventListener('input', (e) => { currentTheme.bg = e.target.value; colorBgHex.value = e.target.value; updatePreview(); });
+colorBgHex.addEventListener('change', (e) => { if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) { currentTheme.bg = e.target.value; colorBg.value = e.target.value; updatePreview(); } });
+colorSurface.addEventListener('input', (e) => { currentTheme.surface = e.target.value; colorSurfaceHex.value = e.target.value; updatePreview(); });
+colorSurfaceHex.addEventListener('change', (e) => { if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) { currentTheme.surface = e.target.value; colorSurface.value = e.target.value; updatePreview(); } });
+
+bgImageUrl.addEventListener('change', (e) => {
+  currentTheme.bgImage = e.target.value || null;
+  if (currentTheme.bgImage) { bgPreview.style.backgroundImage = `url(${currentTheme.bgImage})`; bgPreview.classList.add('has-image'); }
+  else { bgPreview.style.backgroundImage = 'none'; bgPreview.classList.remove('has-image'); }
+  updatePreview();
+});
+
+bgOpacity.addEventListener('input', (e) => { currentTheme.bgOpacity = parseInt(e.target.value); bgOpacityValue.textContent = e.target.value + '%'; updatePreview(); });
+
+document.getElementById('clear-bg-image').addEventListener('click', () => {
+  currentTheme.bgImage = null;
+  bgImageUrl.value = '';
+  bgPreview.style.backgroundImage = 'none';
+  bgPreview.classList.remove('has-image');
+  updatePreview();
+});
+
+document.getElementById('save-theme').addEventListener('click', saveTheme);
+document.getElementById('reset-theme').addEventListener('click', resetTheme);
+
+loadSavedTheme();
+</script>
