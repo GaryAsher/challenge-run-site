@@ -290,6 +290,7 @@ title: "Create Runner Profile"
 
 <script type="module">
 import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
+import { BannedTermsChecker } from '{{ "/assets/js/banned-terms.js" | relative_url }}';
 
 (async function() {
   const notSignedIn = document.getElementById('not-signed-in');
@@ -502,6 +503,15 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
       return;
     }
     
+    // Check for banned terms
+    const bannedCheck = BannedTermsChecker.checkField('runner_id', value);
+    if (!bannedCheck.ok) {
+      runnerIdInput.classList.add('is-invalid');
+      runnerIdValidation.innerHTML = '<span style="color: #dc3545;">✗</span> ' + bannedCheck.reason;
+      runnerIdValidation.className = 'profile-form__validation is-invalid';
+      return;
+    }
+    
     // Format is valid - show green check for format
     runnerIdValidation.innerHTML = '<span style="color: #28a745;">✓</span> Valid format. Checking availability...';
     runnerIdValidation.className = 'profile-form__validation is-checking';
@@ -550,6 +560,20 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
     if (!displayNameInput.value.trim()) {
       showMessage('Display Name is required.', 'error');
       displayNameInput.focus();
+      return;
+    }
+    
+    // Check for banned terms in all fields
+    const bannedCheck = BannedTermsChecker.checkFields({
+      runner_id: finalRunnerId,
+      display_name: displayNameInput.value,
+      bio: bioInput.value
+    });
+    
+    if (!bannedCheck.ok) {
+      const firstError = Object.entries(bannedCheck.errors)[0];
+      const fieldNames = { runner_id: 'Runner ID', display_name: 'Display Name', bio: 'Bio' };
+      showMessage(`${fieldNames[firstError[0]] || firstError[0]}: ${firstError[1]}`, 'error');
       return;
     }
     
