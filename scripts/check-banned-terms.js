@@ -3,8 +3,12 @@
  * Check for banned terms in user-submitted content.
  * 
  * Scans:
- *   - _queue_games/*.md
- *   - _queue_runs/**\/*.md
+ *   - _queue_games/*.md (queued game submissions)
+ *   - _queue_runs/**/*.md (queued run submissions)
+ *   - _runners/*.md (runner profiles)
+ *   - _runs/**/*.md (approved runs)
+ *   - _games/*.md (game pages)
+ *   - _posts/*.md (news posts)
  * 
  * Configuration: _data/banned-terms.yml
  * 
@@ -15,6 +19,10 @@
  * Exit codes:
  *   0 = No banned terms found
  *   1 = Banned terms detected (blocks CI)
+ * 
+ * Usage:
+ *   node scripts/check-banned-terms.js           # Check all directories
+ *   node scripts/check-banned-terms.js --queued  # Check only queue directories
  */
 
 const fs = require('fs');
@@ -22,6 +30,8 @@ const path = require('path');
 const yaml = require('js-yaml');
 
 const ROOT = process.cwd();
+const args = process.argv.slice(2);
+const QUEUED_ONLY = args.includes('--queued');
 
 // ============================================================
 // Load configuration
@@ -46,33 +56,47 @@ function loadBannedTerms() {
 // ============================================================
 // File collection
 // ============================================================
+
+/**
+ * Recursively walk a directory and collect markdown files
+ */
+function walkDir(dir, files = []) {
+  if (!fs.existsSync(dir)) return files;
+  
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      walkDir(fullPath, files);
+    } else if (entry.name.endsWith('.md') && entry.name !== '.gitkeep' && entry.name !== 'README.md') {
+      files.push(fullPath);
+    }
+  }
+  return files;
+}
+
 function getFilesToCheck() {
   const files = [];
   
-  // Check _queue_games/
-  const queueGamesDir = path.join(ROOT, '_queue_games');
-  if (fs.existsSync(queueGamesDir)) {
-    const queueGames = fs.readdirSync(queueGamesDir)
-      .filter(f => f.endsWith('.md') && f !== '.gitkeep')
-      .map(f => path.join(queueGamesDir, f));
-    files.push(...queueGames);
+  // Always check queue directories
+  const queueDirs = ['_queue_games', '_queue_runs'];
+  for (const dir of queueDirs) {
+    walkDir(path.join(ROOT, dir), files);
   }
   
-  // Check _queue_runs/ (recursive)
-  const queueRunsDir = path.join(ROOT, '_queue_runs');
-  if (fs.existsSync(queueRunsDir)) {
-    const walkDir = (dir) => {
-      const entries = fs.readdirSync(dir, { withFileTypes: true });
-      for (const entry of entries) {
-        const fullPath = path.join(dir, entry.name);
-        if (entry.isDirectory()) {
-          walkDir(fullPath);
-        } else if (entry.name.endsWith('.md') && entry.name !== '.gitkeep') {
-          files.push(fullPath);
-        }
-      }
-    };
-    walkDir(queueRunsDir);
+  // If not queued-only mode, also check other content directories
+  if (!QUEUED_ONLY) {
+    const contentDirs = [
+      '_runners',   // Runner profiles
+      '_runs',      // Approved runs
+      '_games',     // Game pages
+      '_posts',     // News posts
+      '_teams'      // Team pages
+    ];
+    
+    for (const dir of contentDirs) {
+      walkDir(path.join(ROOT, dir), files);
+    }
   }
   
   return files;
@@ -198,10 +222,12 @@ function main() {
     return;
   }
   
+  console.log(QUEUED_ONLY ? '🔍 Checking queued files only...' : '🔍 Checking all content files...');
+  
   const files = getFilesToCheck();
   
   if (files.length === 0) {
-    console.log('✓ No queued files to check');
+    console.log('✓ No files to check');
     return;
   }
   
