@@ -1,0 +1,168 @@
+---
+layout: default
+title: "Admin - Pending Runs"
+---
+
+<div class="page-width">
+  <p class="muted mb-3">
+    <a href="/admin/test/">← Back to Admin Dashboard</a>
+  </p>
+
+  <div class="admin-page">
+    <div id="loading-state" class="card">
+      <div class="sign-in-loading">
+        <div class="spinner"></div>
+        <p class="muted">Checking access...</p>
+      </div>
+    </div>
+
+    <div id="not-authorized" class="card" hidden>
+      <h1>Access Denied</h1>
+      <p class="muted">You don't have permission to view this page.</p>
+      <a href="/" class="btn btn--primary">Go Home</a>
+    </div>
+
+    <div id="admin-content" hidden>
+      <h1>🏃 Pending Runs</h1>
+      <p class="muted mb-4">Review and approve submitted runs.</p>
+
+      <div id="pending-runs-list" class="admin-list">
+        <div class="admin-empty">
+          <p>No pending runs at this time.</p>
+          <p class="muted">Runs submitted via the form will appear here for approval.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.admin-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.admin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.admin-empty {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: var(--surface);
+  border-radius: 12px;
+  color: var(--text-muted);
+}
+
+.admin-item {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+}
+
+.admin-item__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.admin-item__title {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.admin-item__meta {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.admin-item__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.admin-item__details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: var(--bg);
+  border-radius: 8px;
+}
+
+.admin-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.admin-detail__label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.admin-detail__value {
+  font-weight: 500;
+}
+
+.btn--approve {
+  background: #28a745;
+  color: white;
+}
+
+.btn--approve:hover {
+  background: #218838;
+}
+
+.btn--reject {
+  background: transparent;
+  border: 1px solid #dc3545;
+  color: #dc3545;
+}
+
+.btn--reject:hover {
+  background: #dc3545;
+  color: white;
+}
+</style>
+
+<script type="module">
+import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
+
+const ADMIN_IDS = ['gary-asher'];
+
+const loadingState = document.getElementById('loading-state');
+const notAuthorized = document.getElementById('not-authorized');
+const adminContent = document.getElementById('admin-content');
+const pendingList = document.getElementById('pending-runs-list');
+
+async function init() {
+  await CRCAuth.init();
+  
+  const profile = CRCAuth.getProfile();
+  const metadata = CRCAuth.getProviderMetadata();
+  
+  const isAdmin = profile?.runner_id && ADMIN_IDS.includes(profile.runner_id);
+  const isAdminByUsername = metadata?.providerUsername?.toLowerCase() === 'gary_asher';
+  
+  loadingState.hidden = true;
+  
+  if (!CRCAuth.isSignedIn() || (!isAdmin && !isAdminByUsername)) {
+    notAuthorized.hidden = false;
+    return;
+  }
+  
+  adminContent.hidden = false;
+  
+  // TODO: Load pending runs from Supabase when table exists
+  // For now, show placeholder
+}
+
+init();
+</script>
