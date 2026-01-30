@@ -230,7 +230,7 @@
   <div class="rules-section" data-section-order="1">
     <details class="accordion-item accordion-item--section">
       <summary class="accordion-header accordion-header--section">
-        <span class="accordion-title">📋 General Rules</span>
+        <span class="accordion-title">General Rules</span>
         <span class="accordion-icon">▼</span>
       </summary>
       <div class="accordion-content">
@@ -252,7 +252,7 @@
   <div class="rules-section mt-4" data-section-order="2">
     <details class="accordion-item accordion-item--section">
       <summary class="accordion-header accordion-header--section">
-        <span class="accordion-title">🏃 Run Categories</span>
+        <span class="accordion-title">Run Categories</span>
         <span class="accordion-icon">▼</span>
       </summary>
       <div class="accordion-content">
@@ -261,7 +261,7 @@
         {% if game.full_runs and game.full_runs.size > 0 %}
         <details class="accordion-item accordion-item--tier">
           <summary class="accordion-header accordion-header--tier">
-            <span class="accordion-title">🏁 Full Runs</span>
+            <span class="accordion-title">Full Runs</span>
             <span class="accordion-icon">▼</span>
           </summary>
           <div class="accordion-content">
@@ -308,7 +308,7 @@
         {% if game.mini_challenges and game.mini_challenges.size > 0 %}
         <details class="accordion-item accordion-item--tier">
           <summary class="accordion-header accordion-header--tier">
-            <span class="accordion-title">⚡ Mini-Challenges</span>
+            <span class="accordion-title">Mini-Challenges</span>
             <span class="accordion-icon">▼</span>
           </summary>
           <div class="accordion-content">
@@ -355,7 +355,7 @@
         {% if game.player_made and game.player_made.size > 0 %}
         <details class="accordion-item accordion-item--tier">
           <summary class="accordion-header accordion-header--tier">
-            <span class="accordion-title">🎨 Player-Made Challenges</span>
+            <span class="accordion-title">Player-Made Challenges</span>
             <span class="accordion-icon">▼</span>
           </summary>
           <div class="accordion-content">
@@ -400,7 +400,7 @@
         <!-- Player-Made placeholder if none exist -->
         <details class="accordion-item accordion-item--tier">
           <summary class="accordion-header accordion-header--tier">
-            <span class="accordion-title">🎨 Player-Made Challenges</span>
+            <span class="accordion-title">Player-Made Challenges</span>
             <span class="accordion-icon">▼</span>
           </summary>
           <div class="accordion-content">
@@ -453,43 +453,12 @@
   </div>
   {% endif %}
 
-  <!-- 3. Community Challenges -->
-  {% if has_community_challenges %}
-  <div class="rules-section mt-4" data-section-order="3">
-    <details class="accordion-item accordion-item--section">
-      <summary class="accordion-header accordion-header--section">
-        <span class="accordion-title">🌟 Community Challenges</span>
-        <span class="accordion-icon">▼</span>
-      </summary>
-      <div class="accordion-content">
-        <div class="accordion">
-          {% for cc in community_challenges %}
-            <details class="accordion-item">
-              <summary class="accordion-header">
-                <span class="accordion-title">{{ cc.label }}</span>
-                <span class="accordion-icon">▼</span>
-              </summary>
-              <div class="accordion-content">
-                {% if cc.description %}
-                  {% include md.html text=cc.description %}
-                {% else %}
-                  <p class="muted">No description available.</p>
-                {% endif %}
-              </div>
-            </details>
-          {% endfor %}
-        </div>
-      </div>
-    </details>
-  </div>
-  {% endif %}
-
-  <!-- 5. Standard Challenge Types -->
+  <!-- 5. Challenges -->
   {% if has_challenges %}
   <div class="rules-section mt-4" data-section-order="5">
     <details class="accordion-item accordion-item--section">
       <summary class="accordion-header accordion-header--section">
-        <span class="accordion-title">🎯 Standard Challenge Types</span>
+        <span class="accordion-title">Challenges</span>
         <span class="accordion-icon">▼</span>
       </summary>
       <div class="accordion-content">
@@ -533,7 +502,7 @@
   <div class="rules-section mt-4" data-section-order="6">
     <details class="accordion-item accordion-item--section">
       <summary class="accordion-header accordion-header--section">
-        <span class="accordion-title">⛔ Optional Restrictions</span>
+        <span class="accordion-title">Optional Restrictions</span>
         <span class="accordion-icon">▼</span>
       </summary>
       <div class="accordion-content">
@@ -567,7 +536,7 @@
   <div class="rules-section mt-4" data-section-order="7">
     <details class="accordion-item accordion-item--section">
       <summary class="accordion-header accordion-header--section">
-        <span class="accordion-title">🔧 Glitch Categories</span>
+        <span class="accordion-title">Glitch Categories</span>
         <span class="accordion-icon">▼</span>
       </summary>
       <div class="accordion-content">
@@ -733,13 +702,13 @@ document.addEventListener('DOMContentLoaded', function() {
   // Available Run Types (from Jekyll data)
   const availableRunTypes = [
     {% if game.full_runs and game.full_runs.size > 0 %}
-    { id: 'full_runs', label: '🏁 Full Runs' },
+    { id: 'full_runs', label: 'Full Runs' },
     {% endif %}
     {% if game.mini_challenges and game.mini_challenges.size > 0 %}
-    { id: 'mini_challenges', label: '⚡ Mini-Challenges' },
+    { id: 'mini_challenges', label: 'Mini-Challenges' },
     {% endif %}
     {% if game.player_made and game.player_made.size > 0 %}
-    { id: 'player_made', label: '🎨 Community Created' },
+    { id: 'player_made', label: 'Community Created' },
     {% endif %}
   ].filter(x => x.id);
 
