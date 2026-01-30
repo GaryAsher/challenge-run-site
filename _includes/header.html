@@ -1,5 +1,14 @@
 <header class="site-header">
-  <a class="brand" href="{{ '/' | relative_url }}">CRC</a>
+  <!-- Brand/Logo - becomes panel toggle when signed in -->
+  <a class="brand" href="{{ '/' | relative_url }}" id="brand-link">CRC</a>
+  <button type="button" class="brand brand--panel-toggle" id="brand-panel-toggle" hidden aria-label="Open dashboard">
+    <span class="brand__text">CRC</span>
+    <svg class="brand__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </button>
 
   <nav class="nav" aria-label="Primary navigation">
     <div class="nav-group">
@@ -50,7 +59,7 @@
         </button>
         <div class="nav-dropdown__menu" hidden>
           <a href="#" class="nav-dropdown__item" id="nav-profile-link">My Profile</a>
-          <a href="{{ '/profile/edit/' | relative_url }}" class="nav-dropdown__item">Edit Profile</a>
+          <a href="{{ '/profile/settings/' | relative_url }}" class="nav-dropdown__item">Settings</a>
           <hr class="nav-dropdown__divider">
           <a href="{{ '/submit/' | relative_url }}" class="nav-dropdown__item">Submit a Run</a>
           <hr class="nav-dropdown__divider">
