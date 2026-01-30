@@ -1,0 +1,612 @@
+<!-- Side Panel - User & Admin Dashboard -->
+<div class="side-panel" id="side-panel" hidden>
+  <div class="side-panel__backdrop" id="side-panel-backdrop"></div>
+  
+  <aside class="side-panel__content" id="side-panel-content" aria-label="Dashboard">
+    <!-- Panel Header -->
+    <div class="side-panel__header">
+      <button type="button" class="side-panel__close" id="side-panel-close" aria-label="Close panel">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <h2 class="side-panel__title">Dashboard</h2>
+    </div>
+    
+    <!-- User Info Section -->
+    <div class="side-panel__section" id="panel-user-section">
+      <div class="panel-user">
+        <img class="panel-user__avatar" id="panel-user-avatar" src="/assets/img/site/default-runner.png" alt="" />
+        <div class="panel-user__info">
+          <span class="panel-user__name" id="panel-user-name">User</span>
+          <span class="panel-user__status" id="panel-user-status">Signed In</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="side-panel__section">
+      <div class="side-panel__section-title">Quick Actions</div>
+      <nav class="panel-nav">
+        <a href="/submit/" class="panel-nav__item">
+          <span class="panel-nav__icon">🎮</span>
+          <span class="panel-nav__text">Submit a Run</span>
+        </a>
+        <a href="/profile/settings/" class="panel-nav__item">
+          <span class="panel-nav__icon">⚙️</span>
+          <span class="panel-nav__text">Account Settings</span>
+        </a>
+        <a href="#" class="panel-nav__item" id="panel-my-profile-link">
+          <span class="panel-nav__icon">👤</span>
+          <span class="panel-nav__text">My Profile</span>
+        </a>
+      </nav>
+    </div>
+    
+    <!-- My Submissions (User) -->
+    <div class="side-panel__section" id="panel-submissions-section">
+      <div class="side-panel__section-title">My Submissions</div>
+      <div class="panel-submissions" id="panel-submissions">
+        <div class="panel-loading">
+          <span class="spinner spinner--small"></span>
+          <span>Loading...</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Admin Section (hidden by default) -->
+    <div class="side-panel__section side-panel__section--admin" id="panel-admin-section" hidden>
+      <div class="side-panel__section-title side-panel__section-title--admin">
+        <span class="admin-badge">Admin</span>
+        Moderation
+      </div>
+      <nav class="panel-nav">
+        <a href="/admin/profiles/" class="panel-nav__item panel-nav__item--admin">
+          <span class="panel-nav__icon">👥</span>
+          <span class="panel-nav__text">Pending Profiles</span>
+          <span class="panel-nav__badge" id="admin-pending-profiles-count" hidden>0</span>
+        </a>
+        <a href="/admin/runs/" class="panel-nav__item panel-nav__item--admin">
+          <span class="panel-nav__icon">🏃</span>
+          <span class="panel-nav__text">Pending Runs</span>
+          <span class="panel-nav__badge" id="admin-pending-runs-count" hidden>0</span>
+        </a>
+        <a href="/admin/games/" class="panel-nav__item panel-nav__item--admin">
+          <span class="panel-nav__icon">🎯</span>
+          <span class="panel-nav__text">Pending Games</span>
+          <span class="panel-nav__badge" id="admin-pending-games-count" hidden>0</span>
+        </a>
+        <a href="/admin/test/" class="panel-nav__item panel-nav__item--admin">
+          <span class="panel-nav__icon">🔧</span>
+          <span class="panel-nav__text">Test Dashboard</span>
+        </a>
+      </nav>
+    </div>
+    
+    <!-- Sign Out -->
+    <div class="side-panel__footer">
+      <button type="button" class="panel-signout" id="panel-signout">
+        <span class="panel-nav__icon">🚪</span>
+        <span>Sign Out</span>
+      </button>
+    </div>
+  </aside>
+</div>
+
+<!-- Panel Toggle Button (Fixed position, top-left) -->
+<button type="button" class="side-panel__toggle" id="side-panel-toggle" hidden aria-label="Open dashboard">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <line x1="3" y1="12" x2="21" y2="12"></line>
+    <line x1="3" y1="6" x2="21" y2="6"></line>
+    <line x1="3" y1="18" x2="21" y2="18"></line>
+  </svg>
+</button>
+
+<style>
+/* ============================================
+   Side Panel Styles
+   ============================================ */
+
+/* Toggle Button */
+.side-panel__toggle {
+  position: fixed;
+  top: 70px; /* Below header */
+  left: 16px;
+  z-index: 999;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--bg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.side-panel__toggle:hover {
+  transform: scale(1.05);
+  background: var(--accent-hover, var(--accent));
+}
+
+.side-panel__toggle[hidden] {
+  display: none;
+}
+
+/* Backdrop */
+.side-panel__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.side-panel[hidden] {
+  display: none;
+}
+
+.side-panel.is-open .side-panel__backdrop {
+  opacity: 1;
+}
+
+/* Panel Content */
+.side-panel__content {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 300px;
+  max-width: 85vw;
+  background: var(--surface);
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.2);
+}
+
+.side-panel.is-open .side-panel__content {
+  transform: translateX(0);
+}
+
+/* Panel Header */
+.side-panel__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.side-panel__close {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.side-panel__close:hover {
+  background: var(--surface);
+}
+
+.side-panel__title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Sections */
+.side-panel__section {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.side-panel__section-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.side-panel__section-title--admin {
+  color: var(--accent);
+}
+
+/* User Info */
+.panel-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.panel-user__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border);
+}
+
+.panel-user__info {
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-user__name {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.panel-user__status {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Navigation Items */
+.panel-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.panel-nav__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--fg);
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.panel-nav__item:hover {
+  background: var(--bg);
+}
+
+.panel-nav__item--admin {
+  border-left: 2px solid transparent;
+}
+
+.panel-nav__item--admin:hover {
+  border-left-color: var(--accent);
+}
+
+.panel-nav__icon {
+  font-size: 1.1rem;
+  width: 24px;
+  text-align: center;
+}
+
+.panel-nav__text {
+  flex: 1;
+}
+
+.panel-nav__badge {
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* Admin Badge */
+.admin-badge {
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+/* Submissions List */
+.panel-submissions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.panel-submission-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--bg);
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.panel-submission-item__status {
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.panel-submission-item__status--pending {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+}
+
+.panel-submission-item__status--approved {
+  background: rgba(40, 167, 69, 0.2);
+  color: #28a745;
+}
+
+.panel-submission-item__status--rejected {
+  background: rgba(220, 53, 69, 0.2);
+  color: #dc3545;
+}
+
+.panel-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  padding: 8px 0;
+}
+
+.panel-empty {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  padding: 8px 0;
+}
+
+/* Footer */
+.side-panel__footer {
+  margin-top: auto;
+  padding: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.panel-signout {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--fg);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.panel-signout:hover {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .side-panel__toggle {
+    top: auto;
+    bottom: 20px;
+    left: 20px;
+  }
+  
+  .side-panel__content {
+    width: 280px;
+  }
+}
+</style>
+
+<script type="module">
+import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
+
+// Admin runner IDs (must match _data/admin-config.yml)
+const ADMIN_IDS = ['gary-asher'];
+
+// Elements
+const panel = document.getElementById('side-panel');
+const panelContent = document.getElementById('side-panel-content');
+const backdrop = document.getElementById('side-panel-backdrop');
+const toggle = document.getElementById('side-panel-toggle');
+const closeBtn = document.getElementById('side-panel-close');
+const signoutBtn = document.getElementById('panel-signout');
+
+const userAvatar = document.getElementById('panel-user-avatar');
+const userName = document.getElementById('panel-user-name');
+const userStatus = document.getElementById('panel-user-status');
+const profileLink = document.getElementById('panel-my-profile-link');
+const submissionsEl = document.getElementById('panel-submissions');
+const adminSection = document.getElementById('panel-admin-section');
+
+// Open/close panel
+function openPanel() {
+  panel.hidden = false;
+  // Trigger reflow for animation
+  panel.offsetHeight;
+  panel.classList.add('is-open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePanel() {
+  panel.classList.remove('is-open');
+  setTimeout(() => {
+    panel.hidden = true;
+    document.body.style.overflow = '';
+  }, 250);
+}
+
+toggle?.addEventListener('click', openPanel);
+closeBtn?.addEventListener('click', closePanel);
+backdrop?.addEventListener('click', closePanel);
+
+// Close on Escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !panel.hidden) {
+    closePanel();
+  }
+});
+
+// Sign out
+signoutBtn?.addEventListener('click', async () => {
+  await CRCAuth.signOut();
+  window.location.href = '/';
+});
+
+// Initialize panel based on auth state
+async function initPanel() {
+  try {
+    await CRCAuth.init();
+    
+    if (!CRCAuth.isSignedIn()) {
+      // Not signed in - hide toggle
+      toggle.hidden = true;
+      return;
+    }
+    
+    // Show toggle for signed-in users
+    toggle.hidden = false;
+    
+    const user = CRCAuth.getUser();
+    const profile = CRCAuth.getProfile();
+    const metadata = CRCAuth.getProviderMetadata();
+    
+    // Update user info
+    userAvatar.src = metadata.providerAvatar || '/assets/img/site/default-runner.png';
+    userName.textContent = profile?.display_name || metadata.providerUsername || 'User';
+    
+    // Update status and profile link
+    if (profile && !profile._isPending) {
+      userStatus.textContent = 'Runner';
+      profileLink.href = `/runners/${profile.runner_id}/`;
+    } else if (profile && profile._isPending) {
+      userStatus.textContent = '⏳ Profile Pending';
+      profileLink.href = '/profile/status/';
+      profileLink.querySelector('.panel-nav__text').textContent = 'Profile Status';
+    } else {
+      userStatus.textContent = 'No Profile';
+      profileLink.href = '/profile/create/';
+      profileLink.querySelector('.panel-nav__text').textContent = 'Create Profile';
+    }
+    
+    // Check if admin
+    const isAdmin = profile?.runner_id && ADMIN_IDS.includes(profile.runner_id);
+    const isAdminByUsername = metadata?.providerUsername?.toLowerCase() === 'gary_asher';
+    
+    if (isAdmin || isAdminByUsername) {
+      adminSection.hidden = false;
+      loadAdminCounts();
+    }
+    
+    // Load user submissions
+    loadUserSubmissions();
+    
+  } catch (error) {
+    console.error('Panel init error:', error);
+    toggle.hidden = true;
+  }
+}
+
+// Load user's pending submissions
+async function loadUserSubmissions() {
+  const supabase = CRCAuth.getSupabaseClient();
+  if (!supabase) {
+    submissionsEl.innerHTML = '<div class="panel-empty">Unable to load submissions</div>';
+    return;
+  }
+  
+  const user = CRCAuth.getUser();
+  if (!user) return;
+  
+  try {
+    // Check for pending profile
+    const { data: pendingProfile } = await supabase
+      .from('pending_profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('status', 'pending')
+      .maybeSingle();
+    
+    let html = '';
+    
+    if (pendingProfile) {
+      html += `
+        <a href="/profile/status/" class="panel-submission-item">
+          <span class="panel-submission-item__status panel-submission-item__status--pending">Pending</span>
+          <span>Profile: ${pendingProfile.requested_runner_id}</span>
+        </a>
+      `;
+    }
+    
+    // TODO: Add pending runs when that table exists
+    
+    if (!html) {
+      html = '<div class="panel-empty">No pending submissions</div>';
+    }
+    
+    submissionsEl.innerHTML = html;
+    
+  } catch (error) {
+    console.error('Error loading submissions:', error);
+    submissionsEl.innerHTML = '<div class="panel-empty">No pending submissions</div>';
+  }
+}
+
+// Load admin pending counts
+async function loadAdminCounts() {
+  const supabase = CRCAuth.getSupabaseClient();
+  if (!supabase) return;
+  
+  try {
+    // Count pending profiles
+    const { count: profileCount } = await supabase
+      .from('pending_profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'pending');
+    
+    if (profileCount > 0) {
+      const badge = document.getElementById('admin-pending-profiles-count');
+      badge.textContent = profileCount;
+      badge.hidden = false;
+    }
+    
+    // TODO: Add pending runs and games counts when those tables exist
+    
+  } catch (error) {
+    console.error('Error loading admin counts:', error);
+  }
+}
+
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initPanel);
+} else {
+  initPanel();
+}
+
+// Also expose for debugging
+window.CRCPanel = { openPanel, closePanel };
+</script>
