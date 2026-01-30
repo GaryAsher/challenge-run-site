@@ -15,16 +15,16 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Profile edit page
 - [ ] Admin profile approval workflow
 
-### 2. Forms & Submissions
+### 2. Runner Profiles
+- [ ] Badges placeholder structure
+- [ ] Featured runs section refinement
+
+### 3. Forms & Submissions
 - [ ] New Game Submission form
   - Check Discord Webhook by submitting a new game. Has been updated, but not tested.
 - [ ] New Run Submission 
   - Test variables. Update if needed.
   - Link runner_id to authenticated user
-
-### 3. Runner Profiles
-- [ ] Badges placeholder structure
-- [ ] Featured runs section refinement
 
 ---
 
