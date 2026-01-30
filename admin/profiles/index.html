@@ -4,34 +4,129 @@ title: "Admin - Pending Profiles"
 ---
 
 <div class="page-width">
-  <p class="muted mb-3">
-    <a href="/">← Back to Home</a>
-  </p>
-
   <div class="admin-page">
     <!-- Loading -->
     <div id="loading-state" class="card">
       <div class="admin-loading">
         <div class="spinner"></div>
-        <p class="muted">Checking access...</p>
+        <p class="muted">Verifying admin access...</p>
       </div>
     </div>
 
-    <!-- Not authorized -->
+    <!-- Not authorized - this is all non-admins will ever see -->
     <div id="not-authorized" class="card" hidden>
-      <h2>Access Denied</h2>
-      <p class="muted">You don't have permission to access this page.</p>
-      <p class="muted" style="font-size: 0.85rem; margin-top: 1rem;">
-        Admin access is required. If you believe you should have access, please contact a site administrator.
-      </p>
+      <h2>🔒 Access Denied</h2>
+      <p class="muted">This page requires administrator privileges.</p>
       <a href="/" class="btn">Go Home</a>
     </div>
 
-    <!-- Moderation queue -->
-    <div id="mod-queue" hidden>
+    <!-- Admin content - only rendered after server verification -->
+    <div id="admin-content" hidden>
+      <!-- Content will be injected here ONLY after admin verification -->
+    </div>
+  </div>
+</div>
+
+<style>
+.admin-page { max-width: 900px; margin: 0 auto; }
+.admin-loading { text-align: center; padding: 3rem; }
+.mod-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; text-align: center; margin-bottom: 2rem; }
+.mod-stats__value { display: block; font-size: 2rem; font-weight: bold; color: var(--accent); }
+.mod-stats__label { font-size: 0.875rem; color: var(--text-muted); }
+.mod-queue__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.mod-queue__header h2 { margin: 0; }
+.mod-card { border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; background: var(--surface); }
+.mod-card__header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem; }
+.mod-card__user { display: flex; align-items: center; gap: 0.75rem; }
+.mod-card__avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: var(--bg); }
+.mod-card__name { font-weight: 600; margin: 0; }
+.mod-card__id { font-size: 0.875rem; color: var(--text-muted); margin: 0; }
+.mod-card__date { font-size: 0.875rem; color: var(--text-muted); }
+.mod-card__bio { margin: 1rem 0; padding: 0.75rem; background: var(--bg); border-radius: 8px; font-size: 0.9rem; }
+.mod-card__actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
+.modal { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; }
+.modal[hidden] { display: none; }
+.modal__backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.6); }
+.modal__content { position: relative; background: var(--surface); border-radius: 12px; width: 90%; max-width: 500px; max-height: 90vh; overflow: auto; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); }
+.modal__header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); }
+.modal__header h2 { margin: 0; font-size: 1.1rem; }
+.modal__close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); padding: 0.25rem; line-height: 1; }
+.modal__body { padding: 1.25rem; }
+.modal__footer { padding: 1rem 1.25rem; border-top: 1px solid var(--border); }
+.modal__reject-section { margin-bottom: 1rem; }
+.modal__label { display: block; font-weight: 500; margin-bottom: 0.5rem; font-size: 0.9rem; }
+.modal__textarea { width: 100%; padding: 0.625rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--fg); min-height: 80px; resize: vertical; }
+.modal__actions { display: flex; gap: 0.5rem; justify-content: flex-end; flex-wrap: wrap; }
+.btn--success { background: #28a745; color: white; border-color: #28a745; }
+.btn--success:hover { background: #218838; }
+.btn--danger { background: #dc3545; color: white; border-color: #dc3545; }
+.btn--danger:hover { background: #c82333; }
+.btn--small { padding: 0.375rem 0.75rem; font-size: 0.875rem; }
+@media (max-width: 600px) {
+  .mod-stats { grid-template-columns: 1fr; }
+  .mod-card__header { flex-direction: column; }
+}
+</style>
+
+<script type="module">
+import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
+
+/**
+ * SECURITY MODEL:
+ * 1. Client-side: Admin UI is only rendered AFTER database verification
+ * 2. Server-side (Supabase RLS): Database policies enforce that only admins can:
+ *    - Read pending_profiles (via policy checking is_admin)
+ *    - Call approve_profile / reject_profile functions
+ * 
+ * Even if someone bypasses client-side checks, RLS blocks all data access.
+ */
+
+(async function() {
+  const loadingState = document.getElementById('loading-state');
+  const notAuthorized = document.getElementById('not-authorized');
+  const adminContent = document.getElementById('admin-content');
+  
+  let supabase = null;
+  let pendingProfiles = [];
+  let currentReviewId = null;
+  
+  function showState(state) {
+    loadingState.hidden = state !== 'loading';
+    notAuthorized.hidden = state !== 'denied';
+    adminContent.hidden = state !== 'admin';
+  }
+  
+  // Verify admin via DATABASE query
+  async function verifyAdminAccess() {
+    if (!supabase) return false;
+    const user = CRCAuth.getUser();
+    if (!user) return false;
+    
+    try {
+      const { data, error } = await supabase
+        .from('runner_profiles')
+        .select('is_admin')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (error || !data) {
+        // Fallback: check provider username
+        const metadata = CRCAuth.getProviderMetadata();
+        const username = metadata?.providerUsername?.toLowerCase() || '';
+        return ['gary_asher', 'gary-asher'].includes(username);
+      }
+      
+      return data.is_admin === true;
+    } catch (err) {
+      return false;
+    }
+  }
+  
+  function renderAdminInterface() {
+    adminContent.innerHTML = `
+      <p class="muted mb-3"><a href="/">← Home</a></p>
       <h1>👥 Pending Profiles</h1>
       <p class="muted mb-4">Review and approve runner profile submissions.</p>
-
       <div class="mod-stats card">
         <div class="mod-stats__item">
           <span class="mod-stats__value" id="pending-count">0</span>
@@ -39,392 +134,55 @@ title: "Admin - Pending Profiles"
         </div>
         <div class="mod-stats__item">
           <span class="mod-stats__value" id="approved-count">0</span>
-          <span class="mod-stats__label">Approved (Total)</span>
+          <span class="mod-stats__label">Total Approved</span>
         </div>
       </div>
-
       <div class="mod-queue__header">
         <h2>Queue</h2>
         <button type="button" class="btn btn--small" id="refresh-btn">🔄 Refresh</button>
       </div>
-
-      <div id="queue-list">
-        <p class="muted">Loading...</p>
-      </div>
-
+      <div id="queue-list"><p class="muted">Loading...</p></div>
       <div id="queue-empty" class="card" hidden>
-        <p>🎉 No pending profiles to review!</p>
-        <p class="muted">New profile submissions will appear here.</p>
+        <p>🎉 No pending profiles!</p>
       </div>
-    </div>
-  </div>
-</div>
-
-<!-- Review Modal -->
-<div id="review-modal" class="modal" hidden>
-  <div class="modal__backdrop"></div>
-  <div class="modal__content">
-    <div class="modal__header">
-      <h2>Review Profile</h2>
-      <button type="button" class="modal__close" aria-label="Close">&times;</button>
-    </div>
-    <div class="modal__body" id="review-content">
-      <!-- Populated by JavaScript -->
-    </div>
-    <div class="modal__footer">
-      <div class="modal__reject-section" id="reject-section" hidden>
-        <label for="reject-reason" class="modal__label">Rejection Reason (optional):</label>
-        <textarea id="reject-reason" class="modal__textarea" placeholder="Explain why the profile was rejected..."></textarea>
+      <div id="review-modal" class="modal" hidden>
+        <div class="modal__backdrop"></div>
+        <div class="modal__content">
+          <div class="modal__header">
+            <h2>Review Profile</h2>
+            <button type="button" class="modal__close">&times;</button>
+          </div>
+          <div class="modal__body" id="review-content"></div>
+          <div class="modal__footer">
+            <div class="modal__reject-section" id="reject-section" hidden>
+              <label class="modal__label">Rejection Reason:</label>
+              <textarea id="reject-reason" class="modal__textarea"></textarea>
+            </div>
+            <div class="modal__actions">
+              <button class="btn btn--success" id="approve-btn">✓ Approve</button>
+              <button class="btn btn--danger" id="reject-btn">✗ Reject</button>
+              <button class="btn" id="cancel-btn">Cancel</button>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="modal__actions">
-        <button type="button" class="btn btn--success" id="approve-btn">✓ Approve</button>
-        <button type="button" class="btn btn--danger" id="reject-btn">✗ Reject</button>
-        <button type="button" class="btn" id="cancel-btn">Cancel</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<style>
-.admin-page {
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.admin-loading {
-  text-align: center;
-  padding: 3rem;
-}
-
-.mod-stats {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.mod-stats__value {
-  display: block;
-  font-size: 2rem;
-  font-weight: bold;
-  color: var(--accent);
-}
-
-.mod-stats__label {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-}
-
-.mod-queue__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.mod-queue__header h2 {
-  margin: 0;
-}
-
-.mod-card {
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1.25rem;
-  margin-bottom: 1rem;
-  background: var(--surface);
-}
-
-.mod-card__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.mod-card__user {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.mod-card__avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  object-fit: cover;
-  background: var(--bg);
-}
-
-.mod-card__name {
-  font-weight: 600;
-  margin: 0;
-}
-
-.mod-card__id {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-  margin: 0;
-}
-
-.mod-card__meta {
-  text-align: right;
-}
-
-.mod-card__date {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-  display: block;
-}
-
-.mod-card__bio {
-  margin: 1rem 0;
-  padding: 0.75rem;
-  background: var(--bg);
-  border-radius: 8px;
-  font-size: 0.9rem;
-}
-
-.mod-card__details {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 0.5rem;
-  margin: 1rem 0;
-  font-size: 0.85rem;
-}
-
-.mod-card__detail {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.mod-card__detail-label {
-  color: var(--text-muted);
-}
-
-.mod-card__actions {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 1rem;
-}
-
-/* Modal styles */
-.modal {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.modal[hidden] {
-  display: none;
-}
-
-.modal__backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-}
-
-.modal__content {
-  position: relative;
-  background: var(--surface);
-  border-radius: 12px;
-  width: 90%;
-  max-width: 500px;
-  max-height: 90vh;
-  overflow: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
-
-.modal__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.modal__header h2 {
-  margin: 0;
-  font-size: 1.1rem;
-}
-
-.modal__close {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: var(--text-muted);
-  padding: 0.25rem;
-  line-height: 1;
-}
-
-.modal__close:hover {
-  color: var(--fg);
-}
-
-.modal__body {
-  padding: 1.25rem;
-}
-
-.modal__footer {
-  padding: 1rem 1.25rem;
-  border-top: 1px solid var(--border);
-}
-
-.modal__reject-section {
-  margin-bottom: 1rem;
-}
-
-.modal__label {
-  display: block;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
-}
-
-.modal__textarea {
-  width: 100%;
-  padding: 0.625rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg);
-  color: var(--fg);
-  min-height: 80px;
-  resize: vertical;
-}
-
-.modal__actions {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-}
-
-.btn--success {
-  background: #28a745;
-  color: white;
-  border-color: #28a745;
-}
-
-.btn--success:hover {
-  background: #218838;
-}
-
-.btn--danger {
-  background: #dc3545;
-  color: white;
-  border-color: #dc3545;
-}
-
-.btn--danger:hover {
-  background: #c82333;
-}
-
-.btn--small {
-  padding: 0.375rem 0.75rem;
-  font-size: 0.875rem;
-}
-
-@media (max-width: 600px) {
-  .mod-stats {
-    grid-template-columns: 1fr;
-  }
-  
-  .mod-card__header {
-    flex-direction: column;
-  }
-  
-  .mod-card__meta {
-    text-align: left;
-  }
-  
-  .modal__actions {
-    flex-direction: column;
-  }
-  
-  .modal__actions .btn {
-    width: 100%;
-  }
-}
-</style>
-
-<script type="module">
-import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
-
-// Admin IDs - users who can access this page
-const ADMIN_IDS = ['gary-asher'];
-
-(async function() {
-  const notAuthorized = document.getElementById('not-authorized');
-  const modQueue = document.getElementById('mod-queue');
-  const loadingState = document.getElementById('loading-state');
-  const queueList = document.getElementById('queue-list');
-  const queueEmpty = document.getElementById('queue-empty');
-  const refreshBtn = document.getElementById('refresh-btn');
-  
-  const reviewModal = document.getElementById('review-modal');
-  const reviewContent = document.getElementById('review-content');
-  const rejectSection = document.getElementById('reject-section');
-  const rejectReason = document.getElementById('reject-reason');
-  const approveBtn = document.getElementById('approve-btn');
-  const rejectBtn = document.getElementById('reject-btn');
-  const cancelBtn = document.getElementById('cancel-btn');
-  
-  let pendingProfiles = [];
-  let currentReviewId = null;
-  let supabase = null;
-  
-  function showState(state) {
-    loadingState.hidden = state !== 'loading';
-    notAuthorized.hidden = state !== 'not-authorized';
-    modQueue.hidden = state !== 'queue';
-  }
-  
-  /**
-   * Check if current user is an admin
-   */
-  function checkAdminAccess() {
-    const profile = CRCAuth.getProfile();
-    const metadata = CRCAuth.getProviderMetadata();
+    `;
     
-    // Check by runner_id
-    if (profile?.runner_id) {
-      if (ADMIN_IDS.includes(profile.runner_id.toLowerCase())) {
-        return true;
-      }
-    }
-    
-    // Check by provider username (with hyphen/underscore flexibility)
-    if (metadata?.providerUsername) {
-      const username = metadata.providerUsername.toLowerCase();
-      for (const adminId of ADMIN_IDS) {
-        const variants = [
-          adminId,
-          adminId.replace(/-/g, '_'),
-          adminId.replace(/_/g, '-')
-        ];
-        if (variants.includes(username)) {
-          return true;
-        }
-      }
-    }
-    
-    return false;
+    document.getElementById('refresh-btn').addEventListener('click', loadQueue);
+    const modal = document.getElementById('review-modal');
+    modal.querySelector('.modal__backdrop').addEventListener('click', closeModal);
+    modal.querySelector('.modal__close').addEventListener('click', closeModal);
+    document.getElementById('cancel-btn').addEventListener('click', closeModal);
+    document.getElementById('approve-btn').addEventListener('click', () => approveProfile(currentReviewId));
+    document.getElementById('reject-btn').addEventListener('click', rejectProfile);
   }
   
   async function loadQueue() {
-    if (!supabase) return;
-    
+    const queueList = document.getElementById('queue-list');
+    const queueEmpty = document.getElementById('queue-empty');
     queueList.innerHTML = '<p class="muted">Loading...</p>';
     
     try {
-      // Load pending profiles
       const { data, error } = await supabase
         .from('pending_profiles')
         .select('*')
@@ -436,237 +194,99 @@ const ADMIN_IDS = ['gary-asher'];
       pendingProfiles = data || [];
       document.getElementById('pending-count').textContent = pendingProfiles.length;
       
-      // Load total approved count
-      const { count: approvedCount } = await supabase
-        .from('runner_profiles')
-        .select('*', { count: 'exact', head: true });
+      const { count } = await supabase.from('runner_profiles').select('*', { count: 'exact', head: true });
+      document.getElementById('approved-count').textContent = count || 0;
       
-      document.getElementById('approved-count').textContent = approvedCount || 0;
-      
-      renderQueue();
-    } catch (err) {
-      console.error('Error loading queue:', err);
-      queueList.innerHTML = `<p class="muted">Error loading queue: ${err.message}</p>`;
-    }
-  }
-  
-  function renderQueue() {
-    if (pendingProfiles.length === 0) {
-      queueList.hidden = true;
-      queueEmpty.hidden = false;
-      return;
-    }
-    
-    queueList.hidden = false;
-    queueEmpty.hidden = true;
-    
-    queueList.innerHTML = pendingProfiles.map(profile => `
-      <div class="mod-card" data-id="${profile.id}">
-        <div class="mod-card__header">
-          <div class="mod-card__user">
-            <img class="mod-card__avatar" src="/assets/img/site/default-runner.png" alt="" />
-            <div>
-              <p class="mod-card__name">${escapeHtml(profile.display_name)}</p>
-              <p class="mod-card__id">@${escapeHtml(profile.requested_runner_id)}</p>
+      if (pendingProfiles.length === 0) {
+        queueList.hidden = true;
+        queueEmpty.hidden = false;
+      } else {
+        queueList.hidden = false;
+        queueEmpty.hidden = true;
+        queueList.innerHTML = pendingProfiles.map(p => `
+          <div class="mod-card">
+            <div class="mod-card__header">
+              <div class="mod-card__user">
+                <img class="mod-card__avatar" src="/assets/img/site/default-runner.png" alt="" />
+                <div>
+                  <p class="mod-card__name">${esc(p.display_name)}</p>
+                  <p class="mod-card__id">@${esc(p.requested_runner_id)}</p>
+                </div>
+              </div>
+              <span class="mod-card__date">${fmtDate(p.submitted_at)}</span>
+            </div>
+            ${p.bio ? `<div class="mod-card__bio">${esc(p.bio)}</div>` : ''}
+            <div class="mod-card__actions">
+              <button class="btn btn--small btn--success" onclick="CRCAdmin.approve('${p.id}')">✓ Approve</button>
+              <button class="btn btn--small" onclick="CRCAdmin.review('${p.id}')">Review</button>
             </div>
           </div>
-          <div class="mod-card__meta">
-            <span class="mod-card__date">${formatDate(profile.submitted_at)}</span>
-          </div>
-        </div>
-        
-        ${profile.bio ? `<div class="mod-card__bio">${escapeHtml(profile.bio)}</div>` : ''}
-        
-        <div class="mod-card__details">
-          ${profile.pronouns ? `<div class="mod-card__detail"><span class="mod-card__detail-label">Pronouns:</span> ${escapeHtml(profile.pronouns)}</div>` : ''}
-          ${profile.location ? `<div class="mod-card__detail"><span class="mod-card__detail-label">Location:</span> ${escapeHtml(profile.location)}</div>` : ''}
-        </div>
-        
-        <div class="mod-card__actions">
-          <button type="button" class="btn btn--small btn--success" onclick="window.approveDirectly('${profile.id}')">✓ Quick Approve</button>
-          <button type="button" class="btn btn--small" onclick="window.openReview('${profile.id}')">Review Details</button>
-        </div>
-      </div>
-    `).join('');
+        `).join('');
+      }
+    } catch (err) {
+      queueList.innerHTML = `<p class="muted">Error: ${err.message}</p>`;
+    }
   }
   
-  function escapeHtml(str) {
-    if (!str) return '';
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
+  function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+  function fmtDate(d) { return d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''; }
+  function closeModal() { document.getElementById('review-modal').hidden = true; currentReviewId = null; }
   
-  function formatDate(dateStr) {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-  }
-  
-  // Quick approve without modal
-  window.approveDirectly = async function(id) {
-    if (!confirm('Approve this profile?')) return;
-    
+  async function approveProfile(id) {
+    if (!id || !confirm('Approve this profile?')) return;
     try {
       const { error } = await supabase.rpc('approve_profile', { pending_id: id });
       if (error) throw error;
-      
-      await loadQueue();
-    } catch (err) {
-      console.error('Approve error:', err);
-      alert('Error approving profile: ' + err.message);
-    }
-  };
-  
-  // Open review modal
-  window.openReview = function(id) {
-    const profile = pendingProfiles.find(p => p.id === id);
-    if (!profile) return;
-    
-    currentReviewId = id;
-    
-    reviewContent.innerHTML = `
-      <div class="mod-card__user" style="margin-bottom: 1rem;">
-        <img class="mod-card__avatar" src="/assets/img/site/default-runner.png" alt="" />
-        <div>
-          <p class="mod-card__name">${escapeHtml(profile.display_name)}</p>
-          <p class="mod-card__id">@${escapeHtml(profile.requested_runner_id)}</p>
-        </div>
-      </div>
-      
-      <table style="width: 100%; font-size: 0.9rem; margin-bottom: 1rem;">
-        <tr><td style="color: var(--text-muted); padding: 0.25rem 0;">Submitted:</td><td>${formatDate(profile.submitted_at)}</td></tr>
-        ${profile.pronouns ? `<tr><td style="color: var(--text-muted); padding: 0.25rem 0;">Pronouns:</td><td>${escapeHtml(profile.pronouns)}</td></tr>` : ''}
-        ${profile.location ? `<tr><td style="color: var(--text-muted); padding: 0.25rem 0;">Location:</td><td>${escapeHtml(profile.location)}</td></tr>` : ''}
-      </table>
-      
-      ${profile.bio ? `
-        <div style="margin-bottom: 1rem;">
-          <strong style="font-size: 0.85rem; color: var(--text-muted);">Bio:</strong>
-          <div class="mod-card__bio">${escapeHtml(profile.bio)}</div>
-        </div>
-      ` : ''}
-      
-      ${profile.socials && Object.keys(profile.socials).length > 0 ? `
-        <div>
-          <strong style="font-size: 0.85rem; color: var(--text-muted);">Social Links:</strong>
-          <ul style="margin: 0.5rem 0; padding-left: 1.5rem; font-size: 0.9rem;">
-            ${Object.entries(profile.socials).map(([key, val]) => `<li>${escapeHtml(key)}: ${escapeHtml(String(val))}</li>`).join('')}
-          </ul>
-        </div>
-      ` : ''}
-    `;
-    
-    rejectSection.hidden = true;
-    rejectReason.value = '';
-    reviewModal.hidden = false;
-  };
-  
-  function closeModal() {
-    reviewModal.hidden = true;
-    currentReviewId = null;
-  }
-  
-  async function approveProfile() {
-    if (!currentReviewId) return;
-    
-    approveBtn.disabled = true;
-    approveBtn.textContent = 'Approving...';
-    
-    try {
-      const { error } = await supabase.rpc('approve_profile', { pending_id: currentReviewId });
-      if (error) throw error;
-      
       closeModal();
       await loadQueue();
-    } catch (err) {
-      console.error('Approve error:', err);
-      alert('Error approving profile: ' + err.message);
-    } finally {
-      approveBtn.disabled = false;
-      approveBtn.textContent = '✓ Approve';
-    }
+    } catch (err) { alert('Error: ' + err.message); }
   }
   
   async function rejectProfile() {
-    if (!currentReviewId) return;
-    
-    // First click shows the reason field
-    if (rejectSection.hidden) {
-      rejectSection.hidden = false;
-      rejectReason.focus();
-      return;
-    }
-    
-    const reason = rejectReason.value.trim();
-    
-    rejectBtn.disabled = true;
-    rejectBtn.textContent = 'Rejecting...';
-    
+    const sec = document.getElementById('reject-section');
+    const reason = document.getElementById('reject-reason');
+    if (sec.hidden) { sec.hidden = false; reason.focus(); return; }
     try {
-      const { error } = await supabase.rpc('reject_profile', { 
-        pending_id: currentReviewId,
-        reason: reason || null
-      });
+      const { error } = await supabase.rpc('reject_profile', { pending_id: currentReviewId, reason: reason.value || null });
       if (error) throw error;
-      
       closeModal();
       await loadQueue();
-    } catch (err) {
-      console.error('Reject error:', err);
-      alert('Error rejecting profile: ' + err.message);
-    } finally {
-      rejectBtn.disabled = false;
-      rejectBtn.textContent = '✗ Reject';
-    }
+    } catch (err) { alert('Error: ' + err.message); }
   }
   
-  // Event listeners
-  reviewModal.querySelector('.modal__backdrop').addEventListener('click', closeModal);
-  reviewModal.querySelector('.modal__close').addEventListener('click', closeModal);
-  cancelBtn.addEventListener('click', closeModal);
-  approveBtn.addEventListener('click', approveProfile);
-  rejectBtn.addEventListener('click', rejectProfile);
-  refreshBtn.addEventListener('click', loadQueue);
-  
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !reviewModal.hidden) {
-      closeModal();
+  window.CRCAdmin = {
+    approve: approveProfile,
+    review: (id) => {
+      const p = pendingProfiles.find(x => x.id === id);
+      if (!p) return;
+      currentReviewId = id;
+      document.getElementById('review-content').innerHTML = `
+        <div class="mod-card__user" style="margin-bottom:1rem">
+          <img class="mod-card__avatar" src="/assets/img/site/default-runner.png" />
+          <div><p class="mod-card__name">${esc(p.display_name)}</p><p class="mod-card__id">@${esc(p.requested_runner_id)}</p></div>
+        </div>
+        ${p.bio ? `<div class="mod-card__bio">${esc(p.bio)}</div>` : ''}
+      `;
+      document.getElementById('reject-section').hidden = true;
+      document.getElementById('review-modal').hidden = false;
     }
-  });
+  };
   
-  // Initialize
+  // Init
   try {
     showState('loading');
     await CRCAuth.init();
-    
-    if (!CRCAuth.isSignedIn()) {
-      showState('not-authorized');
-      return;
-    }
-    
-    // Check admin access
-    const isAdmin = checkAdminAccess();
-    console.log('[Admin] Access check:', { isAdmin });
-    
-    if (!isAdmin) {
-      showState('not-authorized');
-      return;
-    }
-    
+    if (!CRCAuth.isSignedIn()) { showState('denied'); return; }
     supabase = CRCAuth.getSupabaseClient();
-    if (!supabase) {
-      console.error('Supabase client not available');
-      showState('not-authorized');
-      return;
-    }
+    if (!supabase) { showState('denied'); return; }
     
-    showState('queue');
+    const isAdmin = await verifyAdminAccess();
+    console.log('[Admin] Verified:', isAdmin);
+    if (!isAdmin) { showState('denied'); return; }
+    
+    renderAdminInterface();
+    showState('admin');
     await loadQueue();
-    
-  } catch (error) {
-    console.error('Init error:', error);
-    showState('not-authorized');
-  }
+  } catch (e) { console.error(e); showState('denied'); }
 })();
 </script>
