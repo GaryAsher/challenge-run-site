@@ -5,13 +5,13 @@
   <aside class="side-panel__content" id="side-panel-content" aria-label="Dashboard">
     <!-- Panel Header -->
     <div class="side-panel__header">
+      <a href="/" class="side-panel__brand">CRC</a>
       <button type="button" class="side-panel__close" id="side-panel-close" aria-label="Close panel">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="18" y1="6" x2="6" y2="18"></line>
           <line x1="6" y1="6" x2="18" y2="18"></line>
         </svg>
       </button>
-      <h2 class="side-panel__title">Dashboard</h2>
     </div>
     
     <!-- User Info Section -->
@@ -94,47 +94,42 @@
   </aside>
 </div>
 
-<!-- Panel Toggle Button (Fixed position, top-left) -->
-<button type="button" class="side-panel__toggle" id="side-panel-toggle" hidden aria-label="Open dashboard">
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-    <line x1="3" y1="12" x2="21" y2="12"></line>
-    <line x1="3" y1="6" x2="21" y2="6"></line>
-    <line x1="3" y1="18" x2="21" y2="18"></line>
-  </svg>
-</button>
-
 <style>
 /* ============================================
    Side Panel Styles
    ============================================ */
 
-/* Toggle Button */
-.side-panel__toggle {
-  position: fixed;
-  top: 70px; /* Below header */
-  left: 16px;
-  z-index: 999;
-  width: 44px;
-  height: 44px;
-  border: none;
-  border-radius: 50%;
-  background: var(--accent);
-  color: var(--bg);
-  cursor: pointer;
+/* Brand toggle in header (when signed in) */
+.brand--panel-toggle {
   display: flex;
   align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  transition: transform 0.15s ease, background 0.15s ease;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  margin: -0.25rem -0.5rem;
+  border-radius: 6px;
+  transition: background 0.15s ease;
 }
 
-.side-panel__toggle:hover {
-  transform: scale(1.05);
-  background: var(--accent-hover, var(--accent));
+.brand--panel-toggle:hover {
+  background: var(--surface);
 }
 
-.side-panel__toggle[hidden] {
+.brand--panel-toggle[hidden] {
   display: none;
+}
+
+.brand__icon {
+  opacity: 0.7;
+}
+
+.brand--panel-toggle:hover .brand__icon {
+  opacity: 1;
 }
 
 /* Backdrop */
@@ -180,10 +175,17 @@
 .side-panel__header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
   padding: 16px;
   border-bottom: 1px solid var(--border);
   background: var(--bg);
+}
+
+.side-panel__brand {
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--accent);
+  text-decoration: none;
 }
 
 .side-panel__close {
@@ -202,12 +204,6 @@
 
 .side-panel__close:hover {
   background: var(--surface);
-}
-
-.side-panel__title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin: 0;
 }
 
 /* Sections */
@@ -341,6 +337,12 @@
   background: var(--bg);
   border-radius: 8px;
   font-size: 0.9rem;
+  text-decoration: none;
+  color: var(--fg);
+}
+
+.panel-submission-item:hover {
+  background: var(--border);
 }
 
 .panel-submission-item__status {
@@ -409,12 +411,6 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .side-panel__toggle {
-    top: auto;
-    bottom: 20px;
-    left: 20px;
-  }
-  
   .side-panel__content {
     width: 280px;
   }
@@ -429,11 +425,13 @@ const ADMIN_IDS = ['gary-asher'];
 
 // Elements
 const panel = document.getElementById('side-panel');
-const panelContent = document.getElementById('side-panel-content');
 const backdrop = document.getElementById('side-panel-backdrop');
-const toggle = document.getElementById('side-panel-toggle');
 const closeBtn = document.getElementById('side-panel-close');
 const signoutBtn = document.getElementById('panel-signout');
+
+// Header brand elements
+const brandLink = document.getElementById('brand-link');
+const brandToggle = document.getElementById('brand-panel-toggle');
 
 const userAvatar = document.getElementById('panel-user-avatar');
 const userName = document.getElementById('panel-user-name');
@@ -459,7 +457,8 @@ function closePanel() {
   }, 250);
 }
 
-toggle?.addEventListener('click', openPanel);
+// Bind toggle to header brand button
+brandToggle?.addEventListener('click', openPanel);
 closeBtn?.addEventListener('click', closePanel);
 backdrop?.addEventListener('click', closePanel);
 
@@ -482,41 +481,61 @@ async function initPanel() {
     await CRCAuth.init();
     
     if (!CRCAuth.isSignedIn()) {
-      // Not signed in - hide toggle
-      toggle.hidden = true;
+      // Not signed in - show regular brand link
+      if (brandLink) brandLink.hidden = false;
+      if (brandToggle) brandToggle.hidden = true;
       return;
     }
     
-    // Show toggle for signed-in users
-    toggle.hidden = false;
+    // Signed in - swap brand link for panel toggle
+    if (brandLink) brandLink.hidden = true;
+    if (brandToggle) brandToggle.hidden = false;
     
     const user = CRCAuth.getUser();
     const profile = CRCAuth.getProfile();
     const metadata = CRCAuth.getProviderMetadata();
     
     // Update user info
-    userAvatar.src = metadata.providerAvatar || '/assets/img/site/default-runner.png';
-    userName.textContent = profile?.display_name || metadata.providerUsername || 'User';
+    if (userAvatar) userAvatar.src = metadata.providerAvatar || '/assets/img/site/default-runner.png';
+    if (userName) userName.textContent = profile?.display_name || metadata.providerUsername || 'User';
     
     // Update status and profile link
     if (profile && !profile._isPending) {
-      userStatus.textContent = 'Runner';
-      profileLink.href = `/runners/${profile.runner_id}/`;
+      if (userStatus) userStatus.textContent = 'Runner';
+      if (profileLink) profileLink.href = `/runners/${profile.runner_id}/`;
     } else if (profile && profile._isPending) {
-      userStatus.textContent = '⏳ Profile Pending';
-      profileLink.href = '/profile/status/';
-      profileLink.querySelector('.panel-nav__text').textContent = 'Profile Status';
+      if (userStatus) userStatus.textContent = '⏳ Profile Pending';
+      if (profileLink) {
+        profileLink.href = '/profile/status/';
+        const textEl = profileLink.querySelector('.panel-nav__text');
+        if (textEl) textEl.textContent = 'Profile Status';
+      }
     } else {
-      userStatus.textContent = 'No Profile';
-      profileLink.href = '/profile/create/';
-      profileLink.querySelector('.panel-nav__text').textContent = 'Create Profile';
+      if (userStatus) userStatus.textContent = 'No Profile';
+      if (profileLink) {
+        profileLink.href = '/profile/create/';
+        const textEl = profileLink.querySelector('.panel-nav__text');
+        if (textEl) textEl.textContent = 'Create Profile';
+      }
     }
     
-    // Check if admin
-    const isAdmin = profile?.runner_id && ADMIN_IDS.includes(profile.runner_id);
-    const isAdminByUsername = metadata?.providerUsername?.toLowerCase() === 'gary_asher';
+    // Check if admin - multiple ways to detect
+    const runnerId = profile?.runner_id?.toLowerCase();
+    const providerUsername = metadata?.providerUsername?.toLowerCase();
     
-    if (isAdmin || isAdminByUsername) {
+    // Check by runner_id OR by provider username (handles case where profile not yet created)
+    const isAdmin = ADMIN_IDS.some(id => {
+      const adminLower = id.toLowerCase();
+      // Check runner_id match
+      if (runnerId === adminLower) return true;
+      // Check provider username match (with underscore/hyphen flexibility)
+      const adminVariants = [adminLower, adminLower.replace(/-/g, '_'), adminLower.replace(/_/g, '-')];
+      return adminVariants.includes(providerUsername);
+    });
+    
+    console.log('[Panel] Admin check:', { runnerId, providerUsername, isAdmin });
+    
+    if (isAdmin && adminSection) {
       adminSection.hidden = false;
       loadAdminCounts();
     }
@@ -526,15 +545,19 @@ async function initPanel() {
     
   } catch (error) {
     console.error('Panel init error:', error);
-    toggle.hidden = true;
+    // On error, show regular brand link
+    if (brandLink) brandLink.hidden = false;
+    if (brandToggle) brandToggle.hidden = true;
   }
 }
 
 // Load user's pending submissions
 async function loadUserSubmissions() {
-  const supabase = CRCAuth.getSupabaseClient();
+  if (!submissionsEl) return;
+  
+  const supabase = CRCAuth.getSupabaseClient?.();
   if (!supabase) {
-    submissionsEl.innerHTML = '<div class="panel-empty">Unable to load submissions</div>';
+    submissionsEl.innerHTML = '<div class="panel-empty">No pending submissions</div>';
     return;
   }
   
@@ -556,7 +579,7 @@ async function loadUserSubmissions() {
       html += `
         <a href="/profile/status/" class="panel-submission-item">
           <span class="panel-submission-item__status panel-submission-item__status--pending">Pending</span>
-          <span>Profile: ${pendingProfile.requested_runner_id}</span>
+          <span>Profile: ${pendingProfile.requested_runner_id || 'New Profile'}</span>
         </a>
       `;
     }
@@ -577,7 +600,7 @@ async function loadUserSubmissions() {
 
 // Load admin pending counts
 async function loadAdminCounts() {
-  const supabase = CRCAuth.getSupabaseClient();
+  const supabase = CRCAuth.getSupabaseClient?.();
   if (!supabase) return;
   
   try {
@@ -589,8 +612,10 @@ async function loadAdminCounts() {
     
     if (profileCount > 0) {
       const badge = document.getElementById('admin-pending-profiles-count');
-      badge.textContent = profileCount;
-      badge.hidden = false;
+      if (badge) {
+        badge.textContent = profileCount;
+        badge.hidden = false;
+      }
     }
     
     // TODO: Add pending runs and games counts when those tables exist
