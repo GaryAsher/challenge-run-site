@@ -1,69 +1,89 @@
 ---
-layout: game
-game_id: test-game
-reviewers: gary-asher
-game_name: "Test Game (Admin Only)"
-published: false
-test_only: true
+# =============================================================================
+# TEST GAME - For Testing New Variables
+# =============================================================================
+# This is a placeholder game used for testing new features and variables.
+# Prefix with underscore to hide from Jekyll processing, or use hidden: true
+# =============================================================================
 
-cover: /assets/img/site/default-game.jpg
-cover_position: center
+game_id: "_test-game"
+game_name: "Test Game (Dev Only)"
+game_name_short: "Test Game"
+game_name_aliases:
+  - "test"
+  - "testing"
 
 developer: "Test Developer"
-publisher: "Test Publisher"  
-release_year: 2025
+publisher: "Test Publisher"
+release_date: "2025-01-01"
 platforms:
   - pc
+  - playstation-5
+  - xbox-series-X
 
 genres:
-  - action
+  - Action
+  - Adventure
+
+cover_image: "/assets/img/site/default-game.jpg"
+banner_image: "/assets/img/site/default-banner.jpg"
+
+# Hide from public listings
+status: "test"
+hidden: true
+
+description: |
+  This is a test game for development purposes.
+  Use it to test new variables and features.
 
 category_tiers:
-  - tier_name: "Full Runs"
-    tier_id: full-runs
+  - name: "Full Runs"
+    slug: "full-runs"
+    tier: 1
     categories:
-      - category_name: "Any%"
-        category_id: any
-        description: "Complete the game as fast as possible"
-        timing_method: RTA
-        requires_video: true
-
-      - category_name: "100%"
-        category_id: "100"
+      - name: "Any%"
+        slug: "any"
+        description: "Complete the game"
+      - name: "100%"
+        slug: "100"
         description: "Complete everything"
-        timing_method: RTA
-        requires_video: true
+
+  - name: "Mini Challenges"
+    slug: "mini-challenges"
+    tier: 2
+    categories:
+      - name: "Test Category"
+        slug: "test-category"
+        description: "A test category"
 
 standard_challenges:
-  - id: hitless
-    name: Hitless
-    description: "Complete without taking any hits"
-  - id: damageless  
-    name: Damageless
-    description: "Complete without taking any damage"
+  - hitless
+  - damageless
+  - deathless
 
-community_challenges: []
+rules: |
+  ## Test Rules
+  1. Test rule 1
+  2. Test rule 2
 
-characters:
-  label: "Test Class"
-  options:
-    - id: class-a
-      name: "Class A"
-    - id: class-b
-      name: "Class B"
+resources:
+  - name: "Test Link"
+    url: "https://example.com"
+    type: "guide"
 
-restrictions: []
+moderators:
+  - gary-asher
 
-rules:
-  timing:
-    start: "When you gain control"
-    end: "When final boss is defeated"
-  allowed: []
-  banned: []
-  notes: "This is a test game for admin testing purposes."
-
-resources: []
+# =========================================
+# TEST VARIABLES - Add new ones here
+# =========================================
+test_variables:
+  new_feature: true
+  test_string: "hello"
+  test_number: 42
+  test_array:
+    - item1
+    - item2
 ---
 
-This is a **test game** used for testing the site's functionality. It is not visible to regular users.
-
+Test game content area.
