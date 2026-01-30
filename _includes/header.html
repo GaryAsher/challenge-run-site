@@ -1,13 +1,9 @@
 <header class="site-header">
-  <!-- Brand/Logo - becomes panel toggle when signed in -->
+  <!-- Brand/Logo - Admin panel toggle (only for admins) -->
   <a class="brand" href="{{ '/' | relative_url }}" id="brand-link">CRC</a>
-  <button type="button" class="brand brand--panel-toggle" id="brand-panel-toggle" hidden aria-label="Open dashboard">
+  <button type="button" class="brand brand--admin-toggle" id="brand-admin-toggle" hidden aria-label="Admin panel">
     <span class="brand__text">CRC</span>
-    <svg class="brand__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <line x1="3" y1="12" x2="21" y2="12"></line>
-      <line x1="3" y1="6" x2="21" y2="6"></line>
-      <line x1="3" y1="18" x2="21" y2="18"></line>
-    </svg>
+    <span class="brand__admin-badge" id="brand-admin-badge" hidden>0</span>
   </button>
 
   <nav class="nav" aria-label="Primary navigation">
@@ -34,14 +30,7 @@
     </div>
 
     <div class="nav-search-wrap" id="header-search-wrap">
-      <input
-        type="text"
-        id="header-search"
-        class="nav-search-input"
-        placeholder="Search..."
-        autocomplete="off"
-        aria-label="Search"
-      />
+      <input type="text" id="header-search" class="nav-search-input" placeholder="Search..." autocomplete="off" aria-label="Search" />
       <div class="header-search-results" id="header-search-results" hidden></div>
     </div>
 
@@ -50,12 +39,12 @@
       <!-- Signed out state -->
       <a href="{{ '/sign-in/' | relative_url }}" class="nav-user__signin" id="nav-signin">Sign In</a>
       
-      <!-- Signed in state - Avatar button (hidden by default, shown via JS) -->
-      <button type="button" class="nav-user__avatar-btn" id="nav-user-avatar-btn" hidden aria-label="Account menu" aria-expanded="false" aria-haspopup="true">
+      <!-- Signed in state - Avatar button -->
+      <button type="button" class="nav-user__avatar-btn" id="nav-user-avatar-btn" hidden aria-label="Account menu">
         <img class="nav-user__avatar" id="nav-user-avatar" src="/assets/img/site/default-runner.png" alt="" />
       </button>
       
-      <!-- User dropdown menu (appears when avatar is clicked) -->
+      <!-- User dropdown menu -->
       <div class="nav-user__menu" id="nav-user-menu" hidden>
         <div class="nav-user__menu-header">
           <img class="nav-user__menu-avatar" id="nav-user-menu-avatar" src="/assets/img/site/default-runner.png" alt="" />
@@ -69,14 +58,21 @@
             <span class="nav-user__menu-icon">👤</span> My Profile
           </a>
           <a href="{{ '/profile/settings/' | relative_url }}" class="nav-user__menu-item">
-            <span class="nav-user__menu-icon">⚙️</span> Settings
+            <span class="nav-user__menu-icon">⚙️</span> Account Settings
+          </a>
+          <a href="#" class="nav-user__menu-item nav-user__menu-item--disabled" id="nav-messages-link">
+            <span class="nav-user__menu-icon">💬</span> Messages
+            <span class="nav-user__menu-soon">Soon</span>
           </a>
           <hr class="nav-user__menu-divider">
-          <a href="{{ '/submit/' | relative_url }}" class="nav-user__menu-item">
-            <span class="nav-user__menu-icon">🎮</span> Submit a Run
-          </a>
+          <div class="nav-user__menu-section">
+            <span class="nav-user__menu-section-title">Pending Submissions</span>
+            <div id="nav-user-submissions" class="nav-user__submissions">
+              <span class="nav-user__menu-muted">No pending submissions</span>
+            </div>
+          </div>
           <hr class="nav-user__menu-divider">
-          <button type="button" class="nav-user__menu-item nav-user__menu-item--btn" id="nav-signout">
+          <button type="button" class="nav-user__menu-item nav-user__menu-item--signout" id="nav-signout">
             <span class="nav-user__menu-icon">🚪</span> Sign Out
           </button>
         </div>
@@ -85,334 +81,280 @@
   </nav>
 </header>
 
+<!-- Admin Panel (slides from left, admins only) -->
+<div class="admin-panel" id="admin-panel" hidden>
+  <div class="admin-panel__backdrop" id="admin-panel-backdrop"></div>
+  <aside class="admin-panel__content">
+    <div class="admin-panel__header">
+      <span class="admin-panel__title">
+        <span class="admin-badge">Admin</span>
+        Moderation
+      </span>
+      <button type="button" class="admin-panel__close" id="admin-panel-close">&times;</button>
+    </div>
+    <nav class="admin-panel__nav">
+      <a href="/admin/profiles/" class="admin-panel__item">
+        <span class="admin-panel__icon">👥</span>
+        <span class="admin-panel__text">Pending Profiles</span>
+        <span class="admin-panel__badge" id="admin-profiles-badge" hidden>0</span>
+      </a>
+      <a href="/admin/games/" class="admin-panel__item">
+        <span class="admin-panel__icon">🎮</span>
+        <span class="admin-panel__text">Pending Games</span>
+        <span class="admin-panel__badge" id="admin-games-badge" hidden>0</span>
+      </a>
+      <a href="/admin/runs/" class="admin-panel__item">
+        <span class="admin-panel__icon">🏃</span>
+        <span class="admin-panel__text">Pending Runs</span>
+        <span class="admin-panel__badge" id="admin-runs-badge" hidden>0</span>
+      </a>
+      <hr class="admin-panel__divider">
+      <a href="/admin/support/" class="admin-panel__item">
+        <span class="admin-panel__icon">🎫</span>
+        <span class="admin-panel__text">Support Tickets</span>
+        <span class="admin-panel__badge" id="admin-support-badge" hidden>0</span>
+      </a>
+      <a href="/admin/reports/" class="admin-panel__item">
+        <span class="admin-panel__icon">⚠️</span>
+        <span class="admin-panel__text">User Reports</span>
+        <span class="admin-panel__badge" id="admin-reports-badge" hidden>0</span>
+      </a>
+      <hr class="admin-panel__divider">
+      <a href="/admin/test/" class="admin-panel__item">
+        <span class="admin-panel__icon">🔧</span>
+        <span class="admin-panel__text">Test Dashboard</span>
+      </a>
+    </nav>
+  </aside>
+</div>
+
 <!-- Header Search Index -->
 <script id="header-search-data" type="application/json">
 {
-  "games": [
-    {% for g in site.games %}
-    {
-      "id": {{ g.game_id | jsonify }},
-      "name": {{ g.game_name | jsonify }},
-      "aliases": {{ g.game_name_aliases | default: empty | jsonify }},
-      "url": {{ g.url | relative_url | jsonify }}
-    }{% unless forloop.last %},{% endunless %}
-    {% endfor %}
-  ],
-  "runners": [
-    {% for r in site.runners %}
-    {
-      "id": {{ r.runner_id | default: r.title | jsonify }},
-      "name": {{ r.name | default: r.title | jsonify }},
-      "url": {{ r.url | relative_url | jsonify }}
-    }{% unless forloop.last %},{% endunless %}
-    {% endfor %}
-  ],
-  "teams": [
-    {% for t in site.teams %}
-    {
-      "id": {{ t.team_id | default: t.title | jsonify }},
-      "name": {{ t.name | default: t.title | jsonify }},
-      "url": {{ t.url | relative_url | jsonify }}
-    }{% unless forloop.last %},{% endunless %}
-    {% endfor %}
-  ]
+  "games": [{% for g in site.games %}{"id":{{ g.game_id | jsonify }},"name":{{ g.game_name | jsonify }},"aliases":{{ g.game_name_aliases | default: empty | jsonify }},"url":{{ g.url | relative_url | jsonify }}}{% unless forloop.last %},{% endunless %}{% endfor %}],
+  "runners": [{% for r in site.runners %}{"id":{{ r.runner_id | default: r.title | jsonify }},"name":{{ r.name | default: r.title | jsonify }},"url":{{ r.url | relative_url | jsonify }}}{% unless forloop.last %},{% endunless %}{% endfor %}],
+  "teams": [{% for t in site.teams %}{"id":{{ t.team_id | default: t.title | jsonify }},"name":{{ t.name | default: t.title | jsonify }},"url":{{ t.url | relative_url | jsonify }}}{% unless forloop.last %},{% endunless %}{% endfor %}]
 }
 </script>
 
+<style>
+/* Admin Panel Toggle */
+.brand--admin-toggle { display: flex; align-items: center; gap: 6px; background: none; border: none; color: var(--accent); font-weight: 800; font-size: inherit; cursor: pointer; padding: 0.25rem 0.5rem; margin: -0.25rem -0.5rem; border-radius: 6px; position: relative; }
+.brand--admin-toggle:hover { background: var(--surface); }
+.brand--admin-toggle[hidden] { display: none; }
+.brand__admin-badge { position: absolute; top: -4px; right: -8px; background: #dc3545; color: white; font-size: 0.65rem; font-weight: 700; padding: 2px 5px; border-radius: 10px; min-width: 16px; text-align: center; }
+.brand__admin-badge[hidden] { display: none; }
+
+/* Admin Panel */
+.admin-panel { position: fixed; inset: 0; z-index: 1000; }
+.admin-panel[hidden] { display: none; }
+.admin-panel__backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.5); }
+.admin-panel__content { position: absolute; top: 0; left: 0; bottom: 0; width: 280px; max-width: 85vw; background: var(--surface); box-shadow: 2px 0 12px rgba(0,0,0,0.3); display: flex; flex-direction: column; animation: adminSlideIn 0.2s ease; }
+@keyframes adminSlideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+.admin-panel__header { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid var(--border); background: var(--bg); }
+.admin-panel__title { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.admin-badge { background: var(--accent); color: var(--bg); font-size: 0.65rem; font-weight: 700; padding: 3px 6px; border-radius: 4px; text-transform: uppercase; }
+.admin-panel__close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); line-height: 1; }
+.admin-panel__nav { padding: 0.5rem 0; flex: 1; overflow-y: auto; }
+.admin-panel__item { display: flex; align-items: center; gap: 12px; padding: 0.75rem 1rem; color: var(--fg); text-decoration: none; transition: background 0.1s; }
+.admin-panel__item:hover { background: var(--bg); text-decoration: none; }
+.admin-panel__icon { font-size: 1.1rem; width: 24px; text-align: center; }
+.admin-panel__text { flex: 1; }
+.admin-panel__badge { background: #dc3545; color: white; font-size: 0.7rem; font-weight: 600; padding: 2px 6px; border-radius: 10px; min-width: 18px; text-align: center; }
+.admin-panel__badge[hidden] { display: none; }
+.admin-panel__divider { margin: 0.5rem 1rem; border: none; border-top: 1px solid var(--border); }
+
+/* User Menu Additions */
+.nav-user__menu-section { padding: 0.5rem 1rem; }
+.nav-user__menu-section-title { display: block; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; }
+.nav-user__submissions { font-size: 0.85rem; }
+.nav-user__menu-muted { color: var(--text-muted); font-size: 0.85rem; }
+.nav-user__menu-item--disabled { opacity: 0.6; cursor: not-allowed; pointer-events: none; }
+.nav-user__menu-soon { font-size: 0.65rem; background: var(--border); color: var(--text-muted); padding: 2px 5px; border-radius: 4px; margin-left: auto; }
+.nav-user__menu-item--signout { color: #dc3545 !important; }
+.nav-user__menu-item--signout:hover { background: rgba(220, 53, 69, 0.1) !important; }
+.nav-user__submission-item { display: flex; align-items: center; gap: 8px; padding: 0.4rem 0; font-size: 0.85rem; color: var(--fg); text-decoration: none; }
+.nav-user__submission-item:hover { color: var(--accent); }
+.nav-user__submission-status { font-size: 0.65rem; padding: 2px 5px; border-radius: 4px; background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+</style>
+
 <script>
-// More dropdown toggle
+// Dropdown toggles
 (function() {
   document.querySelectorAll('.nav-dropdown__toggle').forEach(function(btn) {
     var menu = btn.nextElementSibling;
-    
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      var isOpen = !menu.hidden;
-      menu.hidden = isOpen;
-      btn.setAttribute('aria-expanded', !isOpen);
-    });
+    btn.addEventListener('click', function(e) { e.stopPropagation(); menu.hidden = !menu.hidden; btn.setAttribute('aria-expanded', !menu.hidden); });
   });
-  
-  document.addEventListener('click', function() {
-    document.querySelectorAll('.nav-dropdown__menu').forEach(function(m) {
-      m.hidden = true;
-      m.previousElementSibling.setAttribute('aria-expanded', 'false');
-    });
-  });
-  
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-      document.querySelectorAll('.nav-dropdown__menu').forEach(function(m) {
-        m.hidden = true;
-        m.previousElementSibling.setAttribute('aria-expanded', 'false');
-      });
-    }
-  });
+  document.addEventListener('click', function() { document.querySelectorAll('.nav-dropdown__menu').forEach(function(m) { m.hidden = true; }); });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') document.querySelectorAll('.nav-dropdown__menu').forEach(function(m) { m.hidden = true; }); });
 })();
 
-// Header live search
+// Search
 (function() {
-  var input = document.getElementById('header-search');
-  var results = document.getElementById('header-search-results');
-  var dataEl = document.getElementById('header-search-data');
-  
+  var input = document.getElementById('header-search'), results = document.getElementById('header-search-results'), dataEl = document.getElementById('header-search-data');
   if (!input || !results || !dataEl) return;
-  
-  var searchData;
-  try {
-    searchData = JSON.parse(dataEl.textContent);
-  } catch(e) {
-    return;
+  var data; try { data = JSON.parse(dataEl.textContent); } catch(e) { return; }
+  function search(q) {
+    q = (q||'').toLowerCase(); if (q.length < 2) return {games:[],runners:[],teams:[]};
+    var out = {games:[],runners:[],teams:[]};
+    (data.games||[]).forEach(function(g){ if ((g.name||'').toLowerCase().indexOf(q)!==-1 || (g.id||'').toLowerCase().indexOf(q)!==-1) out.games.push(g); });
+    (data.runners||[]).forEach(function(r){ if ((r.name||'').toLowerCase().indexOf(q)!==-1 || (r.id||'').toLowerCase().indexOf(q)!==-1) out.runners.push(r); });
+    (data.teams||[]).forEach(function(t){ if ((t.name||'').toLowerCase().indexOf(q)!==-1 || (t.id||'').toLowerCase().indexOf(q)!==-1) out.teams.push(t); });
+    return {games:out.games.slice(0,5),runners:out.runners.slice(0,5),teams:out.teams.slice(0,3)};
   }
-  
-  function norm(s) {
-    return (s || '').toString().trim().toLowerCase();
+  function render(r,q) {
+    if (!q || q.length<2) { results.hidden=true; return; }
+    var total = r.games.length + r.runners.length + r.teams.length;
+    if (!total) { results.innerHTML='<div class="search-no-results">No results</div>'; results.hidden=false; return; }
+    var h='';
+    if (r.games.length) { h+='<div class="search-result-group"><div class="search-result-group__title">Games</div>'; r.games.forEach(function(g){h+='<a href="'+g.url+'" class="search-result-item">'+g.name+'</a>';}); h+='</div>'; }
+    if (r.runners.length) { h+='<div class="search-result-group"><div class="search-result-group__title">Runners</div>'; r.runners.forEach(function(x){h+='<a href="'+x.url+'" class="search-result-item">'+x.name+'</a>';}); h+='</div>'; }
+    if (r.teams.length) { h+='<div class="search-result-group"><div class="search-result-group__title">Teams</div>'; r.teams.forEach(function(x){h+='<a href="'+x.url+'" class="search-result-item">'+x.name+'</a>';}); h+='</div>'; }
+    results.innerHTML=h; results.hidden=false;
   }
-  
-  // Convert roman numerals to arabic for matching
-  function expandRomanNumerals(s) {
-    var str = norm(s);
-    var romans = [
-      ['viii', '8'], ['vii', '7'], ['vi', '6'], ['iv', '4'], ['v', '5'],
-      ['iii', '3'], ['ii', '2'], ['i', '1'],
-      ['xiii', '13'], ['xii', '12'], ['xi', '11'], ['x', '10'],
-      ['xiv', '14'], ['xv', '15'], ['xvi', '16']
-    ];
-    romans.forEach(function(pair) {
-      var regex = new RegExp('\\b' + pair[0] + '\\b', 'g');
-      str = str.replace(regex, pair[1]);
-    });
-    return str;
-  }
-  
-  function search(query) {
-    var q = norm(query);
-    var qExpanded = expandRomanNumerals(query);
-    if (!q || q.length < 2) return { games: [], runners: [], teams: [] };
-    
-    var out = { games: [], runners: [], teams: [] };
-    
-    (searchData.games || []).forEach(function(g) {
-      var haystack = [norm(g.name), norm(g.id)].concat((g.aliases || []).map(norm)).join(' ');
-      var haystackExpanded = expandRomanNumerals(haystack);
-      if (haystack.indexOf(q) !== -1 || haystackExpanded.indexOf(qExpanded) !== -1) {
-        out.games.push(g);
-      }
-    });
-    
-    (searchData.runners || []).forEach(function(r) {
-      if (norm(r.name).indexOf(q) !== -1 || norm(r.id).indexOf(q) !== -1) {
-        out.runners.push(r);
-      }
-    });
-    
-    (searchData.teams || []).forEach(function(t) {
-      if (norm(t.name).indexOf(q) !== -1 || norm(t.id).indexOf(q) !== -1) {
-        out.teams.push(t);
-      }
-    });
-    
-    out.games = out.games.slice(0, 5);
-    out.runners = out.runners.slice(0, 5);
-    out.teams = out.teams.slice(0, 3);
-    
-    return out;
-  }
-  
-  function escapeHtml(s) {
-    var div = document.createElement('div');
-    div.textContent = s;
-    return div.innerHTML;
-  }
-  
-  function render(searchResults, query) {
-    var total = searchResults.games.length + searchResults.runners.length + searchResults.teams.length;
-    
-    if (!query || query.length < 2) {
-      results.hidden = true;
-      return;
-    }
-    
-    if (total === 0) {
-      results.innerHTML = '<div class="search-no-results">No results found</div>';
-      results.hidden = false;
-      return;
-    }
-    
-    var html = '';
-    
-    if (searchResults.games.length) {
-      html += '<div class="search-result-group">';
-      html += '<div class="search-result-group__title">Games</div>';
-      searchResults.games.forEach(function(g) {
-        html += '<a href="' + g.url + '" class="search-result-item">';
-        html += '<span class="search-result-item__name">' + escapeHtml(g.name) + '</span>';
-        html += '</a>';
-      });
-      html += '</div>';
-    }
-    
-    if (searchResults.runners.length) {
-      html += '<div class="search-result-group">';
-      html += '<div class="search-result-group__title">Runners</div>';
-      searchResults.runners.forEach(function(r) {
-        html += '<a href="' + r.url + '" class="search-result-item">';
-        html += '<span class="search-result-item__name">' + escapeHtml(r.name) + '</span>';
-        html += '</a>';
-      });
-      html += '</div>';
-    }
-    
-    if (searchResults.teams.length) {
-      html += '<div class="search-result-group">';
-      html += '<div class="search-result-group__title">Teams</div>';
-      searchResults.teams.forEach(function(t) {
-        html += '<a href="' + t.url + '" class="search-result-item">';
-        html += '<span class="search-result-item__name">' + escapeHtml(t.name) + '</span>';
-        html += '</a>';
-      });
-      html += '</div>';
-    }
-    
-    results.innerHTML = html;
-    results.hidden = false;
-  }
-  
-  var debounceTimer;
-  input.addEventListener('input', function() {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(function() {
-      var query = input.value;
-      var searchResults = search(query);
-      render(searchResults, query);
-    }, 150);
-  });
-  
-  input.addEventListener('blur', function() {
-    setTimeout(function() {
-      results.hidden = true;
-    }, 200);
-  });
-  
-  input.addEventListener('focus', function() {
-    if (input.value.length >= 2) {
-      var searchResults = search(input.value);
-      render(searchResults, input.value);
-    }
-  });
-  
-  input.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-      results.hidden = true;
-      input.blur();
-    }
-  });
+  var t; input.addEventListener('input',function(){clearTimeout(t);t=setTimeout(function(){render(search(input.value),input.value);},150);});
+  input.addEventListener('blur',function(){setTimeout(function(){results.hidden=true;},200);});
+  input.addEventListener('focus',function(){if(input.value.length>=2)render(search(input.value),input.value);});
 })();
 
-// Header User Auth State
+// User menu toggle
 (function() {
-  var signinLink = document.getElementById('nav-signin');
-  var avatarBtn = document.getElementById('nav-user-avatar-btn');
-  var userAvatar = document.getElementById('nav-user-avatar');
-  var userMenu = document.getElementById('nav-user-menu');
-  var menuAvatar = document.getElementById('nav-user-menu-avatar');
-  var menuName = document.getElementById('nav-user-menu-name');
-  var menuStatus = document.getElementById('nav-user-menu-status');
-  var profileLink = document.getElementById('nav-profile-link');
-  var signoutBtn = document.getElementById('nav-signout');
-  
-  if (!signinLink || !avatarBtn) return;
-  
-  // Toggle user menu
-  avatarBtn.addEventListener('click', function(e) {
-    e.stopPropagation();
-    var isOpen = !userMenu.hidden;
-    userMenu.hidden = isOpen;
-    avatarBtn.setAttribute('aria-expanded', !isOpen);
-  });
-  
-  // Close menu when clicking outside
-  document.addEventListener('click', function(e) {
-    if (!userMenu.hidden && !userMenu.contains(e.target) && e.target !== avatarBtn) {
-      userMenu.hidden = true;
-      avatarBtn.setAttribute('aria-expanded', 'false');
-    }
-  });
-  
-  // Close on Escape
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && !userMenu.hidden) {
-      userMenu.hidden = true;
-      avatarBtn.setAttribute('aria-expanded', 'false');
-    }
-  });
-  
-  // Check if CRCAuth is available (loaded via module in pages that need it)
-  function initAuthUI() {
-    if (typeof window.CRCAuth === 'undefined') {
-      return;
-    }
-    
-    var auth = window.CRCAuth;
-    
-    if (auth.isSignedIn()) {
-      var metadata = auth.getProviderMetadata();
-      var profile = auth.getProfile();
-      
-      // Hide sign in, show avatar
-      signinLink.hidden = true;
-      avatarBtn.hidden = false;
-      
-      // Set avatar images
-      var avatarUrl = metadata.providerAvatar || '/assets/img/site/default-runner.png';
-      userAvatar.src = avatarUrl;
-      menuAvatar.src = avatarUrl;
-      
-      // Set name and status
-      menuName.textContent = profile?.display_name || metadata.providerUsername || 'User';
-      
-      if (profile && !profile._isPending) {
-        menuStatus.textContent = 'Runner';
-        profileLink.href = '/runners/' + profile.runner_id + '/';
-        profileLink.innerHTML = '<span class="nav-user__menu-icon">👤</span> My Profile';
-      } else if (profile && profile._isPending) {
-        menuStatus.textContent = '⏳ Profile Pending';
-        profileLink.href = '/profile/status/';
-        profileLink.innerHTML = '<span class="nav-user__menu-icon">⏳</span> Profile Status';
-      } else {
-        menuStatus.textContent = 'No Profile';
-        profileLink.href = '/profile/create/';
-        profileLink.innerHTML = '<span class="nav-user__menu-icon">➕</span> Create Profile';
-      }
-    }
-    
-    // Listen for auth changes
-    auth.onAuthStateChange(function(event, user, profile) {
-      if (event === 'SIGNED_IN') {
-        signinLink.hidden = true;
-        avatarBtn.hidden = false;
-      } else if (event === 'SIGNED_OUT') {
-        signinLink.hidden = false;
-        avatarBtn.hidden = true;
-        userMenu.hidden = true;
-      }
-    });
-  }
-  
-  // Sign out handler
-  if (signoutBtn) {
-    signoutBtn.addEventListener('click', async function() {
-      if (typeof window.CRCAuth !== 'undefined') {
-        await window.CRCAuth.signOut();
-        window.location.href = '/';
-      }
-    });
-  }
-  
-  // Try to init after a short delay (in case auth.js loads async)
-  setTimeout(initAuthUI, 100);
-  
-  // Also listen for custom event from auth module
-  document.addEventListener('crc-auth-ready', initAuthUI);
+  var btn = document.getElementById('nav-user-avatar-btn'), menu = document.getElementById('nav-user-menu');
+  if (!btn || !menu) return;
+  btn.addEventListener('click', function(e) { e.stopPropagation(); menu.hidden = !menu.hidden; });
+  document.addEventListener('click', function(e) { if (!menu.hidden && !menu.contains(e.target)) menu.hidden = true; });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') menu.hidden = true; });
 })();
+
+// Admin panel toggle
+(function() {
+  var btn = document.getElementById('brand-admin-toggle'), panel = document.getElementById('admin-panel');
+  if (!btn || !panel) return;
+  btn.addEventListener('click', function() { panel.hidden = false; });
+  document.getElementById('admin-panel-backdrop')?.addEventListener('click', function() { panel.hidden = true; });
+  document.getElementById('admin-panel-close')?.addEventListener('click', function() { panel.hidden = true; });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && !panel.hidden) panel.hidden = true; });
+})();
+</script>
+
+<script type="module">
+import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
+
+const ADMIN_IDS = ['gary-asher'];
+
+async function initHeaderAuth() {
+  try {
+    await CRCAuth.init();
+    
+    const signinLink = document.getElementById('nav-signin');
+    const avatarBtn = document.getElementById('nav-user-avatar-btn');
+    const userAvatar = document.getElementById('nav-user-avatar');
+    const menuAvatar = document.getElementById('nav-user-menu-avatar');
+    const menuName = document.getElementById('nav-user-menu-name');
+    const menuStatus = document.getElementById('nav-user-menu-status');
+    const profileLink = document.getElementById('nav-profile-link');
+    const signoutBtn = document.getElementById('nav-signout');
+    const submissionsEl = document.getElementById('nav-user-submissions');
+    const brandLink = document.getElementById('brand-link');
+    const adminToggle = document.getElementById('brand-admin-toggle');
+    
+    if (!CRCAuth.isSignedIn()) return;
+    
+    // User is signed in - swap Sign In for avatar
+    const metadata = CRCAuth.getProviderMetadata();
+    const profile = CRCAuth.getProfile();
+    
+    signinLink.hidden = true;
+    avatarBtn.hidden = false;
+    
+    const avatarUrl = metadata.providerAvatar || '/assets/img/site/default-runner.png';
+    userAvatar.src = avatarUrl;
+    menuAvatar.src = avatarUrl;
+    menuName.textContent = profile?.display_name || metadata.providerUsername || 'User';
+    
+    if (profile && !profile._isPending) {
+      menuStatus.textContent = 'Runner';
+      profileLink.href = '/runners/' + profile.runner_id + '/';
+      profileLink.innerHTML = '<span class="nav-user__menu-icon">👤</span> My Profile';
+    } else if (profile && profile._isPending) {
+      menuStatus.textContent = '⏳ Profile Pending';
+      profileLink.href = '/profile/status/';
+      profileLink.innerHTML = '<span class="nav-user__menu-icon">⏳</span> Profile Status';
+    } else {
+      menuStatus.textContent = 'No Profile';
+      profileLink.href = '/profile/create/';
+      profileLink.innerHTML = '<span class="nav-user__menu-icon">➕</span> Create Profile';
+    }
+    
+    loadUserSubmissions(submissionsEl);
+    
+    // Check admin
+    const isAdmin = await checkAdminStatus();
+    if (isAdmin) {
+      brandLink.hidden = true;
+      adminToggle.hidden = false;
+      loadAdminCounts();
+    }
+    
+    signoutBtn?.addEventListener('click', async () => { await CRCAuth.signOut(); window.location.href = '/'; });
+  } catch (err) { console.error('[Header] Auth error:', err); }
+}
+
+async function checkAdminStatus() {
+  const profile = CRCAuth.getProfile();
+  const metadata = CRCAuth.getProviderMetadata();
+  if (profile?.runner_id && ADMIN_IDS.includes(profile.runner_id.toLowerCase())) return true;
+  const username = metadata?.providerUsername?.toLowerCase() || '';
+  if (ADMIN_IDS.some(id => username === id || username === id.replace(/-/g, '_'))) return true;
+  
+  const supabase = CRCAuth.getSupabaseClient?.();
+  if (supabase) {
+    const user = CRCAuth.getUser();
+    if (user) {
+      const { data } = await supabase.from('runner_profiles').select('is_admin').eq('user_id', user.id).single();
+      if (data?.is_admin) return true;
+    }
+  }
+  return false;
+}
+
+async function loadUserSubmissions(el) {
+  if (!el) return;
+  const supabase = CRCAuth.getSupabaseClient?.();
+  const user = CRCAuth.getUser();
+  if (!supabase || !user) { el.innerHTML = '<span class="nav-user__menu-muted">No pending submissions</span>'; return; }
+  
+  try {
+    const { data } = await supabase.from('pending_profiles').select('requested_runner_id').eq('user_id', user.id).eq('status', 'pending');
+    if (data?.length) {
+      el.innerHTML = data.map(p => `<a href="/profile/status/" class="nav-user__submission-item"><span class="nav-user__submission-status">Pending</span>Profile: ${p.requested_runner_id}</a>`).join('');
+    } else {
+      el.innerHTML = '<span class="nav-user__menu-muted">No pending submissions</span>';
+    }
+  } catch { el.innerHTML = '<span class="nav-user__menu-muted">No pending submissions</span>'; }
+}
+
+async function loadAdminCounts() {
+  const supabase = CRCAuth.getSupabaseClient?.();
+  if (!supabase) return;
+  let total = 0;
+  
+  try {
+    const { count: profiles } = await supabase.from('pending_profiles').select('*', { count: 'exact', head: true }).eq('status', 'pending');
+    if (profiles > 0) {
+      document.getElementById('admin-profiles-badge')?.classList.remove('hidden');
+      document.getElementById('admin-profiles-badge').hidden = false;
+      document.getElementById('admin-profiles-badge').textContent = profiles;
+      total += profiles;
+    }
+    // TODO: games, runs, support, reports counts
+    
+    if (total > 0) {
+      const mainBadge = document.getElementById('brand-admin-badge');
+      if (mainBadge) { mainBadge.textContent = total; mainBadge.hidden = false; }
+    }
+  } catch (e) { console.error('[Header] Admin counts:', e); }
+}
+
+initHeaderAuth();
 </script>
