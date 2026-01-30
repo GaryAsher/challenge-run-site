@@ -183,15 +183,21 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
     queueList.innerHTML = '<p class="muted">Loading...</p>';
     
     try {
+      // Try without ordering first (safest), then sort client-side
       const { data, error } = await supabase
         .from('pending_profiles')
         .select('*')
-        .eq('status', 'pending')
-        .order('submitted_at', { ascending: true });
+        .eq('status', 'pending');
       
       if (error) throw error;
       
-      pendingProfiles = data || [];
+      // Sort by whatever date field exists
+      pendingProfiles = (data || []).sort((a, b) => {
+        const dateA = new Date(a.submitted_at || a.created_at || 0);
+        const dateB = new Date(b.submitted_at || b.created_at || 0);
+        return dateA - dateB;
+      });
+      
       document.getElementById('pending-count').textContent = pendingProfiles.length;
       
       const { count } = await supabase.from('runner_profiles').select('*', { count: 'exact', head: true });
@@ -213,7 +219,7 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
                   <p class="mod-card__id">@${esc(p.requested_runner_id)}</p>
                 </div>
               </div>
-              <span class="mod-card__date">${fmtDate(p.submitted_at)}</span>
+              <span class="mod-card__date">${fmtDate(p.submitted_at || p.created_at)}</span>
             </div>
             ${p.bio ? `<div class="mod-card__bio">${esc(p.bio)}</div>` : ''}
             <div class="mod-card__actions">
