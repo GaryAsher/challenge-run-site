@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-01-30T05:49:02.122Z",
+  "generated_at": "2026-01-30T08:08:45.836Z",
   "games": [
     {
       "game_id": "celeste",
@@ -755,6 +755,26 @@
       "timing_method_secondary": ""
     },
     {
+      "game_id": "_test-game",
+      "title": "Test Game (Dev Only)",
+      "category_tiers": {
+        "full_runs": [],
+        "mini_challenges": [],
+        "player_made": []
+      },
+      "categories": [],
+      "standard_challenges": [],
+      "glitches": [],
+      "restrictions": [],
+      "character_column": {
+        "enabled": false,
+        "label": "Character"
+      },
+      "characters": [],
+      "timing_method": "",
+      "timing_method_secondary": ""
+    },
+    {
       "game_id": "the-legend-of-zelda-ocarina-of-time",
       "title": "The Legend of Zelda: Ocarina of Time",
       "category_tiers": {
@@ -957,6 +977,9 @@
     }
   ],
   "runners": [
+    {
+      "id": "_test-runner"
+    },
     {
       "id": "gary-asher"
     }

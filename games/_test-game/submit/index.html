@@ -1,0 +1,16 @@
+---
+layout: default
+title: "Test Game (Dev Only) - Submit Run"
+game_id: _test-game
+---
+
+{% assign game = site.games | where: "game_id", page.game_id | first %}
+{% include game-header-tabs.html game=game active="submit" %}
+
+<div class="page-width">
+  <div class="game-shell">
+    <section class="tab-panel active" data-panel="submit">
+      {% include submit-run-form.html game=game %}
+    </section>
+  </div>
+</div>
