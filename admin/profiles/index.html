@@ -1,55 +1,61 @@
 ---
 layout: default
-title: "Profile Moderation"
+title: "Admin - Pending Profiles"
 ---
 
 <div class="page-width">
-  <h1>Profile Moderation</h1>
-  <p class="muted mb-4">Review and approve pending runner profiles.</p>
+  <p class="muted mb-3">
+    <a href="/">← Back to Home</a>
+  </p>
 
-  <!-- Not authorized -->
-  <div id="not-authorized" class="card" hidden>
-    <h2>Access Denied</h2>
-    <p class="muted">You don't have permission to access this page.</p>
-    <a href="{{ '/' | relative_url }}" class="btn">Go Home</a>
-  </div>
-
-  <!-- Moderation queue -->
-  <div id="mod-queue" hidden>
-    <div class="mod-stats card">
-      <div class="mod-stats__item">
-        <span class="mod-stats__value" id="pending-count">0</span>
-        <span class="mod-stats__label">Pending</span>
-      </div>
-      <div class="mod-stats__item">
-        <span class="mod-stats__value" id="approved-today">0</span>
-        <span class="mod-stats__label">Approved Today</span>
-      </div>
-      <div class="mod-stats__item">
-        <span class="mod-stats__value" id="rejected-today">0</span>
-        <span class="mod-stats__label">Rejected Today</span>
+  <div class="admin-page">
+    <!-- Loading -->
+    <div id="loading-state" class="card">
+      <div class="admin-loading">
+        <div class="spinner"></div>
+        <p class="muted">Checking access...</p>
       </div>
     </div>
 
-    <div class="mod-queue__header">
-      <h2>Pending Profiles</h2>
-      <button type="button" class="btn btn--small" id="refresh-btn">Refresh</button>
+    <!-- Not authorized -->
+    <div id="not-authorized" class="card" hidden>
+      <h2>Access Denied</h2>
+      <p class="muted">You don't have permission to access this page.</p>
+      <p class="muted" style="font-size: 0.85rem; margin-top: 1rem;">
+        Admin access is required. If you believe you should have access, please contact a site administrator.
+      </p>
+      <a href="/" class="btn">Go Home</a>
     </div>
 
-    <div id="queue-list">
-      <p class="muted">Loading...</p>
-    </div>
+    <!-- Moderation queue -->
+    <div id="mod-queue" hidden>
+      <h1>👥 Pending Profiles</h1>
+      <p class="muted mb-4">Review and approve runner profile submissions.</p>
 
-    <div id="queue-empty" class="card" hidden>
-      <p class="muted">🎉 No pending profiles to review!</p>
-    </div>
-  </div>
+      <div class="mod-stats card">
+        <div class="mod-stats__item">
+          <span class="mod-stats__value" id="pending-count">0</span>
+          <span class="mod-stats__label">Pending</span>
+        </div>
+        <div class="mod-stats__item">
+          <span class="mod-stats__value" id="approved-count">0</span>
+          <span class="mod-stats__label">Approved (Total)</span>
+        </div>
+      </div>
 
-  <!-- Loading -->
-  <div id="loading-state" class="card">
-    <div class="mod-loading">
-      <div class="spinner"></div>
-      <p class="muted">Loading moderation queue...</p>
+      <div class="mod-queue__header">
+        <h2>Queue</h2>
+        <button type="button" class="btn btn--small" id="refresh-btn">🔄 Refresh</button>
+      </div>
+
+      <div id="queue-list">
+        <p class="muted">Loading...</p>
+      </div>
+
+      <div id="queue-empty" class="card" hidden>
+        <p>🎉 No pending profiles to review!</p>
+        <p class="muted">New profile submissions will appear here.</p>
+      </div>
     </div>
   </div>
 </div>
@@ -67,12 +73,12 @@ title: "Profile Moderation"
     </div>
     <div class="modal__footer">
       <div class="modal__reject-section" id="reject-section" hidden>
-        <label for="reject-reason" class="modal__label">Rejection Reason:</label>
+        <label for="reject-reason" class="modal__label">Rejection Reason (optional):</label>
         <textarea id="reject-reason" class="modal__textarea" placeholder="Explain why the profile was rejected..."></textarea>
       </div>
       <div class="modal__actions">
-        <button type="button" class="btn btn--success" id="approve-btn">Approve</button>
-        <button type="button" class="btn btn--danger" id="reject-btn">Reject</button>
+        <button type="button" class="btn btn--success" id="approve-btn">✓ Approve</button>
+        <button type="button" class="btn btn--danger" id="reject-btn">✗ Reject</button>
         <button type="button" class="btn" id="cancel-btn">Cancel</button>
       </div>
     </div>
@@ -80,9 +86,19 @@ title: "Profile Moderation"
 </div>
 
 <style>
+.admin-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.admin-loading {
+  text-align: center;
+  padding: 3rem;
+}
+
 .mod-stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
   text-align: center;
   margin-bottom: 2rem;
@@ -97,7 +113,7 @@ title: "Profile Moderation"
 
 .mod-stats__label {
   font-size: 0.875rem;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .mod-queue__header {
@@ -111,17 +127,12 @@ title: "Profile Moderation"
   margin: 0;
 }
 
-.mod-loading {
-  text-align: center;
-  padding: 3rem;
-}
-
 .mod-card {
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 1rem;
+  border-radius: 12px;
+  padding: 1.25rem;
   margin-bottom: 1rem;
-  background: var(--bg);
+  background: var(--surface);
 }
 
 .mod-card__header {
@@ -129,6 +140,8 @@ title: "Profile Moderation"
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .mod-card__user {
@@ -141,7 +154,8 @@ title: "Profile Moderation"
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: var(--bg-secondary);
+  object-fit: cover;
+  background: var(--bg);
 }
 
 .mod-card__name {
@@ -151,7 +165,7 @@ title: "Profile Moderation"
 
 .mod-card__id {
   font-size: 0.875rem;
-  color: var(--muted);
+  color: var(--text-muted);
   margin: 0;
 }
 
@@ -161,50 +175,39 @@ title: "Profile Moderation"
 
 .mod-card__date {
   font-size: 0.875rem;
-  color: var(--muted);
-}
-
-.mod-card__provider {
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  background: var(--bg-secondary);
-}
-
-.mod-card__provider--discord {
-  background: rgba(88, 101, 242, 0.2);
-  color: #5865F2;
-}
-
-.mod-card__provider--twitch {
-  background: rgba(145, 70, 255, 0.2);
-  color: #9146FF;
+  color: var(--text-muted);
+  display: block;
 }
 
 .mod-card__bio {
   margin: 1rem 0;
   padding: 0.75rem;
-  background: var(--bg-secondary);
-  border-radius: 6px;
+  background: var(--bg);
+  border-radius: 8px;
   font-size: 0.9rem;
 }
 
-.mod-card__warning {
-  display: flex;
-  align-items: center;
+.mod-card__details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  background: rgba(255, 193, 7, 0.1);
-  border: 1px solid rgba(255, 193, 7, 0.3);
-  border-radius: 6px;
-  color: var(--warning, #ffc107);
-  font-size: 0.875rem;
-  margin-bottom: 1rem;
+  margin: 1rem 0;
+  font-size: 0.85rem;
+}
+
+.mod-card__detail {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.mod-card__detail-label {
+  color: var(--text-muted);
 }
 
 .mod-card__actions {
   display: flex;
   gap: 0.5rem;
+  margin-top: 1rem;
 }
 
 /* Modal styles */
@@ -217,6 +220,10 @@ title: "Profile Moderation"
   justify-content: center;
 }
 
+.modal[hidden] {
+  display: none;
+}
+
 .modal__backdrop {
   position: absolute;
   inset: 0;
@@ -225,10 +232,10 @@ title: "Profile Moderation"
 
 .modal__content {
   position: relative;
-  background: var(--bg);
+  background: var(--surface);
   border-radius: 12px;
   width: 90%;
-  max-width: 600px;
+  max-width: 500px;
   max-height: 90vh;
   overflow: auto;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -238,12 +245,13 @@ title: "Profile Moderation"
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.5rem;
+  padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--border);
 }
 
 .modal__header h2 {
   margin: 0;
+  font-size: 1.1rem;
 }
 
 .modal__close {
@@ -251,16 +259,21 @@ title: "Profile Moderation"
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: var(--muted);
+  color: var(--text-muted);
   padding: 0.25rem;
+  line-height: 1;
+}
+
+.modal__close:hover {
+  color: var(--fg);
 }
 
 .modal__body {
-  padding: 1.5rem;
+  padding: 1.25rem;
 }
 
 .modal__footer {
-  padding: 1rem 1.5rem;
+  padding: 1rem 1.25rem;
   border-top: 1px solid var(--border);
 }
 
@@ -272,32 +285,45 @@ title: "Profile Moderation"
   display: block;
   font-weight: 500;
   margin-bottom: 0.5rem;
+  font-size: 0.9rem;
 }
 
 .modal__textarea {
   width: 100%;
   padding: 0.625rem;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--bg);
   color: var(--fg);
   min-height: 80px;
+  resize: vertical;
 }
 
 .modal__actions {
   display: flex;
   gap: 0.5rem;
   justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .btn--success {
-  background: var(--success, #28a745);
+  background: #28a745;
   color: white;
+  border-color: #28a745;
+}
+
+.btn--success:hover {
+  background: #218838;
 }
 
 .btn--danger {
-  background: var(--danger, #dc3545);
+  background: #dc3545;
   color: white;
+  border-color: #dc3545;
+}
+
+.btn--danger:hover {
+  background: #c82333;
 }
 
 .btn--small {
@@ -312,17 +338,27 @@ title: "Profile Moderation"
   
   .mod-card__header {
     flex-direction: column;
-    gap: 1rem;
   }
   
   .mod-card__meta {
     text-align: left;
+  }
+  
+  .modal__actions {
+    flex-direction: column;
+  }
+  
+  .modal__actions .btn {
+    width: 100%;
   }
 }
 </style>
 
 <script type="module">
 import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
+
+// Admin IDs - users who can access this page
+const ADMIN_IDS = ['gary-asher'];
 
 (async function() {
   const notAuthorized = document.getElementById('not-authorized');
@@ -345,40 +381,73 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
   let supabase = null;
   
   function showState(state) {
+    loadingState.hidden = state !== 'loading';
     notAuthorized.hidden = state !== 'not-authorized';
     modQueue.hidden = state !== 'queue';
-    loadingState.hidden = state !== 'loading';
   }
   
-  async function checkModeratorAccess() {
-    if (!supabase) return false;
+  /**
+   * Check if current user is an admin
+   */
+  function checkAdminAccess() {
+    const profile = CRCAuth.getProfile();
+    const metadata = CRCAuth.getProviderMetadata();
     
-    const { data, error } = await supabase
-      .from('moderators')
-      .select('id')
-      .eq('user_id', CRCAuth.getUser().id)
-      .single();
+    // Check by runner_id
+    if (profile?.runner_id) {
+      if (ADMIN_IDS.includes(profile.runner_id.toLowerCase())) {
+        return true;
+      }
+    }
     
-    return !!data && !error;
+    // Check by provider username (with hyphen/underscore flexibility)
+    if (metadata?.providerUsername) {
+      const username = metadata.providerUsername.toLowerCase();
+      for (const adminId of ADMIN_IDS) {
+        const variants = [
+          adminId,
+          adminId.replace(/-/g, '_'),
+          adminId.replace(/_/g, '-')
+        ];
+        if (variants.includes(username)) {
+          return true;
+        }
+      }
+    }
+    
+    return false;
   }
   
   async function loadQueue() {
+    if (!supabase) return;
+    
     queueList.innerHTML = '<p class="muted">Loading...</p>';
     
-    const { data, error } = await supabase
-      .from('moderation_queue')
-      .select('*');
-    
-    if (error) {
-      console.error('Error loading queue:', error);
-      queueList.innerHTML = '<p class="muted">Error loading queue.</p>';
-      return;
+    try {
+      // Load pending profiles
+      const { data, error } = await supabase
+        .from('pending_profiles')
+        .select('*')
+        .eq('status', 'pending')
+        .order('submitted_at', { ascending: true });
+      
+      if (error) throw error;
+      
+      pendingProfiles = data || [];
+      document.getElementById('pending-count').textContent = pendingProfiles.length;
+      
+      // Load total approved count
+      const { count: approvedCount } = await supabase
+        .from('runner_profiles')
+        .select('*', { count: 'exact', head: true });
+      
+      document.getElementById('approved-count').textContent = approvedCount || 0;
+      
+      renderQueue();
+    } catch (err) {
+      console.error('Error loading queue:', err);
+      queueList.innerHTML = `<p class="muted">Error loading queue: ${err.message}</p>`;
     }
-    
-    pendingProfiles = data || [];
-    document.getElementById('pending-count').textContent = pendingProfiles.length;
-    
-    renderQueue();
   }
   
   function renderQueue() {
@@ -395,47 +464,61 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
       <div class="mod-card" data-id="${profile.id}">
         <div class="mod-card__header">
           <div class="mod-card__user">
-            <img class="mod-card__avatar" src="${profile.provider_avatar_url || '/assets/img/site/default-runner.png'}" alt="" />
+            <img class="mod-card__avatar" src="/assets/img/site/default-runner.png" alt="" />
             <div>
               <p class="mod-card__name">${escapeHtml(profile.display_name)}</p>
               <p class="mod-card__id">@${escapeHtml(profile.requested_runner_id)}</p>
             </div>
           </div>
           <div class="mod-card__meta">
-            <span class="mod-card__provider mod-card__provider--${profile.provider || 'discord'}">${profile.provider || 'Unknown'}</span>
-            <p class="mod-card__date">${formatDate(profile.created_at)}</p>
+            <span class="mod-card__date">${formatDate(profile.submitted_at)}</span>
           </div>
         </div>
         
-        ${!profile.account_age_ok ? `
-          <div class="mod-card__warning">
-            ⚠️ Account is less than 30 days old
-          </div>
-        ` : ''}
+        ${profile.bio ? `<div class="mod-card__bio">${escapeHtml(profile.bio)}</div>` : ''}
         
-        ${profile.bio ? `
-          <div class="mod-card__bio">${escapeHtml(profile.bio)}</div>
-        ` : ''}
+        <div class="mod-card__details">
+          ${profile.pronouns ? `<div class="mod-card__detail"><span class="mod-card__detail-label">Pronouns:</span> ${escapeHtml(profile.pronouns)}</div>` : ''}
+          ${profile.location ? `<div class="mod-card__detail"><span class="mod-card__detail-label">Location:</span> ${escapeHtml(profile.location)}</div>` : ''}
+        </div>
         
         <div class="mod-card__actions">
-          <button type="button" class="btn btn--small btn--success" onclick="window.openReview('${profile.id}')">Review</button>
+          <button type="button" class="btn btn--small btn--success" onclick="window.approveDirectly('${profile.id}')">✓ Quick Approve</button>
+          <button type="button" class="btn btn--small" onclick="window.openReview('${profile.id}')">Review Details</button>
         </div>
       </div>
     `).join('');
   }
   
   function escapeHtml(str) {
+    if (!str) return '';
     const div = document.createElement('div');
-    div.textContent = str || '';
+    div.textContent = str;
     return div.innerHTML;
   }
   
   function formatDate(dateStr) {
     if (!dateStr) return '';
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   }
   
+  // Quick approve without modal
+  window.approveDirectly = async function(id) {
+    if (!confirm('Approve this profile?')) return;
+    
+    try {
+      const { error } = await supabase.rpc('approve_profile', { pending_id: id });
+      if (error) throw error;
+      
+      await loadQueue();
+    } catch (err) {
+      console.error('Approve error:', err);
+      alert('Error approving profile: ' + err.message);
+    }
+  };
+  
+  // Open review modal
   window.openReview = function(id) {
     const profile = pendingProfiles.find(p => p.id === id);
     if (!profile) return;
@@ -444,24 +527,34 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
     
     reviewContent.innerHTML = `
       <div class="mod-card__user" style="margin-bottom: 1rem;">
-        <img class="mod-card__avatar" src="${profile.provider_avatar_url || '/assets/img/site/default-runner.png'}" alt="" />
+        <img class="mod-card__avatar" src="/assets/img/site/default-runner.png" alt="" />
         <div>
           <p class="mod-card__name">${escapeHtml(profile.display_name)}</p>
           <p class="mod-card__id">@${escapeHtml(profile.requested_runner_id)}</p>
         </div>
       </div>
       
-      ${!profile.account_age_ok ? `
-        <div class="mod-card__warning">
-          ⚠️ Account is less than 30 days old (${profile.provider_username} on ${profile.provider})
+      <table style="width: 100%; font-size: 0.9rem; margin-bottom: 1rem;">
+        <tr><td style="color: var(--text-muted); padding: 0.25rem 0;">Submitted:</td><td>${formatDate(profile.submitted_at)}</td></tr>
+        ${profile.pronouns ? `<tr><td style="color: var(--text-muted); padding: 0.25rem 0;">Pronouns:</td><td>${escapeHtml(profile.pronouns)}</td></tr>` : ''}
+        ${profile.location ? `<tr><td style="color: var(--text-muted); padding: 0.25rem 0;">Location:</td><td>${escapeHtml(profile.location)}</td></tr>` : ''}
+      </table>
+      
+      ${profile.bio ? `
+        <div style="margin-bottom: 1rem;">
+          <strong style="font-size: 0.85rem; color: var(--text-muted);">Bio:</strong>
+          <div class="mod-card__bio">${escapeHtml(profile.bio)}</div>
         </div>
       ` : ''}
       
-      <table style="width: 100%; font-size: 0.9rem;">
-        <tr><td style="color: var(--muted);">Provider:</td><td>${profile.provider || 'Unknown'} (${profile.provider_username || 'N/A'})</td></tr>
-        <tr><td style="color: var(--muted);">Submitted:</td><td>${formatDate(profile.created_at)}</td></tr>
-        ${profile.bio ? `<tr><td style="color: var(--muted);">Bio:</td><td>${escapeHtml(profile.bio)}</td></tr>` : ''}
-      </table>
+      ${profile.socials && Object.keys(profile.socials).length > 0 ? `
+        <div>
+          <strong style="font-size: 0.85rem; color: var(--text-muted);">Social Links:</strong>
+          <ul style="margin: 0.5rem 0; padding-left: 1.5rem; font-size: 0.9rem;">
+            ${Object.entries(profile.socials).map(([key, val]) => `<li>${escapeHtml(key)}: ${escapeHtml(String(val))}</li>`).join('')}
+          </ul>
+        </div>
+      ` : ''}
     `;
     
     rejectSection.hidden = true;
@@ -481,11 +574,7 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
     approveBtn.textContent = 'Approving...';
     
     try {
-      const { data, error } = await supabase.rpc('approve_pending_profile', {
-        pending_id: currentReviewId,
-        moderator_id: CRCAuth.getUser().id
-      });
-      
+      const { error } = await supabase.rpc('approve_profile', { pending_id: currentReviewId });
       if (error) throw error;
       
       closeModal();
@@ -495,13 +584,14 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
       alert('Error approving profile: ' + err.message);
     } finally {
       approveBtn.disabled = false;
-      approveBtn.textContent = 'Approve';
+      approveBtn.textContent = '✓ Approve';
     }
   }
   
   async function rejectProfile() {
     if (!currentReviewId) return;
     
+    // First click shows the reason field
     if (rejectSection.hidden) {
       rejectSection.hidden = false;
       rejectReason.focus();
@@ -514,12 +604,10 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
     rejectBtn.textContent = 'Rejecting...';
     
     try {
-      const { data, error } = await supabase.rpc('reject_pending_profile', {
+      const { error } = await supabase.rpc('reject_profile', { 
         pending_id: currentReviewId,
-        moderator_id: CRCAuth.getUser().id,
         reason: reason || null
       });
-      
       if (error) throw error;
       
       closeModal();
@@ -529,7 +617,7 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
       alert('Error rejecting profile: ' + err.message);
     } finally {
       rejectBtn.disabled = false;
-      rejectBtn.textContent = 'Reject';
+      rejectBtn.textContent = '✗ Reject';
     }
   }
   
@@ -549,6 +637,7 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
   
   // Initialize
   try {
+    showState('loading');
     await CRCAuth.init();
     
     if (!CRCAuth.isSignedIn()) {
@@ -556,16 +645,25 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
       return;
     }
     
-    supabase = CRCAuth.getSupabaseClient();
+    // Check admin access
+    const isAdmin = checkAdminAccess();
+    console.log('[Admin] Access check:', { isAdmin });
     
-    const isMod = await checkModeratorAccess();
-    if (!isMod) {
+    if (!isAdmin) {
+      showState('not-authorized');
+      return;
+    }
+    
+    supabase = CRCAuth.getSupabaseClient();
+    if (!supabase) {
+      console.error('Supabase client not available');
       showState('not-authorized');
       return;
     }
     
     showState('queue');
     await loadQueue();
+    
   } catch (error) {
     console.error('Init error:', error);
     showState('not-authorized');
