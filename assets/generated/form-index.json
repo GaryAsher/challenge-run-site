@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-01-30T05:49:02.122Z",
+  "generated_at": "2026-01-30T07:48:50.783Z",
   "games": [
     {
       "game_id": "celeste",
@@ -957,6 +957,9 @@
     }
   ],
   "runners": [
+    {
+      "id": "_test-runner"
+    },
     {
       "id": "gary-asher"
     }
