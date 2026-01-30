@@ -1,0 +1,510 @@
+---
+layout: default
+title: "Edit Profile"
+---
+
+<div class="page-width">
+  <p class="muted mb-3">
+    <a href="javascript:history.back()">← Back</a>
+  </p>
+
+  <div class="profile-edit">
+    <!-- Loading state -->
+    <div id="loading-state" class="card">
+      <div class="sign-in-loading">
+        <div class="spinner"></div>
+        <p class="muted">Loading profile...</p>
+      </div>
+    </div>
+
+    <!-- Not signed in -->
+    <div id="not-signed-in" class="card" hidden>
+      <h1>Edit Profile</h1>
+      <p class="muted">You need to sign in to edit your profile.</p>
+      <a href="{{ '/sign-in/' | relative_url }}" class="btn btn--primary">Sign In</a>
+    </div>
+
+    <!-- No profile yet -->
+    <div id="no-profile" class="card" hidden>
+      <h1>No Profile Found</h1>
+      <p class="muted">You haven't created a runner profile yet.</p>
+      <a href="{{ '/profile/create/' | relative_url }}" class="btn btn--primary">Create Profile</a>
+    </div>
+
+    <!-- Edit form -->
+    <div id="edit-content" hidden>
+      <h1>Edit Profile</h1>
+      <p class="muted mb-4">Update your runner profile information. Changes are saved to the database and will sync to the site.</p>
+      
+      <form id="profile-form" class="profile-form">
+        <!-- Basic Info -->
+        <div class="card mb-4">
+          <h2>👤 Basic Info</h2>
+          
+          <div class="form-group">
+            <label class="form-label">Runner ID</label>
+            <input type="text" id="runner-id" class="form-input" disabled />
+            <p class="form-help">Your unique identifier (cannot be changed)</p>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="display-name">Display Name *</label>
+            <input type="text" id="display-name" name="display_name" class="form-input" required maxlength="50" />
+            <p class="form-help">The name shown on your profile</p>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="bio">Bio</label>
+            <textarea id="bio" name="bio" class="form-textarea" rows="4" maxlength="500" placeholder="Tell others about yourself and your challenge run journey..."></textarea>
+            <p class="form-help"><span id="bio-count">0</span>/500 characters</p>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="status">Status</label>
+            <input type="text" id="status" name="status" class="form-input" maxlength="100" placeholder="e.g., Currently running Hollow Knight hitless" />
+            <p class="form-help">A short status message shown on your profile</p>
+          </div>
+        </div>
+        
+        <!-- Social Links -->
+        <div class="card mb-4">
+          <h2>🔗 Social Links</h2>
+          <p class="muted mb-3">Add links to your streaming and social accounts.</p>
+          
+          <div class="form-group">
+            <label class="form-label" for="twitch">Twitch</label>
+            <input type="url" id="twitch" name="twitch" class="form-input" placeholder="https://twitch.tv/username" />
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="youtube">YouTube</label>
+            <input type="url" id="youtube" name="youtube" class="form-input" placeholder="https://youtube.com/@channel" />
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="discord">Discord</label>
+            <input type="url" id="discord" name="discord" class="form-input" placeholder="https://discord.gg/invite" />
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="twitter">Twitter/X</label>
+            <input type="url" id="twitter" name="twitter" class="form-input" placeholder="https://twitter.com/username" />
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="bluesky">Bluesky</label>
+            <input type="url" id="bluesky" name="bluesky" class="form-input" placeholder="https://bsky.app/profile/username" />
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="website">Personal Website</label>
+            <input type="url" id="website" name="website" class="form-input" placeholder="https://yoursite.com" />
+          </div>
+        </div>
+        
+        <!-- Featured Runs -->
+        <div class="card mb-4">
+          <h2>⭐ Featured Runs</h2>
+          <p class="muted mb-3">Select up to 3 runs to feature prominently on your profile.</p>
+          
+          <div id="featured-runs-list" class="featured-runs-list">
+            <p class="muted">Loading your runs...</p>
+          </div>
+          
+          <input type="hidden" id="featured-runs" name="featured_runs" value="[]" />
+        </div>
+        
+        <!-- Submit -->
+        <div class="form-actions">
+          <button type="submit" class="btn btn--primary" id="save-btn">
+            Save Changes
+          </button>
+          <a href="/profile/settings/" class="btn">Cancel</a>
+        </div>
+        
+        <div id="form-message" class="form-message" hidden></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% include profile-form-styles.html %}
+
+<style>
+.profile-edit {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--fg);
+  font-size: 1rem;
+  transition: border-color 0.15s ease;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.form-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-help {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 0.35rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.form-message {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+}
+
+.form-message.is-success {
+  background: rgba(40, 167, 69, 0.1);
+  color: #28a745;
+  border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+.form-message.is-error {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+  border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+/* Featured Runs */
+.featured-runs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.featured-run-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.featured-run-item:hover {
+  border-color: var(--accent);
+}
+
+.featured-run-item.is-selected {
+  border-color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.1);
+}
+
+.featured-run-item__checkbox {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.featured-run-item__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.featured-run-item__game {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.featured-run-item__details {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.featured-run-item__order {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent);
+  min-width: 20px;
+  text-align: center;
+}
+
+.no-runs-message {
+  padding: 1rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+</style>
+
+<script type="module">
+import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
+
+const loadingState = document.getElementById('loading-state');
+const notSignedIn = document.getElementById('not-signed-in');
+const noProfile = document.getElementById('no-profile');
+const editContent = document.getElementById('edit-content');
+const form = document.getElementById('profile-form');
+const formMessage = document.getElementById('form-message');
+
+let supabase = null;
+let currentProfile = null;
+let userRuns = [];
+let selectedFeatured = [];
+
+function showState(state) {
+  loadingState.hidden = state !== 'loading';
+  notSignedIn.hidden = state !== 'not-signed-in';
+  noProfile.hidden = state !== 'no-profile';
+  editContent.hidden = state !== 'edit';
+}
+
+function showMessage(text, type) {
+  formMessage.textContent = text;
+  formMessage.className = `form-message is-${type}`;
+  formMessage.hidden = false;
+  formMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function hideMessage() {
+  formMessage.hidden = true;
+}
+
+// Bio character counter
+document.getElementById('bio').addEventListener('input', (e) => {
+  document.getElementById('bio-count').textContent = e.target.value.length;
+});
+
+// Load user's runs for featured selection
+async function loadUserRuns(runnerId) {
+  const listEl = document.getElementById('featured-runs-list');
+  
+  try {
+    // Fetch runs from the Jekyll site data (they're in _runs/)
+    // For now, we'll use Supabase if available, or show a placeholder
+    const { data, error } = await supabase
+      .from('runs')
+      .select('id, game_id, category, date_completed, time, video_url')
+      .eq('runner_id', runnerId)
+      .order('date_completed', { ascending: false })
+      .limit(20);
+    
+    if (error) {
+      // Fallback: runs might not be in Supabase yet
+      listEl.innerHTML = `
+        <div class="no-runs-message">
+          <p>Run data sync coming soon!</p>
+          <p class="muted">Your completed runs will appear here once the sync is set up.</p>
+        </div>
+      `;
+      return;
+    }
+    
+    userRuns = data || [];
+    
+    if (userRuns.length === 0) {
+      listEl.innerHTML = `
+        <div class="no-runs-message">
+          <p>No completed runs yet.</p>
+          <p class="muted">Submit some runs to feature them on your profile!</p>
+        </div>
+      `;
+      return;
+    }
+    
+    renderRunsList();
+  } catch (err) {
+    listEl.innerHTML = `<p class="muted">Could not load runs.</p>`;
+  }
+}
+
+function renderRunsList() {
+  const listEl = document.getElementById('featured-runs-list');
+  
+  listEl.innerHTML = userRuns.map(run => {
+    const isSelected = selectedFeatured.includes(run.id);
+    const orderNum = isSelected ? selectedFeatured.indexOf(run.id) + 1 : '';
+    
+    return `
+      <label class="featured-run-item ${isSelected ? 'is-selected' : ''}" data-run-id="${run.id}">
+        <input type="checkbox" class="featured-run-item__checkbox" 
+               ${isSelected ? 'checked' : ''} 
+               ${!isSelected && selectedFeatured.length >= 3 ? 'disabled' : ''} />
+        <div class="featured-run-item__info">
+          <div class="featured-run-item__game">${run.game_id}</div>
+          <div class="featured-run-item__details">
+            ${run.category || 'Any%'} · ${run.time || 'No time'} · ${run.date_completed || ''}
+          </div>
+        </div>
+        <span class="featured-run-item__order">${orderNum}</span>
+      </label>
+    `;
+  }).join('');
+  
+  // Add event listeners
+  listEl.querySelectorAll('.featured-run-item').forEach(item => {
+    const checkbox = item.querySelector('input');
+    const runId = item.dataset.runId;
+    
+    checkbox.addEventListener('change', () => {
+      if (checkbox.checked) {
+        if (selectedFeatured.length < 3) {
+          selectedFeatured.push(runId);
+        }
+      } else {
+        selectedFeatured = selectedFeatured.filter(id => id !== runId);
+      }
+      
+      document.getElementById('featured-runs').value = JSON.stringify(selectedFeatured);
+      renderRunsList();
+    });
+  });
+}
+
+// Populate form with current profile data
+function populateForm(profile) {
+  document.getElementById('runner-id').value = profile.runner_id || '';
+  document.getElementById('display-name').value = profile.display_name || '';
+  document.getElementById('bio').value = profile.bio || '';
+  document.getElementById('status').value = profile.status || '';
+  
+  // Update bio counter
+  document.getElementById('bio-count').textContent = (profile.bio || '').length;
+  
+  // Social links (handle both flat and nested formats)
+  const socials = profile.socials || {};
+  document.getElementById('twitch').value = socials.twitch || profile.twitch || '';
+  document.getElementById('youtube').value = socials.youtube || profile.youtube || '';
+  document.getElementById('discord').value = socials.discord || profile.discord || '';
+  document.getElementById('twitter').value = socials.twitter || profile.twitter || '';
+  document.getElementById('bluesky').value = socials.bluesky || profile.bluesky || '';
+  document.getElementById('website').value = socials.website || profile.personal_website || '';
+  
+  // Featured runs
+  selectedFeatured = profile.featured_runs || [];
+  document.getElementById('featured-runs').value = JSON.stringify(selectedFeatured);
+}
+
+// Handle form submission
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  hideMessage();
+  
+  const saveBtn = document.getElementById('save-btn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving...';
+  
+  try {
+    const formData = {
+      display_name: document.getElementById('display-name').value.trim(),
+      bio: document.getElementById('bio').value.trim() || null,
+      status: document.getElementById('status').value.trim() || null,
+      socials: {
+        twitch: document.getElementById('twitch').value.trim() || null,
+        youtube: document.getElementById('youtube').value.trim() || null,
+        discord: document.getElementById('discord').value.trim() || null,
+        twitter: document.getElementById('twitter').value.trim() || null,
+        bluesky: document.getElementById('bluesky').value.trim() || null,
+        website: document.getElementById('website').value.trim() || null
+      },
+      featured_runs: selectedFeatured,
+      updated_at: new Date().toISOString()
+    };
+    
+    // Validate
+    if (!formData.display_name) {
+      throw new Error('Display name is required');
+    }
+    
+    // Update profile in Supabase
+    const user = CRCAuth.getUser();
+    const { error } = await supabase
+      .from('runner_profiles')
+      .update(formData)
+      .eq('user_id', user.id);
+    
+    if (error) throw error;
+    
+    showMessage('Profile saved successfully!', 'success');
+    
+    // Refresh auth state to get updated profile
+    await CRCAuth.init();
+    
+  } catch (err) {
+    showMessage(`Error: ${err.message}`, 'error');
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save Changes';
+  }
+});
+
+// Initialize
+(async function() {
+  showState('loading');
+  
+  await CRCAuth.init();
+  
+  if (!CRCAuth.isSignedIn()) {
+    showState('not-signed-in');
+    return;
+  }
+  
+  supabase = CRCAuth.getSupabaseClient();
+  if (!supabase) {
+    showMessage('Could not initialize database connection', 'error');
+    showState('not-signed-in');
+    return;
+  }
+  
+  // Get profile from Supabase
+  const user = CRCAuth.getUser();
+  const { data: profile, error } = await supabase
+    .from('runner_profiles')
+    .select('*')
+    .eq('user_id', user.id)
+    .single();
+  
+  if (error || !profile) {
+    showState('no-profile');
+    return;
+  }
+  
+  currentProfile = profile;
+  populateForm(profile);
+  
+  // Load user's runs for featured selection
+  if (profile.runner_id) {
+    loadUserRuns(profile.runner_id);
+  }
+  
+  showState('edit');
+})();
+</script>

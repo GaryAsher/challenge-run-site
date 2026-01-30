@@ -9,9 +9,10 @@ on:
       - '_runners/*.md'
 
 # CRITICAL: Prevent race conditions - only one regeneration at a time
+# cancel-in-progress: true means new runs cancel old ones (batch effect)
 concurrency:
   group: auto-regenerate
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 permissions:
   contents: write
@@ -21,11 +22,19 @@ jobs:
   regenerate:
     name: Regenerate Pages
     runs-on: ubuntu-latest
+    
+    # Add a small delay to allow multiple rapid commits to batch together
+    # The concurrency cancel-in-progress will cancel earlier runs
     steps:
+      - name: Wait for batching
+        run: sleep 10
+        
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # Use latest main (in case other commits came in during the wait)
+          ref: main
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -75,15 +84,17 @@ jobs:
             echo "has_changes=false" >> $GITHUB_OUTPUT
           fi
 
-      # Create PR instead of pushing directly (respects branch protection)
-      - name: Create Pull Request
+      # FIXED BRANCH NAME = One PR that gets updated, not multiple PRs
+      - name: Create or Update Pull Request
         if: steps.changes.outputs.has_changes == 'true'
         uses: peter-evans/create-pull-request@v6
         id: cpr
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "chore: Regenerate pages [auto]"
-          branch: auto-regenerate/${{ github.sha }}
+          # FIXED branch name - this is the key change!
+          # New runs will UPDATE this branch/PR instead of creating new ones
+          branch: auto/regenerate-pages
           delete-branch: true
           title: "🔄 Auto-regenerate pages"
           body: |
@@ -91,25 +102,30 @@ jobs:
 
             This PR was automatically created because source files changed that require page regeneration.
 
-            **Triggered by:** ${{ github.event.head_commit.message }}
+            **Latest trigger:** ${{ github.event.head_commit.message }}
             **Commit:** ${{ github.sha }}
 
-            ### What changed
+            ### What's included
             - Game pages regenerated from `_games/*.md`
             - Run category pages updated
             - Form index rebuilt
             - CODEOWNERS updated
 
             ---
+            ℹ️ **Batching:** Multiple rapid commits are batched into this single PR.
+            
             *This PR can be auto-merged if all checks pass.*
           labels: |
             automated
             regenerate
+          # Update existing PR if the branch already exists
+          update-operation: update
 
       - name: Enable Auto-Merge
         if: steps.changes.outputs.has_changes == 'true' && steps.cpr.outputs.pull-request-number
         run: |
-          gh pr merge ${{ steps.cpr.outputs.pull-request-number }} --auto --squash
+          # Only try to enable auto-merge if PR was created/updated
+          gh pr merge ${{ steps.cpr.outputs.pull-request-number }} --auto --squash || true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -117,10 +133,12 @@ jobs:
         run: |
           echo "## Auto-Regenerate Summary" >> $GITHUB_STEP_SUMMARY
           if [[ "${{ steps.changes.outputs.has_changes }}" == "true" ]]; then
-            echo "✅ Created PR #${{ steps.cpr.outputs.pull-request-number }}" >> $GITHUB_STEP_SUMMARY
+            echo "✅ Created/Updated PR #${{ steps.cpr.outputs.pull-request-number }}" >> $GITHUB_STEP_SUMMARY
             echo "🔗 ${{ steps.cpr.outputs.pull-request-url }}" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "Auto-merge enabled - PR will merge when checks pass." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Tip:** Multiple rapid commits batch into the same PR." >> $GITHUB_STEP_SUMMARY
           else
             echo "✅ No changes needed" >> $GITHUB_STEP_SUMMARY
           fi
