@@ -7,6 +7,7 @@
 # =============================================================================
 
 game_id: "_test-game"
+reviewers: []
 game_name: "Test Game (Dev Only)"
 game_name_short: "Test Game"
 game_name_aliases:

@@ -18,6 +18,10 @@
 /_runs/rejected/*/ @GaryAsher
 
 # Per-game ownership (strict routing)
+/_queue_runs/_test-game/ @GaryAsher
+/_runs/_test-game/ @GaryAsher
+/_runs/rejected/_test-game/ @GaryAsher
+
 /_queue_runs/celeste/ @GaryAsher
 /_runs/celeste/ @GaryAsher
 /_runs/rejected/celeste/ @GaryAsher
@@ -33,10 +37,6 @@
 /_queue_runs/hollow-knight/ @GaryAsher
 /_runs/hollow-knight/ @GaryAsher
 /_runs/rejected/hollow-knight/ @GaryAsher
-
-/_queue_runs/test-game/ gary-asher @GaryAsher
-/_runs/test-game/ gary-asher @GaryAsher
-/_runs/rejected/test-game/ gary-asher @GaryAsher
 
 /_queue_runs/the-legend-of-zelda-ocarina-of-time/ @GaryAsher
 /_runs/the-legend-of-zelda-ocarina-of-time/ @GaryAsher
