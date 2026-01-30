@@ -10,7 +10,7 @@ layout: default
      ORDERING (per spec):
      1. Game Description (content) - or placeholder if empty
      2. General Rules (default + game-specific)
-     3. Standard Challenge Types
+     3. Challenges
      4. Optional Restrictions
      5. Glitch Categories
      6. Credits (if present)
@@ -75,9 +75,7 @@ layout: default
           <p class="muted mb-3">Challenges tracked for this game:</p>
           <div class="accordion">
             {% for ch in page.challenges_data %}
-              {% comment %}
-                If the game's challenge has no description, fall back to global _data/challenges.yml
-              {% endcomment %}
+              <!-- If the game's challenge has no description, fall back to global _data/challenges.yml -->
               {% assign ch_desc = ch.description %}
               {% if ch_desc == nil or ch_desc == "" or ch_desc == blank %}
                 {% assign global_challenge = site.data.challenges[ch.slug] %}
@@ -193,9 +191,7 @@ layout: default
             <p class="muted mb-3">Rules for glitches and exploits in runs:</p>
             <div class="accordion">
               {% for gl in page.glitches_data %}
-                {% comment %}
-                  If the game's glitch has no description, fall back to global _data/default-rules.yml
-                {% endcomment %}
+                <!-- If the game's glitch has no description, fall back to global _data/default-rules.yml -->
                 {% assign gl_desc = gl.description %}
                 {% if gl_desc == nil or gl_desc == "" or gl_desc == blank %}
                   {% assign global_glitch = site.data.default-rules.glitches[gl.slug] %}
@@ -263,10 +259,6 @@ layout: default
           <p class="muted">No credits listed yet.</p>
         {% endif %}
       </div>
-
-      <!-- Note: Community Challenges are NOT shown on Overview page per spec -->
-      <!-- They appear only on the Rules page -->
-
     </section>
 
   </div>
