@@ -197,46 +197,70 @@ title: "Site Health"
       </div>
     </div>
     
-    <!-- Pending Queue Section -->
+    <!-- Resource Usage - Visual Bars like Dashboard -->
     <div class="card mt-4">
-      <h2>📬 Pending Queues</h2>
-      <p class="muted mb-3">Items awaiting moderator approval.</p>
+      <h2>📊 Resource Usage</h2>
+      <p class="muted mb-3">Estimated usage against Supabase free tier limits.</p>
       
-      <div class="queue-grid">
-        <div class="queue-card">
-          <div class="queue-card__icon">👤</div>
-          <div class="queue-card__info">
-            <span class="queue-card__count" id="queue-profiles">-</span>
-            <span class="queue-card__label">Pending Profiles</span>
+      <div class="resource-usage-grid">
+        <div class="resource-usage-card">
+          <div class="resource-usage-card__header">
+            <span class="resource-usage-card__icon">📝</span>
+            <div class="resource-usage-card__info">
+              <span class="resource-usage-card__title">Database Rows</span>
+              <span class="resource-usage-card__value" id="resource-rows-value">0</span>
+            </div>
+            <span class="resource-usage-card__limit">/ 100,000</span>
           </div>
-          <a href="{{ '/admin/profiles/' | relative_url }}" class="queue-card__link">Review →</a>
+          <div class="resource-usage-card__bar">
+            <div class="resource-usage-card__fill" id="resource-rows-bar" style="width: 0%"></div>
+          </div>
+          <span class="resource-usage-card__percent" id="resource-rows-percent">0%</span>
         </div>
         
-        <div class="queue-card">
-          <div class="queue-card__icon">🏃</div>
-          <div class="queue-card__info">
-            <span class="queue-card__count" id="queue-runs">-</span>
-            <span class="queue-card__label">Pending Runs</span>
+        <div class="resource-usage-card">
+          <div class="resource-usage-card__header">
+            <span class="resource-usage-card__icon">💾</span>
+            <div class="resource-usage-card__info">
+              <span class="resource-usage-card__title">Database Size</span>
+              <span class="resource-usage-card__value" id="resource-size-value">0 MB</span>
+            </div>
+            <span class="resource-usage-card__limit">/ 500 MB</span>
           </div>
-          <a href="{{ '/admin/runs/' | relative_url }}" class="queue-card__link">Review →</a>
+          <div class="resource-usage-card__bar">
+            <div class="resource-usage-card__fill" id="resource-size-bar" style="width: 0%"></div>
+          </div>
+          <span class="resource-usage-card__percent" id="resource-size-percent">0%</span>
         </div>
         
-        <div class="queue-card">
-          <div class="queue-card__icon">🎮</div>
-          <div class="queue-card__info">
-            <span class="queue-card__count" id="queue-games">-</span>
-            <span class="queue-card__label">Pending Games</span>
+        <div class="resource-usage-card">
+          <div class="resource-usage-card__header">
+            <span class="resource-usage-card__icon">👥</span>
+            <div class="resource-usage-card__info">
+              <span class="resource-usage-card__title">Auth Users</span>
+              <span class="resource-usage-card__value" id="resource-users-value">0</span>
+            </div>
+            <span class="resource-usage-card__limit">/ 50,000</span>
           </div>
-          <a href="{{ '/admin/games/' | relative_url }}" class="queue-card__link">Review →</a>
+          <div class="resource-usage-card__bar">
+            <div class="resource-usage-card__fill" id="resource-users-bar" style="width: 0%"></div>
+          </div>
+          <span class="resource-usage-card__percent" id="resource-users-percent">0%</span>
         </div>
         
-        <div class="queue-card">
-          <div class="queue-card__icon">🚨</div>
-          <div class="queue-card__info">
-            <span class="queue-card__count" id="queue-reports">-</span>
-            <span class="queue-card__label">Open Reports</span>
+        <div class="resource-usage-card">
+          <div class="resource-usage-card__header">
+            <span class="resource-usage-card__icon">🗂️</span>
+            <div class="resource-usage-card__info">
+              <span class="resource-usage-card__title">File Storage</span>
+              <span class="resource-usage-card__value" id="resource-storage-value">0 MB</span>
+            </div>
+            <span class="resource-usage-card__limit">/ 1 GB</span>
           </div>
-          <a href="{{ '/admin/users/' | relative_url }}" class="queue-card__link">Review →</a>
+          <div class="resource-usage-card__bar">
+            <div class="resource-usage-card__fill" id="resource-storage-bar" style="width: 0%"></div>
+          </div>
+          <span class="resource-usage-card__percent" id="resource-storage-percent">0%</span>
         </div>
       </div>
     </div>
@@ -269,52 +293,12 @@ title: "Site Health"
           </div>
         </div>
       </div>
-    </div>
-    
-    <!-- Resource Usage -->
-    <div class="card mt-4">
-      <h2>📊 Resource Usage</h2>
-      <p class="muted mb-3">Estimated usage against Supabase free tier limits.</p>
       
-      <div class="resource-bars">
-        <div class="resource-bar">
-          <div class="resource-bar__header">
-            <span class="resource-bar__label">Database Rows</span>
-            <span class="resource-bar__value" id="resource-rows">0 / 100,000</span>
-          </div>
-          <div class="resource-bar__track">
-            <div class="resource-bar__fill" id="resource-rows-bar" style="width: 0%"></div>
-          </div>
-        </div>
-        
-        <div class="resource-bar">
-          <div class="resource-bar__header">
-            <span class="resource-bar__label">Database Size</span>
-            <span class="resource-bar__value" id="resource-size">0 MB / 500 MB</span>
-          </div>
-          <div class="resource-bar__track">
-            <div class="resource-bar__fill" id="resource-size-bar" style="width: 0%"></div>
-          </div>
-        </div>
-        
-        <div class="resource-bar">
-          <div class="resource-bar__header">
-            <span class="resource-bar__label">Auth Users</span>
-            <span class="resource-bar__value" id="resource-users">0 / 50,000</span>
-          </div>
-          <div class="resource-bar__track">
-            <div class="resource-bar__fill" id="resource-users-bar" style="width: 0%"></div>
-          </div>
-        </div>
-        
-        <div class="resource-bar">
-          <div class="resource-bar__header">
-            <span class="resource-bar__label">Storage</span>
-            <span class="resource-bar__value" id="resource-storage">0 MB / 1 GB</span>
-          </div>
-          <div class="resource-bar__track">
-            <div class="resource-bar__fill" id="resource-storage-bar" style="width: 0%"></div>
-          </div>
+      <!-- API Performance Report -->
+      <div class="api-perf-report mt-3">
+        <h3>📄 Performance Report</h3>
+        <div class="api-perf-report__content" id="api-perf-report">
+          <p class="muted">Waiting for performance data...</p>
         </div>
       </div>
     </div>
@@ -612,34 +596,119 @@ title: "Site Health"
   font-weight: 600;
 }
 
-/* Resource Bars */
-.resource-bars { display: flex; flex-direction: column; gap: 1.25rem; }
-
-.resource-bar__header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
+/* API Performance Report */
+.api-perf-report {
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
 }
 
-.resource-bar__label { font-size: 0.9rem; }
-.resource-bar__value { font-size: 0.85rem; color: var(--text-muted); }
+.api-perf-report h3 {
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+}
 
-.resource-bar__track {
+.api-perf-report__content {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.api-perf-report__content p {
+  margin: 0 0 0.5rem 0;
+}
+
+.api-perf-report__content p:last-child {
+  margin-bottom: 0;
+}
+
+.report-good { color: #10b981; }
+.report-warn { color: #f59e0b; }
+.report-bad { color: #ef4444; }
+
+/* Resource Usage Cards - Dashboard Style */
+.resource-usage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.resource-usage-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+}
+
+.resource-usage-card__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.resource-usage-card__icon {
+  font-size: 1.25rem;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+}
+
+.resource-usage-card__info {
+  flex: 1;
+}
+
+.resource-usage-card__title {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.15rem;
+}
+
+.resource-usage-card__value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--fg);
+}
+
+.resource-usage-card__limit {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.resource-usage-card__bar {
   height: 8px;
   background: var(--bg);
   border-radius: 4px;
   overflow: hidden;
+  margin-bottom: 0.5rem;
 }
 
-.resource-bar__fill {
+.resource-usage-card__fill {
   height: 100%;
-  background: var(--accent);
+  background: linear-gradient(90deg, var(--accent), #8b5cf6);
   border-radius: 4px;
   transition: width 0.5s ease;
 }
 
-.resource-bar__fill.warn { background: #f59e0b; }
-.resource-bar__fill.danger { background: #ef4444; }
+.resource-usage-card__fill.warn {
+  background: linear-gradient(90deg, #f59e0b, #f97316);
+}
+
+.resource-usage-card__fill.danger {
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+.resource-usage-card__percent {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
 
 /* Log Filters */
 .log-filters {
@@ -656,6 +725,7 @@ title: "Site Health"
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.15s ease;
+  color: var(--fg);
 }
 
 .log-filter:hover { border-color: var(--accent); }
@@ -699,6 +769,27 @@ title: "Site Health"
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+}
+
+/* Button fixes for admin pages */
+.btn {
+  color: var(--fg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.btn:hover {
+  border-color: var(--accent);
+}
+
+.btn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.btn--primary:hover {
+  opacity: 0.9;
 }
 </style>
 
@@ -925,72 +1016,10 @@ async function checkHealth() {
   }
   time.textContent = 'Last checked: ' + new Date().toLocaleTimeString();
   
-  // Load resource usage and queues
+  // Load resource usage
   await loadResources();
-  await loadQueues();
   updateApiPerfChart();
-}
-
-async function loadQueues() {
-  if (!supabase) return;
-  
-  try {
-    // Pending profiles
-    const { result: pendingResult, latency: l1 } = await timedQuery(
-      () => supabase.from('pending_profiles').select('*', { count: 'exact', head: true }),
-      'pending_profiles'
-    );
-    const pendingProfiles = pendingResult?.count || 0;
-    const queueProfiles = document.getElementById('queue-profiles');
-    queueProfiles.textContent = pendingProfiles;
-    if (pendingProfiles > 0) queueProfiles.classList.add('has-items');
-    
-    // Pending runs (check if table exists)
-    try {
-      const { result: runsResult } = await timedQuery(
-        () => supabase.from('pending_runs').select('*', { count: 'exact', head: true }),
-        'pending_runs'
-      );
-      const pendingRuns = runsResult?.count || 0;
-      const queueRuns = document.getElementById('queue-runs');
-      queueRuns.textContent = pendingRuns;
-      if (pendingRuns > 0) queueRuns.classList.add('has-items');
-    } catch {
-      document.getElementById('queue-runs').textContent = '0';
-    }
-    
-    // Pending games
-    try {
-      const { result: gamesResult } = await timedQuery(
-        () => supabase.from('pending_games').select('*', { count: 'exact', head: true }),
-        'pending_games'
-      );
-      const pendingGames = gamesResult?.count || 0;
-      const queueGames = document.getElementById('queue-games');
-      queueGames.textContent = pendingGames;
-      if (pendingGames > 0) queueGames.classList.add('has-items');
-    } catch {
-      document.getElementById('queue-games').textContent = '0';
-    }
-    
-    // Reports
-    try {
-      const { result: reportsResult } = await timedQuery(
-        () => supabase.from('reports').select('*', { count: 'exact', head: true }).eq('status', 'open'),
-        'reports'
-      );
-      const openReports = reportsResult?.count || 0;
-      const queueReports = document.getElementById('queue-reports');
-      queueReports.textContent = openReports;
-      if (openReports > 0) queueReports.classList.add('has-items');
-    } catch {
-      document.getElementById('queue-reports').textContent = '0';
-    }
-    
-    log('Queue counts loaded', 'success');
-  } catch (e) {
-    log('Failed to load queues: ' + e.message, 'error');
-  }
+  updatePerformanceReport();
 }
 
 async function loadResources() {
@@ -1013,32 +1042,42 @@ async function loadResources() {
     const totalRows = profiles + pending;
     const rowPercent = (totalRows / 100000) * 100;
     
-    document.getElementById('resource-rows').textContent = `${totalRows.toLocaleString()} / 100,000`;
+    // Update Resource Usage Cards
+    document.getElementById('resource-rows-value').textContent = totalRows.toLocaleString();
+    document.getElementById('resource-rows-percent').textContent = rowPercent.toFixed(1) + '%';
     const rowsBar = document.getElementById('resource-rows-bar');
     rowsBar.style.width = Math.min(rowPercent, 100) + '%';
+    rowsBar.classList.remove('warn', 'danger');
     if (rowPercent > 80) rowsBar.classList.add('danger');
     else if (rowPercent > 50) rowsBar.classList.add('warn');
     
-    // Estimates
+    // Database Size Estimate
     const sizeEst = Math.round(totalRows * 0.002);
     const sizePercent = (sizeEst / 500) * 100;
-    document.getElementById('resource-size').textContent = `~${sizeEst} MB / 500 MB`;
+    document.getElementById('resource-size-value').textContent = `~${sizeEst} MB`;
+    document.getElementById('resource-size-percent').textContent = sizePercent.toFixed(1) + '%';
     const sizeBar = document.getElementById('resource-size-bar');
     sizeBar.style.width = Math.min(sizePercent, 100) + '%';
+    sizeBar.classList.remove('warn', 'danger');
     if (sizePercent > 80) sizeBar.classList.add('danger');
     else if (sizePercent > 50) sizeBar.classList.add('warn');
     
+    // Auth Users
     const usersPercent = (profiles / 50000) * 100;
-    document.getElementById('resource-users').textContent = `${profiles} / 50,000`;
+    document.getElementById('resource-users-value').textContent = profiles.toLocaleString();
+    document.getElementById('resource-users-percent').textContent = usersPercent.toFixed(2) + '%';
     const usersBar = document.getElementById('resource-users-bar');
     usersBar.style.width = Math.min(usersPercent, 100) + '%';
+    usersBar.classList.remove('warn', 'danger');
     if (usersPercent > 80) usersBar.classList.add('danger');
     else if (usersPercent > 50) usersBar.classList.add('warn');
     
     // Active users (24h) - estimate from profiles with recent activity
     document.getElementById('stat-users-24h').textContent = profiles > 0 ? Math.ceil(profiles * 0.1) : '0';
     
-    document.getElementById('resource-storage').textContent = `~0 MB / 1 GB`;
+    // Storage
+    document.getElementById('resource-storage-value').textContent = '~0 MB';
+    document.getElementById('resource-storage-percent').textContent = '0%';
     document.getElementById('resource-storage-bar').style.width = '0%';
     
     log('Resource usage loaded', 'success');
@@ -1046,6 +1085,58 @@ async function loadResources() {
   } catch (e) {
     log('Failed to load resources: ' + e.message, 'error');
   }
+}
+
+function updatePerformanceReport() {
+  const reportEl = document.getElementById('api-perf-report');
+  if (!reportEl) return;
+  
+  if (apiResponseTimes.length < 3) {
+    reportEl.innerHTML = '<p class="muted">Collecting performance data... (need at least 3 queries)</p>';
+    return;
+  }
+  
+  const times = apiResponseTimes.map(r => r.latency);
+  const avg = Math.round(times.reduce((a, b) => a + b, 0) / times.length);
+  const max = Math.max(...times);
+  const min = Math.min(...times);
+  const slowQueries = times.filter(t => t > 200).length;
+  const verySlowQueries = times.filter(t => t > 500).length;
+  
+  let healthStatus = 'good';
+  let healthClass = 'report-good';
+  let healthText = '✅ Excellent';
+  
+  if (avg > 300 || verySlowQueries > 0) {
+    healthStatus = 'bad';
+    healthClass = 'report-bad';
+    healthText = '❌ Poor';
+  } else if (avg > 150 || slowQueries > 2) {
+    healthStatus = 'warn';
+    healthClass = 'report-warn';
+    healthText = '⚠️ Fair';
+  }
+  
+  let report = `
+    <p><strong>Performance Rating:</strong> <span class="${healthClass}">${healthText}</span></p>
+    <p><strong>Summary:</strong> Average response time is ${avg}ms across ${times.length} queries.</p>
+  `;
+  
+  if (slowQueries > 0) {
+    report += `<p><span class="report-warn">⚠️</span> ${slowQueries} queries took longer than 200ms.</p>`;
+  }
+  
+  if (verySlowQueries > 0) {
+    report += `<p><span class="report-bad">❌</span> ${verySlowQueries} queries took longer than 500ms. Consider checking database indexes or network latency.</p>`;
+  }
+  
+  if (healthStatus === 'good') {
+    report += `<p><span class="report-good">✅</span> All queries are performing within acceptable limits.</p>`;
+  }
+  
+  report += `<p class="muted" style="margin-top: 0.5rem; font-size: 0.8rem;">Range: ${min}ms - ${max}ms | Queries analyzed: ${times.length}</p>`;
+  
+  reportEl.innerHTML = report;
 }
 
 // Log filtering
