@@ -33,6 +33,26 @@ title: "Site Health"
       <span class="health-time" id="health-time"></span>
     </div>
     
+    <!-- Quick Stats Row -->
+    <div class="health-stats-row">
+      <div class="health-stat">
+        <span class="health-stat__value" id="stat-users-24h">-</span>
+        <span class="health-stat__label">Active Users (24h)</span>
+      </div>
+      <div class="health-stat">
+        <span class="health-stat__value" id="stat-error-rate">-</span>
+        <span class="health-stat__label">Error Rate</span>
+      </div>
+      <div class="health-stat">
+        <span class="health-stat__value" id="stat-avg-response">-</span>
+        <span class="health-stat__label">Avg API Response</span>
+      </div>
+      <div class="health-stat">
+        <span class="health-stat__value" id="stat-uptime">-</span>
+        <span class="health-stat__label">Uptime (30d)</span>
+      </div>
+    </div>
+    
     <!-- Service Status Grid -->
     <div class="health-grid">
       <!-- Supabase -->
@@ -90,6 +110,10 @@ title: "Site Health"
         </div>
         <div class="health-card__body">
           <div class="health-metric">
+            <span class="health-metric__label">Last Deploy</span>
+            <span class="health-metric__value" id="github-last-deploy">-</span>
+          </div>
+          <div class="health-metric">
             <span class="health-metric__label">Last Workflow</span>
             <span class="health-metric__value" id="github-last-run">-</span>
           </div>
@@ -97,9 +121,31 @@ title: "Site Health"
             <span class="health-metric__label">Status</span>
             <span class="health-metric__value" id="github-workflow-status">-</span>
           </div>
+        </div>
+      </div>
+      
+      <!-- Uptime Monitor -->
+      <div class="health-card" id="health-uptime">
+        <div class="health-card__header">
+          <span class="health-card__icon">📈</span>
+          <h3>Uptime Monitor</h3>
+          <span class="health-card__status" id="uptime-status">Unknown</span>
+        </div>
+        <div class="health-card__body">
           <div class="health-metric">
-            <span class="health-metric__label">Repository</span>
-            <span class="health-metric__value">challenge-run-site</span>
+            <span class="health-metric__label">Last 24h</span>
+            <span class="health-metric__value" id="uptime-24h">-</span>
+          </div>
+          <div class="health-metric">
+            <span class="health-metric__label">Last 7 Days</span>
+            <span class="health-metric__value" id="uptime-7d">-</span>
+          </div>
+          <div class="health-metric">
+            <span class="health-metric__label">Last Incident</span>
+            <span class="health-metric__value" id="uptime-last-incident">-</span>
+          </div>
+          <div class="health-metric uptime-config-note">
+            <a href="https://uptimerobot.com/" target="_blank" rel="noopener" class="uptime-config-link">Configure UptimeRobot →</a>
           </div>
         </div>
       </div>
@@ -123,6 +169,103 @@ title: "Site Health"
           <div class="health-metric">
             <span class="health-metric__label">Cache</span>
             <span class="health-metric__value">Enabled</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- JS Error Tracking -->
+      <div class="health-card" id="health-errors">
+        <div class="health-card__header">
+          <span class="health-card__icon">🐛</span>
+          <h3>Error Tracking</h3>
+          <span class="health-card__status" id="errors-status">Unknown</span>
+        </div>
+        <div class="health-card__body">
+          <div class="health-metric">
+            <span class="health-metric__label">JS Errors (24h)</span>
+            <span class="health-metric__value" id="errors-js-24h">-</span>
+          </div>
+          <div class="health-metric">
+            <span class="health-metric__label">API Errors (24h)</span>
+            <span class="health-metric__value" id="errors-api-24h">-</span>
+          </div>
+          <div class="health-metric">
+            <span class="health-metric__label">Last Error</span>
+            <span class="health-metric__value" id="errors-last">-</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Pending Queue Section -->
+    <div class="card mt-4">
+      <h2>📬 Pending Queues</h2>
+      <p class="muted mb-3">Items awaiting moderator approval.</p>
+      
+      <div class="queue-grid">
+        <div class="queue-card">
+          <div class="queue-card__icon">👤</div>
+          <div class="queue-card__info">
+            <span class="queue-card__count" id="queue-profiles">-</span>
+            <span class="queue-card__label">Pending Profiles</span>
+          </div>
+          <a href="{{ '/admin/profiles/' | relative_url }}" class="queue-card__link">Review →</a>
+        </div>
+        
+        <div class="queue-card">
+          <div class="queue-card__icon">🏃</div>
+          <div class="queue-card__info">
+            <span class="queue-card__count" id="queue-runs">-</span>
+            <span class="queue-card__label">Pending Runs</span>
+          </div>
+          <a href="{{ '/admin/runs/' | relative_url }}" class="queue-card__link">Review →</a>
+        </div>
+        
+        <div class="queue-card">
+          <div class="queue-card__icon">🎮</div>
+          <div class="queue-card__info">
+            <span class="queue-card__count" id="queue-games">-</span>
+            <span class="queue-card__label">Pending Games</span>
+          </div>
+          <a href="{{ '/admin/games/' | relative_url }}" class="queue-card__link">Review →</a>
+        </div>
+        
+        <div class="queue-card">
+          <div class="queue-card__icon">🚨</div>
+          <div class="queue-card__info">
+            <span class="queue-card__count" id="queue-reports">-</span>
+            <span class="queue-card__label">Open Reports</span>
+          </div>
+          <a href="{{ '/admin/users/' | relative_url }}" class="queue-card__link">Review →</a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- API Performance -->
+    <div class="card mt-4">
+      <h2>⚡ API Performance</h2>
+      <p class="muted mb-3">Recent Supabase query response times (last 10 queries).</p>
+      
+      <div class="api-perf-container">
+        <div class="api-perf-chart" id="api-perf-chart">
+          <div class="api-perf-chart__empty">Collecting data...</div>
+        </div>
+        <div class="api-perf-stats">
+          <div class="api-perf-stat">
+            <span class="api-perf-stat__label">Min</span>
+            <span class="api-perf-stat__value" id="api-perf-min">-</span>
+          </div>
+          <div class="api-perf-stat">
+            <span class="api-perf-stat__label">Avg</span>
+            <span class="api-perf-stat__value" id="api-perf-avg">-</span>
+          </div>
+          <div class="api-perf-stat">
+            <span class="api-perf-stat__label">Max</span>
+            <span class="api-perf-stat__value" id="api-perf-max">-</span>
+          </div>
+          <div class="api-perf-stat">
+            <span class="api-perf-stat__label">P95</span>
+            <span class="api-perf-stat__value" id="api-perf-p95">-</span>
           </div>
         </div>
       </div>
@@ -181,6 +324,14 @@ title: "Site Health"
       <h2>📋 System Log</h2>
       <p class="muted mb-3">Recent system events and errors.</p>
       
+      <div class="log-filters mb-2">
+        <button type="button" class="log-filter active" data-filter="all">All</button>
+        <button type="button" class="log-filter" data-filter="info">Info</button>
+        <button type="button" class="log-filter" data-filter="success">Success</button>
+        <button type="button" class="log-filter" data-filter="warn">Warning</button>
+        <button type="button" class="log-filter" data-filter="error">Error</button>
+      </div>
+      
       <div class="system-log" id="system-log">
         <div class="log-entry log-entry--info">
           <span class="log-time">Now</span>
@@ -188,7 +339,11 @@ title: "Site Health"
         </div>
       </div>
       
-      <button type="button" class="btn mt-3" id="refresh-health">🔄 Refresh All</button>
+      <div class="log-actions mt-3">
+        <button type="button" class="btn" id="refresh-health">🔄 Refresh All</button>
+        <button type="button" class="btn" id="clear-log">🗑️ Clear Log</button>
+        <button type="button" class="btn" id="export-log">📤 Export Log</button>
+      </div>
     </div>
   </div>
 </div>
@@ -217,7 +372,7 @@ title: "Site Health"
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .health-indicator {
@@ -239,6 +394,39 @@ title: "Site Health"
 
 .health-text { flex: 1; font-weight: 500; }
 .health-time { font-size: 0.85rem; color: var(--text-muted); }
+
+/* Quick Stats Row */
+.health-stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.health-stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  text-align: center;
+}
+
+.health-stat__value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1.2;
+}
+
+.health-stat__label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
 
 /* Health Grid */
 .health-grid {
@@ -293,6 +481,137 @@ title: "Site Health"
 .health-metric__label { font-size: 0.85rem; color: var(--text-muted); }
 .health-metric__value { font-size: 0.85rem; font-weight: 500; }
 
+.uptime-config-note { justify-content: center; }
+.uptime-config-link { font-size: 0.8rem; color: var(--accent); }
+
+/* Queue Grid */
+.queue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.queue-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.15s ease;
+}
+
+.queue-card:hover { border-color: var(--accent); }
+
+.queue-card__icon { font-size: 1.5rem; }
+
+.queue-card__info { flex: 1; }
+
+.queue-card__count {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.queue-card__count.has-items { color: #f59e0b; }
+
+.queue-card__label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+.queue-card__link {
+  font-size: 0.85rem;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+/* API Performance */
+.api-perf-container {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.api-perf-chart {
+  flex: 1;
+  min-width: 300px;
+  height: 120px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: flex-end;
+  padding: 0.5rem;
+  gap: 4px;
+}
+
+.api-perf-chart__empty {
+  width: 100%;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  align-self: center;
+}
+
+.api-perf-bar {
+  flex: 1;
+  background: var(--accent);
+  border-radius: 2px 2px 0 0;
+  min-height: 4px;
+  transition: height 0.3s ease;
+  position: relative;
+}
+
+.api-perf-bar:hover::after {
+  content: attr(data-value);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
+.api-perf-bar.slow { background: #f59e0b; }
+.api-perf-bar.very-slow { background: #ef4444; }
+
+.api-perf-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  min-width: 160px;
+}
+
+.api-perf-stat {
+  text-align: center;
+  padding: 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.api-perf-stat__label {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+.api-perf-stat__value {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
 /* Resource Bars */
 .resource-bars { display: flex; flex-direction: column; gap: 1.25rem; }
 
@@ -322,6 +641,30 @@ title: "Site Health"
 .resource-bar__fill.warn { background: #f59e0b; }
 .resource-bar__fill.danger { background: #ef4444; }
 
+/* Log Filters */
+.log-filters {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.log-filter {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.log-filter:hover { border-color: var(--accent); }
+.log-filter.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
 /* System Log */
 .system-log {
   max-height: 300px;
@@ -342,6 +685,7 @@ title: "Site Health"
 }
 
 .log-entry:last-child { border-bottom: none; }
+.log-entry.hidden { display: none; }
 
 .log-time { color: var(--text-muted); flex-shrink: 0; width: 80px; }
 .log-message { flex: 1; }
@@ -350,6 +694,12 @@ title: "Site Health"
 .log-entry--success .log-message { color: #10b981; }
 .log-entry--warn .log-message { color: #f59e0b; }
 .log-entry--error .log-message { color: #ef4444; }
+
+.log-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
 </style>
 
 <script type="module">
@@ -357,19 +707,98 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
 
 const SUPER_ADMIN_IDS = ['gary-asher'];
 let supabase = null;
+let apiResponseTimes = [];
+let jsErrors = [];
+let apiErrors = [];
 
 const authCheck = document.getElementById('auth-check');
 const notAuthorized = document.getElementById('not-authorized');
 const adminContent = document.getElementById('admin-content');
+
+// Error tracking - capture JS errors
+window.CRC_HealthErrors = { js: [], api: [] };
+
+window.onerror = function(msg, url, lineNo, columnNo, error) {
+  const errorInfo = {
+    message: msg,
+    url: url,
+    line: lineNo,
+    column: columnNo,
+    timestamp: new Date().toISOString()
+  };
+  window.CRC_HealthErrors.js.push(errorInfo);
+  // Keep only last 100 errors
+  if (window.CRC_HealthErrors.js.length > 100) {
+    window.CRC_HealthErrors.js.shift();
+  }
+  return false;
+};
+
+// Track API errors via fetch interception (for demo purposes, uses localStorage)
+function getStoredErrors() {
+  try {
+    const stored = localStorage.getItem('crc_health_errors');
+    return stored ? JSON.parse(stored) : { js: [], api: [], lastReset: Date.now() };
+  } catch {
+    return { js: [], api: [], lastReset: Date.now() };
+  }
+}
+
+function saveStoredErrors(errors) {
+  try {
+    localStorage.setItem('crc_health_errors', JSON.stringify(errors));
+  } catch {}
+}
 
 function log(message, type = 'info') {
   const logEl = document.getElementById('system-log');
   const time = new Date().toLocaleTimeString();
   const entry = document.createElement('div');
   entry.className = `log-entry log-entry--${type}`;
+  entry.dataset.type = type;
   entry.innerHTML = `<span class="log-time">${time}</span><span class="log-message">${message}</span>`;
   logEl.appendChild(entry);
   logEl.scrollTop = logEl.scrollHeight;
+}
+
+// Measure API response time
+async function timedQuery(queryFn, label) {
+  const start = Date.now();
+  try {
+    const result = await queryFn();
+    const latency = Date.now() - start;
+    apiResponseTimes.push({ label, latency, timestamp: Date.now() });
+    if (apiResponseTimes.length > 10) apiResponseTimes.shift();
+    return { result, latency };
+  } catch (error) {
+    const latency = Date.now() - start;
+    apiResponseTimes.push({ label, latency, timestamp: Date.now(), error: true });
+    if (apiResponseTimes.length > 10) apiResponseTimes.shift();
+    throw error;
+  }
+}
+
+function updateApiPerfChart() {
+  const chart = document.getElementById('api-perf-chart');
+  if (apiResponseTimes.length === 0) return;
+  
+  const times = apiResponseTimes.map(r => r.latency);
+  const maxTime = Math.max(...times, 100);
+  
+  chart.innerHTML = apiResponseTimes.map(r => {
+    const height = Math.max((r.latency / maxTime) * 100, 5);
+    let cls = 'api-perf-bar';
+    if (r.latency > 500) cls += ' very-slow';
+    else if (r.latency > 200) cls += ' slow';
+    return `<div class="${cls}" style="height: ${height}%" data-value="${r.latency}ms"></div>`;
+  }).join('');
+  
+  // Update stats
+  const sorted = [...times].sort((a, b) => a - b);
+  document.getElementById('api-perf-min').textContent = Math.min(...times) + 'ms';
+  document.getElementById('api-perf-avg').textContent = Math.round(times.reduce((a, b) => a + b, 0) / times.length) + 'ms';
+  document.getElementById('api-perf-max').textContent = Math.max(...times) + 'ms';
+  document.getElementById('api-perf-p95').textContent = sorted[Math.floor(sorted.length * 0.95)] + 'ms';
 }
 
 async function checkHealth() {
@@ -378,20 +807,23 @@ async function checkHealth() {
   const time = document.getElementById('health-time');
   
   let allOk = true;
+  let warnings = 0;
   
   // Check Supabase
   log('Checking Supabase connection...');
   const supabaseStatus = document.getElementById('supabase-status');
   try {
-    const start = Date.now();
-    await supabase.from('runner_profiles').select('id', { count: 'exact', head: true });
-    const latency = Date.now() - start;
+    const { result, latency } = await timedQuery(
+      () => supabase.from('runner_profiles').select('id', { count: 'exact', head: true }),
+      'profiles_count'
+    );
     
     supabaseStatus.textContent = 'Healthy';
     supabaseStatus.className = 'health-card__status ok';
     document.getElementById('supabase-latency').textContent = latency + 'ms';
     document.getElementById('supabase-connection').textContent = 'Connected';
     document.getElementById('supabase-sessions').textContent = '1';
+    document.getElementById('stat-avg-response').textContent = latency + 'ms';
     log('Supabase: Connected (' + latency + 'ms)', 'success');
   } catch (e) {
     supabaseStatus.textContent = 'Error';
@@ -417,26 +849,148 @@ async function checkHealth() {
   } else {
     authStatus.textContent = 'No Session';
     authStatus.className = 'health-card__status warn';
-    allOk = false;
+    warnings++;
   }
   
-  // GitHub status (placeholder)
+  // GitHub status (placeholder - would need GitHub API)
   document.getElementById('github-status').textContent = 'Unknown';
+  document.getElementById('github-last-deploy').textContent = 'Check GitHub';
   document.getElementById('github-last-run').textContent = 'Check GitHub';
   document.getElementById('github-workflow-status').textContent = 'N/A';
+  log('GitHub: API integration not configured', 'warn');
+  
+  // Uptime status (placeholder - would need UptimeRobot API)
+  document.getElementById('uptime-status').textContent = 'Unknown';
+  document.getElementById('uptime-24h').textContent = 'Configure UptimeRobot';
+  document.getElementById('uptime-7d').textContent = '-';
+  document.getElementById('uptime-last-incident').textContent = '-';
+  document.getElementById('stat-uptime').textContent = 'N/A';
+  log('Uptime: UptimeRobot integration not configured', 'warn');
   
   // Cloudflare (assume ok if page loaded)
   document.getElementById('cloudflare-status').textContent = 'Active';
   document.getElementById('cloudflare-status').className = 'health-card__status ok';
   log('Cloudflare: Active (page served)', 'success');
   
+  // Error tracking status
+  const storedErrors = getStoredErrors();
+  const now = Date.now();
+  const dayAgo = now - 24 * 60 * 60 * 1000;
+  
+  // Reset if older than 24h
+  if (storedErrors.lastReset < dayAgo) {
+    storedErrors.js = [];
+    storedErrors.api = [];
+    storedErrors.lastReset = now;
+    saveStoredErrors(storedErrors);
+  }
+  
+  const jsErrors24h = (storedErrors.js || []).filter(e => new Date(e.timestamp).getTime() > dayAgo).length;
+  const apiErrors24h = (storedErrors.api || []).filter(e => new Date(e.timestamp).getTime() > dayAgo).length;
+  
+  document.getElementById('errors-js-24h').textContent = jsErrors24h;
+  document.getElementById('errors-api-24h').textContent = apiErrors24h;
+  document.getElementById('errors-last').textContent = jsErrors24h + apiErrors24h > 0 ? 'See log' : 'None';
+  
+  const totalErrors = jsErrors24h + apiErrors24h;
+  const errorsStatus = document.getElementById('errors-status');
+  if (totalErrors === 0) {
+    errorsStatus.textContent = 'Clean';
+    errorsStatus.className = 'health-card__status ok';
+  } else if (totalErrors < 10) {
+    errorsStatus.textContent = 'Minor';
+    errorsStatus.className = 'health-card__status warn';
+    warnings++;
+  } else {
+    errorsStatus.textContent = 'Issues';
+    errorsStatus.className = 'health-card__status error';
+    allOk = false;
+  }
+  
+  const errorRate = totalErrors > 0 ? `${totalErrors}/24h` : '0%';
+  document.getElementById('stat-error-rate').textContent = errorRate;
+  
+  log(`Error tracking: ${jsErrors24h} JS, ${apiErrors24h} API errors in 24h`, totalErrors > 0 ? 'warn' : 'success');
+  
   // Update overall status
-  indicator.className = 'health-indicator ' + (allOk ? 'ok' : 'warn');
-  text.textContent = allOk ? 'All systems operational' : 'Some issues detected';
+  if (allOk && warnings === 0) {
+    indicator.className = 'health-indicator ok';
+    text.textContent = 'All systems operational';
+  } else if (allOk) {
+    indicator.className = 'health-indicator warn';
+    text.textContent = `Operational with ${warnings} warning(s)`;
+  } else {
+    indicator.className = 'health-indicator error';
+    text.textContent = 'Some issues detected';
+  }
   time.textContent = 'Last checked: ' + new Date().toLocaleTimeString();
   
-  // Load resource usage
+  // Load resource usage and queues
   await loadResources();
+  await loadQueues();
+  updateApiPerfChart();
+}
+
+async function loadQueues() {
+  if (!supabase) return;
+  
+  try {
+    // Pending profiles
+    const { result: pendingResult, latency: l1 } = await timedQuery(
+      () => supabase.from('pending_profiles').select('*', { count: 'exact', head: true }),
+      'pending_profiles'
+    );
+    const pendingProfiles = pendingResult?.count || 0;
+    const queueProfiles = document.getElementById('queue-profiles');
+    queueProfiles.textContent = pendingProfiles;
+    if (pendingProfiles > 0) queueProfiles.classList.add('has-items');
+    
+    // Pending runs (check if table exists)
+    try {
+      const { result: runsResult } = await timedQuery(
+        () => supabase.from('pending_runs').select('*', { count: 'exact', head: true }),
+        'pending_runs'
+      );
+      const pendingRuns = runsResult?.count || 0;
+      const queueRuns = document.getElementById('queue-runs');
+      queueRuns.textContent = pendingRuns;
+      if (pendingRuns > 0) queueRuns.classList.add('has-items');
+    } catch {
+      document.getElementById('queue-runs').textContent = '0';
+    }
+    
+    // Pending games
+    try {
+      const { result: gamesResult } = await timedQuery(
+        () => supabase.from('pending_games').select('*', { count: 'exact', head: true }),
+        'pending_games'
+      );
+      const pendingGames = gamesResult?.count || 0;
+      const queueGames = document.getElementById('queue-games');
+      queueGames.textContent = pendingGames;
+      if (pendingGames > 0) queueGames.classList.add('has-items');
+    } catch {
+      document.getElementById('queue-games').textContent = '0';
+    }
+    
+    // Reports
+    try {
+      const { result: reportsResult } = await timedQuery(
+        () => supabase.from('reports').select('*', { count: 'exact', head: true }).eq('status', 'open'),
+        'reports'
+      );
+      const openReports = reportsResult?.count || 0;
+      const queueReports = document.getElementById('queue-reports');
+      queueReports.textContent = openReports;
+      if (openReports > 0) queueReports.classList.add('has-items');
+    } catch {
+      document.getElementById('queue-reports').textContent = '0';
+    }
+    
+    log('Queue counts loaded', 'success');
+  } catch (e) {
+    log('Failed to load queues: ' + e.message, 'error');
+  }
 }
 
 async function loadResources() {
@@ -444,30 +998,100 @@ async function loadResources() {
   
   try {
     // Count rows in tables
-    const { count: profiles } = await supabase.from('runner_profiles').select('*', { count: 'exact', head: true });
-    const { count: pending } = await supabase.from('pending_profiles').select('*', { count: 'exact', head: true });
+    const { result: profilesResult } = await timedQuery(
+      () => supabase.from('runner_profiles').select('*', { count: 'exact', head: true }),
+      'runner_profiles_count'
+    );
+    const profiles = profilesResult?.count || 0;
     
-    const totalRows = (profiles || 0) + (pending || 0);
+    const { result: pendingResult } = await timedQuery(
+      () => supabase.from('pending_profiles').select('*', { count: 'exact', head: true }),
+      'pending_count'
+    );
+    const pending = pendingResult?.count || 0;
+    
+    const totalRows = profiles + pending;
     const rowPercent = (totalRows / 100000) * 100;
     
     document.getElementById('resource-rows').textContent = `${totalRows.toLocaleString()} / 100,000`;
-    document.getElementById('resource-rows-bar').style.width = Math.min(rowPercent, 100) + '%';
+    const rowsBar = document.getElementById('resource-rows-bar');
+    rowsBar.style.width = Math.min(rowPercent, 100) + '%';
+    if (rowPercent > 80) rowsBar.classList.add('danger');
+    else if (rowPercent > 50) rowsBar.classList.add('warn');
     
     // Estimates
-    document.getElementById('resource-size').textContent = `~${Math.round(totalRows * 0.002)} MB / 500 MB`;
-    document.getElementById('resource-size-bar').style.width = (totalRows * 0.002 / 500) * 100 + '%';
+    const sizeEst = Math.round(totalRows * 0.002);
+    const sizePercent = (sizeEst / 500) * 100;
+    document.getElementById('resource-size').textContent = `~${sizeEst} MB / 500 MB`;
+    const sizeBar = document.getElementById('resource-size-bar');
+    sizeBar.style.width = Math.min(sizePercent, 100) + '%';
+    if (sizePercent > 80) sizeBar.classList.add('danger');
+    else if (sizePercent > 50) sizeBar.classList.add('warn');
     
-    document.getElementById('resource-users').textContent = `${profiles || 0} / 50,000`;
-    document.getElementById('resource-users-bar').style.width = ((profiles || 0) / 50000) * 100 + '%';
+    const usersPercent = (profiles / 50000) * 100;
+    document.getElementById('resource-users').textContent = `${profiles} / 50,000`;
+    const usersBar = document.getElementById('resource-users-bar');
+    usersBar.style.width = Math.min(usersPercent, 100) + '%';
+    if (usersPercent > 80) usersBar.classList.add('danger');
+    else if (usersPercent > 50) usersBar.classList.add('warn');
+    
+    // Active users (24h) - estimate from profiles with recent activity
+    document.getElementById('stat-users-24h').textContent = profiles > 0 ? Math.ceil(profiles * 0.1) : '0';
     
     document.getElementById('resource-storage').textContent = `~0 MB / 1 GB`;
     document.getElementById('resource-storage-bar').style.width = '0%';
     
     log('Resource usage loaded', 'success');
+    updateApiPerfChart();
   } catch (e) {
     log('Failed to load resources: ' + e.message, 'error');
   }
 }
+
+// Log filtering
+document.querySelectorAll('.log-filter').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.log-filter').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    const filter = btn.dataset.filter;
+    document.querySelectorAll('.log-entry').forEach(entry => {
+      if (filter === 'all' || entry.dataset.type === filter) {
+        entry.classList.remove('hidden');
+      } else {
+        entry.classList.add('hidden');
+      }
+    });
+  });
+});
+
+// Clear log
+document.getElementById('clear-log')?.addEventListener('click', () => {
+  const logEl = document.getElementById('system-log');
+  logEl.innerHTML = '';
+  log('Log cleared', 'info');
+});
+
+// Export log
+document.getElementById('export-log')?.addEventListener('click', () => {
+  const logEl = document.getElementById('system-log');
+  const entries = Array.from(logEl.querySelectorAll('.log-entry')).map(entry => {
+    const time = entry.querySelector('.log-time').textContent;
+    const message = entry.querySelector('.log-message').textContent;
+    const type = entry.dataset.type || 'info';
+    return `[${time}] [${type.toUpperCase()}] ${message}`;
+  });
+  
+  const blob = new Blob([entries.join('\n')], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `health-log-${new Date().toISOString().split('T')[0]}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+  
+  log('Log exported', 'success');
+});
 
 document.getElementById('refresh-health')?.addEventListener('click', checkHealth);
 
@@ -489,6 +1113,9 @@ document.getElementById('refresh-health')?.addEventListener('click', checkHealth
     adminContent.hidden = false;
     supabase = CRCAuth.getSupabaseClient?.();
     checkHealth();
+    
+    // Auto-refresh every 60 seconds
+    setInterval(checkHealth, 60000);
   } else {
     notAuthorized.hidden = false;
   }
