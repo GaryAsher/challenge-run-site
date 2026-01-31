@@ -71,18 +71,19 @@ title: "Financials"
             <tr>
               <th>Source</th>
               <th>Description</th>
+              <th>Type</th>
               <th>Amount</th>
-              <th>Actions</th>
+              <th></th>
             </tr>
           </thead>
           <tbody id="revenue-table">
             <tr class="empty-row">
-              <td colspan="4" class="muted">No revenue entries yet</td>
+              <td colspan="5" class="muted">No revenue entries yet</td>
             </tr>
           </tbody>
           <tfoot>
             <tr>
-              <td colspan="2"><strong>Total Revenue</strong></td>
+              <td colspan="3"><strong>Total Revenue</strong></td>
               <td colspan="2"><strong id="total-revenue">$0.00</strong></td>
             </tr>
           </tfoot>
@@ -100,8 +101,9 @@ title: "Financials"
             <tr>
               <th>Service</th>
               <th>Description</th>
+              <th>Type</th>
               <th>Amount</th>
-              <th>Actions</th>
+              <th></th>
             </tr>
           </thead>
           <tbody id="expenses-table">
@@ -109,7 +111,7 @@ title: "Financials"
           </tbody>
           <tfoot>
             <tr>
-              <td colspan="2"><strong>Total Expenses</strong></td>
+              <td colspan="3"><strong>Total Expenses</strong></td>
               <td colspan="2"><strong id="total-expenses">$0.00</strong></td>
             </tr>
           </tfoot>
@@ -117,10 +119,16 @@ title: "Financials"
       </div>
     </div>
     
-    <!-- Service Cost Breakdown -->
-    <div class="card mt-4">
-      <h2>🔧 Service Cost Breakdown</h2>
-      <p class="muted mb-3">Current and projected costs for all services</p>
+    <!-- Service Cost Breakdown (Collapsible) -->
+    <div class="card mt-4 collapsible-section" id="services-section">
+      <div class="collapsible-header" id="services-header">
+        <h2>🔧 Service Cost Breakdown</h2>
+        <button type="button" class="btn btn--small btn--ghost toggle-btn">
+          <span class="toggle-icon" id="services-icon">▼</span>
+        </button>
+      </div>
+      <div class="collapsible-content" id="services-content">
+        <p class="muted mb-3">Current and projected costs for all services</p>
       
       <div class="service-grid">
         <div class="service-card">
@@ -219,11 +227,99 @@ title: "Financials"
           </div>
         </div>
       </div>
+      </div>
+    </div>
+    
+    <!-- Future Ideas Section (Collapsible) -->
+    <div class="card mt-4 collapsible-section" id="ideas-section">
+      <div class="collapsible-header" id="ideas-header">
+        <h2>💡 Future Ideas</h2>
+        <button type="button" class="btn btn--small btn--ghost toggle-btn">
+          <span class="toggle-icon" id="ideas-icon">▼</span>
+        </button>
+      </div>
+      <div class="collapsible-content" id="ideas-content">
+        <p class="muted mb-3">Revenue streams and features to consider for the future</p>
+        
+        <div class="ideas-grid">
+          <div class="idea-card">
+            <div class="idea-icon">💎</div>
+            <div class="idea-content">
+              <h4>Premium Memberships</h4>
+              <p class="muted">Monthly subscriptions with perks: custom themes, extra badge slots, priority verification, supporter badge</p>
+              <span class="idea-estimate">Est: $3-10/mo per user</span>
+            </div>
+          </div>
+          
+          <div class="idea-card">
+            <div class="idea-icon">🎨</div>
+            <div class="idea-content">
+              <h4>Custom Themes</h4>
+              <p class="muted">Premium feature: Custom background images, animated elements, profile customization</p>
+              <span class="idea-estimate">Included in Premium</span>
+            </div>
+          </div>
+          
+          <div class="idea-card">
+            <div class="idea-icon">🏆</div>
+            <div class="idea-content">
+              <h4>Tournament Hosting</h4>
+              <p class="muted">Host challenge run competitions with entry fees and prize pools</p>
+              <span class="idea-estimate">% of entry fees</span>
+            </div>
+          </div>
+          
+          <div class="idea-card">
+            <div class="idea-icon">☕</div>
+            <div class="idea-content">
+              <h4>Patreon / Ko-fi</h4>
+              <p class="muted">Community donations with tiers and exclusive perks</p>
+              <span class="idea-estimate">Variable</span>
+            </div>
+          </div>
+          
+          <div class="idea-card">
+            <div class="idea-icon">🎮</div>
+            <div class="idea-content">
+              <h4>Game Dev Partnerships</h4>
+              <p class="muted">Partner with indie devs to feature their games, sponsored challenge runs</p>
+              <span class="idea-estimate">Sponsorships</span>
+            </div>
+          </div>
+          
+          <div class="idea-card">
+            <div class="idea-icon">📺</div>
+            <div class="idea-content">
+              <h4>Content Creator Program</h4>
+              <p class="muted">Revenue sharing with streamers who feature CRC runs</p>
+              <span class="idea-estimate">Partnership deals</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="ideas-notes mt-4">
+          <h4>📝 Notes & Plans</h4>
+          <textarea id="future-notes" class="form-input" rows="4" placeholder="Add your notes about future plans, timeline, priorities..."></textarea>
+          <button type="button" class="btn btn--small mt-2" id="save-notes-btn">💾 Save Notes</button>
+          <span class="save-status muted ml-2" id="notes-save-status"></span>
+        </div>
+      </div>
     </div>
     
     <!-- Historical Chart (placeholder) -->
     <div class="card mt-4">
-      <h2>📊 Monthly Overview</h2>
+      <div class="card-header">
+        <h2>📊 Monthly Overview</h2>
+        <div class="year-filter">
+          <label for="year-select">Year:</label>
+          <select id="year-select" class="form-input form-input--small">
+            <option value="all">All Years</option>
+            <option value="2026" selected>2026</option>
+            <option value="2025">2025</option>
+            <option value="2024">2024</option>
+          </select>
+        </div>
+      </div>
       <div class="chart-placeholder" id="finance-chart">
         <p class="muted">Chart will display revenue vs expenses over time</p>
         <table class="history-table">
@@ -271,12 +367,25 @@ title: "Financials"
             <input type="number" id="entry-amount" class="form-input" step="0.01" min="0" placeholder="0.00" />
           </div>
           <div class="form-group">
-            <label class="form-label">Recurring?</label>
-            <select id="entry-recurring" class="form-input">
-              <option value="monthly">Monthly</option>
-              <option value="yearly">Yearly</option>
-              <option value="once">One-time</option>
-            </select>
+            <label class="form-label">Payment Type</label>
+            <div class="recurring-options">
+              <label class="recurring-option">
+                <input type="radio" name="entry-recurring" value="monthly" checked />
+                <span class="recurring-option__icon">🔄</span>
+                <span class="recurring-option__text">
+                  <strong>Recurring</strong>
+                  <span class="muted">Monthly charge</span>
+                </span>
+              </label>
+              <label class="recurring-option">
+                <input type="radio" name="entry-recurring" value="once" />
+                <span class="recurring-option__icon">📌</span>
+                <span class="recurring-option__text">
+                  <strong>One-Time</strong>
+                  <span class="muted">Single payment</span>
+                </span>
+              </label>
+            </div>
           </div>
         </div>
         <div class="finance-modal__footer">
@@ -480,6 +589,110 @@ title: "Financials"
 .service-status.active { background: #10b981; color: white; }
 .service-status.future { background: var(--text-muted); color: var(--bg); }
 
+/* Collapsible Sections */
+.collapsible-section { }
+.collapsible-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+  user-select: none;
+}
+.collapsible-header:hover { opacity: 0.8; }
+.collapsible-header h2 { margin: 0; }
+.toggle-btn { background: none; border: none; padding: 0.25rem 0.5rem; cursor: pointer; }
+.toggle-icon { display: inline-block; transition: transform 0.2s ease; font-size: 0.9rem; color: var(--text-muted); }
+.collapsible-content.collapsed { display: none; }
+.collapsed .toggle-icon, .collapsible-section.collapsed .toggle-icon { transform: rotate(-90deg); }
+
+/* Type Badges (Recurring/One-time) */
+.type-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.type-badge--recurring { background: #3b82f6; color: white; }
+.type-badge--one-time { background: #8b5cf6; color: white; }
+.type-badge--monthly { background: #3b82f6; color: white; }
+.type-badge--yearly { background: #10b981; color: white; }
+
+/* Year Filter */
+.year-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.year-filter label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.form-input--small {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+  width: auto;
+  min-width: 100px;
+}
+
+/* Future Ideas Grid */
+.ideas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+.idea-card {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  align-items: flex-start;
+}
+.idea-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+.idea-content {
+  flex: 1;
+}
+.idea-content h4 {
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+}
+.idea-content p {
+  font-size: 0.8rem;
+  margin: 0 0 0.5rem 0;
+}
+.idea-estimate {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.1);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+/* Ideas Notes */
+.ideas-notes {
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+.ideas-notes h4 {
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+}
+.save-status {
+  font-size: 0.8rem;
+}
+.ml-2 { margin-left: 0.5rem; }
+
 /* Cost Projection */
 .cost-projection {
   background: var(--bg);
@@ -593,6 +806,48 @@ title: "Financials"
 
 .finance-modal__body { padding: 1rem; }
 
+/* Recurring Options Radio Buttons */
+.recurring-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+.recurring-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.recurring-option:hover {
+  border-color: var(--accent);
+}
+.recurring-option:has(input:checked) {
+  border-color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.1);
+}
+.recurring-option input {
+  display: none;
+}
+.recurring-option__icon {
+  font-size: 1.25rem;
+}
+.recurring-option__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+.recurring-option__text strong {
+  font-size: 0.9rem;
+}
+.recurring-option__text .muted {
+  font-size: 0.75rem;
+}
+
 .finance-modal__footer {
   display: flex;
   justify-content: flex-end;
@@ -609,6 +864,7 @@ const SUPER_ADMIN_IDS = ['gary-asher'];
 let supabase = null;
 let currentMonth = new Date();
 let financialData = {};
+let selectedYear = 'all';
 
 const authCheck = document.getElementById('auth-check');
 const notAuthorized = document.getElementById('not-authorized');
@@ -638,6 +894,8 @@ const DEFAULT_EXPENSES = [
     supabase = CRCAuth.getSupabaseClient?.();
     await loadFinancialData();
     setupEventListeners();
+    loadNotes();
+    setupCollapsibles();
   } else {
     notAuthorized.hidden = false;
   }
@@ -700,38 +958,55 @@ function renderFinancials() {
 function renderRevenueTable(items) {
   const tbody = document.getElementById('revenue-table');
   if (items.length === 0) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="4" class="muted">No revenue entries yet</td></tr>';
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="5" class="muted">No revenue entries yet</td></tr>';
     return;
   }
   
-  tbody.innerHTML = items.map((item, i) => `
+  tbody.innerHTML = items.map((item, i) => {
+    const typeClass = item.recurring === 'once' ? 'one-time' : item.recurring || 'monthly';
+    const typeLabel = item.recurring === 'once' ? '📌 One-Time' : 
+                      item.recurring === 'yearly' ? '📅 Yearly' : '🔄 Monthly';
+    return `
     <tr>
       <td>${item.source}</td>
-      <td>${item.description}</td>
+      <td>${item.description || '-'}</td>
+      <td><span class="type-badge type-badge--${typeClass}">${typeLabel}</span></td>
       <td>$${item.amount.toFixed(2)}</td>
-      <td><button class="btn btn--small btn--danger" onclick="deleteEntry('revenue', ${i})">🗑️</button></td>
+      <td><button class="btn btn--small" onclick="deleteEntry('revenue', ${i})">🗑️</button></td>
     </tr>
-  `).join('');
+  `;}).join('');
 }
 
 function renderExpensesTable(items) {
   const tbody = document.getElementById('expenses-table');
-  tbody.innerHTML = items.map((item, i) => `
+  tbody.innerHTML = items.map((item, i) => {
+    const typeClass = item.recurring === 'once' ? 'one-time' : item.recurring || 'monthly';
+    const typeLabel = item.recurring === 'once' ? '📌 One-Time' : 
+                      item.recurring === 'yearly' ? '📅 Yearly' : '🔄 Monthly';
+    return `
     <tr>
       <td>${item.source}</td>
-      <td>${item.description}</td>
+      <td>${item.description || '-'}</td>
+      <td><span class="type-badge type-badge--${typeClass}">${typeLabel}</span></td>
       <td>$${item.amount.toFixed(2)}</td>
-      <td><button class="btn btn--small btn--danger" onclick="deleteEntry('expense', ${i})">🗑️</button></td>
+      <td><button class="btn btn--small" onclick="deleteEntry('expense', ${i})">🗑️</button></td>
     </tr>
-  `).join('');
+  `;}).join('');
 }
 
 function renderHistory() {
   const tbody = document.getElementById('history-table');
-  const months = Object.keys(financialData).sort().reverse().slice(0, 6);
+  let months = Object.keys(financialData).sort().reverse();
+  
+  // Filter by selected year
+  if (selectedYear && selectedYear !== 'all') {
+    months = months.filter(key => key.startsWith(selectedYear));
+  }
+  
+  months = months.slice(0, 12); // Show up to 12 months
   
   if (months.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="4" class="muted">No history yet</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="4" class="muted">No data for selected year</td></tr>';
     return;
   }
   
@@ -782,6 +1057,12 @@ function setupEventListeners() {
     loadFinancialData();
   });
   
+  // Year filter for history
+  document.getElementById('year-select')?.addEventListener('change', (e) => {
+    selectedYear = e.target.value;
+    renderHistory();
+  });
+  
   // Add buttons
   document.getElementById('add-revenue')?.addEventListener('click', () => openModal('revenue'));
   document.getElementById('add-expense')?.addEventListener('click', () => openModal('expense'));
@@ -791,6 +1072,50 @@ function setupEventListeners() {
   document.getElementById('modal-backdrop')?.addEventListener('click', closeModal);
   document.getElementById('modal-cancel')?.addEventListener('click', closeModal);
   document.getElementById('modal-save')?.addEventListener('click', saveEntry);
+  
+  // Notes save
+  document.getElementById('save-notes-btn')?.addEventListener('click', saveNotes);
+}
+
+// Collapsible sections
+function setupCollapsibles() {
+  // Services section
+  document.getElementById('services-header')?.addEventListener('click', () => {
+    const content = document.getElementById('services-content');
+    const icon = document.getElementById('services-icon');
+    content.classList.toggle('collapsed');
+    if (icon) {
+      icon.style.transform = content.classList.contains('collapsed') ? 'rotate(-90deg)' : 'rotate(0deg)';
+    }
+  });
+  
+  // Ideas section
+  document.getElementById('ideas-header')?.addEventListener('click', () => {
+    const content = document.getElementById('ideas-content');
+    const icon = document.getElementById('ideas-icon');
+    content.classList.toggle('collapsed');
+    if (icon) {
+      icon.style.transform = content.classList.contains('collapsed') ? 'rotate(-90deg)' : 'rotate(0deg)';
+    }
+  });
+}
+
+// Notes functionality
+function loadNotes() {
+  const saved = localStorage.getItem('crc-financials-notes');
+  if (saved) {
+    document.getElementById('future-notes').value = saved;
+  }
+}
+
+function saveNotes() {
+  const notes = document.getElementById('future-notes')?.value || '';
+  localStorage.setItem('crc-financials-notes', notes);
+  const status = document.getElementById('notes-save-status');
+  if (status) {
+    status.textContent = '✓ Saved!';
+    setTimeout(() => { status.textContent = ''; }, 2000);
+  }
 }
 
 function openModal(type) {
@@ -809,11 +1134,13 @@ function closeModal() {
 function saveEntry() {
   const monthKey = getMonthKey(currentMonth);
   const type = document.getElementById('entry-type').value;
+  const recurringValue = document.querySelector('input[name="entry-recurring"]:checked')?.value || 'monthly';
+  
   const entry = {
     source: document.getElementById('entry-source').value,
     description: document.getElementById('entry-description').value,
     amount: parseFloat(document.getElementById('entry-amount').value) || 0,
-    recurring: document.getElementById('entry-recurring').value
+    recurring: recurringValue
   };
   
   if (!entry.source || entry.amount <= 0) {
