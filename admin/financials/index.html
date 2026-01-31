@@ -1,0 +1,839 @@
+---
+layout: default
+title: "Financials"
+---
+
+<div class="page-width">
+  <div id="auth-check">
+    <div class="card">
+      <div class="sign-in-loading">
+        <div class="spinner"></div>
+        <p class="muted">Verifying super admin access...</p>
+      </div>
+    </div>
+  </div>
+  
+  <div id="not-authorized" class="card" hidden>
+    <h2>Access Denied</h2>
+    <p class="muted">Super Admin privileges required.</p>
+    <a href="/" class="btn btn--primary">Go Home</a>
+  </div>
+  
+  <div id="admin-content" hidden>
+    <div class="page-header">
+      <span class="super-admin-badge">🔒 Super Admin Only</span>
+      <h1>💰 Financials</h1>
+      <p class="muted">Track revenue, expenses, and service costs</p>
+    </div>
+    
+    <!-- Summary Cards -->
+    <div class="finance-summary">
+      <div class="finance-card finance-card--revenue">
+        <span class="finance-card__label">Monthly Revenue</span>
+        <span class="finance-card__value" id="monthly-revenue">$0.00</span>
+        <span class="finance-card__change positive" id="revenue-change">+0%</span>
+      </div>
+      <div class="finance-card finance-card--expenses">
+        <span class="finance-card__label">Monthly Expenses</span>
+        <span class="finance-card__value" id="monthly-expenses">$0.00</span>
+        <span class="finance-card__change" id="expenses-change">0%</span>
+      </div>
+      <div class="finance-card finance-card--profit">
+        <span class="finance-card__label">Net Profit</span>
+        <span class="finance-card__value" id="net-profit">$0.00</span>
+        <span class="finance-card__change" id="profit-change">-</span>
+      </div>
+      <div class="finance-card finance-card--members">
+        <span class="finance-card__label">Premium Members</span>
+        <span class="finance-card__value" id="premium-members">0</span>
+        <span class="finance-card__change" id="members-change">-</span>
+      </div>
+    </div>
+    
+    <!-- Month Selector -->
+    <div class="card">
+      <div class="month-selector">
+        <button class="btn btn--small" id="prev-month">← Previous</button>
+        <span class="current-month" id="current-month">January 2026</span>
+        <button class="btn btn--small" id="next-month">Next →</button>
+      </div>
+    </div>
+    
+    <div class="finance-grid">
+      <!-- Revenue Sources -->
+      <div class="card">
+        <div class="card-header">
+          <h2>📈 Revenue Sources</h2>
+          <button class="btn btn--small" id="add-revenue">+ Add</button>
+        </div>
+        <table class="finance-table">
+          <thead>
+            <tr>
+              <th>Source</th>
+              <th>Description</th>
+              <th>Amount</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="revenue-table">
+            <tr class="empty-row">
+              <td colspan="4" class="muted">No revenue entries yet</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2"><strong>Total Revenue</strong></td>
+              <td colspan="2"><strong id="total-revenue">$0.00</strong></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      
+      <!-- Expenses -->
+      <div class="card">
+        <div class="card-header">
+          <h2>📉 Expenses & Services</h2>
+          <button class="btn btn--small" id="add-expense">+ Add</button>
+        </div>
+        <table class="finance-table">
+          <thead>
+            <tr>
+              <th>Service</th>
+              <th>Description</th>
+              <th>Amount</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="expenses-table">
+            <!-- Pre-populated with known services -->
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2"><strong>Total Expenses</strong></td>
+              <td colspan="2"><strong id="total-expenses">$0.00</strong></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+    
+    <!-- Service Cost Breakdown -->
+    <div class="card mt-4">
+      <h2>🔧 Service Cost Breakdown</h2>
+      <p class="muted mb-3">Current and projected costs for all services</p>
+      
+      <div class="service-grid">
+        <div class="service-card">
+          <div class="service-icon">🌐</div>
+          <div class="service-info">
+            <h4>GoDaddy Domain</h4>
+            <p class="muted">challengerun.net</p>
+          </div>
+          <div class="service-cost">
+            <span class="cost-amount">$20/year</span>
+            <span class="cost-monthly">~$1.67/mo</span>
+          </div>
+          <span class="service-status active">Active</span>
+        </div>
+        
+        <div class="service-card">
+          <div class="service-icon">☁️</div>
+          <div class="service-info">
+            <h4>Cloudflare Pages</h4>
+            <p class="muted">Hosting & CDN</p>
+          </div>
+          <div class="service-cost">
+            <span class="cost-amount">Free</span>
+            <span class="cost-monthly">$0/mo</span>
+          </div>
+          <span class="service-status active">Active</span>
+        </div>
+        
+        <div class="service-card">
+          <div class="service-icon">🗄️</div>
+          <div class="service-info">
+            <h4>Supabase</h4>
+            <p class="muted">Database & Auth</p>
+          </div>
+          <div class="service-cost">
+            <span class="cost-amount">Free</span>
+            <span class="cost-monthly">$0/mo</span>
+          </div>
+          <span class="service-status active">Free Tier</span>
+        </div>
+        
+        <div class="service-card">
+          <div class="service-icon">🐙</div>
+          <div class="service-info">
+            <h4>GitHub</h4>
+            <p class="muted">Code & Actions</p>
+          </div>
+          <div class="service-cost">
+            <span class="cost-amount">Free</span>
+            <span class="cost-monthly">$0/mo</span>
+          </div>
+          <span class="service-status active">Free Tier</span>
+        </div>
+        
+        <div class="service-card service-card--future">
+          <div class="service-icon">🗄️</div>
+          <div class="service-info">
+            <h4>Supabase Pro</h4>
+            <p class="muted">When you outgrow free tier</p>
+          </div>
+          <div class="service-cost">
+            <span class="cost-amount">$25/mo</span>
+            <span class="cost-monthly">Projected</span>
+          </div>
+          <span class="service-status future">Future</span>
+        </div>
+        
+        <div class="service-card service-card--future">
+          <div class="service-icon">☁️</div>
+          <div class="service-info">
+            <h4>Cloudflare Pro</h4>
+            <p class="muted">Enhanced features</p>
+          </div>
+          <div class="service-cost">
+            <span class="cost-amount">$20/mo</span>
+            <span class="cost-monthly">Projected</span>
+          </div>
+          <span class="service-status future">Future</span>
+        </div>
+      </div>
+      
+      <div class="cost-projection">
+        <h3>Cost Projections</h3>
+        <div class="projection-grid">
+          <div class="projection-item">
+            <span class="projection-label">Current Monthly</span>
+            <span class="projection-value">~$1.67</span>
+          </div>
+          <div class="projection-item">
+            <span class="projection-label">Projected (Growth)</span>
+            <span class="projection-value">~$46.67</span>
+          </div>
+          <div class="projection-item">
+            <span class="projection-label">Break-even Members</span>
+            <span class="projection-value">~10 @ $5/mo</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Historical Chart (placeholder) -->
+    <div class="card mt-4">
+      <h2>📊 Monthly Overview</h2>
+      <div class="chart-placeholder" id="finance-chart">
+        <p class="muted">Chart will display revenue vs expenses over time</p>
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th>Revenue</th>
+              <th>Expenses</th>
+              <th>Net</th>
+            </tr>
+          </thead>
+          <tbody id="history-table">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- Add Entry Modal -->
+    <div class="finance-modal" id="finance-modal" hidden>
+      <div class="finance-modal__backdrop" id="modal-backdrop"></div>
+      <div class="finance-modal__content">
+        <div class="finance-modal__header">
+          <h2 id="modal-title">Add Entry</h2>
+          <button class="finance-modal__close" id="modal-close">&times;</button>
+        </div>
+        <div class="finance-modal__body">
+          <div class="form-group">
+            <label class="form-label">Type</label>
+            <select id="entry-type" class="form-input">
+              <option value="revenue">Revenue</option>
+              <option value="expense">Expense</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Source/Service</label>
+            <input type="text" id="entry-source" class="form-input" placeholder="e.g., Patreon, GoDaddy" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <input type="text" id="entry-description" class="form-input" placeholder="e.g., Monthly subscription" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Amount ($)</label>
+            <input type="number" id="entry-amount" class="form-input" step="0.01" min="0" placeholder="0.00" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Recurring?</label>
+            <select id="entry-recurring" class="form-input">
+              <option value="monthly">Monthly</option>
+              <option value="yearly">Yearly</option>
+              <option value="once">One-time</option>
+            </select>
+          </div>
+        </div>
+        <div class="finance-modal__footer">
+          <button class="btn" id="modal-cancel">Cancel</button>
+          <button class="btn btn--primary" id="modal-save">Save Entry</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.super-admin-badge {
+  display: inline-block;
+  background: #9b59b6;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.page-header { margin-bottom: 1.5rem; }
+.page-header h1 { margin-bottom: 0.25rem; }
+
+/* Summary Cards */
+.finance-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.finance-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.finance-card__label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.finance-card__value {
+  display: block;
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.finance-card--revenue .finance-card__value { color: #10b981; }
+.finance-card--expenses .finance-card__value { color: #ef4444; }
+.finance-card--profit .finance-card__value { color: var(--accent); }
+.finance-card--members .finance-card__value { color: #8b5cf6; }
+
+.finance-card__change {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.finance-card__change.positive { color: #10b981; }
+.finance-card__change.negative { color: #ef4444; }
+
+/* Month Selector */
+.month-selector {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.current-month {
+  font-size: 1.1rem;
+  font-weight: 600;
+  min-width: 150px;
+  text-align: center;
+}
+
+/* Finance Grid */
+.finance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .finance-grid { grid-template-columns: 1fr; }
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.card-header h2 { margin: 0; }
+
+/* Finance Table */
+.finance-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.finance-table th,
+.finance-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+
+.finance-table th {
+  background: var(--bg);
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.finance-table tfoot td {
+  background: var(--bg);
+  border-top: 2px solid var(--border);
+}
+
+.empty-row td {
+  text-align: center;
+  padding: 2rem;
+}
+
+/* Service Grid */
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.service-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.service-card--future {
+  opacity: 0.6;
+  border-style: dashed;
+}
+
+.service-icon {
+  font-size: 1.5rem;
+  width: 40px;
+  text-align: center;
+}
+
+.service-info {
+  flex: 1;
+}
+
+.service-info h4 {
+  font-size: 0.95rem;
+  margin-bottom: 0.15rem;
+}
+
+.service-info p {
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.service-cost {
+  text-align: right;
+}
+
+.cost-amount {
+  display: block;
+  font-weight: 600;
+}
+
+.cost-monthly {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.service-status {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.service-status.active { background: #10b981; color: white; }
+.service-status.future { background: var(--text-muted); color: var(--bg); }
+
+/* Cost Projection */
+.cost-projection {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1.25rem;
+}
+
+.cost-projection h3 {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.projection-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 600px) {
+  .projection-grid { grid-template-columns: 1fr; }
+}
+
+.projection-item {
+  text-align: center;
+}
+
+.projection-label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.projection-value {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+/* Chart Placeholder */
+.chart-placeholder {
+  padding: 1rem;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.history-table th,
+.history-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.history-table th {
+  background: var(--bg);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* Modal */
+.finance-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.finance-modal[hidden] { display: none; }
+
+.finance-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+}
+
+.finance-modal__content {
+  position: relative;
+  width: 100%;
+  max-width: 450px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.finance-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.finance-modal__header h2 { font-size: 1.1rem; margin: 0; }
+
+.finance-modal__close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.finance-modal__body { padding: 1rem; }
+
+.finance-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-top: 1px solid var(--border);
+}
+</style>
+
+<script type="module">
+import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
+
+const SUPER_ADMIN_IDS = ['gary-asher'];
+let supabase = null;
+let currentMonth = new Date();
+let financialData = {};
+
+const authCheck = document.getElementById('auth-check');
+const notAuthorized = document.getElementById('not-authorized');
+const adminContent = document.getElementById('admin-content');
+
+// Default expenses (services)
+const DEFAULT_EXPENSES = [
+  { id: 'godaddy', source: 'GoDaddy', description: 'Domain registration (yearly)', amount: 1.67, recurring: 'monthly' }
+];
+
+// Initialize
+(async function() {
+  await CRCAuth.init();
+  
+  const profile = CRCAuth.getProfile();
+  const metadata = CRCAuth.getProviderMetadata();
+  const runnerId = profile?.runner_id?.toLowerCase() || '';
+  const username = metadata?.providerUsername?.toLowerCase() || '';
+  
+  const isSuperAdmin = SUPER_ADMIN_IDS.includes(runnerId) || 
+                       SUPER_ADMIN_IDS.some(id => username === id || username === id.replace(/-/g, '_'));
+  
+  authCheck.hidden = true;
+  
+  if (CRCAuth.isSignedIn() && isSuperAdmin) {
+    adminContent.hidden = false;
+    supabase = CRCAuth.getSupabaseClient?.();
+    await loadFinancialData();
+    setupEventListeners();
+  } else {
+    notAuthorized.hidden = false;
+  }
+})();
+
+async function loadFinancialData() {
+  // Try to load from Supabase or localStorage
+  const saved = localStorage.getItem('crc-financials');
+  if (saved) {
+    try {
+      financialData = JSON.parse(saved);
+    } catch (e) {}
+  }
+  
+  // Ensure current month exists
+  const monthKey = getMonthKey(currentMonth);
+  if (!financialData[monthKey]) {
+    financialData[monthKey] = {
+      revenue: [],
+      expenses: [...DEFAULT_EXPENSES]
+    };
+  }
+  
+  renderFinancials();
+  renderHistory();
+}
+
+function getMonthKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function getMonthName(date) {
+  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+}
+
+function renderFinancials() {
+  const monthKey = getMonthKey(currentMonth);
+  const data = financialData[monthKey] || { revenue: [], expenses: DEFAULT_EXPENSES };
+  
+  document.getElementById('current-month').textContent = getMonthName(currentMonth);
+  
+  // Calculate totals
+  const totalRevenue = data.revenue.reduce((sum, r) => sum + r.amount, 0);
+  const totalExpenses = data.expenses.reduce((sum, e) => sum + e.amount, 0);
+  const netProfit = totalRevenue - totalExpenses;
+  
+  document.getElementById('monthly-revenue').textContent = '$' + totalRevenue.toFixed(2);
+  document.getElementById('monthly-expenses').textContent = '$' + totalExpenses.toFixed(2);
+  document.getElementById('net-profit').textContent = '$' + netProfit.toFixed(2);
+  document.getElementById('net-profit').style.color = netProfit >= 0 ? '#10b981' : '#ef4444';
+  
+  document.getElementById('total-revenue').textContent = '$' + totalRevenue.toFixed(2);
+  document.getElementById('total-expenses').textContent = '$' + totalExpenses.toFixed(2);
+  
+  // Render tables
+  renderRevenueTable(data.revenue);
+  renderExpensesTable(data.expenses);
+}
+
+function renderRevenueTable(items) {
+  const tbody = document.getElementById('revenue-table');
+  if (items.length === 0) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="4" class="muted">No revenue entries yet</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = items.map((item, i) => `
+    <tr>
+      <td>${item.source}</td>
+      <td>${item.description}</td>
+      <td>$${item.amount.toFixed(2)}</td>
+      <td><button class="btn btn--small btn--danger" onclick="deleteEntry('revenue', ${i})">🗑️</button></td>
+    </tr>
+  `).join('');
+}
+
+function renderExpensesTable(items) {
+  const tbody = document.getElementById('expenses-table');
+  tbody.innerHTML = items.map((item, i) => `
+    <tr>
+      <td>${item.source}</td>
+      <td>${item.description}</td>
+      <td>$${item.amount.toFixed(2)}</td>
+      <td><button class="btn btn--small btn--danger" onclick="deleteEntry('expense', ${i})">🗑️</button></td>
+    </tr>
+  `).join('');
+}
+
+function renderHistory() {
+  const tbody = document.getElementById('history-table');
+  const months = Object.keys(financialData).sort().reverse().slice(0, 6);
+  
+  if (months.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" class="muted">No history yet</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = months.map(key => {
+    const data = financialData[key];
+    const revenue = data.revenue.reduce((sum, r) => sum + r.amount, 0);
+    const expenses = data.expenses.reduce((sum, e) => sum + e.amount, 0);
+    const net = revenue - expenses;
+    const [year, month] = key.split('-');
+    const monthName = new Date(year, parseInt(month) - 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    
+    return `
+      <tr>
+        <td>${monthName}</td>
+        <td style="color: #10b981">$${revenue.toFixed(2)}</td>
+        <td style="color: #ef4444">$${expenses.toFixed(2)}</td>
+        <td style="color: ${net >= 0 ? '#10b981' : '#ef4444'}">$${net.toFixed(2)}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function saveData() {
+  localStorage.setItem('crc-financials', JSON.stringify(financialData));
+}
+
+window.deleteEntry = function(type, index) {
+  const monthKey = getMonthKey(currentMonth);
+  if (type === 'revenue') {
+    financialData[monthKey].revenue.splice(index, 1);
+  } else {
+    financialData[monthKey].expenses.splice(index, 1);
+  }
+  saveData();
+  renderFinancials();
+  renderHistory();
+};
+
+function setupEventListeners() {
+  // Month navigation
+  document.getElementById('prev-month')?.addEventListener('click', () => {
+    currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1);
+    loadFinancialData();
+  });
+  
+  document.getElementById('next-month')?.addEventListener('click', () => {
+    currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1);
+    loadFinancialData();
+  });
+  
+  // Add buttons
+  document.getElementById('add-revenue')?.addEventListener('click', () => openModal('revenue'));
+  document.getElementById('add-expense')?.addEventListener('click', () => openModal('expense'));
+  
+  // Modal
+  document.getElementById('modal-close')?.addEventListener('click', closeModal);
+  document.getElementById('modal-backdrop')?.addEventListener('click', closeModal);
+  document.getElementById('modal-cancel')?.addEventListener('click', closeModal);
+  document.getElementById('modal-save')?.addEventListener('click', saveEntry);
+}
+
+function openModal(type) {
+  document.getElementById('entry-type').value = type;
+  document.getElementById('modal-title').textContent = type === 'revenue' ? 'Add Revenue' : 'Add Expense';
+  document.getElementById('finance-modal').hidden = false;
+}
+
+function closeModal() {
+  document.getElementById('finance-modal').hidden = true;
+  document.getElementById('entry-source').value = '';
+  document.getElementById('entry-description').value = '';
+  document.getElementById('entry-amount').value = '';
+}
+
+function saveEntry() {
+  const monthKey = getMonthKey(currentMonth);
+  const type = document.getElementById('entry-type').value;
+  const entry = {
+    source: document.getElementById('entry-source').value,
+    description: document.getElementById('entry-description').value,
+    amount: parseFloat(document.getElementById('entry-amount').value) || 0,
+    recurring: document.getElementById('entry-recurring').value
+  };
+  
+  if (!entry.source || entry.amount <= 0) {
+    alert('Please fill in all fields');
+    return;
+  }
+  
+  if (!financialData[monthKey]) {
+    financialData[monthKey] = { revenue: [], expenses: [...DEFAULT_EXPENSES] };
+  }
+  
+  if (type === 'revenue') {
+    financialData[monthKey].revenue.push(entry);
+  } else {
+    financialData[monthKey].expenses.push(entry);
+  }
+  
+  saveData();
+  renderFinancials();
+  renderHistory();
+  closeModal();
+}
+</script>
