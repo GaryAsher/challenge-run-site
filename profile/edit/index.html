@@ -37,6 +37,25 @@ title: "Edit Profile"
       <p class="muted mb-4">Update your runner profile information. Changes are saved to the database and will sync to the site.</p>
       
       <form id="profile-form" class="profile-form">
+        <!-- Profile Preview -->
+        <div class="card mb-4">
+          <h2>🖼️ Profile Preview</h2>
+          <div class="profile-preview">
+            <div class="profile-preview__banner" id="preview-banner">
+              <img src="/assets/img/site/default-banner.jpg" alt="" id="preview-banner-img" />
+            </div>
+            <div class="profile-preview__content">
+              <div class="profile-preview__avatar-wrap">
+                <img src="/assets/img/site/default-runner.png" alt="" class="profile-preview__avatar" id="preview-avatar" />
+              </div>
+              <div class="profile-preview__info">
+                <span class="profile-preview__name" id="preview-name">Display Name</span>
+                <span class="profile-preview__pronouns muted" id="preview-pronouns"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
         <!-- Basic Info -->
         <div class="card mb-4">
           <h2>👤 Basic Info</h2>
@@ -47,16 +66,30 @@ title: "Edit Profile"
             <p class="form-help">Your unique identifier (cannot be changed)</p>
           </div>
           
+          <div class="form-row">
+            <div class="form-group form-group--flex">
+              <label class="form-label" for="display-name">Display Name *</label>
+              <input type="text" id="display-name" name="display_name" class="form-input" required maxlength="50" />
+              <p class="form-help">The name shown on your profile</p>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="pronouns">Pronouns</label>
+              <input type="text" id="pronouns" name="pronouns" class="form-input" maxlength="30" placeholder="e.g., they/them" />
+              <p class="form-help">Optional, displayed next to your name</p>
+            </div>
+          </div>
+          
           <div class="form-group">
-            <label class="form-label" for="display-name">Display Name *</label>
-            <input type="text" id="display-name" name="display_name" class="form-input" required maxlength="50" />
-            <p class="form-help">The name shown on your profile</p>
+            <label class="form-label" for="location">Location</label>
+            <input type="text" id="location" name="location" class="form-input" maxlength="50" placeholder="e.g., United States" />
+            <p class="form-help">Country or region (optional)</p>
           </div>
           
           <div class="form-group">
             <label class="form-label" for="bio">Bio</label>
-            <textarea id="bio" name="bio" class="form-textarea" rows="4" maxlength="500" placeholder="Tell others about yourself and your challenge run journey..."></textarea>
-            <p class="form-help"><span id="bio-count">0</span>/500 characters</p>
+            <textarea id="bio" name="bio" class="form-textarea" rows="4" maxlength="1000" placeholder="Tell others about yourself and your challenge run journey..."></textarea>
+            <p class="form-help"><span id="bio-count">0</span>/1000 characters</p>
           </div>
           
           <div class="form-group">
@@ -66,39 +99,85 @@ title: "Edit Profile"
           </div>
         </div>
         
+        <!-- Avatar & Banner -->
+        <div class="card mb-4">
+          <h2>🎨 Customization</h2>
+          <p class="muted mb-3">Customize your profile appearance.</p>
+          
+          <div class="form-group">
+            <label class="form-label" for="avatar-url">Avatar URL</label>
+            <input type="url" id="avatar-url" name="avatar_url" class="form-input" placeholder="https://example.com/avatar.png" />
+            <p class="form-help">Direct link to your avatar image (recommended: 200x200px, PNG or JPG)</p>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="banner-url">Banner URL</label>
+            <input type="url" id="banner-url" name="banner_url" class="form-input" placeholder="https://example.com/banner.jpg" />
+            <p class="form-help">Direct link to your profile banner (recommended: 1200x300px)</p>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="accent-color">Accent Color</label>
+            <div class="color-picker-wrap">
+              <input type="color" id="accent-color" name="accent_color" class="form-color" value="#6366f1" />
+              <input type="text" id="accent-color-text" class="form-input form-input--color" maxlength="7" placeholder="#6366f1" />
+            </div>
+            <p class="form-help">Your profile's accent color</p>
+          </div>
+        </div>
+        
         <!-- Social Links -->
         <div class="card mb-4">
           <h2>🔗 Social Links</h2>
           <p class="muted mb-3">Add links to your streaming and social accounts.</p>
           
-          <div class="form-group">
-            <label class="form-label" for="twitch">Twitch</label>
-            <input type="url" id="twitch" name="twitch" class="form-input" placeholder="https://twitch.tv/username" />
+          <div class="form-row">
+            <div class="form-group form-group--flex">
+              <label class="form-label" for="twitch">Twitch</label>
+              <input type="url" id="twitch" name="twitch" class="form-input" placeholder="https://twitch.tv/username" />
+            </div>
+            
+            <div class="form-group form-group--flex">
+              <label class="form-label" for="youtube">YouTube</label>
+              <input type="url" id="youtube" name="youtube" class="form-input" placeholder="https://youtube.com/@channel" />
+            </div>
           </div>
           
-          <div class="form-group">
-            <label class="form-label" for="youtube">YouTube</label>
-            <input type="url" id="youtube" name="youtube" class="form-input" placeholder="https://youtube.com/@channel" />
+          <div class="form-row">
+            <div class="form-group form-group--flex">
+              <label class="form-label" for="discord">Discord</label>
+              <input type="url" id="discord" name="discord" class="form-input" placeholder="https://discord.gg/invite" />
+            </div>
+            
+            <div class="form-group form-group--flex">
+              <label class="form-label" for="twitter">Twitter/X</label>
+              <input type="url" id="twitter" name="twitter" class="form-input" placeholder="https://twitter.com/username" />
+            </div>
           </div>
           
-          <div class="form-group">
-            <label class="form-label" for="discord">Discord</label>
-            <input type="url" id="discord" name="discord" class="form-input" placeholder="https://discord.gg/invite" />
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label" for="twitter">Twitter/X</label>
-            <input type="url" id="twitter" name="twitter" class="form-input" placeholder="https://twitter.com/username" />
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label" for="bluesky">Bluesky</label>
-            <input type="url" id="bluesky" name="bluesky" class="form-input" placeholder="https://bsky.app/profile/username" />
+          <div class="form-row">
+            <div class="form-group form-group--flex">
+              <label class="form-label" for="bluesky">Bluesky</label>
+              <input type="url" id="bluesky" name="bluesky" class="form-input" placeholder="https://bsky.app/profile/username" />
+            </div>
+            
+            <div class="form-group form-group--flex">
+              <label class="form-label" for="instagram">Instagram</label>
+              <input type="url" id="instagram" name="instagram" class="form-input" placeholder="https://instagram.com/username" />
+            </div>
           </div>
           
           <div class="form-group">
             <label class="form-label" for="website">Personal Website</label>
             <input type="url" id="website" name="website" class="form-input" placeholder="https://yoursite.com" />
+          </div>
+          
+          <!-- Other Links -->
+          <div class="other-links-section">
+            <label class="form-label">Other Links</label>
+            <div id="other-links-container"></div>
+            <button type="button" class="btn btn--small mt-2" id="add-other-link">+ Add Link</button>
+            <p class="form-help">Up to 3 additional links</p>
           </div>
         </div>
         
@@ -114,10 +193,40 @@ title: "Edit Profile"
           <input type="hidden" id="featured-runs" name="featured_runs" value="[]" />
         </div>
         
+        <!-- Privacy Settings -->
+        <div class="card mb-4">
+          <h2>🔒 Privacy</h2>
+          <p class="muted mb-3">Control what information is visible on your profile.</p>
+          
+          <div class="privacy-toggles">
+            <label class="toggle-row">
+              <input type="checkbox" id="show-location" name="show_location" checked />
+              <span class="toggle-slider"></span>
+              <span class="toggle-label">Show location on profile</span>
+            </label>
+            
+            <label class="toggle-row">
+              <input type="checkbox" id="show-join-date" name="show_join_date" checked />
+              <span class="toggle-slider"></span>
+              <span class="toggle-label">Show join date on profile</span>
+            </label>
+            
+            <label class="toggle-row">
+              <input type="checkbox" id="show-stats" name="show_stats" checked />
+              <span class="toggle-slider"></span>
+              <span class="toggle-label">Show run statistics</span>
+            </label>
+          </div>
+        </div>
+        
         <!-- Submit -->
         <div class="form-actions">
           <button type="submit" class="btn btn--primary" id="save-btn">
-            Save Changes
+            <span class="btn__text">Save Changes</span>
+            <span class="btn__loading" hidden>
+              <span class="spinner"></span>
+              Saving...
+            </span>
           </button>
           <a href="/profile/settings/" class="btn">Cancel</a>
         </div>
@@ -136,8 +245,78 @@ title: "Edit Profile"
   margin: 0 auto;
 }
 
+/* Profile Preview */
+.profile-preview {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.profile-preview__banner {
+  height: 120px;
+  background: linear-gradient(135deg, var(--accent), #1a1a2e);
+  position: relative;
+}
+
+.profile-preview__banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-preview__content {
+  display: flex;
+  align-items: flex-end;
+  padding: 0 1rem 1rem;
+  margin-top: -40px;
+  position: relative;
+}
+
+.profile-preview__avatar-wrap {
+  flex-shrink: 0;
+}
+
+.profile-preview__avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 4px solid var(--surface);
+  background: var(--surface);
+  object-fit: cover;
+}
+
+.profile-preview__info {
+  padding: 0.5rem 0 0 1rem;
+}
+
+.profile-preview__name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  display: block;
+}
+
+.profile-preview__pronouns {
+  font-size: 0.85rem;
+}
+
+/* Form Layout */
 .form-group {
   margin-bottom: 1.25rem;
+}
+
+.form-group--flex {
+  flex: 1;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+@media (max-width: 600px) {
+  .form-row {
+    flex-direction: column;
+  }
 }
 
 .form-label {
@@ -175,6 +354,98 @@ title: "Edit Profile"
   margin-top: 0.35rem;
 }
 
+/* Color Picker */
+.color-picker-wrap {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.form-color {
+  width: 50px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.form-input--color {
+  width: 100px;
+  font-family: monospace;
+}
+
+/* Other Links */
+.other-links-section {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.other-link-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.other-link-row input {
+  flex: 1;
+}
+
+.other-link-row .btn {
+  flex-shrink: 0;
+}
+
+/* Privacy Toggles */
+.privacy-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.toggle-row input[type="checkbox"] {
+  width: 44px;
+  height: 24px;
+  appearance: none;
+  background: var(--border);
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.toggle-row input[type="checkbox"]::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s ease;
+}
+
+.toggle-row input[type="checkbox"]:checked {
+  background: var(--accent);
+}
+
+.toggle-row input[type="checkbox"]:checked::before {
+  transform: translateX(20px);
+}
+
+.toggle-label {
+  font-size: 0.95rem;
+}
+
+/* Form Actions */
 .form-actions {
   display: flex;
   gap: 0.75rem;
@@ -224,7 +495,7 @@ title: "Edit Profile"
 
 .featured-run-item.is-selected {
   border-color: var(--accent);
-  background: rgba(var(--accent-rgb), 0.1);
+  background: rgba(99, 102, 241, 0.1);
 }
 
 .featured-run-item__checkbox {
@@ -279,6 +550,8 @@ let supabase = null;
 let currentProfile = null;
 let userRuns = [];
 let selectedFeatured = [];
+let otherLinks = [];
+const MAX_OTHER_LINKS = 3;
 
 function showState(state) {
   loadingState.hidden = state !== 'loading';
@@ -298,9 +571,78 @@ function hideMessage() {
   formMessage.hidden = true;
 }
 
+// Live preview updates
+document.getElementById('display-name')?.addEventListener('input', (e) => {
+  document.getElementById('preview-name').textContent = e.target.value || 'Display Name';
+});
+
+document.getElementById('pronouns')?.addEventListener('input', (e) => {
+  const pronounsEl = document.getElementById('preview-pronouns');
+  pronounsEl.textContent = e.target.value ? `(${e.target.value})` : '';
+});
+
+document.getElementById('avatar-url')?.addEventListener('change', (e) => {
+  const url = e.target.value;
+  if (url) {
+    document.getElementById('preview-avatar').src = url;
+  }
+});
+
+document.getElementById('banner-url')?.addEventListener('change', (e) => {
+  const url = e.target.value;
+  if (url) {
+    document.getElementById('preview-banner-img').src = url;
+  }
+});
+
+// Color picker sync
+document.getElementById('accent-color')?.addEventListener('input', (e) => {
+  document.getElementById('accent-color-text').value = e.target.value;
+});
+
+document.getElementById('accent-color-text')?.addEventListener('input', (e) => {
+  const val = e.target.value;
+  if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+    document.getElementById('accent-color').value = val;
+  }
+});
+
 // Bio character counter
-document.getElementById('bio').addEventListener('input', (e) => {
+document.getElementById('bio')?.addEventListener('input', (e) => {
   document.getElementById('bio-count').textContent = e.target.value.length;
+});
+
+// Other links management
+function renderOtherLinks() {
+  const container = document.getElementById('other-links-container');
+  container.innerHTML = otherLinks.map((link, i) => `
+    <div class="other-link-row">
+      <input type="url" value="${link}" placeholder="https://..." data-index="${i}" class="form-input other-link-input" />
+      <button type="button" class="btn btn--small btn--danger" data-remove="${i}">✕</button>
+    </div>
+  `).join('');
+  
+  container.querySelectorAll('.other-link-input').forEach(input => {
+    input.addEventListener('input', (e) => {
+      otherLinks[parseInt(e.target.dataset.index)] = e.target.value;
+    });
+  });
+  
+  container.querySelectorAll('[data-remove]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      otherLinks.splice(parseInt(e.target.dataset.remove), 1);
+      renderOtherLinks();
+    });
+  });
+  
+  document.getElementById('add-other-link').hidden = otherLinks.length >= MAX_OTHER_LINKS;
+}
+
+document.getElementById('add-other-link')?.addEventListener('click', () => {
+  if (otherLinks.length < MAX_OTHER_LINKS) {
+    otherLinks.push('');
+    renderOtherLinks();
+  }
 });
 
 // Load user's runs for featured selection
@@ -308,8 +650,6 @@ async function loadUserRuns(runnerId) {
   const listEl = document.getElementById('featured-runs-list');
   
   try {
-    // Fetch runs from the Jekyll site data (they're in _runs/)
-    // For now, we'll use Supabase if available, or show a placeholder
     const { data, error } = await supabase
       .from('runs')
       .select('id, game_id, category, date_completed, time, video_url')
@@ -318,7 +658,6 @@ async function loadUserRuns(runnerId) {
       .limit(20);
     
     if (error) {
-      // Fallback: runs might not be in Supabase yet
       listEl.innerHTML = `
         <div class="no-runs-message">
           <p>Run data sync coming soon!</p>
@@ -369,7 +708,6 @@ function renderRunsList() {
     `;
   }).join('');
   
-  // Add event listeners
   listEl.querySelectorAll('.featured-run-item').forEach(item => {
     const checkbox = item.querySelector('input');
     const runId = item.dataset.runId;
@@ -393,20 +731,45 @@ function renderRunsList() {
 function populateForm(profile) {
   document.getElementById('runner-id').value = profile.runner_id || '';
   document.getElementById('display-name').value = profile.display_name || '';
+  document.getElementById('pronouns').value = profile.pronouns || '';
+  document.getElementById('location').value = profile.location || '';
   document.getElementById('bio').value = profile.bio || '';
   document.getElementById('status').value = profile.status || '';
+  
+  // Customization
+  document.getElementById('avatar-url').value = profile.avatar_url || '';
+  document.getElementById('banner-url').value = profile.banner_url || '';
+  document.getElementById('accent-color').value = profile.accent_color || '#6366f1';
+  document.getElementById('accent-color-text').value = profile.accent_color || '#6366f1';
+  
+  // Update preview
+  document.getElementById('preview-name').textContent = profile.display_name || 'Display Name';
+  document.getElementById('preview-pronouns').textContent = profile.pronouns ? `(${profile.pronouns})` : '';
+  if (profile.avatar_url) document.getElementById('preview-avatar').src = profile.avatar_url;
+  if (profile.banner_url) document.getElementById('preview-banner-img').src = profile.banner_url;
   
   // Update bio counter
   document.getElementById('bio-count').textContent = (profile.bio || '').length;
   
-  // Social links (handle both flat and nested formats)
+  // Social links
   const socials = profile.socials || {};
-  document.getElementById('twitch').value = socials.twitch || profile.twitch || '';
-  document.getElementById('youtube').value = socials.youtube || profile.youtube || '';
-  document.getElementById('discord').value = socials.discord || profile.discord || '';
-  document.getElementById('twitter').value = socials.twitter || profile.twitter || '';
-  document.getElementById('bluesky').value = socials.bluesky || profile.bluesky || '';
-  document.getElementById('website').value = socials.website || profile.personal_website || '';
+  document.getElementById('twitch').value = socials.twitch || '';
+  document.getElementById('youtube').value = socials.youtube || '';
+  document.getElementById('discord').value = socials.discord || '';
+  document.getElementById('twitter').value = socials.twitter || '';
+  document.getElementById('bluesky').value = socials.bluesky || '';
+  document.getElementById('instagram').value = socials.instagram || '';
+  document.getElementById('website').value = socials.website || '';
+  
+  // Other links
+  otherLinks = socials.other || [];
+  renderOtherLinks();
+  
+  // Privacy settings
+  const privacy = profile.privacy || {};
+  document.getElementById('show-location').checked = privacy.show_location !== false;
+  document.getElementById('show-join-date').checked = privacy.show_join_date !== false;
+  document.getElementById('show-stats').checked = privacy.show_stats !== false;
   
   // Featured runs
   selectedFeatured = profile.featured_runs || [];
@@ -419,32 +782,46 @@ form.addEventListener('submit', async (e) => {
   hideMessage();
   
   const saveBtn = document.getElementById('save-btn');
+  const btnText = saveBtn.querySelector('.btn__text');
+  const btnLoading = saveBtn.querySelector('.btn__loading');
+  
   saveBtn.disabled = true;
-  saveBtn.textContent = 'Saving...';
+  btnText.hidden = true;
+  btnLoading.hidden = false;
   
   try {
     const formData = {
       display_name: document.getElementById('display-name').value.trim(),
+      pronouns: document.getElementById('pronouns').value.trim() || null,
+      location: document.getElementById('location').value.trim() || null,
       bio: document.getElementById('bio').value.trim() || null,
       status: document.getElementById('status').value.trim() || null,
+      avatar_url: document.getElementById('avatar-url').value.trim() || null,
+      banner_url: document.getElementById('banner-url').value.trim() || null,
+      accent_color: document.getElementById('accent-color').value || null,
       socials: {
         twitch: document.getElementById('twitch').value.trim() || null,
         youtube: document.getElementById('youtube').value.trim() || null,
         discord: document.getElementById('discord').value.trim() || null,
         twitter: document.getElementById('twitter').value.trim() || null,
         bluesky: document.getElementById('bluesky').value.trim() || null,
-        website: document.getElementById('website').value.trim() || null
+        instagram: document.getElementById('instagram').value.trim() || null,
+        website: document.getElementById('website').value.trim() || null,
+        other: otherLinks.filter(l => l.trim())
+      },
+      privacy: {
+        show_location: document.getElementById('show-location').checked,
+        show_join_date: document.getElementById('show-join-date').checked,
+        show_stats: document.getElementById('show-stats').checked
       },
       featured_runs: selectedFeatured,
       updated_at: new Date().toISOString()
     };
     
-    // Validate
     if (!formData.display_name) {
       throw new Error('Display name is required');
     }
     
-    // Update profile in Supabase
     const user = CRCAuth.getUser();
     const { error } = await supabase
       .from('runner_profiles')
@@ -454,15 +831,14 @@ form.addEventListener('submit', async (e) => {
     if (error) throw error;
     
     showMessage('Profile saved successfully!', 'success');
-    
-    // Refresh auth state to get updated profile
     await CRCAuth.init();
     
   } catch (err) {
     showMessage(`Error: ${err.message}`, 'error');
   } finally {
     saveBtn.disabled = false;
-    saveBtn.textContent = 'Save Changes';
+    btnText.hidden = false;
+    btnLoading.hidden = true;
   }
 });
 
@@ -484,7 +860,6 @@ form.addEventListener('submit', async (e) => {
     return;
   }
   
-  // Get profile from Supabase
   const user = CRCAuth.getUser();
   const { data: profile, error } = await supabase
     .from('runner_profiles')
@@ -500,7 +875,6 @@ form.addEventListener('submit', async (e) => {
   currentProfile = profile;
   populateForm(profile);
   
-  // Load user's runs for featured selection
   if (profile.runner_id) {
     loadUserRuns(profile.runner_id);
   }
