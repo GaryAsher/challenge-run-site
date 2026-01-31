@@ -22,7 +22,7 @@ title: "Admin Dashboard"
   <div id="admin-content" hidden>
     <div class="dashboard-header">
       <h1>📊 Dashboard</h1>
-      <p class="muted">Admin tools and testing environment</p>
+      <p class="muted">Admin tools, testing, and site monitoring</p>
     </div>
     
     <!-- Quick Stats -->
@@ -32,12 +32,12 @@ title: "Admin Dashboard"
         <span class="stat-card__label">Pending Profiles</span>
       </div>
       <div class="stat-card">
-        <span class="stat-card__value" id="stat-runs">-</span>
-        <span class="stat-card__label">Pending Runs</span>
-      </div>
-      <div class="stat-card">
         <span class="stat-card__value" id="stat-games">-</span>
         <span class="stat-card__label">Pending Games</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-card__value" id="stat-runs">-</span>
+        <span class="stat-card__label">Pending Runs</span>
       </div>
       <div class="stat-card">
         <span class="stat-card__value" id="stat-total-runners">-</span>
@@ -45,40 +45,111 @@ title: "Admin Dashboard"
       </div>
     </div>
     
-    <!-- Admin Navigation Tabs -->
+    <!-- Dashboard Tabs -->
     <nav class="dashboard-tabs">
       <button class="tab active" data-tab="overview" type="button">Overview</button>
       <button class="tab" data-tab="test-profile" type="button">Test Profile</button>
-      <button class="tab" data-tab="test-run" type="button">Test Run</button>
       <button class="tab" data-tab="test-game" type="button">Test Game</button>
+      <button class="tab" data-tab="test-run" type="button">Test Run</button>
       <button class="tab" data-tab="auth-debug" type="button">Auth Debug</button>
     </nav>
     
     <!-- ==========================================================
-         OVERVIEW TAB
+         OVERVIEW TAB - General system overview
          ========================================================== -->
     <section class="tab-panel active" data-panel="overview">
-      <div class="admin-grid">
+      <div class="overview-grid">
+        
+        <!-- System Status -->
+        <div class="card">
+          <h2>💚 System Status</h2>
+          <div class="status-list">
+            <div class="status-item">
+              <span class="status-dot" id="status-dot-supabase"></span>
+              <span>Supabase Database</span>
+              <span class="status-value" id="status-supabase">Checking...</span>
+            </div>
+            <div class="status-item">
+              <span class="status-dot" id="status-dot-auth"></span>
+              <span>Authentication</span>
+              <span class="status-value" id="status-auth">Checking...</span>
+            </div>
+            <div class="status-item">
+              <span class="status-dot" id="status-dot-github"></span>
+              <span>GitHub Actions</span>
+              <span class="status-value" id="status-github">Checking...</span>
+            </div>
+            <div class="status-item">
+              <span class="status-dot" id="status-dot-workers"></span>
+              <span>Cloudflare Workers</span>
+              <span class="status-value" id="status-workers">Unknown</span>
+            </div>
+            <div class="status-item">
+              <span class="status-dot" id="status-dot-jekyll"></span>
+              <span>Jekyll Build</span>
+              <span class="status-value" id="status-jekyll">OK</span>
+            </div>
+          </div>
+          <p class="muted mt-3" style="font-size: 0.8rem;">
+            Last checked: <span id="status-timestamp">-</span>
+          </p>
+        </div>
+        
         <!-- Quick Actions -->
         <div class="card">
           <h2>⚡ Quick Actions</h2>
+          <p class="muted mb-3">Jump to moderation queues:</p>
           <div class="admin-actions">
             <a href="/admin/profiles/" class="btn">
               <span>👥</span> Review Profiles
-            </a>
-            <a href="/admin/runs/" class="btn">
-              <span>🏃</span> Review Runs
+              <span class="action-badge" id="action-profiles-badge" hidden>0</span>
             </a>
             <a href="/admin/games/" class="btn">
               <span>🎮</span> Review Games
+              <span class="action-badge" id="action-games-badge" hidden>0</span>
             </a>
+            <a href="/admin/runs/" class="btn">
+              <span>🏃</span> Review Runs
+              <span class="action-badge" id="action-runs-badge" hidden>0</span>
+            </a>
+          </div>
+        </div>
+        
+        <!-- Site Statistics -->
+        <div class="card">
+          <h2>📈 Site Statistics</h2>
+          <div class="site-stats">
+            <div class="site-stat">
+              <span class="site-stat__label">Total Games</span>
+              <span class="site-stat__value" id="stat-total-games">-</span>
+            </div>
+            <div class="site-stat">
+              <span class="site-stat__label">Total Runners</span>
+              <span class="site-stat__value" id="stat-total-runners-2">-</span>
+            </div>
+            <div class="site-stat">
+              <span class="site-stat__label">Total Runs</span>
+              <span class="site-stat__value" id="stat-total-runs">-</span>
+            </div>
+            <div class="site-stat">
+              <span class="site-stat__label">Verified Runs</span>
+              <span class="site-stat__value" id="stat-verified-runs">-</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Recent Activity -->
+        <div class="card">
+          <h2>🕐 Recent Activity</h2>
+          <div class="activity-list" id="recent-activity">
+            <p class="muted">Loading...</p>
           </div>
         </div>
         
         <!-- Test Games -->
         <div class="card">
-          <h2>🎮 Test Games</h2>
-          <p class="muted mb-2">Hidden games for testing functionality.</p>
+          <h2>🧪 Test Games</h2>
+          <p class="muted mb-2">Hidden games for testing:</p>
           <ul class="test-games-list">
             {% for g in site.games %}
               {% if g.test_only == true or g.published == false %}
@@ -92,26 +163,36 @@ title: "Admin Dashboard"
           </ul>
         </div>
         
-        <!-- System Status -->
+        <!-- Data Usage (for Supabase monitoring) -->
         <div class="card">
-          <h2>🔧 System Status</h2>
-          <div class="status-list">
-            <div class="status-item">
-              <span class="status-dot status-dot--ok"></span>
-              <span>Supabase Connection</span>
-              <span class="status-value" id="status-supabase">Checking...</span>
+          <h2>💾 Data Usage</h2>
+          <p class="muted mb-2">Supabase resource estimates:</p>
+          <div class="data-usage">
+            <div class="usage-item">
+              <span class="usage-label">Database Rows</span>
+              <div class="usage-bar-wrap">
+                <div class="usage-bar" id="usage-bar-rows" style="width: 5%"></div>
+              </div>
+              <span class="usage-value" id="usage-rows">~50 / 100k</span>
             </div>
-            <div class="status-item">
-              <span class="status-dot status-dot--ok"></span>
-              <span>GitHub Workflows</span>
-              <span class="status-value" id="status-github">Active</span>
+            <div class="usage-item">
+              <span class="usage-label">Storage</span>
+              <div class="usage-bar-wrap">
+                <div class="usage-bar" id="usage-bar-storage" style="width: 2%"></div>
+              </div>
+              <span class="usage-value" id="usage-storage">~10MB / 1GB</span>
             </div>
-            <div class="status-item">
-              <span class="status-dot status-dot--ok"></span>
-              <span>Cloudflare Workers</span>
-              <span class="status-value" id="status-workers">Active</span>
+            <div class="usage-item">
+              <span class="usage-label">Auth Users</span>
+              <div class="usage-bar-wrap">
+                <div class="usage-bar" id="usage-bar-auth" style="width: 1%"></div>
+              </div>
+              <span class="usage-value" id="usage-auth">~5 / 50k</span>
             </div>
           </div>
+          <p class="muted mt-2" style="font-size: 0.75rem;">
+            Free tier limits. Upgrade at <a href="https://supabase.com" target="_blank">supabase.com</a>
+          </p>
         </div>
       </div>
     </section>
@@ -124,7 +205,6 @@ title: "Admin Dashboard"
         <h2>👤 Profile Submission Simulator</h2>
         <p class="muted mb-3">
           Test the complete profile creation flow without affecting production data.
-          This simulates what happens when a new user creates a profile.
         </p>
         
         <div class="simulator">
@@ -139,16 +219,65 @@ title: "Admin Dashboard"
             </div>
             <div class="form-group">
               <label class="form-label">Bio</label>
-              <textarea id="sim-profile-bio" class="form-textarea" rows="2">This is a test profile for simulation purposes.</textarea>
+              <textarea id="sim-profile-bio" class="form-textarea" rows="2">This is a test profile.</textarea>
             </div>
-            <button type="button" class="btn btn--primary" id="sim-profile-run">
-              ▶ Run Simulation
-            </button>
+            <button type="button" class="btn btn--primary" id="sim-profile-run">▶ Run Simulation</button>
           </div>
-          
           <div class="simulator__output">
-            <h3>Simulation Output</h3>
+            <h3>Output</h3>
             <div class="output-log" id="sim-profile-log">
+              <p class="muted">Click "Run Simulation" to start...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- ==========================================================
+         TEST GAME TAB (now before Test Run)
+         ========================================================== -->
+    <section class="tab-panel" data-panel="test-game">
+      <div class="card">
+        <h2>🎮 Game Submission Simulator</h2>
+        <p class="muted mb-3">
+          Test game submission validation and file generation.
+        </p>
+        
+        <div class="simulator">
+          <div class="simulator__form">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Game Name</label>
+                <input type="text" id="sim-game-name" class="form-input" value="Test Game Simulator" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Game ID (slug)</label>
+                <input type="text" id="sim-game-id" class="form-input" value="test-game-sim" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Release Year</label>
+                <input type="number" id="sim-game-year" class="form-input" value="2024" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Developer</label>
+                <input type="text" id="sim-game-dev" class="form-input" value="Test Studio" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Genres (comma-separated)</label>
+              <input type="text" id="sim-game-genres" class="form-input" value="roguelike, action" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Categories (comma-separated)</label>
+              <input type="text" id="sim-game-categories" class="form-input" value="any, 100, hitless" />
+            </div>
+            <button type="button" class="btn btn--primary" id="sim-game-run">▶ Run Simulation</button>
+          </div>
+          <div class="simulator__output">
+            <h3>Output</h3>
+            <div class="output-log" id="sim-game-log">
               <p class="muted">Click "Run Simulation" to start...</p>
             </div>
           </div>
@@ -163,8 +292,7 @@ title: "Admin Dashboard"
       <div class="card">
         <h2>🏃 Run Submission Simulator</h2>
         <p class="muted mb-3">
-          Test the complete run submission flow. This validates data, checks for banned terms,
-          and simulates the GitHub workflow trigger.
+          Test run submission validation and workflow triggers.
         </p>
         
         <div class="simulator">
@@ -198,74 +326,11 @@ title: "Admin Dashboard"
               <label class="form-label">Video URL</label>
               <input type="url" id="sim-run-video" class="form-input" value="https://youtube.com/watch?v=test123" />
             </div>
-            <div class="form-group">
-              <label class="form-label">Challenges (comma-separated)</label>
-              <input type="text" id="sim-run-challenges" class="form-input" value="hitless, no-upgrades" />
-            </div>
-            <button type="button" class="btn btn--primary" id="sim-run-run">
-              ▶ Run Simulation
-            </button>
+            <button type="button" class="btn btn--primary" id="sim-run-run">▶ Run Simulation</button>
           </div>
-          
           <div class="simulator__output">
-            <h3>Simulation Output</h3>
+            <h3>Output</h3>
             <div class="output-log" id="sim-run-log">
-              <p class="muted">Click "Run Simulation" to start...</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-    
-    <!-- ==========================================================
-         TEST GAME TAB
-         ========================================================== -->
-    <section class="tab-panel" data-panel="test-game">
-      <div class="card">
-        <h2>🎮 Game Submission Simulator</h2>
-        <p class="muted mb-3">
-          Test the game submission flow. This validates the game data structure,
-          checks for required fields, and simulates the approval process.
-        </p>
-        
-        <div class="simulator">
-          <div class="simulator__form">
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Game Name</label>
-                <input type="text" id="sim-game-name" class="form-input" value="Test Game Simulator" />
-              </div>
-              <div class="form-group">
-                <label class="form-label">Game ID (slug)</label>
-                <input type="text" id="sim-game-id" class="form-input" value="test-game-sim" />
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Release Year</label>
-                <input type="number" id="sim-game-year" class="form-input" value="2024" />
-              </div>
-              <div class="form-group">
-                <label class="form-label">Developer</label>
-                <input type="text" id="sim-game-dev" class="form-input" value="Test Studio" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Genres (comma-separated)</label>
-              <input type="text" id="sim-game-genres" class="form-input" value="roguelike, action" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Categories (comma-separated)</label>
-              <input type="text" id="sim-game-categories" class="form-input" value="any, 100, hitless" />
-            </div>
-            <button type="button" class="btn btn--primary" id="sim-game-run">
-              ▶ Run Simulation
-            </button>
-          </div>
-          
-          <div class="simulator__output">
-            <h3>Simulation Output</h3>
-            <div class="output-log" id="sim-game-log">
               <p class="muted">Click "Run Simulation" to start...</p>
             </div>
           </div>
@@ -279,30 +344,21 @@ title: "Admin Dashboard"
     <section class="tab-panel" data-panel="auth-debug">
       <div class="card">
         <h2>🔍 Authentication Debug</h2>
-        <p class="muted mb-3">Current authentication state and user information.</p>
+        <p class="muted mb-3">Current authentication state.</p>
         
         <div class="auth-debug-grid">
           <div class="auth-debug-section">
             <h3>User Info</h3>
-            <div class="debug-table" id="debug-user-info">
-              <!-- Populated by JS -->
-            </div>
+            <div class="debug-table" id="debug-user-info"></div>
           </div>
-          
           <div class="auth-debug-section">
-            <h3>Provider Metadata</h3>
-            <div class="debug-table" id="debug-provider-info">
-              <!-- Populated by JS -->
-            </div>
+            <h3>Provider</h3>
+            <div class="debug-table" id="debug-provider-info"></div>
           </div>
-          
           <div class="auth-debug-section">
-            <h3>Profile Data</h3>
-            <div class="debug-table" id="debug-profile-info">
-              <!-- Populated by JS -->
-            </div>
+            <h3>Profile</h3>
+            <div class="debug-table" id="debug-profile-info"></div>
           </div>
-          
           <div class="auth-debug-section">
             <h3>Raw Session</h3>
             <pre class="debug-raw" id="debug-raw-session"></pre>
@@ -319,335 +375,109 @@ title: "Admin Dashboard"
 </div>
 
 <style>
-/* Dashboard Layout */
 .dashboard-header { margin-bottom: 2rem; }
 .dashboard-header h1 { margin-bottom: 0.25rem; }
-
-.dashboard-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.stat-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 1.25rem;
-  text-align: center;
-}
-
-.stat-card__value {
-  display: block;
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--accent);
-  line-height: 1;
-  margin-bottom: 0.5rem;
-}
-
-.stat-card__label {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}
-
-/* Tabs */
-.dashboard-tabs {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 0.5rem;
-}
-
-.dashboard-tabs .tab {
-  padding: 0.5rem 1rem;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.15s ease;
-}
-
-.dashboard-tabs .tab:hover {
-  color: var(--fg);
-  background: var(--surface);
-}
-
-.dashboard-tabs .tab.active {
-  color: var(--accent);
-  border-color: var(--accent);
-  background: rgba(var(--accent-rgb), 0.1);
-}
-
+.dashboard-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.25rem; text-align: center; }
+.stat-card__value { display: block; font-size: 2rem; font-weight: 700; color: var(--accent); line-height: 1; margin-bottom: 0.5rem; }
+.stat-card__label { font-size: 0.85rem; color: var(--text-muted); }
+.dashboard-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+.dashboard-tabs .tab { padding: 0.5rem 1rem; background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); color: var(--text-muted); cursor: pointer; font-size: 0.9rem; transition: all 0.15s ease; }
+.dashboard-tabs .tab:hover { color: var(--fg); background: var(--surface); }
+.dashboard-tabs .tab.active { color: var(--accent); border-color: var(--accent); background: rgba(var(--accent-rgb), 0.1); }
 .tab-panel { display: none; }
 .tab-panel.active { display: block; }
 
-/* Admin Grid */
-.admin-grid {
-  display: grid;
-  gap: 1.5rem;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-}
+/* Overview Grid */
+.overview-grid { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.status-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.status-item { display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; }
+.status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; background: var(--text-muted); }
+.status-dot.ok { background: #10b981; }
+.status-dot.warn { background: #f59e0b; }
+.status-dot.error { background: #ef4444; }
+.status-value { margin-left: auto; color: var(--text-muted); font-size: 0.85rem; }
 
-.admin-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
+/* Site Stats */
+.site-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.site-stat { text-align: center; padding: 0.75rem; background: var(--bg); border-radius: var(--radius-sm); }
+.site-stat__label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem; }
+.site-stat__value { display: block; font-size: 1.5rem; font-weight: 700; color: var(--accent); }
 
-.admin-actions .btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  justify-content: flex-start;
-}
+/* Activity List */
+.activity-list { max-height: 200px; overflow-y: auto; }
+.activity-item { padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+.activity-item:last-child { border-bottom: none; }
+.activity-time { color: var(--text-muted); font-size: 0.75rem; }
 
-/* Test Games List */
-.test-games-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
+/* Data Usage */
+.data-usage { display: flex; flex-direction: column; gap: 0.75rem; }
+.usage-item { display: flex; align-items: center; gap: 0.75rem; }
+.usage-label { flex: 0 0 100px; font-size: 0.85rem; color: var(--text-muted); }
+.usage-bar-wrap { flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+.usage-bar { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.3s ease; }
+.usage-value { flex: 0 0 100px; font-size: 0.75rem; color: var(--text-muted); text-align: right; }
 
-.test-games-list li {
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--border);
-}
+/* Admin Actions */
+.admin-actions { display: flex; flex-direction: column; gap: 0.5rem; }
+.admin-actions .btn { display: flex; align-items: center; gap: 0.5rem; justify-content: flex-start; position: relative; }
+.action-badge { position: absolute; right: 0.75rem; background: #dc3545; color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 10px; }
+.action-badge[hidden] { display: none; }
 
+/* Test Games */
+.test-games-list { list-style: none; padding: 0; margin: 0; }
+.test-games-list li { padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
 .test-games-list li:last-child { border-bottom: none; }
-
-.tag--small {
-  font-size: 0.65rem;
-  padding: 0.15rem 0.4rem;
-  margin-left: 0.5rem;
-  background: var(--accent);
-  color: var(--bg);
-  border-radius: 4px;
-}
-
-/* Status List */
-.status-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.status-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 0.9rem;
-}
-
-.status-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.status-dot--ok { background: #10b981; }
-.status-dot--warn { background: #f59e0b; }
-.status-dot--error { background: #ef4444; }
-
-.status-value {
-  margin-left: auto;
-  color: var(--text-muted);
-  font-size: 0.85rem;
-}
+.tag--small { font-size: 0.65rem; padding: 0.15rem 0.4rem; margin-left: 0.5rem; background: var(--accent); color: var(--bg); border-radius: 4px; }
 
 /* Simulator */
-.simulator {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-}
-
-@media (max-width: 800px) {
-  .simulator { grid-template-columns: 1fr; }
-}
-
-.simulator__form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-@media (max-width: 500px) {
-  .form-row { grid-template-columns: 1fr; }
-}
-
+.simulator { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+@media (max-width: 800px) { .simulator { grid-template-columns: 1fr; } }
+.simulator__form { display: flex; flex-direction: column; gap: 1rem; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
 .form-group { margin-bottom: 0; }
-
-.form-label {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 0.35rem;
-  font-size: 0.9rem;
-}
-
-.form-input,
-.form-textarea {
-  width: 100%;
-  padding: 0.6rem 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  color: var(--fg);
-  font-size: 0.9rem;
-}
-
-.form-input:focus,
-.form-textarea:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-
-.simulator__output h3 {
-  margin-bottom: 0.75rem;
-  font-size: 1rem;
-}
-
-.output-log {
-  background: #0a0a0a;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 1rem;
-  min-height: 300px;
-  max-height: 400px;
-  overflow-y: auto;
-  font-family: 'SF Mono', Monaco, monospace;
-  font-size: 0.8rem;
-  line-height: 1.5;
-}
-
-.log-entry {
-  margin-bottom: 0.5rem;
-  padding-left: 1rem;
-  position: relative;
-}
-
-.log-entry::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0.5em;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--text-muted);
-}
-
+.form-label { display: block; font-weight: 600; margin-bottom: 0.35rem; font-size: 0.9rem; }
+.form-input, .form-textarea { width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--fg); font-size: 0.9rem; }
+.form-input:focus, .form-textarea:focus { outline: none; border-color: var(--accent); }
+.simulator__output h3 { margin-bottom: 0.75rem; font-size: 1rem; }
+.output-log { background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; min-height: 250px; max-height: 350px; overflow-y: auto; font-family: 'SF Mono', Monaco, monospace; font-size: 0.8rem; line-height: 1.5; }
+.log-entry { margin-bottom: 0.5rem; padding-left: 1rem; position: relative; }
+.log-entry::before { content: ''; position: absolute; left: 0; top: 0.5em; width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); }
 .log-entry--info::before { background: #3b82f6; }
 .log-entry--success::before { background: #10b981; }
 .log-entry--warning::before { background: #f59e0b; }
 .log-entry--error::before { background: #ef4444; }
-
 .log-entry--success { color: #10b981; }
 .log-entry--error { color: #ef4444; }
 .log-entry--warning { color: #f59e0b; }
-
-.log-timestamp {
-  color: var(--text-muted);
-  margin-right: 0.5rem;
-}
+.log-timestamp { color: var(--text-muted); margin-right: 0.5rem; }
 
 /* Auth Debug */
-.auth-debug-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.auth-debug-section h3 {
-  font-size: 0.9rem;
-  margin-bottom: 0.75rem;
-  color: var(--accent);
-}
-
-.debug-table {
-  background: var(--surface);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-}
-
-.debug-row {
-  display: flex;
-  border-bottom: 1px solid var(--border);
-}
-
+.auth-debug-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; }
+.auth-debug-section h3 { font-size: 0.9rem; margin-bottom: 0.75rem; color: var(--accent); }
+.debug-table { background: var(--surface); border-radius: var(--radius-sm); overflow: hidden; }
+.debug-row { display: flex; border-bottom: 1px solid var(--border); }
 .debug-row:last-child { border-bottom: none; }
-
-.debug-key {
-  flex: 0 0 120px;
-  padding: 0.5rem 0.75rem;
-  background: var(--bg);
-  font-weight: 600;
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-.debug-value {
-  flex: 1;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.8rem;
-  word-break: break-all;
-}
-
-.debug-raw {
-  background: #0a0a0a;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 1rem;
-  font-size: 0.75rem;
-  overflow: auto;
-  max-height: 200px;
-}
-
-.auth-debug-actions {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.btn--danger {
-  background: transparent;
-  border: 1px solid #ef4444;
-  color: #ef4444;
-}
-
-.btn--danger:hover {
-  background: #ef4444;
-  color: white;
-}
+.debug-key { flex: 0 0 100px; padding: 0.5rem 0.75rem; background: var(--bg); font-weight: 600; font-size: 0.8rem; color: var(--text-muted); }
+.debug-value { flex: 1; padding: 0.5rem 0.75rem; font-size: 0.8rem; word-break: break-all; }
+.debug-raw { background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; font-size: 0.75rem; overflow: auto; max-height: 150px; }
+.auth-debug-actions { display: flex; gap: 0.75rem; }
+.btn--danger { background: transparent; border: 1px solid #ef4444; color: #ef4444; }
+.btn--danger:hover { background: #ef4444; color: white; }
 </style>
 
 <script type="module">
 import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
 
 const ADMIN_IDS = ['gary-asher'];
-
 let supabase = null;
 
-// Elements
 const authCheck = document.getElementById('auth-check');
 const notAuthorized = document.getElementById('not-authorized');
 const adminContent = document.getElementById('admin-content');
 
-// ============================================================
 // Tab Switching
-// ============================================================
 document.querySelectorAll('.dashboard-tabs .tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.dashboard-tabs .tab').forEach(t => t.classList.remove('active'));
@@ -657,9 +487,7 @@ document.querySelectorAll('.dashboard-tabs .tab').forEach(tab => {
   });
 });
 
-// ============================================================
 // Logging Utility
-// ============================================================
 function log(logEl, message, type = 'info') {
   const timestamp = new Date().toLocaleTimeString();
   const entry = document.createElement('div');
@@ -668,231 +496,52 @@ function log(logEl, message, type = 'info') {
   logEl.appendChild(entry);
   logEl.scrollTop = logEl.scrollHeight;
 }
+function clearLog(logEl) { logEl.innerHTML = ''; }
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-function clearLog(logEl) {
-  logEl.innerHTML = '';
-}
-
-// ============================================================
 // Profile Simulator
-// ============================================================
 document.getElementById('sim-profile-run')?.addEventListener('click', async () => {
   const logEl = document.getElementById('sim-profile-log');
   clearLog(logEl);
-  
   const name = document.getElementById('sim-profile-name').value;
   const id = document.getElementById('sim-profile-id').value;
   const bio = document.getElementById('sim-profile-bio').value;
   
   log(logEl, '🚀 Starting profile submission simulation...', 'info');
-  
-  // Step 1: Validate inputs
-  log(logEl, 'Step 1: Validating input fields...', 'info');
   await sleep(300);
   
+  // Validation
+  log(logEl, 'Step 1: Validating inputs...', 'info');
   const errors = [];
-  if (!name || name.length < 2) errors.push('Display name must be at least 2 characters');
-  if (!id || !/^[a-z0-9-]+$/.test(id)) errors.push('Runner ID must be lowercase with hyphens only');
-  if (id && id.length < 3) errors.push('Runner ID must be at least 3 characters');
-  if (bio && bio.length > 500) errors.push('Bio must be under 500 characters');
+  if (!name || name.length < 2) errors.push('Display name too short');
+  if (!id || !/^[a-z0-9-]+$/.test(id)) errors.push('Invalid runner ID format');
+  if (id && id.length < 3) errors.push('Runner ID too short');
+  if (errors.length > 0) { errors.forEach(e => log(logEl, `❌ ${e}`, 'error')); return; }
+  log(logEl, '✅ Validation passed', 'success');
   
-  if (errors.length > 0) {
-    errors.forEach(e => log(logEl, `❌ Validation error: ${e}`, 'error'));
-    log(logEl, '⛔ Simulation stopped due to validation errors', 'error');
-    return;
-  }
-  log(logEl, '✅ All fields valid', 'success');
-  
-  // Step 2: Check for banned terms
-  log(logEl, 'Step 2: Checking for banned terms...', 'info');
   await sleep(400);
+  log(logEl, 'Step 2: Checking banned terms...', 'info');
+  const banned = ['admin', 'moderator', 'official'];
+  const found = banned.filter(t => name.toLowerCase().includes(t) || id.toLowerCase().includes(t));
+  if (found.length) log(logEl, `⚠️ Reserved terms found: ${found.join(', ')}`, 'warning');
+  else log(logEl, '✅ No banned terms', 'success');
   
-  const bannedTerms = ['admin', 'moderator', 'official', 'system'];
-  const foundBanned = bannedTerms.filter(t => 
-    name.toLowerCase().includes(t) || id.toLowerCase().includes(t)
-  );
+  await sleep(400);
+  log(logEl, 'Step 3: Checking ID availability...', 'info');
+  log(logEl, `✅ "${id}" is available`, 'success');
   
-  if (foundBanned.length > 0) {
-    log(logEl, `⚠️ Warning: Found reserved terms: ${foundBanned.join(', ')}`, 'warning');
-  } else {
-    log(logEl, '✅ No banned terms found', 'success');
-  }
-  
-  // Step 3: Check if runner ID exists
-  log(logEl, 'Step 3: Checking if runner ID is available...', 'info');
-  await sleep(500);
-  
-  if (supabase) {
-    try {
-      const { data } = await supabase
-        .from('runner_profiles')
-        .select('runner_id')
-        .eq('runner_id', id)
-        .single();
-      
-      if (data) {
-        log(logEl, `❌ Runner ID "${id}" is already taken`, 'error');
-        log(logEl, '⛔ Simulation stopped - ID conflict', 'error');
-        return;
-      }
-    } catch (e) {
-      // Not found = available
-    }
-  }
-  log(logEl, `✅ Runner ID "${id}" is available`, 'success');
-  
-  // Step 4: Simulate database insert
-  log(logEl, 'Step 4: Simulating database insert...', 'info');
-  await sleep(600);
-  
-  const profileData = {
-    user_id: 'sim-' + Date.now(),
-    requested_runner_id: id,
-    display_name: name,
-    bio: bio,
-    status: 'pending',
-    submitted_at: new Date().toISOString()
-  };
-  
-  log(logEl, `📝 Profile data prepared:`, 'info');
-  log(logEl, `<pre style="margin-left:1rem;color:var(--text-muted)">${JSON.stringify(profileData, null, 2)}</pre>`, 'info');
-  
-  // Step 5: Simulate notification
-  log(logEl, 'Step 5: Triggering admin notification...', 'info');
   await sleep(300);
-  log(logEl, '📧 Admin notification would be sent (skipped in simulation)', 'info');
+  log(logEl, 'Step 4: Generating profile data...', 'info');
+  log(logEl, `<pre style="margin-left:1rem;color:var(--text-muted)">${JSON.stringify({ runner_id: id, display_name: name, bio, status: 'pending' }, null, 2)}</pre>`, 'info');
   
-  // Complete
-  log(logEl, '─'.repeat(40), 'info');
+  log(logEl, '─'.repeat(35), 'info');
   log(logEl, '🎉 SIMULATION COMPLETE', 'success');
-  log(logEl, 'Profile would be added to pending queue for admin review.', 'success');
 });
 
-// ============================================================
-// Run Simulator
-// ============================================================
-document.getElementById('sim-run-run')?.addEventListener('click', async () => {
-  const logEl = document.getElementById('sim-run-log');
-  clearLog(logEl);
-  
-  const game = document.getElementById('sim-run-game').value;
-  const category = document.getElementById('sim-run-category').value;
-  const runner = document.getElementById('sim-run-runner').value;
-  const time = document.getElementById('sim-run-time').value;
-  const video = document.getElementById('sim-run-video').value;
-  const challenges = document.getElementById('sim-run-challenges').value;
-  
-  log(logEl, '🚀 Starting run submission simulation...', 'info');
-  
-  // Step 1: Validate required fields
-  log(logEl, 'Step 1: Validating required fields...', 'info');
-  await sleep(300);
-  
-  const errors = [];
-  if (!game) errors.push('Game is required');
-  if (!category) errors.push('Category is required');
-  if (!runner) errors.push('Runner ID is required');
-  if (!video) errors.push('Video URL is required');
-  
-  if (errors.length > 0) {
-    errors.forEach(e => log(logEl, `❌ ${e}`, 'error'));
-    log(logEl, '⛔ Simulation stopped due to missing required fields', 'error');
-    return;
-  }
-  log(logEl, '✅ All required fields present', 'success');
-  
-  // Step 2: Validate video URL
-  log(logEl, 'Step 2: Validating video URL...', 'info');
-  await sleep(400);
-  
-  const validVideoHosts = ['youtube.com', 'youtu.be', 'twitch.tv', 'vimeo.com'];
-  let videoValid = false;
-  try {
-    const url = new URL(video);
-    videoValid = validVideoHosts.some(h => url.hostname.includes(h));
-  } catch {}
-  
-  if (!videoValid) {
-    log(logEl, `⚠️ Warning: Video URL may not be from a supported platform`, 'warning');
-  } else {
-    log(logEl, '✅ Video URL is valid', 'success');
-  }
-  
-  // Step 3: Validate time format
-  log(logEl, 'Step 3: Validating time format...', 'info');
-  await sleep(300);
-  
-  const timeRegex = /^(\d{1,2}:)?(\d{1,2}:)?\d{1,2}(\.\d+)?$/;
-  if (time && !timeRegex.test(time)) {
-    log(logEl, `⚠️ Warning: Time format may be invalid. Expected: HH:MM:SS or MM:SS`, 'warning');
-  } else {
-    log(logEl, `✅ Time format valid: ${time || '(not provided)'}`, 'success');
-  }
-  
-  // Step 4: Check runner exists
-  log(logEl, 'Step 4: Verifying runner exists...', 'info');
-  await sleep(500);
-  
-  // In production, check Jekyll _runners or Supabase
-  log(logEl, `✅ Runner "${runner}" found (simulated)`, 'success');
-  
-  // Step 5: Check game and category
-  log(logEl, 'Step 5: Verifying game and category...', 'info');
-  await sleep(400);
-  log(logEl, `✅ Game "${game}" exists`, 'success');
-  log(logEl, `✅ Category "${category}" is valid for ${game}`, 'success');
-  
-  // Step 6: Parse challenges
-  log(logEl, 'Step 6: Parsing challenge tags...', 'info');
-  await sleep(300);
-  
-  const challengeList = challenges.split(',').map(c => c.trim()).filter(Boolean);
-  if (challengeList.length > 0) {
-    log(logEl, `📋 Challenges: ${challengeList.join(', ')}`, 'info');
-  }
-  
-  // Step 7: Generate run file
-  log(logEl, 'Step 7: Generating run markdown file...', 'info');
-  await sleep(500);
-  
-  const date = new Date().toISOString().split('T')[0];
-  const filename = `${date}__${game}__${runner}__${category.toLowerCase().replace(/[^a-z0-9]/g, '-')}__01.md`;
-  
-  log(logEl, `📄 Filename: ${filename}`, 'info');
-  
-  const runData = {
-    game_id: game,
-    runner_id: runner,
-    category: category,
-    time: time || null,
-    video_url: video,
-    date_completed: date,
-    standard_challenges: challengeList,
-    status: 'pending'
-  };
-  
-  log(logEl, `📝 Run data:`, 'info');
-  log(logEl, `<pre style="margin-left:1rem;color:var(--text-muted)">${JSON.stringify(runData, null, 2)}</pre>`, 'info');
-  
-  // Step 8: Simulate GitHub workflow
-  log(logEl, 'Step 8: Simulating GitHub workflow trigger...', 'info');
-  await sleep(600);
-  log(logEl, '🔄 repository_dispatch event: new-run-submission', 'info');
-  log(logEl, '📋 Workflow would create PR with run file', 'info');
-  
-  // Complete
-  log(logEl, '─'.repeat(40), 'info');
-  log(logEl, '🎉 SIMULATION COMPLETE', 'success');
-  log(logEl, 'Run would be submitted for verification.', 'success');
-});
-
-// ============================================================
 // Game Simulator
-// ============================================================
 document.getElementById('sim-game-run')?.addEventListener('click', async () => {
   const logEl = document.getElementById('sim-game-log');
   clearLog(logEl);
-  
   const name = document.getElementById('sim-game-name').value;
   const id = document.getElementById('sim-game-id').value;
   const year = document.getElementById('sim-game-year').value;
@@ -901,218 +550,157 @@ document.getElementById('sim-game-run')?.addEventListener('click', async () => {
   const categories = document.getElementById('sim-game-categories').value;
   
   log(logEl, '🚀 Starting game submission simulation...', 'info');
-  
-  // Step 1: Validate required fields
-  log(logEl, 'Step 1: Validating required fields...', 'info');
   await sleep(300);
   
-  const errors = [];
-  if (!name || name.length < 2) errors.push('Game name must be at least 2 characters');
-  if (!id || !/^[a-z0-9-]+$/.test(id)) errors.push('Game ID must be lowercase with hyphens only');
-  if (!year || year < 1970 || year > 2030) errors.push('Release year must be valid');
+  log(logEl, 'Step 1: Validating inputs...', 'info');
+  if (!name || !id || !/^[a-z0-9-]+$/.test(id)) { log(logEl, '❌ Invalid inputs', 'error'); return; }
+  log(logEl, '✅ Validation passed', 'success');
   
-  if (errors.length > 0) {
-    errors.forEach(e => log(logEl, `❌ ${e}`, 'error'));
-    log(logEl, '⛔ Simulation stopped due to validation errors', 'error');
-    return;
-  }
-  log(logEl, '✅ All required fields valid', 'success');
-  
-  // Step 2: Check if game ID exists
-  log(logEl, 'Step 2: Checking if game ID is available...', 'info');
   await sleep(400);
+  log(logEl, 'Step 2: Checking ID availability...', 'info');
+  const existing = ['hades-2', 'hollow-knight', 'celeste'];
+  if (existing.includes(id)) { log(logEl, `❌ "${id}" already exists`, 'error'); return; }
+  log(logEl, `✅ "${id}" is available`, 'success');
   
-  // Check against Jekyll games
-  const existingGames = ['hades-2', 'hollow-knight', 'celeste', 'test-game'];
-  if (existingGames.includes(id)) {
-    log(logEl, `❌ Game ID "${id}" already exists`, 'error');
-    log(logEl, '⛔ Simulation stopped - ID conflict', 'error');
-    return;
-  }
-  log(logEl, `✅ Game ID "${id}" is available`, 'success');
+  await sleep(400);
+  log(logEl, 'Step 3: Parsing categories...', 'info');
+  const cats = categories.split(',').map(c => c.trim()).filter(Boolean);
+  log(logEl, `✅ Categories: ${cats.join(', ')}`, 'success');
   
-  // Step 3: Parse genres
-  log(logEl, 'Step 3: Validating genres...', 'info');
   await sleep(300);
+  log(logEl, 'Step 4: Generating file structure...', 'info');
+  log(logEl, `📄 _games/${id}.md`, 'info');
+  cats.forEach(c => log(logEl, `📁 /games/${id}/runs/full-runs/${c.toLowerCase()}/`, 'info'));
   
-  const genreList = genres.split(',').map(g => g.trim().toLowerCase()).filter(Boolean);
-  const validGenres = ['roguelike', 'metroidvania', 'platformer', 'action', 'rpg', 'puzzle', 'adventure'];
-  const invalidGenres = genreList.filter(g => !validGenres.includes(g));
-  
-  if (invalidGenres.length > 0) {
-    log(logEl, `⚠️ Warning: Unknown genres will need to be added: ${invalidGenres.join(', ')}`, 'warning');
-  }
-  log(logEl, `✅ Genres: ${genreList.join(', ')}`, 'success');
-  
-  // Step 4: Parse categories
-  log(logEl, 'Step 4: Parsing run categories...', 'info');
-  await sleep(400);
-  
-  const categoryList = categories.split(',').map(c => c.trim()).filter(Boolean);
-  log(logEl, `✅ Categories: ${categoryList.join(', ')}`, 'success');
-  
-  // Step 5: Generate game file structure
-  log(logEl, 'Step 5: Generating game file structure...', 'info');
-  await sleep(500);
-  
-  const gameData = {
-    game_id: id,
-    game_name: name,
-    release_year: parseInt(year),
-    developer: dev,
-    genres: genreList,
-    platforms: ['pc'],
-    categories: categoryList.map(c => ({
-      slug: c.toLowerCase().replace(/[^a-z0-9]/g, '-'),
-      label: c,
-      tier: 'full-runs'
-    })),
-    published: false,
-    test_only: true
-  };
-  
-  log(logEl, `📄 File: _games/${id}.md`, 'info');
-  log(logEl, `📝 Game data:`, 'info');
-  log(logEl, `<pre style="margin-left:1rem;color:var(--text-muted)">${JSON.stringify(gameData, null, 2)}</pre>`, 'info');
-  
-  // Step 6: List generated pages
-  log(logEl, 'Step 6: Pages that would be generated...', 'info');
-  await sleep(400);
-  
-  const pages = [
-    `/games/${id}/`,
-    `/games/${id}/runs/`,
-    `/games/${id}/rules/`,
-    `/games/${id}/submit/`,
-    ...categoryList.map(c => `/games/${id}/runs/full-runs/${c.toLowerCase()}/`)
-  ];
-  
-  pages.forEach(p => log(logEl, `  📁 ${p}`, 'info'));
-  
-  // Step 7: Simulate workflow
-  log(logEl, 'Step 7: Simulating approval workflow...', 'info');
-  await sleep(500);
-  log(logEl, '📋 Game would be added to _queue_games/', 'info');
-  log(logEl, '👥 Admin review required before publishing', 'info');
-  log(logEl, '🔄 After approval: auto-regenerate workflow runs', 'info');
-  
-  // Complete
-  log(logEl, '─'.repeat(40), 'info');
+  log(logEl, '─'.repeat(35), 'info');
   log(logEl, '🎉 SIMULATION COMPLETE', 'success');
-  log(logEl, 'Game would be queued for admin review.', 'success');
 });
 
-// ============================================================
+// Run Simulator
+document.getElementById('sim-run-run')?.addEventListener('click', async () => {
+  const logEl = document.getElementById('sim-run-log');
+  clearLog(logEl);
+  const game = document.getElementById('sim-run-game').value;
+  const category = document.getElementById('sim-run-category').value;
+  const runner = document.getElementById('sim-run-runner').value;
+  const time = document.getElementById('sim-run-time').value;
+  const video = document.getElementById('sim-run-video').value;
+  
+  log(logEl, '🚀 Starting run submission simulation...', 'info');
+  await sleep(300);
+  
+  log(logEl, 'Step 1: Validating required fields...', 'info');
+  if (!game || !category || !runner || !video) { log(logEl, '❌ Missing required fields', 'error'); return; }
+  log(logEl, '✅ All fields present', 'success');
+  
+  await sleep(400);
+  log(logEl, 'Step 2: Validating video URL...', 'info');
+  const hosts = ['youtube.com', 'youtu.be', 'twitch.tv'];
+  try { const u = new URL(video); if (!hosts.some(h => u.hostname.includes(h))) log(logEl, '⚠️ Unknown video host', 'warning'); else log(logEl, '✅ Video URL valid', 'success'); } catch { log(logEl, '❌ Invalid URL', 'error'); return; }
+  
+  await sleep(400);
+  log(logEl, 'Step 3: Validating time format...', 'info');
+  if (!/^(\d{1,2}:)?(\d{1,2}:)?\d{1,2}(\.\d+)?$/.test(time)) log(logEl, '⚠️ Time format may be invalid', 'warning');
+  else log(logEl, `✅ Time: ${time}`, 'success');
+  
+  await sleep(300);
+  log(logEl, 'Step 4: Generating run file...', 'info');
+  const date = new Date().toISOString().split('T')[0];
+  log(logEl, `📄 ${date}__${game}__${runner}__${category.toLowerCase()}__01.md`, 'info');
+  
+  log(logEl, '─'.repeat(35), 'info');
+  log(logEl, '🎉 SIMULATION COMPLETE', 'success');
+});
+
 // Auth Debug
-// ============================================================
 function renderAuthDebug() {
   const user = CRCAuth.getUser();
   const profile = CRCAuth.getProfile();
   const metadata = CRCAuth.getProviderMetadata();
   
-  // User Info
-  const userInfo = document.getElementById('debug-user-info');
-  userInfo.innerHTML = `
+  document.getElementById('debug-user-info').innerHTML = `
     <div class="debug-row"><span class="debug-key">User ID</span><span class="debug-value">${user?.id || 'N/A'}</span></div>
     <div class="debug-row"><span class="debug-key">Email</span><span class="debug-value">${user?.email || 'N/A'}</span></div>
     <div class="debug-row"><span class="debug-key">Created</span><span class="debug-value">${user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</span></div>
-    <div class="debug-row"><span class="debug-key">Identities</span><span class="debug-value">${user?.identities?.length || 0}</span></div>
   `;
-  
-  // Provider Info
-  const providerInfo = document.getElementById('debug-provider-info');
-  providerInfo.innerHTML = `
+  document.getElementById('debug-provider-info').innerHTML = `
     <div class="debug-row"><span class="debug-key">Provider</span><span class="debug-value">${metadata?.provider || 'N/A'}</span></div>
     <div class="debug-row"><span class="debug-key">Username</span><span class="debug-value">${metadata?.providerUsername || 'N/A'}</span></div>
-    <div class="debug-row"><span class="debug-key">Email</span><span class="debug-value">${metadata?.email || 'N/A'}</span></div>
     <div class="debug-row"><span class="debug-key">Verified</span><span class="debug-value">${metadata?.emailVerified ? '✅' : '❌'}</span></div>
   `;
-  
-  // Profile Info
-  const profileInfo = document.getElementById('debug-profile-info');
-  profileInfo.innerHTML = `
+  document.getElementById('debug-profile-info').innerHTML = `
     <div class="debug-row"><span class="debug-key">Runner ID</span><span class="debug-value">${profile?.runner_id || 'N/A'}</span></div>
-    <div class="debug-row"><span class="debug-key">Display Name</span><span class="debug-value">${profile?.display_name || 'N/A'}</span></div>
-    <div class="debug-row"><span class="debug-key">Is Admin</span><span class="debug-value">${profile?.is_admin ? '✅' : '❌'}</span></div>
-    <div class="debug-row"><span class="debug-key">Is Pending</span><span class="debug-value">${profile?._isPending ? '⏳' : '❌'}</span></div>
+    <div class="debug-row"><span class="debug-key">Display</span><span class="debug-value">${profile?.display_name || 'N/A'}</span></div>
+    <div class="debug-row"><span class="debug-key">Admin</span><span class="debug-value">${profile?.is_admin ? '✅' : '❌'}</span></div>
   `;
-  
-  // Raw Session
-  const rawSession = document.getElementById('debug-raw-session');
-  rawSession.textContent = JSON.stringify({ user, profile, metadata }, null, 2);
+  document.getElementById('debug-raw-session').textContent = JSON.stringify({ user, profile, metadata }, null, 2);
 }
 
-document.getElementById('debug-refresh')?.addEventListener('click', async () => {
-  await CRCAuth.init();
-  renderAuthDebug();
-});
+document.getElementById('debug-refresh')?.addEventListener('click', async () => { await CRCAuth.init(); renderAuthDebug(); });
+document.getElementById('debug-sign-out')?.addEventListener('click', async () => { await CRCAuth.signOut(); window.location.href = '/sign-in/'; });
 
-document.getElementById('debug-sign-out')?.addEventListener('click', async () => {
-  await CRCAuth.signOut();
-  window.location.href = '/sign-in/';
-});
-
-// ============================================================
-// Load Stats
-// ============================================================
-async function loadStats() {
-  if (!supabase) return;
+// Load Stats & Status
+async function loadDashboard() {
+  // System status
+  document.getElementById('status-timestamp').textContent = new Date().toLocaleTimeString();
   
-  try {
-    const { count: profiles } = await supabase
-      .from('pending_profiles')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'pending');
-    document.getElementById('stat-profiles').textContent = profiles || 0;
-    
-    const { count: runners } = await supabase
-      .from('runner_profiles')
-      .select('*', { count: 'exact', head: true });
-    document.getElementById('stat-total-runners').textContent = runners || 0;
-    
-    // Placeholder for runs/games
-    document.getElementById('stat-runs').textContent = '0';
-    document.getElementById('stat-games').textContent = '0';
-    
-    // Update Supabase status
-    document.getElementById('status-supabase').textContent = 'Connected';
-  } catch (e) {
-    document.getElementById('status-supabase').textContent = 'Error';
-    console.error('Stats load error:', e);
+  if (supabase) {
+    try {
+      await supabase.from('runner_profiles').select('id', { count: 'exact', head: true });
+      document.getElementById('status-supabase').textContent = 'Connected';
+      document.getElementById('status-dot-supabase').classList.add('ok');
+    } catch { 
+      document.getElementById('status-supabase').textContent = 'Error';
+      document.getElementById('status-dot-supabase').classList.add('error');
+    }
   }
+  
+  document.getElementById('status-auth').textContent = CRCAuth.isSignedIn() ? 'Active' : 'Not signed in';
+  document.getElementById('status-dot-auth').classList.add(CRCAuth.isSignedIn() ? 'ok' : 'warn');
+  document.getElementById('status-dot-github').classList.add('ok');
+  document.getElementById('status-github').textContent = 'Active';
+  document.getElementById('status-dot-jekyll').classList.add('ok');
+  
+  // Stats
+  if (supabase) {
+    try {
+      const { count: profiles } = await supabase.from('pending_profiles').select('*', { count: 'exact', head: true }).eq('status', 'pending');
+      document.getElementById('stat-profiles').textContent = profiles || 0;
+      if (profiles > 0) { const b = document.getElementById('action-profiles-badge'); if (b) { b.hidden = false; b.textContent = profiles; } }
+      
+      const { count: runners } = await supabase.from('runner_profiles').select('*', { count: 'exact', head: true });
+      document.getElementById('stat-total-runners').textContent = runners || 0;
+      document.getElementById('stat-total-runners-2').textContent = runners || 0;
+    } catch (e) { console.error(e); }
+  }
+  
+  document.getElementById('stat-games').textContent = '0';
+  document.getElementById('stat-runs').textContent = '0';
+  document.getElementById('stat-total-games').textContent = '{{ site.games.size }}';
+  document.getElementById('stat-total-runs').textContent = '{{ site.runs.size }}';
+  document.getElementById('stat-verified-runs').textContent = '-';
+  
+  // Activity placeholder
+  document.getElementById('recent-activity').innerHTML = `
+    <div class="activity-item">Profile created: gary-asher <span class="activity-time">2 days ago</span></div>
+    <div class="activity-item">Run submitted: Hades 2 Any% <span class="activity-time">3 days ago</span></div>
+  `;
 }
 
-// ============================================================
-// Utility
-// ============================================================
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-// ============================================================
 // Initialize
-// ============================================================
 (async function() {
   await CRCAuth.init();
-  
   const isSignedIn = CRCAuth.isSignedIn();
   const profile = CRCAuth.getProfile();
   const metadata = CRCAuth.getProviderMetadata();
-  
-  // Check admin
-  const isAdmin = profile?.runner_id && ADMIN_IDS.includes(profile.runner_id);
-  const isAdminByUsername = metadata?.providerUsername?.toLowerCase() === 'gary_asher' || 
-                            metadata?.providerUsername?.toLowerCase() === 'garyasher';
+  const isAdmin = profile?.runner_id && ADMIN_IDS.includes(profile.runner_id) || metadata?.providerUsername?.toLowerCase() === 'garyasher';
   
   authCheck.hidden = true;
-  
-  if (isSignedIn && (isAdmin || isAdminByUsername)) {
+  if (isSignedIn && isAdmin) {
     adminContent.hidden = false;
     supabase = CRCAuth.getSupabaseClient?.();
-    
-    // Load data
     renderAuthDebug();
-    loadStats();
+    loadDashboard();
   } else {
     notAuthorized.hidden = false;
   }
