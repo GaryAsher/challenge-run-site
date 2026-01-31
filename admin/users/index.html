@@ -1,0 +1,536 @@
+---
+layout: default
+title: "User Data"
+---
+
+<div class="page-width">
+  <div id="auth-check">
+    <div class="card">
+      <div class="sign-in-loading">
+        <div class="spinner"></div>
+        <p class="muted">Verifying super admin access...</p>
+      </div>
+    </div>
+  </div>
+  
+  <div id="not-authorized" class="card" hidden>
+    <h2>Access Denied</h2>
+    <p class="muted">Super Admin privileges required.</p>
+    <a href="/" class="btn btn--primary">Go Home</a>
+  </div>
+  
+  <div id="admin-content" hidden>
+    <div class="page-header">
+      <span class="super-admin-badge">🔒 Super Admin Only</span>
+      <h1>📧 User Data</h1>
+      <p class="muted">View and manage user accounts (sensitive information)</p>
+    </div>
+    
+    <!-- Warning Banner -->
+    <div class="warning-banner">
+      <span class="warning-icon">⚠️</span>
+      <div class="warning-content">
+        <strong>Sensitive Information</strong>
+        <p>This page contains personal user data including email addresses. Access is logged. Handle with care and comply with privacy regulations.</p>
+      </div>
+    </div>
+    
+    <!-- Search & Filters -->
+    <div class="card mt-4">
+      <h2>🔍 Search Users</h2>
+      <div class="search-form">
+        <div class="search-row">
+          <input type="text" id="search-query" class="form-input" placeholder="Search by runner ID, email, or name..." />
+          <select id="search-filter" class="form-input form-select">
+            <option value="all">All Users</option>
+            <option value="admins">Admins Only</option>
+            <option value="verifiers">Verifiers Only</option>
+            <option value="pending">Pending Profiles</option>
+          </select>
+          <button type="button" class="btn btn--primary" id="search-btn">Search</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Results Table -->
+    <div class="card mt-4">
+      <div class="table-header">
+        <h2>👥 Users</h2>
+        <span class="user-count" id="user-count">0 users</span>
+      </div>
+      
+      <div class="table-wrap">
+        <table class="user-table" id="user-table">
+          <thead>
+            <tr>
+              <th>Runner ID</th>
+              <th>Display Name</th>
+              <th>Email</th>
+              <th>Provider</th>
+              <th>Role</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="user-table-body">
+            <tr>
+              <td colspan="7" class="muted">Loading users...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="table-pagination">
+        <button type="button" class="btn btn--small" id="prev-page" disabled>← Previous</button>
+        <span class="page-info" id="page-info">Page 1</span>
+        <button type="button" class="btn btn--small" id="next-page">Next →</button>
+      </div>
+    </div>
+    
+    <!-- User Detail Modal -->
+    <div class="user-modal" id="user-modal" hidden>
+      <div class="user-modal__backdrop" id="user-modal-backdrop"></div>
+      <div class="user-modal__content">
+        <div class="user-modal__header">
+          <h2>User Details</h2>
+          <button type="button" class="user-modal__close" id="user-modal-close">&times;</button>
+        </div>
+        <div class="user-modal__body" id="user-modal-body">
+          <!-- Populated by JS -->
+        </div>
+        <div class="user-modal__footer">
+          <button type="button" class="btn" id="user-modal-close-btn">Close</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Export Options -->
+    <div class="card mt-4">
+      <h2>📥 Export Data</h2>
+      <p class="muted mb-3">Export user data for compliance or backup purposes.</p>
+      <div class="export-actions">
+        <button type="button" class="btn" id="export-csv">Export CSV (emails only)</button>
+        <button type="button" class="btn" id="export-json">Export JSON (all data)</button>
+      </div>
+      <p class="muted mt-2" style="font-size: 0.8rem;">
+        ⚠️ Exports are logged. Only export what you need for legitimate purposes.
+      </p>
+    </div>
+  </div>
+</div>
+
+<style>
+.super-admin-badge {
+  display: inline-block;
+  background: #9b59b6;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.page-header { margin-bottom: 1.5rem; }
+.page-header h1 { margin-bottom: 0.25rem; }
+
+/* Warning Banner */
+.warning-banner {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--radius-sm);
+  color: #fca5a5;
+}
+
+.warning-icon { font-size: 1.5rem; }
+
+.warning-content strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: #ef4444;
+}
+
+.warning-content p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* Search Form */
+.search-form { margin-top: 1rem; }
+
+.search-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.search-row .form-input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.search-row .form-select {
+  flex: 0 0 150px;
+}
+
+/* Table */
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.user-count {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.user-table th,
+.user-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+
+.user-table th {
+  background: var(--bg);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.user-table td {
+  vertical-align: middle;
+}
+
+.user-table tr:hover td {
+  background: var(--bg);
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.role-badge.super_admin { background: #9b59b6; color: white; }
+.role-badge.admin { background: var(--accent); color: var(--bg); }
+.role-badge.verifier { background: #3498db; color: white; }
+.role-badge.user { background: var(--text-muted); color: var(--bg); }
+
+.email-cell {
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 0.85rem;
+}
+
+.table-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.page-info {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* User Modal */
+.user-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.user-modal[hidden] { display: none; }
+
+.user-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+}
+
+.user-modal__content {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.user-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.user-modal__header h2 { font-size: 1.1rem; margin: 0; }
+
+.user-modal__close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.user-modal__body {
+  padding: 1.25rem;
+  overflow-y: auto;
+}
+
+.user-modal__footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.detail-row {
+  display: flex;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-row:last-child { border-bottom: none; }
+
+.detail-label {
+  flex: 0 0 120px;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.detail-value {
+  flex: 1;
+  font-size: 0.9rem;
+  word-break: break-all;
+}
+
+/* Export */
+.export-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+</style>
+
+<script type="module">
+import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
+
+const SUPER_ADMIN_IDS = ['gary-asher'];
+let supabase = null;
+let allUsers = [];
+let currentPage = 1;
+const pageSize = 20;
+
+const authCheck = document.getElementById('auth-check');
+const notAuthorized = document.getElementById('not-authorized');
+const adminContent = document.getElementById('admin-content');
+
+async function loadUsers() {
+  if (!supabase) return;
+  
+  const tbody = document.getElementById('user-table-body');
+  tbody.innerHTML = '<tr><td colspan="7" class="muted">Loading...</td></tr>';
+  
+  try {
+    const { data, error } = await supabase
+      .from('runner_profiles')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    
+    allUsers = data || [];
+    renderUsers();
+    
+    document.getElementById('user-count').textContent = allUsers.length + ' users';
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="7" class="muted">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function renderUsers(filter = 'all', query = '') {
+  let users = [...allUsers];
+  
+  // Apply filter
+  if (filter === 'admins') {
+    users = users.filter(u => u.is_admin || u.role === 'admin' || u.role === 'super_admin');
+  } else if (filter === 'verifiers') {
+    users = users.filter(u => u.role === 'verifier');
+  }
+  
+  // Apply search
+  if (query) {
+    const q = query.toLowerCase();
+    users = users.filter(u => 
+      (u.runner_id || '').toLowerCase().includes(q) ||
+      (u.display_name || '').toLowerCase().includes(q) ||
+      (u.email || '').toLowerCase().includes(q)
+    );
+  }
+  
+  // Pagination
+  const start = (currentPage - 1) * pageSize;
+  const end = start + pageSize;
+  const pageUsers = users.slice(start, end);
+  
+  const tbody = document.getElementById('user-table-body');
+  
+  if (pageUsers.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="muted">No users found</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = pageUsers.map(user => `
+    <tr>
+      <td><a href="/runners/${user.runner_id}/">${user.runner_id}</a></td>
+      <td>${user.display_name || '-'}</td>
+      <td class="email-cell">${user.email || 'N/A'}</td>
+      <td>${user.provider || '-'}</td>
+      <td><span class="role-badge ${user.role || 'user'}">${user.role || 'user'}</span></td>
+      <td>${user.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}</td>
+      <td><button class="btn btn--small" onclick="viewUser('${user.user_id}')">View</button></td>
+    </tr>
+  `).join('');
+  
+  // Update pagination
+  document.getElementById('page-info').textContent = `Page ${currentPage} of ${Math.ceil(users.length / pageSize)}`;
+  document.getElementById('prev-page').disabled = currentPage === 1;
+  document.getElementById('next-page').disabled = end >= users.length;
+}
+
+window.viewUser = async function(userId) {
+  const user = allUsers.find(u => u.user_id === userId);
+  if (!user) return;
+  
+  const body = document.getElementById('user-modal-body');
+  body.innerHTML = `
+    <div class="detail-row"><span class="detail-label">User ID</span><span class="detail-value">${user.user_id}</span></div>
+    <div class="detail-row"><span class="detail-label">Runner ID</span><span class="detail-value">${user.runner_id}</span></div>
+    <div class="detail-row"><span class="detail-label">Display Name</span><span class="detail-value">${user.display_name || '-'}</span></div>
+    <div class="detail-row"><span class="detail-label">Email</span><span class="detail-value">${user.email || 'Not available'}</span></div>
+    <div class="detail-row"><span class="detail-label">Provider</span><span class="detail-value">${user.provider || '-'}</span></div>
+    <div class="detail-row"><span class="detail-label">Role</span><span class="detail-value">${user.role || 'user'}</span></div>
+    <div class="detail-row"><span class="detail-label">Is Admin</span><span class="detail-value">${user.is_admin ? 'Yes' : 'No'}</span></div>
+    <div class="detail-row"><span class="detail-label">Created</span><span class="detail-value">${user.created_at ? new Date(user.created_at).toLocaleString() : '-'}</span></div>
+    <div class="detail-row"><span class="detail-label">Bio</span><span class="detail-value">${user.bio || '-'}</span></div>
+  `;
+  
+  document.getElementById('user-modal').hidden = false;
+};
+
+// Close modal
+document.getElementById('user-modal-close')?.addEventListener('click', () => {
+  document.getElementById('user-modal').hidden = true;
+});
+document.getElementById('user-modal-backdrop')?.addEventListener('click', () => {
+  document.getElementById('user-modal').hidden = true;
+});
+document.getElementById('user-modal-close-btn')?.addEventListener('click', () => {
+  document.getElementById('user-modal').hidden = true;
+});
+
+// Search
+document.getElementById('search-btn')?.addEventListener('click', () => {
+  const query = document.getElementById('search-query').value;
+  const filter = document.getElementById('search-filter').value;
+  currentPage = 1;
+  renderUsers(filter, query);
+});
+
+// Pagination
+document.getElementById('prev-page')?.addEventListener('click', () => {
+  if (currentPage > 1) {
+    currentPage--;
+    renderUsers(document.getElementById('search-filter').value, document.getElementById('search-query').value);
+  }
+});
+
+document.getElementById('next-page')?.addEventListener('click', () => {
+  currentPage++;
+  renderUsers(document.getElementById('search-filter').value, document.getElementById('search-query').value);
+});
+
+// Export CSV
+document.getElementById('export-csv')?.addEventListener('click', () => {
+  const csv = 'Email\n' + allUsers.filter(u => u.email).map(u => u.email).join('\n');
+  downloadFile(csv, 'crc-user-emails.csv', 'text/csv');
+});
+
+// Export JSON
+document.getElementById('export-json')?.addEventListener('click', () => {
+  const json = JSON.stringify(allUsers, null, 2);
+  downloadFile(json, 'crc-users.json', 'application/json');
+});
+
+function downloadFile(content, filename, type) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Initialize
+(async function() {
+  await CRCAuth.init();
+  
+  const profile = CRCAuth.getProfile();
+  const metadata = CRCAuth.getProviderMetadata();
+  const runnerId = profile?.runner_id?.toLowerCase() || '';
+  const username = metadata?.providerUsername?.toLowerCase() || '';
+  
+  const isSuperAdmin = SUPER_ADMIN_IDS.includes(runnerId) || 
+                       SUPER_ADMIN_IDS.some(id => username === id || username === id.replace(/-/g, '_'));
+  
+  authCheck.hidden = true;
+  
+  if (CRCAuth.isSignedIn() && isSuperAdmin) {
+    adminContent.hidden = false;
+    supabase = CRCAuth.getSupabaseClient?.();
+    loadUsers();
+  } else {
+    notAuthorized.hidden = false;
+  }
+})();
+</script>
