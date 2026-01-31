@@ -95,46 +95,8 @@
         <span class="admin-panel__icon">🏠</span>
         <span class="admin-panel__text">Home</span>
       </a>
-      <hr class="admin-panel__divider">
       
-      <!-- Dashboard (Admin/Super Admin only) -->
-      <a href="/admin/test/" class="admin-panel__item" id="admin-dashboard-link">
-        <span class="admin-panel__icon">📊</span>
-        <span class="admin-panel__text">Dashboard</span>
-      </a>
-      <hr class="admin-panel__divider" id="admin-divider-1">
-      
-      <!-- Moderation Queue (order: Profiles -> Games -> Runs) -->
-      <a href="/admin/profiles/" class="admin-panel__item" id="admin-profiles-link">
-        <span class="admin-panel__icon">👥</span>
-        <span class="admin-panel__text">Pending Profiles</span>
-        <span class="admin-panel__badge" id="admin-profiles-badge" hidden>0</span>
-      </a>
-      <a href="/admin/games/" class="admin-panel__item" id="admin-games-link">
-        <span class="admin-panel__icon">🎮</span>
-        <span class="admin-panel__text">Pending Games</span>
-        <span class="admin-panel__badge" id="admin-games-badge" hidden>0</span>
-      </a>
-      <a href="/admin/runs/" class="admin-panel__item" id="admin-runs-link">
-        <span class="admin-panel__icon">🏃</span>
-        <span class="admin-panel__text">Pending Runs</span>
-        <span class="admin-panel__badge" id="admin-runs-badge" hidden>0</span>
-      </a>
-      <hr class="admin-panel__divider" id="admin-divider-2">
-      
-      <!-- Support & Reports (Admin only) -->
-      <a href="/admin/support/" class="admin-panel__item" id="admin-support-link">
-        <span class="admin-panel__icon">🎫</span>
-        <span class="admin-panel__text">Support Tickets</span>
-        <span class="admin-panel__badge" id="admin-support-badge" hidden>0</span>
-      </a>
-      <a href="/admin/reports/" class="admin-panel__item" id="admin-reports-link">
-        <span class="admin-panel__icon">⚠️</span>
-        <span class="admin-panel__text">User Reports</span>
-        <span class="admin-panel__badge" id="admin-reports-badge" hidden>0</span>
-      </a>
-      
-      <!-- Super Admin Only Section -->
+      <!-- Super Admin Only Section (at top) -->
       <div id="super-admin-section" hidden>
         <hr class="admin-panel__divider">
         <div class="admin-panel__section-title">Super Admin</div>
@@ -148,10 +110,53 @@
         </a>
       </div>
       
+      <!-- Admin Section -->
+      <div id="admin-section">
+        <hr class="admin-panel__divider" id="admin-divider-1">
+        <div class="admin-panel__section-title" id="admin-section-title">Admin</div>
+        
+        <!-- Dashboard (Admin/Super Admin only) -->
+        <a href="/admin/test/" class="admin-panel__item" id="admin-dashboard-link">
+          <span class="admin-panel__icon">📊</span>
+          <span class="admin-panel__text">Dashboard</span>
+        </a>
+        
+        <!-- Moderation Queue (order: Profiles -> Games -> Runs) -->
+        <a href="/admin/profiles/" class="admin-panel__item" id="admin-profiles-link">
+          <span class="admin-panel__icon">👥</span>
+          <span class="admin-panel__text">Pending Profiles</span>
+          <span class="admin-panel__badge" id="admin-profiles-badge" hidden>0</span>
+        </a>
+        <a href="/admin/games/" class="admin-panel__item" id="admin-games-link">
+          <span class="admin-panel__icon">🎮</span>
+          <span class="admin-panel__text">Pending Games</span>
+          <span class="admin-panel__badge" id="admin-games-badge" hidden>0</span>
+        </a>
+        <a href="/admin/runs/" class="admin-panel__item" id="admin-runs-link">
+          <span class="admin-panel__icon">🏃</span>
+          <span class="admin-panel__text">Pending Runs</span>
+          <span class="admin-panel__badge" id="admin-runs-badge" hidden>0</span>
+        </a>
+        
+        <hr class="admin-panel__divider" id="admin-divider-2">
+        
+        <!-- Support & Reports (Admin only) -->
+        <a href="/admin/users/" class="admin-panel__item" id="admin-reports-link">
+          <span class="admin-panel__icon">⚠️</span>
+          <span class="admin-panel__text">User Reports</span>
+          <span class="admin-panel__badge" id="admin-reports-badge" hidden>0</span>
+        </a>
+        <a href="/admin/support/" class="admin-panel__item" id="admin-support-link">
+          <span class="admin-panel__icon">🎫</span>
+          <span class="admin-panel__text">Support Tickets</span>
+          <span class="admin-panel__badge" id="admin-support-badge" hidden>0</span>
+        </a>
+      </div>
+      
       <!-- Verifier Only Section (shows assigned games) -->
       <div id="verifier-section" hidden>
         <hr class="admin-panel__divider">
-        <div class="admin-panel__section-title">Your Verification Queue</div>
+        <div class="admin-panel__section-title">Verifier</div>
         <div id="verifier-games-list">
           <!-- Populated by JS based on assigned games -->
         </div>
@@ -420,6 +425,7 @@ function setupAdminPanel(role, profile) {
   const roleBadge = document.getElementById('admin-role-badge');
   const panelTitle = document.getElementById('admin-panel-title');
   const superAdminSection = document.getElementById('super-admin-section');
+  const adminSection = document.getElementById('admin-section');
   const verifierSection = document.getElementById('verifier-section');
   
   // Hide elements based on role
@@ -428,22 +434,20 @@ function setupAdminPanel(role, profile) {
     roleBadge.style.background = '#9b59b6';
     panelTitle.textContent = 'Administration';
     superAdminSection.hidden = false;
+    adminSection.hidden = false;
   } else if (role === 'admin') {
     roleBadge.textContent = 'Admin';
     panelTitle.textContent = 'Moderation';
+    superAdminSection.hidden = true;
+    adminSection.hidden = false;
   } else if (role === 'verifier') {
     roleBadge.textContent = 'Verifier';
     roleBadge.style.background = '#3498db';
     panelTitle.textContent = 'Verification';
     
-    // Hide admin-only items
-    document.getElementById('admin-dashboard-link').hidden = true;
-    document.getElementById('admin-divider-1').hidden = true;
-    document.getElementById('admin-profiles-link').hidden = true;
-    document.getElementById('admin-games-link').hidden = true;
-    document.getElementById('admin-support-link').hidden = true;
-    document.getElementById('admin-reports-link').hidden = true;
-    document.getElementById('admin-divider-2').hidden = true;
+    // Hide super admin and admin sections
+    superAdminSection.hidden = true;
+    adminSection.hidden = true;
     
     // Show verifier section with their games
     verifierSection.hidden = false;
