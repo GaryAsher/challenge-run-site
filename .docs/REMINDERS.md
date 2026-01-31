@@ -10,14 +10,47 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ## Immediate Priorities
 
-### 1. Authentication & Profiles
-- [ ] Account linking (connect multiple providers to one account)
-- [ ] Profile edit page
-- [ ] Admin profile approval workflow
+### 1. Admin Panels
+- [ ] Dashboard:
+  - Cloudflare Workers = Unknown?
+  - Remove Quick Actions
+  - Panel order: Data Usage -> System Status -> Site Statistics -> Recent Activity
+  - Remove Auth Debug tab.
+  - Add Debug tab to see the site from a lower role point of view. 
+    - Add "Return to User Profile" option.
+    - This feature also does not allow for submissions of any kind.
+- [ ] Panel Itself:
+  - Remove User Data
+- [ ] Financials:
+  - Allow click to toggle on/off for Service Cost Breakdown
+  - Allow "Future Ideas" section
+  - Add drop-down toggle by year next to Monthly Overview
+  - For both Revenue Sources and Expenses & Services, add an option for "recurring" vs "one-time".
+- [ ] Site Health
+  - How do we connect Github Actions to the site health?
+  - Are there other things we should be tracking?
+- [ ] Remove "View Site As..." that is on the top of the header.
 
 ### 2. Runner Profiles
+- [ ] add profile/edit/ page
+- [ ] Themes
+  - [ ] "Save Theme" and "Reset to Default" to appear below the "Live Preview" tab.
+  - [ ] Ability for Admins to upload a background image for a Theme (for now).
+  - [ ] Highlight around " Theme Sync" needs to be the theme picked.
+  - [ ] "Theme Saved and synced to your account" needs to be the color of the theme picked.
+  - [ ] Add white font border around text that is black. and the same vice versa? this is just to read the text easier.
+  - [ ] Allow users to save two favorites, which can be their custom themes.
 - [ ] Badges placeholder structure
-- [ ] Featured runs section refinement
+- [ ] Featured runs section below their Bio
+- [ ] Change "Something Else" tab to "Achievements". This will show Challenges that runners have imposed on themselves, like One of every weapon in Hades (with a tracker)
+- [ ] Add "Contributions" tab, where runners can put tools, guides, and other things that they have made. It will also show what pages they are credited for and what they helped set up
+- [ ] Add buttons for the other Socials. Right now it just looks like Twitch and YouTube have buttons.
+
+### 2.5 Games/runs/ tab again
+- [ ] Add the option for multiple runners (up to 5) to be listed for the same run
+
+### 2.75 Games page
+- [ ] Add A Game for "Multi-Game Runs". These are multiple games done in succession. The Game page that it belongs to will have a link to these below the "Modded Game"
 
 ### 3. Forms & Submissions
 - [ ] New Game Submission form
