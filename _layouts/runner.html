@@ -43,46 +43,61 @@ layout: default
         {% assign steam_url = s.steam | default: page.steam_id %}
         {% assign twitter_url = s.twitter | default: page.twitter %}
         {% assign bluesky_url = s.bluesky | default: page.bluesky %}
+        {% assign speedrun_url = s.speedruncom | default: page.speedruncom %}
         {% assign website_url = s.website | default: page.personal_website %}
       
         {% if twitch_url and twitch_url != "" %}
-          <a class="runner-link" href="{{ twitch_url }}" target="_blank" rel="noreferrer">
+          <a class="runner-link runner-link--twitch" href="{{ twitch_url }}" target="_blank" rel="noreferrer" title="Twitch">
+            <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
             <span>Twitch</span>
           </a>
         {% endif %}
       
         {% if youtube_url and youtube_url != "" %}
-          <a class="runner-link" href="{{ youtube_url }}" target="_blank" rel="noreferrer">
+          <a class="runner-link runner-link--youtube" href="{{ youtube_url }}" target="_blank" rel="noreferrer" title="YouTube">
+            <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
             <span>YouTube</span>
           </a>
         {% endif %}
       
         {% if discord_url and discord_url != "" %}
-          <a class="runner-link" href="{{ discord_url }}" target="_blank" rel="noreferrer">
+          <a class="runner-link runner-link--discord" href="{{ discord_url }}" target="_blank" rel="noreferrer" title="Discord">
+            <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
             <span>Discord</span>
           </a>
         {% endif %}
       
         {% if steam_url and steam_url != "" %}
-          <a class="runner-link" href="{{ steam_url }}" target="_blank" rel="noreferrer">
+          <a class="runner-link runner-link--steam" href="{{ steam_url }}" target="_blank" rel="noreferrer" title="Steam">
+            <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.031 4.524 4.527s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.727L.436 15.27C1.862 20.307 6.486 24 11.979 24c6.627 0 11.999-5.373 11.999-12S18.605 0 11.979 0zM7.54 18.21l-1.473-.61c.262.543.714.999 1.314 1.25 1.297.539 2.793-.076 3.332-1.375.263-.63.264-1.319.005-1.949s-.75-1.121-1.377-1.383c-.624-.26-1.29-.249-1.878-.03l1.523.63c.956.4 1.409 1.5 1.009 2.455-.397.957-1.497 1.41-2.454 1.012H7.54zm11.415-9.303c0-1.662-1.353-3.015-3.015-3.015-1.665 0-3.015 1.353-3.015 3.015 0 1.665 1.35 3.015 3.015 3.015 1.663 0 3.015-1.35 3.015-3.015zm-5.273-.005c0-1.252 1.013-2.266 2.265-2.266 1.249 0 2.266 1.014 2.266 2.266 0 1.251-1.017 2.265-2.266 2.265-1.253 0-2.265-1.014-2.265-2.265z"/></svg>
             <span>Steam</span>
           </a>
         {% endif %}
       
         {% if twitter_url and twitter_url != "" %}
-          <a class="runner-link" href="{{ twitter_url }}" target="_blank" rel="noreferrer">
-            <span>Twitter/X</span>
+          <a class="runner-link runner-link--twitter" href="{{ twitter_url }}" target="_blank" rel="noreferrer" title="X/Twitter">
+            <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>
+            <span>X</span>
           </a>
         {% endif %}
       
         {% if bluesky_url and bluesky_url != "" %}
-          <a class="runner-link" href="{{ bluesky_url }}" target="_blank" rel="noreferrer">
+          <a class="runner-link runner-link--bluesky" href="{{ bluesky_url }}" target="_blank" rel="noreferrer" title="Bluesky">
+            <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 0 1-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.206-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z"/></svg>
             <span>Bluesky</span>
+          </a>
+        {% endif %}
+        
+        {% if speedrun_url and speedrun_url != "" %}
+          <a class="runner-link runner-link--speedrun" href="{{ speedrun_url }}" target="_blank" rel="noreferrer" title="Speedrun.com">
+            <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 17.006l-1.77-1.768L12 11.12l-4.124 4.117-1.77 1.769-1.767-1.77 1.77-1.768L10.232 9.35l-4.123-4.12-1.77-1.77L6.106 1.69l1.77 1.77L12 7.582l4.124-4.12 1.77-1.77 1.767 1.77-1.77 1.769-4.123 4.12 4.123 4.117 1.77 1.768z"/></svg>
+            <span>SRC</span>
           </a>
         {% endif %}
       
         {% if website_url and website_url != "" %}
-          <a class="runner-link" href="{{ website_url }}" target="_blank" rel="noreferrer">
+          <a class="runner-link runner-link--website" href="{{ website_url }}" target="_blank" rel="noreferrer" title="Website">
+            <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm-1 19.232V16h2v3.232c3.036-.378 5.447-2.627 6.065-5.532H17V12h2.001c-.04-.683-.145-1.348-.306-2H17V8h1.281c-.902-2.098-2.634-3.73-4.781-4.48V6h-2V3.52C9.138 4.27 7.406 5.902 6.504 8H8v2H5.978C5.818 10.652 5.713 11.317 5.673 12H8v1.7H5.609c.618 2.905 3.029 5.154 6.065 5.532H11z"/></svg>
             <span>Website</span>
           </a>
         {% endif %}
@@ -91,12 +106,13 @@ layout: default
   </section>
 
   <!-- ============================================================
-       Runner Tabs (Profile / Runs / Other)
+       Runner Tabs (Profile / Runs / Achievements / Contributions)
        ============================================================ -->
   <nav class="runner-tabs game-tabs" id="runner-tabs">
     <button class="tab active" data-tab="profile" type="button">Profile</button>
     <button class="tab" data-tab="runs" type="button">Completed Runs</button>
-    <button class="tab" data-tab="other" type="button">Something Else</button>
+    <button class="tab" data-tab="achievements" type="button">Achievements</button>
+    <button class="tab" data-tab="contributions" type="button">Contributions</button>
   </nav>
 
   <!-- ==========================================================
@@ -291,12 +307,109 @@ layout: default
   </section>
 
   <!-- ==========================================================
-       OTHER PANEL
+       ACHIEVEMENTS PANEL
        ========================================================== -->
-  <section class="tab-panel" data-panel="other">
+  <section class="tab-panel" data-panel="achievements">
     <div class="card">
-      <h2>Something Else</h2>
-      <p class="muted">Placeholder tab.</p>
+      <h2>🏆 Personal Achievements</h2>
+      <p class="muted mb-3">Self-imposed challenges and personal goals this runner has accomplished.</p>
+      
+      {% if page.achievements and page.achievements.size > 0 %}
+        <div class="achievements-list">
+          {% for achievement in page.achievements %}
+            <div class="achievement-item">
+              <div class="achievement-icon">{{ achievement.icon | default: '🎯' }}</div>
+              <div class="achievement-info">
+                <h4>{{ achievement.title }}</h4>
+                <p class="muted">{{ achievement.description }}</p>
+                {% if achievement.game %}
+                  <span class="achievement-game">{{ achievement.game }}</span>
+                {% endif %}
+              </div>
+              {% if achievement.completed %}
+                <span class="achievement-status completed">✓ Completed</span>
+              {% else %}
+                <span class="achievement-status in-progress">In Progress</span>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <span class="empty-icon">🎯</span>
+          <p>No achievements listed yet.</p>
+          <p class="muted">Achievements are self-imposed challenges like "One of every weapon in Hades" or "All Golden Strawberries in Celeste".</p>
+        </div>
+      {% endif %}
+    </div>
+    
+    <!-- Achievement Examples -->
+    <div class="card mt-3">
+      <h3>What are Achievements?</h3>
+      <p class="muted">Unlike standard runs, achievements are personal challenges runners set for themselves. Examples:</p>
+      <ul class="achievement-examples">
+        <li><strong>Hades:</strong> Clear with every weapon aspect</li>
+        <li><strong>Celeste:</strong> Collect all Golden Strawberries</li>
+        <li><strong>Hollow Knight:</strong> Complete all Pantheons hitless</li>
+        <li><strong>Dark Souls:</strong> All bosses at SL1</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ==========================================================
+       CONTRIBUTIONS PANEL
+       ========================================================== -->
+  <section class="tab-panel" data-panel="contributions">
+    <div class="card">
+      <h2>🛠️ Community Contributions</h2>
+      <p class="muted mb-3">Tools, guides, and resources this runner has created for the community.</p>
+      
+      {% if page.contributions and page.contributions.size > 0 %}
+        <div class="contributions-list">
+          {% for contrib in page.contributions %}
+            <div class="contribution-item">
+              <div class="contribution-icon">{{ contrib.icon | default: '📄' }}</div>
+              <div class="contribution-info">
+                <h4>{{ contrib.title }}</h4>
+                <p class="muted">{{ contrib.description }}</p>
+                {% if contrib.url %}
+                  <a href="{{ contrib.url }}" target="_blank" class="contribution-link">View →</a>
+                {% endif %}
+              </div>
+              <span class="contribution-type">{{ contrib.type | default: 'Resource' }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <span class="empty-icon">🛠️</span>
+          <p>No contributions listed yet.</p>
+        </div>
+      {% endif %}
+    </div>
+    
+    <!-- Site Credits -->
+    <div class="card mt-3">
+      <h3>📋 Site Credits</h3>
+      <p class="muted">Pages and features this runner helped create or maintain:</p>
+      
+      {% comment %} Check if runner is credited on any pages {% endcomment %}
+      {% assign credited_pages = "" | split: "" %}
+      {% for g in site.games %}
+        {% if g.credits contains page.runner_id or g.maintainers contains page.runner_id %}
+          {% assign credited_pages = credited_pages | push: g %}
+        {% endif %}
+      {% endfor %}
+      
+      {% if credited_pages.size > 0 %}
+        <ul class="credits-list">
+          {% for cp in credited_pages %}
+            <li><a href="{{ cp.url }}">{{ cp.game_name }}</a> - Game Page</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="muted">No page credits found.</p>
+      {% endif %}
     </div>
   </section>
 </div>
@@ -304,6 +417,121 @@ layout: default
 <!-- ============================================================
      Tabs Script (switch panels without changing pages)
      ============================================================ -->
+<style>
+/* Social Icons */
+.social-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.runner-link--twitch:hover { color: #9146ff; border-color: #9146ff; }
+.runner-link--youtube:hover { color: #ff0000; border-color: #ff0000; }
+.runner-link--discord:hover { color: #5865f2; border-color: #5865f2; }
+.runner-link--steam:hover { color: #00adee; border-color: #00adee; }
+.runner-link--twitter:hover { color: #1da1f2; border-color: #1da1f2; }
+.runner-link--bluesky:hover { color: #0085ff; border-color: #0085ff; }
+.runner-link--speedrun:hover { color: #ffd700; border-color: #ffd700; }
+.runner-link--website:hover { color: var(--accent); border-color: var(--accent); }
+
+/* Achievements */
+.achievements-list { display: flex; flex-direction: column; gap: 1rem; }
+.achievement-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.achievement-icon { font-size: 1.5rem; }
+.achievement-info { flex: 1; }
+.achievement-info h4 { margin: 0 0 0.25rem 0; font-size: 1rem; }
+.achievement-info p { margin: 0; font-size: 0.85rem; }
+.achievement-game {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  background: var(--surface);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+.achievement-status {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.achievement-status.completed { background: #10b981; color: white; }
+.achievement-status.in-progress { background: #f59e0b; color: #000; }
+
+.achievement-examples {
+  margin: 0.5rem 0 0 1.5rem;
+  padding: 0;
+}
+.achievement-examples li {
+  padding: 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+/* Contributions */
+.contributions-list { display: flex; flex-direction: column; gap: 1rem; }
+.contribution-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.contribution-icon { font-size: 1.5rem; }
+.contribution-info { flex: 1; }
+.contribution-info h4 { margin: 0 0 0.25rem 0; font-size: 1rem; }
+.contribution-info p { margin: 0; font-size: 0.85rem; }
+.contribution-link {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--accent);
+}
+.contribution-type {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  background: var(--accent);
+  color: var(--bg);
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.credits-list {
+  margin: 0.5rem 0 0 0;
+  padding-left: 1.5rem;
+}
+.credits-list li {
+  padding: 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+}
+.empty-icon {
+  display: block;
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+.empty-state p { margin: 0.25rem 0; }
+
+.mt-3 { margin-top: 1rem; }
+</style>
+
 <script>
 // Lazy Load Background Images
 (function() {
