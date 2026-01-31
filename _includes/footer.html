@@ -1,52 +1,209 @@
 <footer class="site-footer">
   <div class="footer-content">
-    <p class="muted">
-      © 2025–{{ "now" | date: "%Y" }} Challenge Run Community. All rights reserved.
-    </p>
-
-    <div class="theme-picker" id="theme-picker">
-      <span class="muted">Theme:</span>
-      <button type="button" class="theme-btn" data-theme="" title="Green (default)">🟢</button>
-      <button type="button" class="theme-btn" data-theme="pink" title="Pink">🩷</button>
-      <button type="button" class="theme-btn" data-theme="blue" title="Blue">🔵</button>
-      <button type="button" class="theme-btn" data-theme="purple" title="Purple">🟣</button>
-      <button type="button" class="theme-btn" data-theme="red" title="Red">🔴</button>
+    <!-- Main Footer Grid -->
+    <div class="footer-grid">
+      <!-- Brand & About -->
+      <div class="footer-section">
+        <a href="/" class="footer-brand">CRC</a>
+        <p class="footer-tagline">Challenge Run Community</p>
+        <p class="footer-description">
+          A community-driven platform for challenge run speedrunners and enthusiasts.
+        </p>
+      </div>
+      
+      <!-- Quick Links -->
+      <div class="footer-section">
+        <h4 class="footer-heading">Explore</h4>
+        <ul class="footer-links">
+          <li><a href="/games/">Games</a></li>
+          <li><a href="/runners/">Runners</a></li>
+          <li><a href="/teams/">Teams</a></li>
+          <li><a href="/news/">News</a></li>
+        </ul>
+      </div>
+      
+      <!-- Resources -->
+      <div class="footer-section">
+        <h4 class="footer-heading">Resources</h4>
+        <ul class="footer-links">
+          <li><a href="/rules/">Rules</a></li>
+          <li><a href="/glossary/">Glossary</a></li>
+          <li><a href="/support/">Support</a></li>
+          <li><a href="/feed.xml">RSS Feed</a></li>
+        </ul>
+      </div>
+      
+      <!-- Legal -->
+      <div class="footer-section">
+        <h4 class="footer-heading">Legal</h4>
+        <ul class="footer-links">
+          <li><a href="/legal/privacy/">Privacy Policy</a></li>
+          <li><a href="/legal/terms/">Terms of Service</a></li>
+          <li><a href="/legal/cookies/">Cookie Policy</a></li>
+          <li><a href="#" id="footer-cookie-settings">Cookie Settings</a></li>
+        </ul>
+      </div>
+    </div>
+    
+    <!-- Bottom Bar -->
+    <div class="footer-bottom">
+      <div class="footer-copyright">
+        <p>&copy; {{ 'now' | date: '%Y' }} Challenge Run Community. All rights reserved.</p>
+        <p class="footer-disclaimer">
+          Game content and images are property of their respective owners.
+        </p>
+      </div>
+      
+      <!-- CCPA Do Not Sell Link -->
+      <div class="footer-privacy-controls">
+        <a href="/legal/privacy/#your-rights" class="footer-privacy-link" id="footer-do-not-sell">
+          Do Not Sell or Share My Personal Information
+        </a>
+      </div>
     </div>
   </div>
 </footer>
 
+<style>
+.site-footer {
+  margin-top: auto;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 3rem 0 1.5rem;
+}
+
+.footer-content {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.footer-brand {
+  display: inline-block;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--accent);
+  text-decoration: none;
+  margin-bottom: 0.25rem;
+}
+
+.footer-tagline {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.footer-description {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.footer-heading {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--fg);
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li {
+  margin-bottom: 0.5rem;
+}
+
+.footer-links a {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.footer-links a:hover {
+  color: var(--accent);
+}
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 600px) {
+  .footer-bottom {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+.footer-copyright p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.footer-disclaimer {
+  font-size: 0.75rem !important;
+  color: var(--text-dim) !important;
+  margin-top: 0.25rem !important;
+}
+
+.footer-privacy-controls {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.footer-privacy-link {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.footer-privacy-link:hover {
+  color: var(--accent);
+}
+</style>
+
 <script>
-(function() {
-  var currentTheme = '';
-  try {
-    currentTheme = localStorage.getItem('crc_theme') || '';
-  } catch(e) {}
-
-  // Mark active button on load
-  document.querySelectorAll('.theme-btn').forEach(function(btn) {
-    var btnTheme = btn.dataset.theme || '';
-    if (btnTheme === currentTheme) {
-      btn.classList.add('is-active');
-    }
-
-    btn.addEventListener('click', function() {
-      var theme = btn.dataset.theme || '';
-      
-      // Update HTML attribute
-      document.documentElement.setAttribute('data-theme', theme);
-      
-      // Update active states
-      document.querySelectorAll('.theme-btn').forEach(function(b) {
-        b.classList.remove('is-active');
-      });
-      btn.classList.add('is-active');
-      
-      // Save preference
-      try {
-        if (theme) localStorage.setItem('crc_theme', theme);
-        else localStorage.removeItem('crc_theme');
-      } catch(e) {}
-    });
-  });
-})();
+// Cookie settings link
+document.getElementById('footer-cookie-settings')?.addEventListener('click', function(e) {
+  e.preventDefault();
+  // Open cookie consent modal if available
+  if (window.CRCCookieConsent && typeof window.CRCCookieConsent.showSettings === 'function') {
+    window.CRCCookieConsent.showSettings();
+  } else {
+    // Fallback: show alert or redirect
+    window.location.href = '/legal/cookies/';
+  }
+});
 </script>
