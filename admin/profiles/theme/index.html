@@ -1,0 +1,729 @@
+---
+layout: default
+title: "Theme Customization"
+---
+
+<div class="page-width">
+  <h1>🎨 Theme Customization</h1>
+  <p class="muted mb-4">Personalize your CRC experience with custom colors and backgrounds.</p>
+  
+  <!-- Sync Status -->
+  <div class="sync-status" id="sync-status">
+    <span class="sync-icon" id="sync-icon">💾</span>
+    <span class="sync-text" id="sync-text">Checking sync status...</span>
+  </div>
+  
+  <div class="theme-layout">
+    <!-- Settings Panel -->
+    <div class="theme-settings">
+      <!-- Preset Themes -->
+      <div class="card">
+        <h2>Preset Themes</h2>
+        <p class="muted mb-3">Quick-apply a color scheme:</p>
+        <div class="preset-grid">
+          <button type="button" class="preset-btn" data-preset="default" title="Default Green">
+            <span class="preset-swatch" style="background: #3BC36E"></span>
+            <span class="preset-name">Default</span>
+          </button>
+          <button type="button" class="preset-btn" data-preset="pink" title="Pink">
+            <span class="preset-swatch" style="background: #E91E8C"></span>
+            <span class="preset-name">Pink</span>
+          </button>
+          <button type="button" class="preset-btn" data-preset="blue" title="Blue">
+            <span class="preset-swatch" style="background: #3B82F6"></span>
+            <span class="preset-name">Blue</span>
+          </button>
+          <button type="button" class="preset-btn" data-preset="purple" title="Purple">
+            <span class="preset-swatch" style="background: #8B5CF6"></span>
+            <span class="preset-name">Purple</span>
+          </button>
+          <button type="button" class="preset-btn" data-preset="red" title="Red">
+            <span class="preset-swatch" style="background: #EF4444"></span>
+            <span class="preset-name">Red</span>
+          </button>
+          <button type="button" class="preset-btn" data-preset="gold" title="Gold">
+            <span class="preset-swatch" style="background: #F59E0B"></span>
+            <span class="preset-name">Gold</span>
+          </button>
+          <button type="button" class="preset-btn" data-preset="cyan" title="Cyan">
+            <span class="preset-swatch" style="background: #06B6D4"></span>
+            <span class="preset-name">Cyan</span>
+          </button>
+          <button type="button" class="preset-btn" data-preset="lime" title="Lime">
+            <span class="preset-swatch" style="background: #84CC16"></span>
+            <span class="preset-name">Lime</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Custom Colors -->
+      <div class="card">
+        <h2>Custom Colors</h2>
+        <div class="color-options">
+          <div class="color-option">
+            <label class="color-label">Accent Color</label>
+            <p class="color-desc">Buttons, links, and highlights</p>
+            <div class="color-inputs">
+              <input type="color" id="color-accent" value="#3BC36E" />
+              <input type="text" id="color-accent-hex" class="color-hex-input" value="#3BC36E" maxlength="7" />
+            </div>
+          </div>
+          <div class="color-option">
+            <label class="color-label">Background</label>
+            <p class="color-desc">Main page background</p>
+            <div class="color-inputs">
+              <input type="color" id="color-bg" value="#0f0f0f" />
+              <input type="text" id="color-bg-hex" class="color-hex-input" value="#0f0f0f" maxlength="7" />
+            </div>
+          </div>
+          <div class="color-option">
+            <label class="color-label">Surface</label>
+            <p class="color-desc">Card and panel backgrounds</p>
+            <div class="color-inputs">
+              <input type="color" id="color-surface" value="#0b0b0b" />
+              <input type="text" id="color-surface-hex" class="color-hex-input" value="#0b0b0b" maxlength="7" />
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Background Image (Premium feature indicator) -->
+      <div class="card">
+        <h2>Background Image <span class="premium-badge" id="bg-premium-badge" hidden>✨ Premium</span></h2>
+        <div id="bg-image-locked" hidden>
+          <p class="muted">Custom background images are available for premium members.</p>
+          <a href="/membership/" class="btn btn--small">Learn More</a>
+        </div>
+        <div id="bg-image-unlocked">
+          <div class="form-group">
+            <label class="form-label">Image URL</label>
+            <input type="url" id="bg-image-url" class="form-input" placeholder="https://example.com/image.jpg" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Opacity: <span id="bg-opacity-value">15</span>%</label>
+            <input type="range" id="bg-opacity" min="0" max="50" value="15" class="form-range" />
+          </div>
+          <div class="bg-preview" id="bg-preview">
+            <span class="muted">No background image</span>
+          </div>
+          <button type="button" class="btn btn--small" id="clear-bg">Clear Background</button>
+        </div>
+      </div>
+      
+      <!-- Saved Favorites -->
+      <div class="card">
+        <h2>⭐ Saved Favorites</h2>
+        <p class="muted mb-3">Save up to 2 custom themes for quick access:</p>
+        <div class="favorites-grid">
+          <div class="favorite-slot" id="favorite-1" data-slot="1">
+            <div class="favorite-preview" id="favorite-1-preview">
+              <span class="favorite-empty">Empty</span>
+            </div>
+            <div class="favorite-actions">
+              <button type="button" class="btn btn--small" id="save-favorite-1" title="Save current theme">💾</button>
+              <button type="button" class="btn btn--small" id="load-favorite-1" title="Load this theme" disabled>📂</button>
+              <button type="button" class="btn btn--small" id="clear-favorite-1" title="Clear slot" disabled>🗑️</button>
+            </div>
+            <span class="favorite-label">Slot 1</span>
+          </div>
+          <div class="favorite-slot" id="favorite-2" data-slot="2">
+            <div class="favorite-preview" id="favorite-2-preview">
+              <span class="favorite-empty">Empty</span>
+            </div>
+            <div class="favorite-actions">
+              <button type="button" class="btn btn--small" id="save-favorite-2" title="Save current theme">💾</button>
+              <button type="button" class="btn btn--small" id="load-favorite-2" title="Load this theme" disabled>📂</button>
+              <button type="button" class="btn btn--small" id="clear-favorite-2" title="Clear slot" disabled>🗑️</button>
+            </div>
+            <span class="favorite-label">Slot 2</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Live Preview -->
+    <div class="theme-preview">
+      <div class="card">
+        <h2>Live Preview</h2>
+        <div class="preview-box" id="preview-box">
+          <div class="preview-header">
+            <span class="preview-brand">CRC</span>
+            <span class="preview-nav">Games | Runners | Teams</span>
+          </div>
+          <div class="preview-content">
+            <h3>Sample Content</h3>
+            <p>This is how your theme will look across the site.</p>
+            <button class="preview-btn">Example Button</button>
+            <a href="#" class="preview-link" onclick="return false;">Example Link</a>
+          </div>
+          <div class="preview-card">
+            <h4>Card Example</h4>
+            <p class="muted">Cards use the surface color.</p>
+          </div>
+        </div>
+        
+        <!-- Actions moved below preview -->
+        <div class="theme-actions mt-4">
+          <button type="button" class="btn" id="reset-theme">Reset to Default</button>
+          <button type="button" class="btn btn--primary" id="save-theme">💾 Save Theme</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.sync-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+.sync-status.synced { 
+  border-color: var(--accent); 
+  background: rgba(var(--accent-rgb), 0.1);
+}
+.sync-status.local { border-color: #f59e0b; }
+
+.theme-layout {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 1.5rem;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .theme-layout { grid-template-columns: 1fr; }
+}
+
+.theme-settings { display: flex; flex-direction: column; gap: 1.5rem; }
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+}
+@media (max-width: 500px) { .preset-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.preset-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.preset-btn:hover { border-color: var(--accent); }
+.preset-btn.active { border-color: var(--accent); background: rgba(var(--accent-rgb), 0.1); }
+.preset-swatch { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.1); }
+.preset-name { font-size: 0.8rem; color: var(--text-muted); }
+
+/* Favorites */
+.favorites-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.favorite-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.favorite-preview {
+  width: 100%;
+  height: 60px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--border);
+  position: relative;
+  overflow: hidden;
+}
+.favorite-preview.has-theme {
+  border-style: solid;
+}
+.favorite-preview .favorite-accent {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+}
+.favorite-empty {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.favorite-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+.favorite-actions .btn--small {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+}
+.favorite-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.color-options { display: flex; flex-direction: column; gap: 1.25rem; }
+.color-option { }
+.color-label { font-weight: 600; font-size: 0.95rem; }
+.color-desc { font-size: 0.8rem; color: var(--text-muted); margin: 0.25rem 0 0.5rem; }
+.color-inputs { display: flex; gap: 0.5rem; align-items: center; }
+.color-inputs input[type="color"] { width: 48px; height: 36px; padding: 0; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; }
+.color-hex-input { width: 90px; padding: 0.5rem; font-family: monospace; text-transform: uppercase; }
+
+.premium-badge {
+  font-size: 0.7rem;
+  background: linear-gradient(135deg, #f59e0b, #eab308);
+  color: #000;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  margin-left: 0.5rem;
+}
+
+.bg-preview {
+  height: 100px;
+  background: var(--bg);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1rem 0;
+  background-size: cover;
+  background-position: center;
+}
+
+.theme-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+.mt-4 { margin-top: 1rem; }
+
+/* Preview */
+.theme-preview { position: sticky; top: 80px; }
+.preview-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.preview-brand { font-weight: 800; color: var(--accent); }
+.preview-nav { font-size: 0.8rem; color: var(--text-muted); }
+.preview-content { padding: 1rem; }
+.preview-content h3 { margin-bottom: 0.5rem; }
+.preview-content p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem; }
+.preview-btn {
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 0.75rem;
+}
+.preview-link { color: var(--accent); }
+.preview-card {
+  margin: 1rem;
+  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.preview-card h4 { margin-bottom: 0.25rem; font-size: 0.95rem; }
+</style>
+
+<script type="module">
+import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
+
+let supabase = null;
+let isSignedIn = false;
+let isPremium = false;
+let currentTheme = {};
+
+const PRESETS = {
+  default: { accent: '#3BC36E', accentRgb: '59, 195, 110', bg: '#0f0f0f', surface: '#0b0b0b' },
+  pink: { accent: '#E91E8C', accentRgb: '233, 30, 140', bg: '#0f0f0f', surface: '#0b0b0b' },
+  blue: { accent: '#3B82F6', accentRgb: '59, 130, 246', bg: '#0a0f1a', surface: '#0d1220' },
+  purple: { accent: '#8B5CF6', accentRgb: '139, 92, 246', bg: '#0f0a1a', surface: '#120d20' },
+  red: { accent: '#EF4444', accentRgb: '239, 68, 68', bg: '#0f0f0f', surface: '#0b0b0b' },
+  gold: { accent: '#F59E0B', accentRgb: '245, 158, 11', bg: '#0f0f0a', surface: '#0b0b08' },
+  cyan: { accent: '#06B6D4', accentRgb: '6, 182, 212', bg: '#0a0f0f', surface: '#0d1212' },
+  lime: { accent: '#84CC16', accentRgb: '132, 204, 22', bg: '#0f0f0a', surface: '#0b0b08' }
+};
+
+// Initialize
+async function init() {
+  await CRCAuth.init();
+  isSignedIn = CRCAuth.isSignedIn();
+  supabase = CRCAuth.getSupabaseClient?.();
+  
+  // Check premium status (for future)
+  const profile = CRCAuth.getProfile();
+  isPremium = profile?.is_premium || profile?.membership_tier === 'premium' || true; // Default true for now
+  
+  updateSyncStatus();
+  await loadTheme();
+  setupEventListeners();
+}
+
+function updateSyncStatus() {
+  const status = document.getElementById('sync-status');
+  const icon = document.getElementById('sync-icon');
+  const text = document.getElementById('sync-text');
+  
+  if (isSignedIn) {
+    status.className = 'sync-status synced';
+    icon.textContent = '☁️';
+    text.textContent = 'Theme syncs to your account (works across devices)';
+  } else {
+    status.className = 'sync-status local';
+    icon.textContent = '💾';
+    text.textContent = 'Theme saved locally only. Sign in to sync across devices.';
+  }
+  
+  // Premium features
+  if (!isPremium) {
+    document.getElementById('bg-premium-badge').hidden = false;
+    document.getElementById('bg-image-locked').hidden = false;
+    document.getElementById('bg-image-unlocked').hidden = true;
+  }
+}
+
+async function loadTheme() {
+  // Try to load from Supabase first (if signed in)
+  if (isSignedIn && supabase) {
+    try {
+      const user = CRCAuth.getUser();
+      const { data } = await supabase
+        .from('runner_profiles')
+        .select('theme_settings')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (data?.theme_settings && Object.keys(data.theme_settings).length > 0) {
+        currentTheme = data.theme_settings;
+        localStorage.setItem('crc-theme', JSON.stringify(currentTheme));
+        applyThemeToUI(currentTheme);
+        applyThemeToPage(currentTheme);
+        return;
+      }
+    } catch (e) {
+      console.log('[Theme] Could not load from Supabase, using local');
+    }
+  }
+  
+  // Fall back to localStorage
+  const saved = localStorage.getItem('crc-theme');
+  if (saved) {
+    try {
+      currentTheme = JSON.parse(saved);
+      applyThemeToUI(currentTheme);
+      applyThemeToPage(currentTheme);
+    } catch (e) {}
+  }
+}
+
+function applyThemeToUI(theme) {
+  if (theme.accent) {
+    document.getElementById('color-accent').value = theme.accent;
+    document.getElementById('color-accent-hex').value = theme.accent;
+  }
+  if (theme.bg) {
+    document.getElementById('color-bg').value = theme.bg;
+    document.getElementById('color-bg-hex').value = theme.bg;
+  }
+  if (theme.surface) {
+    document.getElementById('color-surface').value = theme.surface;
+    document.getElementById('color-surface-hex').value = theme.surface;
+  }
+  if (theme.bgImage) {
+    document.getElementById('bg-image-url').value = theme.bgImage;
+    document.getElementById('bg-preview').style.backgroundImage = `url(${theme.bgImage})`;
+    document.getElementById('bg-preview').innerHTML = '';
+  }
+  if (theme.bgOpacity !== undefined) {
+    document.getElementById('bg-opacity').value = theme.bgOpacity;
+    document.getElementById('bg-opacity-value').textContent = theme.bgOpacity;
+  }
+  
+  // Mark active preset
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    const preset = PRESETS[btn.dataset.preset];
+    if (preset && preset.accent === theme.accent) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+}
+
+function applyThemeToPage(theme) {
+  const root = document.documentElement;
+  if (theme.accent) root.style.setProperty('--accent', theme.accent);
+  if (theme.accentRgb) root.style.setProperty('--accent-rgb', theme.accentRgb);
+  if (theme.bg) root.style.setProperty('--bg', theme.bg);
+  if (theme.surface) root.style.setProperty('--surface', theme.surface);
+  
+  if (theme.bgImage && isPremium) {
+    document.body.style.backgroundImage = `linear-gradient(rgba(0,0,0,${1 - (theme.bgOpacity || 15) / 100}), rgba(0,0,0,${1 - (theme.bgOpacity || 15) / 100})), url(${theme.bgImage})`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundAttachment = 'fixed';
+    document.body.style.backgroundPosition = 'center';
+  }
+}
+
+function hexToRgb(hex) {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : null;
+}
+
+function getCurrentThemeFromUI() {
+  const accent = document.getElementById('color-accent').value;
+  return {
+    accent: accent,
+    accentRgb: hexToRgb(accent),
+    bg: document.getElementById('color-bg').value,
+    surface: document.getElementById('color-surface').value,
+    bgImage: document.getElementById('bg-image-url').value || null,
+    bgOpacity: parseInt(document.getElementById('bg-opacity').value) || 15
+  };
+}
+
+async function saveTheme() {
+  currentTheme = getCurrentThemeFromUI();
+  
+  // Always save to localStorage
+  localStorage.setItem('crc-theme', JSON.stringify(currentTheme));
+  
+  // Save to Supabase if signed in
+  if (isSignedIn && supabase) {
+    try {
+      const user = CRCAuth.getUser();
+      await supabase
+        .from('runner_profiles')
+        .update({ theme_settings: currentTheme })
+        .eq('user_id', user.id);
+      
+      showNotification('Theme saved and synced to your account! ☁️', 'success');
+    } catch (e) {
+      console.error('[Theme] Supabase save error:', e);
+      showNotification('Theme saved locally (sync failed)', 'warning');
+    }
+  } else {
+    showNotification('Theme saved locally!', 'success');
+  }
+  
+  applyThemeToPage(currentTheme);
+}
+
+function showNotification(message, type = 'info') {
+  // Use theme accent color for success
+  const accent = currentTheme?.accent || '#3BC36E';
+  const notif = document.createElement('div');
+  notif.className = `theme-notification theme-notification--${type}`;
+  notif.textContent = message;
+  notif.style.cssText = `
+    position: fixed; bottom: 20px; right: 20px; padding: 1rem 1.5rem;
+    background: ${type === 'success' ? accent : type === 'warning' ? '#f59e0b' : 'var(--surface)'};
+    color: ${type === 'success' || type === 'warning' ? '#000' : 'var(--fg)'};
+    border-radius: 8px; font-weight: 500; z-index: 1000;
+    animation: slideIn 0.3s ease;
+    border: 2px solid ${type === 'success' ? accent : type === 'warning' ? '#f59e0b' : 'var(--border)'};
+  `;
+  document.body.appendChild(notif);
+  setTimeout(() => notif.remove(), 3000);
+}
+
+function setupEventListeners() {
+  // Preset buttons
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const preset = PRESETS[btn.dataset.preset];
+      if (preset) {
+        currentTheme = { ...preset };
+        applyThemeToUI(currentTheme);
+        applyThemeToPage(currentTheme);
+      }
+    });
+  });
+  
+  // Color inputs
+  ['accent', 'bg', 'surface'].forEach(name => {
+    const colorInput = document.getElementById(`color-${name}`);
+    const hexInput = document.getElementById(`color-${name}-hex`);
+    
+    colorInput?.addEventListener('input', () => {
+      hexInput.value = colorInput.value;
+      const theme = getCurrentThemeFromUI();
+      applyThemeToPage(theme);
+    });
+    
+    hexInput?.addEventListener('input', () => {
+      if (/^#[0-9A-Fa-f]{6}$/.test(hexInput.value)) {
+        colorInput.value = hexInput.value;
+        const theme = getCurrentThemeFromUI();
+        applyThemeToPage(theme);
+      }
+    });
+  });
+  
+  // Background image
+  document.getElementById('bg-image-url')?.addEventListener('input', (e) => {
+    const url = e.target.value;
+    const preview = document.getElementById('bg-preview');
+    if (url) {
+      preview.style.backgroundImage = `url(${url})`;
+      preview.innerHTML = '';
+    } else {
+      preview.style.backgroundImage = '';
+      preview.innerHTML = '<span class="muted">No background image</span>';
+    }
+    applyThemeToPage(getCurrentThemeFromUI());
+  });
+  
+  document.getElementById('bg-opacity')?.addEventListener('input', (e) => {
+    document.getElementById('bg-opacity-value').textContent = e.target.value;
+    applyThemeToPage(getCurrentThemeFromUI());
+  });
+  
+  document.getElementById('clear-bg')?.addEventListener('click', () => {
+    document.getElementById('bg-image-url').value = '';
+    document.getElementById('bg-preview').style.backgroundImage = '';
+    document.getElementById('bg-preview').innerHTML = '<span class="muted">No background image</span>';
+    document.body.style.backgroundImage = '';
+  });
+  
+  // Save & Reset
+  document.getElementById('save-theme')?.addEventListener('click', saveTheme);
+  
+  document.getElementById('reset-theme')?.addEventListener('click', () => {
+    currentTheme = { ...PRESETS.default };
+    applyThemeToUI(currentTheme);
+    applyThemeToPage(currentTheme);
+    document.getElementById('bg-image-url').value = '';
+    document.getElementById('bg-preview').style.backgroundImage = '';
+    document.getElementById('bg-preview').innerHTML = '<span class="muted">No background image</span>';
+    document.body.style.backgroundImage = '';
+  });
+  
+  // Favorites functionality
+  setupFavorites();
+}
+
+// Favorites system
+function setupFavorites() {
+  loadFavorites();
+  
+  // Save buttons
+  document.getElementById('save-favorite-1')?.addEventListener('click', () => saveFavorite(1));
+  document.getElementById('save-favorite-2')?.addEventListener('click', () => saveFavorite(2));
+  
+  // Load buttons
+  document.getElementById('load-favorite-1')?.addEventListener('click', () => loadFavorite(1));
+  document.getElementById('load-favorite-2')?.addEventListener('click', () => loadFavorite(2));
+  
+  // Clear buttons
+  document.getElementById('clear-favorite-1')?.addEventListener('click', () => clearFavorite(1));
+  document.getElementById('clear-favorite-2')?.addEventListener('click', () => clearFavorite(2));
+}
+
+function loadFavorites() {
+  const favorites = JSON.parse(localStorage.getItem('crc-theme-favorites') || '{}');
+  
+  [1, 2].forEach(slot => {
+    const fav = favorites[`slot${slot}`];
+    const preview = document.getElementById(`favorite-${slot}-preview`);
+    const loadBtn = document.getElementById(`load-favorite-${slot}`);
+    const clearBtn = document.getElementById(`clear-favorite-${slot}`);
+    
+    if (fav && fav.accent) {
+      preview.innerHTML = '';
+      preview.style.background = fav.bg || '#0f0f0f';
+      preview.classList.add('has-theme');
+      
+      // Add accent bar at bottom
+      const accentBar = document.createElement('div');
+      accentBar.className = 'favorite-accent';
+      accentBar.style.background = fav.accent;
+      preview.appendChild(accentBar);
+      
+      loadBtn.disabled = false;
+      clearBtn.disabled = false;
+    } else {
+      preview.innerHTML = '<span class="favorite-empty">Empty</span>';
+      preview.style.background = '';
+      preview.classList.remove('has-theme');
+      loadBtn.disabled = true;
+      clearBtn.disabled = true;
+    }
+  });
+}
+
+function saveFavorite(slot) {
+  const theme = getCurrentThemeFromUI();
+  const favorites = JSON.parse(localStorage.getItem('crc-theme-favorites') || '{}');
+  favorites[`slot${slot}`] = theme;
+  localStorage.setItem('crc-theme-favorites', JSON.stringify(favorites));
+  loadFavorites();
+  showNotification(`Theme saved to Slot ${slot}!`, 'success');
+}
+
+function loadFavorite(slot) {
+  const favorites = JSON.parse(localStorage.getItem('crc-theme-favorites') || '{}');
+  const fav = favorites[`slot${slot}`];
+  
+  if (fav) {
+    currentTheme = { ...fav };
+    applyThemeToUI(currentTheme);
+    applyThemeToPage(currentTheme);
+    showNotification(`Loaded theme from Slot ${slot}`, 'success');
+  }
+}
+
+function clearFavorite(slot) {
+  const favorites = JSON.parse(localStorage.getItem('crc-theme-favorites') || '{}');
+  delete favorites[`slot${slot}`];
+  localStorage.setItem('crc-theme-favorites', JSON.stringify(favorites));
+  loadFavorites();
+  showNotification(`Cleared Slot ${slot}`, 'info');
+}
+
+init();
+</script>
+
+<style>
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+</style>
