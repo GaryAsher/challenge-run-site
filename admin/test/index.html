@@ -51,16 +51,45 @@ title: "Admin Dashboard"
       <button class="tab" data-tab="test-profile" type="button">Test Profile</button>
       <button class="tab" data-tab="test-game" type="button">Test Game</button>
       <button class="tab" data-tab="test-run" type="button">Test Run</button>
-      <button class="tab" data-tab="auth-debug" type="button">Auth Debug</button>
+      <button class="tab" data-tab="debug-view" type="button">Debug View</button>
     </nav>
     
     <!-- ==========================================================
-         OVERVIEW TAB - General system overview
+         OVERVIEW TAB - Reordered: Data Usage -> System Status -> Site Statistics -> Recent Activity
          ========================================================== -->
     <section class="tab-panel active" data-panel="overview">
       <div class="overview-grid">
         
-        <!-- System Status -->
+        <!-- Data Usage (FIRST) -->
+        <div class="card">
+          <h2>💾 Data Usage</h2>
+          <p class="muted mb-2">Supabase resource estimates:</p>
+          <div class="data-usage">
+            <div class="usage-item">
+              <span class="usage-label">Database Rows</span>
+              <div class="usage-bar-wrap">
+                <div class="usage-bar" id="usage-bar-rows" style="width: 5%"></div>
+              </div>
+              <span class="usage-value" id="usage-rows">~50 / 100k</span>
+            </div>
+            <div class="usage-item">
+              <span class="usage-label">Storage</span>
+              <div class="usage-bar-wrap">
+                <div class="usage-bar" id="usage-bar-storage" style="width: 1%"></div>
+              </div>
+              <span class="usage-value" id="usage-storage">~5MB / 500MB</span>
+            </div>
+            <div class="usage-item">
+              <span class="usage-label">Auth Users</span>
+              <div class="usage-bar-wrap">
+                <div class="usage-bar" id="usage-bar-auth" style="width: 0%"></div>
+              </div>
+              <span class="usage-value" id="usage-auth">~5 / 50k</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- System Status (SECOND) -->
         <div class="card">
           <h2>💚 System Status</h2>
           <div class="status-list">
@@ -80,42 +109,23 @@ title: "Admin Dashboard"
               <span class="status-value" id="status-github">Checking...</span>
             </div>
             <div class="status-item">
-              <span class="status-dot" id="status-dot-workers"></span>
-              <span>Cloudflare Workers</span>
-              <span class="status-value" id="status-workers">Unknown</span>
+              <span class="status-dot" id="status-dot-cloudflare"></span>
+              <span>Cloudflare CDN</span>
+              <span class="status-value" id="status-cloudflare">Checking...</span>
             </div>
             <div class="status-item">
-              <span class="status-dot" id="status-dot-jekyll"></span>
+              <span class="status-dot ok" id="status-dot-jekyll"></span>
               <span>Jekyll Build</span>
               <span class="status-value" id="status-jekyll">OK</span>
             </div>
           </div>
           <p class="muted mt-3" style="font-size: 0.8rem;">
             Last checked: <span id="status-timestamp">-</span>
+            <button type="button" class="btn btn--small ml-2" id="refresh-status">🔄</button>
           </p>
         </div>
         
-        <!-- Quick Actions -->
-        <div class="card">
-          <h2>⚡ Quick Actions</h2>
-          <p class="muted mb-3">Jump to moderation queues:</p>
-          <div class="admin-actions">
-            <a href="/admin/profiles/" class="btn">
-              <span>👥</span> Review Profiles
-              <span class="action-badge" id="action-profiles-badge" hidden>0</span>
-            </a>
-            <a href="/admin/games/" class="btn">
-              <span>🎮</span> Review Games
-              <span class="action-badge" id="action-games-badge" hidden>0</span>
-            </a>
-            <a href="/admin/runs/" class="btn">
-              <span>🏃</span> Review Runs
-              <span class="action-badge" id="action-runs-badge" hidden>0</span>
-            </a>
-          </div>
-        </div>
-        
-        <!-- Site Statistics -->
+        <!-- Site Statistics (THIRD) -->
         <div class="card">
           <h2>📈 Site Statistics</h2>
           <div class="site-stats">
@@ -138,7 +148,7 @@ title: "Admin Dashboard"
           </div>
         </div>
         
-        <!-- Recent Activity -->
+        <!-- Recent Activity (FOURTH) -->
         <div class="card">
           <h2>🕐 Recent Activity</h2>
           <div class="activity-list" id="recent-activity">
@@ -163,341 +173,282 @@ title: "Admin Dashboard"
           </ul>
         </div>
         
-        <!-- Data Usage (for Supabase monitoring) -->
-        <div class="card">
-          <h2>💾 Data Usage</h2>
-          <p class="muted mb-2">Supabase resource estimates:</p>
-          <div class="data-usage">
-            <div class="usage-item">
-              <span class="usage-label">Database Rows</span>
-              <div class="usage-bar-wrap">
-                <div class="usage-bar" id="usage-bar-rows" style="width: 5%"></div>
-              </div>
-              <span class="usage-value" id="usage-rows">~50 / 100k</span>
-            </div>
-            <div class="usage-item">
-              <span class="usage-label">Storage</span>
-              <div class="usage-bar-wrap">
-                <div class="usage-bar" id="usage-bar-storage" style="width: 2%"></div>
-              </div>
-              <span class="usage-value" id="usage-storage">~10MB / 1GB</span>
-            </div>
-            <div class="usage-item">
-              <span class="usage-label">Auth Users</span>
-              <div class="usage-bar-wrap">
-                <div class="usage-bar" id="usage-bar-auth" style="width: 1%"></div>
-              </div>
-              <span class="usage-value" id="usage-auth">~5 / 50k</span>
-            </div>
-          </div>
-          <p class="muted mt-2" style="font-size: 0.75rem;">
-            Free tier limits. Upgrade at <a href="https://supabase.com" target="_blank">supabase.com</a>
-          </p>
-        </div>
       </div>
     </section>
     
     <!-- ==========================================================
-         TEST PROFILE TAB
+         TEST PROFILE SIMULATOR
          ========================================================== -->
     <section class="tab-panel" data-panel="test-profile">
       <div class="card">
-        <h2>👤 Profile Submission Simulator</h2>
-        <p class="muted mb-3">
-          Test the complete profile creation flow without affecting production data.
-        </p>
-        
-        <div class="simulator">
-          <div class="simulator__form">
-            <div class="form-group">
-              <label class="form-label">Display Name</label>
-              <input type="text" id="sim-profile-name" class="form-input" value="Test Runner" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Runner ID (slug)</label>
-              <input type="text" id="sim-profile-id" class="form-input" value="test-runner-sim" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Bio</label>
-              <textarea id="sim-profile-bio" class="form-textarea" rows="2">This is a test profile.</textarea>
-            </div>
-            <button type="button" class="btn btn--primary" id="sim-profile-run">▶ Run Simulation</button>
+        <h2>🧑 Profile Submission Simulator</h2>
+        <p class="muted mb-3">Test the profile creation workflow without submitting.</p>
+        <div class="sim-form">
+          <div class="sim-row">
+            <label class="sim-label">Display Name</label>
+            <input type="text" id="sim-profile-name" class="sim-input" value="TestRunner123" />
           </div>
-          <div class="simulator__output">
-            <h3>Output</h3>
-            <div class="output-log" id="sim-profile-log">
-              <p class="muted">Click "Run Simulation" to start...</p>
-            </div>
+          <div class="sim-row">
+            <label class="sim-label">Runner ID (slug)</label>
+            <input type="text" id="sim-profile-id" class="sim-input" value="test-runner-123" />
           </div>
+          <div class="sim-row">
+            <label class="sim-label">Bio</label>
+            <textarea id="sim-profile-bio" class="sim-input" rows="2">I like speedrunning!</textarea>
+          </div>
+          <button type="button" class="btn btn--primary mt-3" id="sim-profile-run">▶ Run Simulation</button>
         </div>
+        <div class="sim-log" id="sim-profile-log"></div>
       </div>
     </section>
     
     <!-- ==========================================================
-         TEST GAME TAB (now before Test Run)
+         TEST GAME SIMULATOR
          ========================================================== -->
     <section class="tab-panel" data-panel="test-game">
       <div class="card">
         <h2>🎮 Game Submission Simulator</h2>
-        <p class="muted mb-3">
-          Test game submission validation and file generation.
-        </p>
-        
-        <div class="simulator">
-          <div class="simulator__form">
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Game Name</label>
-                <input type="text" id="sim-game-name" class="form-input" value="Test Game Simulator" />
-              </div>
-              <div class="form-group">
-                <label class="form-label">Game ID (slug)</label>
-                <input type="text" id="sim-game-id" class="form-input" value="test-game-sim" />
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Release Year</label>
-                <input type="number" id="sim-game-year" class="form-input" value="2024" />
-              </div>
-              <div class="form-group">
-                <label class="form-label">Developer</label>
-                <input type="text" id="sim-game-dev" class="form-input" value="Test Studio" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Genres (comma-separated)</label>
-              <input type="text" id="sim-game-genres" class="form-input" value="roguelike, action" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Categories (comma-separated)</label>
-              <input type="text" id="sim-game-categories" class="form-input" value="any, 100, hitless" />
-            </div>
-            <button type="button" class="btn btn--primary" id="sim-game-run">▶ Run Simulation</button>
+        <p class="muted mb-3">Test the game submission workflow.</p>
+        <div class="sim-form">
+          <div class="sim-row">
+            <label class="sim-label">Game Name</label>
+            <input type="text" id="sim-game-name" class="sim-input" value="Super Test Game" />
           </div>
-          <div class="simulator__output">
-            <h3>Output</h3>
-            <div class="output-log" id="sim-game-log">
-              <p class="muted">Click "Run Simulation" to start...</p>
-            </div>
+          <div class="sim-row">
+            <label class="sim-label">Game ID (slug)</label>
+            <input type="text" id="sim-game-id" class="sim-input" value="super-test-game" />
           </div>
+          <div class="sim-row">
+            <label class="sim-label">Release Year</label>
+            <input type="text" id="sim-game-year" class="sim-input" value="2024" />
+          </div>
+          <div class="sim-row">
+            <label class="sim-label">Developer</label>
+            <input type="text" id="sim-game-dev" class="sim-input" value="Indie Studio" />
+          </div>
+          <div class="sim-row">
+            <label class="sim-label">Genres (comma-separated)</label>
+            <input type="text" id="sim-game-genres" class="sim-input" value="roguelike, action" />
+          </div>
+          <div class="sim-row">
+            <label class="sim-label">Categories (comma-separated)</label>
+            <input type="text" id="sim-game-categories" class="sim-input" value="Any%, 100%" />
+          </div>
+          <button type="button" class="btn btn--primary mt-3" id="sim-game-run">▶ Run Simulation</button>
         </div>
+        <div class="sim-log" id="sim-game-log"></div>
       </div>
     </section>
     
     <!-- ==========================================================
-         TEST RUN TAB
+         TEST RUN SIMULATOR
          ========================================================== -->
     <section class="tab-panel" data-panel="test-run">
       <div class="card">
         <h2>🏃 Run Submission Simulator</h2>
-        <p class="muted mb-3">
-          Test run submission validation and workflow triggers.
-        </p>
-        
-        <div class="simulator">
-          <div class="simulator__form">
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Game</label>
-                <select id="sim-run-game" class="form-input">
-                  <option value="hades-2">Hades 2</option>
-                  <option value="hollow-knight">Hollow Knight</option>
-                  <option value="celeste">Celeste</option>
-                  <option value="test-game">Test Game</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Category</label>
-                <input type="text" id="sim-run-category" class="form-input" value="Any%" />
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Runner ID</label>
-                <input type="text" id="sim-run-runner" class="form-input" value="test-runner" />
-              </div>
-              <div class="form-group">
-                <label class="form-label">Time</label>
-                <input type="text" id="sim-run-time" class="form-input" value="1:23:45" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Video URL</label>
-              <input type="url" id="sim-run-video" class="form-input" value="https://youtube.com/watch?v=test123" />
-            </div>
-            <button type="button" class="btn btn--primary" id="sim-run-run">▶ Run Simulation</button>
+        <p class="muted mb-3">Test the run submission workflow.</p>
+        <div class="sim-form">
+          <div class="sim-row">
+            <label class="sim-label">Game</label>
+            <select id="sim-run-game" class="sim-input">
+              <option value="">Select a game...</option>
+              {% for g in site.games %}
+                <option value="{{ g.game_id }}">{{ g.game_name }}</option>
+              {% endfor %}
+            </select>
           </div>
-          <div class="simulator__output">
-            <h3>Output</h3>
-            <div class="output-log" id="sim-run-log">
-              <p class="muted">Click "Run Simulation" to start...</p>
-            </div>
+          <div class="sim-row">
+            <label class="sim-label">Category</label>
+            <input type="text" id="sim-run-category" class="sim-input" value="Any%" />
           </div>
+          <div class="sim-row">
+            <label class="sim-label">Runner ID</label>
+            <input type="text" id="sim-run-runner" class="sim-input" value="test-runner" />
+          </div>
+          <div class="sim-row">
+            <label class="sim-label">Time</label>
+            <input type="text" id="sim-run-time" class="sim-input" value="12:34.56" />
+          </div>
+          <div class="sim-row">
+            <label class="sim-label">Video URL</label>
+            <input type="url" id="sim-run-video" class="sim-input" value="https://youtube.com/watch?v=test123" />
+          </div>
+          <button type="button" class="btn btn--primary mt-3" id="sim-run-run">▶ Run Simulation</button>
         </div>
+        <div class="sim-log" id="sim-run-log"></div>
       </div>
     </section>
     
     <!-- ==========================================================
-         AUTH DEBUG TAB
+         DEBUG VIEW TAB - View site as different roles
          ========================================================== -->
-    <section class="tab-panel" data-panel="auth-debug">
+    <section class="tab-panel" data-panel="debug-view">
       <div class="card">
-        <h2>🔍 Authentication Debug</h2>
-        <p class="muted mb-3">Current authentication state.</p>
+        <h2>👁️ Debug View Mode</h2>
+        <p class="muted mb-3">Preview the site as a different role. Submissions are disabled while in debug mode.</p>
         
-        <div class="auth-debug-grid">
-          <div class="auth-debug-section">
-            <h3>User Info</h3>
-            <div class="debug-table" id="debug-user-info"></div>
-          </div>
-          <div class="auth-debug-section">
-            <h3>Provider</h3>
-            <div class="debug-table" id="debug-provider-info"></div>
-          </div>
-          <div class="auth-debug-section">
-            <h3>Profile</h3>
-            <div class="debug-table" id="debug-profile-info"></div>
-          </div>
-          <div class="auth-debug-section">
-            <h3>Raw Session</h3>
-            <pre class="debug-raw" id="debug-raw-session"></pre>
+        <div class="debug-view-warning" id="debug-active-warning" hidden>
+          <div class="debug-view-banner">
+            <span class="debug-view-icon">⚠️</span>
+            <span>Currently viewing as: <strong id="current-debug-role">-</strong></span>
+            <button type="button" class="btn btn--small" id="exit-debug-view">Return to Admin View</button>
           </div>
         </div>
         
-        <div class="auth-debug-actions">
-          <button type="button" class="btn" id="debug-refresh">🔄 Refresh</button>
-          <button type="button" class="btn btn--danger" id="debug-sign-out">Sign Out</button>
+        <div class="debug-role-cards" id="debug-role-options">
+          <!-- Populated by JS based on current role -->
+        </div>
+        
+        <div class="debug-info mt-4">
+          <h3>What Debug View Does:</h3>
+          <ul class="debug-info-list">
+            <li>🔒 <strong>Disables submissions</strong> - No profile, game, or run submissions while active</li>
+            <li>👁️ <strong>Shows restricted views</strong> - See what users/verifiers see</li>
+            <li>🧪 <strong>Session-based</strong> - Resets when you close the browser</li>
+            <li>↩️ <strong>Easy exit</strong> - Return to your normal role anytime</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="card mt-4">
+        <h2>🔐 Your Current Permissions</h2>
+        <div id="debug-permissions">
+          <div class="debug-row"><span class="debug-key">Role</span><span class="debug-value" id="perm-role">-</span></div>
+          <div class="debug-row"><span class="debug-key">Runner ID</span><span class="debug-value" id="perm-runner-id">-</span></div>
+          <div class="debug-row"><span class="debug-key">Can Approve Profiles</span><span class="debug-value" id="perm-profiles">-</span></div>
+          <div class="debug-row"><span class="debug-key">Can Approve Games</span><span class="debug-value" id="perm-games">-</span></div>
+          <div class="debug-row"><span class="debug-key">Can Verify Runs</span><span class="debug-value" id="perm-runs">-</span></div>
+          <div class="debug-row"><span class="debug-key">Access Financials</span><span class="debug-value" id="perm-financials">-</span></div>
         </div>
       </div>
     </section>
+    
   </div>
 </div>
 
 <style>
-.dashboard-header { margin-bottom: 2rem; }
+/* Dashboard Header */
+.dashboard-header { margin-bottom: 1.5rem; }
 .dashboard-header h1 { margin-bottom: 0.25rem; }
-.dashboard-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.25rem; text-align: center; }
-.stat-card__value { display: block; font-size: 2rem; font-weight: 700; color: var(--accent); line-height: 1; margin-bottom: 0.5rem; }
-.stat-card__label { font-size: 0.85rem; color: var(--text-muted); }
-.dashboard-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
-.dashboard-tabs .tab { padding: 0.5rem 1rem; background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); color: var(--text-muted); cursor: pointer; font-size: 0.9rem; transition: all 0.15s ease; }
-.dashboard-tabs .tab:hover { color: var(--fg); background: var(--surface); }
-.dashboard-tabs .tab.active { color: var(--accent); border-color: var(--accent); background: rgba(var(--accent-rgb), 0.1); }
+
+/* Stats */
+.dashboard-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; text-align: center; }
+.stat-card__value { display: block; font-size: 2rem; font-weight: 700; color: var(--accent); }
+.stat-card__label { font-size: 0.8rem; color: var(--text-muted); }
+
+/* Tabs */
+.dashboard-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; }
+.dashboard-tabs .tab { padding: 0.5rem 1rem; background: transparent; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; font-size: 0.9rem; transition: all 0.15s; }
+.dashboard-tabs .tab:hover { border-color: var(--accent); }
+.dashboard-tabs .tab.active { background: var(--accent); border-color: var(--accent); color: var(--bg); }
 .tab-panel { display: none; }
 .tab-panel.active { display: block; }
 
 /* Overview Grid */
-.overview-grid { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.overview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+
+/* Status */
 .status-list { display: flex; flex-direction: column; gap: 0.75rem; }
-.status-item { display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; }
-.status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; background: var(--text-muted); }
+.status-item { display: flex; align-items: center; gap: 0.75rem; }
+.status-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--text-muted); flex-shrink: 0; }
 .status-dot.ok { background: #10b981; }
 .status-dot.warn { background: #f59e0b; }
 .status-dot.error { background: #ef4444; }
-.status-value { margin-left: auto; color: var(--text-muted); font-size: 0.85rem; }
+.status-value { margin-left: auto; font-size: 0.85rem; color: var(--text-muted); }
 
 /* Site Stats */
-.site-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.site-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
 .site-stat { text-align: center; padding: 0.75rem; background: var(--bg); border-radius: var(--radius-sm); }
 .site-stat__label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem; }
-.site-stat__value { display: block; font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+.site-stat__value { display: block; font-size: 1.25rem; font-weight: 600; }
 
-/* Activity List */
+/* Activity */
 .activity-list { max-height: 200px; overflow-y: auto; }
-.activity-item { padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+.activity-item { padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
 .activity-item:last-child { border-bottom: none; }
-.activity-time { color: var(--text-muted); font-size: 0.75rem; }
+.activity-time { float: right; font-size: 0.8rem; color: var(--text-muted); }
 
 /* Data Usage */
-.data-usage { display: flex; flex-direction: column; gap: 0.75rem; }
+.data-usage { display: flex; flex-direction: column; gap: 1rem; }
 .usage-item { display: flex; align-items: center; gap: 0.75rem; }
-.usage-label { flex: 0 0 100px; font-size: 0.85rem; color: var(--text-muted); }
+.usage-label { width: 100px; font-size: 0.85rem; flex-shrink: 0; }
 .usage-bar-wrap { flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
-.usage-bar { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.3s ease; }
-.usage-value { flex: 0 0 100px; font-size: 0.75rem; color: var(--text-muted); text-align: right; }
-
-/* Admin Actions */
-.admin-actions { display: flex; flex-direction: column; gap: 0.5rem; }
-.admin-actions .btn { display: flex; align-items: center; gap: 0.5rem; justify-content: flex-start; position: relative; }
-.action-badge { position: absolute; right: 0.75rem; background: #dc3545; color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 10px; }
-.action-badge[hidden] { display: none; }
+.usage-bar { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.3s; }
+.usage-value { font-size: 0.8rem; color: var(--text-muted); min-width: 90px; text-align: right; }
 
 /* Test Games */
 .test-games-list { list-style: none; padding: 0; margin: 0; }
 .test-games-list li { padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
 .test-games-list li:last-child { border-bottom: none; }
-.tag--small { font-size: 0.65rem; padding: 0.15rem 0.4rem; margin-left: 0.5rem; background: var(--accent); color: var(--bg); border-radius: 4px; }
 
-/* Simulator */
-.simulator { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
-@media (max-width: 800px) { .simulator { grid-template-columns: 1fr; } }
-.simulator__form { display: flex; flex-direction: column; gap: 1rem; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-@media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
-.form-group { margin-bottom: 0; }
-.form-label { display: block; font-weight: 600; margin-bottom: 0.35rem; font-size: 0.9rem; }
-.form-input, .form-textarea { width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--fg); font-size: 0.9rem; }
-.form-input:focus, .form-textarea:focus { outline: none; border-color: var(--accent); }
-.simulator__output h3 { margin-bottom: 0.75rem; font-size: 1rem; }
-.output-log { background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; min-height: 250px; max-height: 350px; overflow-y: auto; font-family: 'SF Mono', Monaco, monospace; font-size: 0.8rem; line-height: 1.5; }
-.log-entry { margin-bottom: 0.5rem; padding-left: 1rem; position: relative; }
-.log-entry::before { content: ''; position: absolute; left: 0; top: 0.5em; width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); }
-.log-entry--info::before { background: #3b82f6; }
-.log-entry--success::before { background: #10b981; }
-.log-entry--warning::before { background: #f59e0b; }
-.log-entry--error::before { background: #ef4444; }
-.log-entry--success { color: #10b981; }
-.log-entry--error { color: #ef4444; }
-.log-entry--warning { color: #f59e0b; }
-.log-timestamp { color: var(--text-muted); margin-right: 0.5rem; }
+/* Simulators */
+.sim-form { max-width: 500px; }
+.sim-row { margin-bottom: 1rem; }
+.sim-label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.25rem; }
+.sim-input { width: 100%; padding: 0.5rem; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color: var(--fg); font-size: 0.9rem; }
+.sim-input:focus { border-color: var(--accent); outline: none; }
+.sim-log { margin-top: 1.5rem; padding: 1rem; background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: monospace; font-size: 0.8rem; max-height: 300px; overflow-y: auto; }
+.sim-log:empty { display: none; }
 
-/* Auth Debug */
-.auth-debug-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; }
-.auth-debug-section h3 { font-size: 0.9rem; margin-bottom: 0.75rem; color: var(--accent); }
-.debug-table { background: var(--surface); border-radius: var(--radius-sm); overflow: hidden; }
-.debug-row { display: flex; border-bottom: 1px solid var(--border); }
+/* Debug View */
+.debug-view-warning { margin-bottom: 1.5rem; }
+.debug-view-banner { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; border-radius: var(--radius-sm); flex-wrap: wrap; }
+.debug-view-icon { font-size: 1.25rem; }
+.debug-view-banner .btn--small { background: rgba(0,0,0,0.2); border: 1px solid rgba(0,0,0,0.3); color: #000; margin-left: auto; }
+
+.debug-role-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+.debug-role-card { padding: 1.25rem; background: var(--bg); border: 2px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s; }
+.debug-role-card:hover { border-color: var(--accent); }
+.debug-role-card.active { border-color: var(--accent); background: rgba(var(--accent-rgb), 0.1); }
+.debug-role-card__icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+.debug-role-card__name { font-weight: 600; margin-bottom: 0.25rem; }
+.debug-role-card__desc { font-size: 0.8rem; color: var(--text-muted); }
+
+.debug-info-list { list-style: none; padding: 0; margin: 0; }
+.debug-info-list li { padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+.debug-info-list li:last-child { border-bottom: none; }
+
+.debug-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
 .debug-row:last-child { border-bottom: none; }
-.debug-key { flex: 0 0 100px; padding: 0.5rem 0.75rem; background: var(--bg); font-weight: 600; font-size: 0.8rem; color: var(--text-muted); }
-.debug-value { flex: 1; padding: 0.5rem 0.75rem; font-size: 0.8rem; word-break: break-all; }
-.debug-raw { background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; font-size: 0.75rem; overflow: auto; max-height: 150px; }
-.auth-debug-actions { display: flex; gap: 0.75rem; }
-.btn--danger { background: transparent; border: 1px solid #ef4444; color: #ef4444; }
-.btn--danger:hover { background: #ef4444; color: white; }
+.debug-key { font-size: 0.9rem; color: var(--text-muted); }
+.debug-value { font-weight: 500; }
+
+.ml-2 { margin-left: 0.5rem; }
 </style>
 
 <script type="module">
 import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
 
-const ADMIN_IDS = ['gary-asher'];
-let supabase = null;
+const ADMIN_IDS = ['gary-asher', 'garyasher'];
+const SUPER_ADMIN_IDS = ['gary-asher'];
+const DEBUG_VIEW_KEY = 'crc-debug-view-role';
 
 const authCheck = document.getElementById('auth-check');
 const notAuthorized = document.getElementById('not-authorized');
 const adminContent = document.getElementById('admin-content');
 
-// Tab Switching
+let supabase = null;
+let actualRole = 'user';
+
+// Helpers
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function log(el, msg, type = 'info') {
+  const colors = { info: '#888', success: '#10b981', error: '#ef4444', warning: '#f59e0b' };
+  el.innerHTML += `<div style="color:${colors[type]}">${msg}</div>`;
+  el.scrollTop = el.scrollHeight;
+}
+function clearLog(el) { el.innerHTML = ''; }
+
+// Tab switching
 document.querySelectorAll('.dashboard-tabs .tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.dashboard-tabs .tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     tab.classList.add('active');
-    document.querySelector(`[data-panel="${tab.dataset.tab}"]`).classList.add('active');
+    document.querySelector(`[data-panel="${tab.dataset.tab}"]`)?.classList.add('active');
   });
 });
-
-// Logging Utility
-function log(logEl, message, type = 'info') {
-  const timestamp = new Date().toLocaleTimeString();
-  const entry = document.createElement('div');
-  entry.className = `log-entry log-entry--${type}`;
-  entry.innerHTML = `<span class="log-timestamp">[${timestamp}]</span> ${message}`;
-  logEl.appendChild(entry);
-  logEl.scrollTop = logEl.scrollHeight;
-}
-function clearLog(logEl) { logEl.innerHTML = ''; }
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // Profile Simulator
 document.getElementById('sim-profile-run')?.addEventListener('click', async () => {
@@ -510,24 +461,12 @@ document.getElementById('sim-profile-run')?.addEventListener('click', async () =
   log(logEl, '🚀 Starting profile submission simulation...', 'info');
   await sleep(300);
   
-  // Validation
   log(logEl, 'Step 1: Validating inputs...', 'info');
-  const errors = [];
-  if (!name || name.length < 2) errors.push('Display name too short');
-  if (!id || !/^[a-z0-9-]+$/.test(id)) errors.push('Invalid runner ID format');
-  if (id && id.length < 3) errors.push('Runner ID too short');
-  if (errors.length > 0) { errors.forEach(e => log(logEl, `❌ ${e}`, 'error')); return; }
+  if (!name || !id || !/^[a-z0-9-]+$/.test(id)) { log(logEl, '❌ Invalid inputs', 'error'); return; }
   log(logEl, '✅ Validation passed', 'success');
   
   await sleep(400);
-  log(logEl, 'Step 2: Checking banned terms...', 'info');
-  const banned = ['admin', 'moderator', 'official'];
-  const found = banned.filter(t => name.toLowerCase().includes(t) || id.toLowerCase().includes(t));
-  if (found.length) log(logEl, `⚠️ Reserved terms found: ${found.join(', ')}`, 'warning');
-  else log(logEl, '✅ No banned terms', 'success');
-  
-  await sleep(400);
-  log(logEl, 'Step 3: Checking ID availability...', 'info');
+  log(logEl, 'Step 2: Checking ID availability...', 'info');
   log(logEl, `✅ "${id}" is available`, 'success');
   
   await sleep(300);
@@ -544,9 +483,6 @@ document.getElementById('sim-game-run')?.addEventListener('click', async () => {
   clearLog(logEl);
   const name = document.getElementById('sim-game-name').value;
   const id = document.getElementById('sim-game-id').value;
-  const year = document.getElementById('sim-game-year').value;
-  const dev = document.getElementById('sim-game-dev').value;
-  const genres = document.getElementById('sim-game-genres').value;
   const categories = document.getElementById('sim-game-categories').value;
   
   log(logEl, '🚀 Starting game submission simulation...', 'info');
@@ -612,65 +548,150 @@ document.getElementById('sim-run-run')?.addEventListener('click', async () => {
   log(logEl, '🎉 SIMULATION COMPLETE', 'success');
 });
 
-// Auth Debug
-function renderAuthDebug() {
-  const user = CRCAuth.getUser();
-  const profile = CRCAuth.getProfile();
-  const metadata = CRCAuth.getProviderMetadata();
-  
-  document.getElementById('debug-user-info').innerHTML = `
-    <div class="debug-row"><span class="debug-key">User ID</span><span class="debug-value">${user?.id || 'N/A'}</span></div>
-    <div class="debug-row"><span class="debug-key">Email</span><span class="debug-value">${user?.email || 'N/A'}</span></div>
-    <div class="debug-row"><span class="debug-key">Created</span><span class="debug-value">${user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</span></div>
-  `;
-  document.getElementById('debug-provider-info').innerHTML = `
-    <div class="debug-row"><span class="debug-key">Provider</span><span class="debug-value">${metadata?.provider || 'N/A'}</span></div>
-    <div class="debug-row"><span class="debug-key">Username</span><span class="debug-value">${metadata?.providerUsername || 'N/A'}</span></div>
-    <div class="debug-row"><span class="debug-key">Verified</span><span class="debug-value">${metadata?.emailVerified ? '✅' : '❌'}</span></div>
-  `;
-  document.getElementById('debug-profile-info').innerHTML = `
-    <div class="debug-row"><span class="debug-key">Runner ID</span><span class="debug-value">${profile?.runner_id || 'N/A'}</span></div>
-    <div class="debug-row"><span class="debug-key">Display</span><span class="debug-value">${profile?.display_name || 'N/A'}</span></div>
-    <div class="debug-row"><span class="debug-key">Admin</span><span class="debug-value">${profile?.is_admin ? '✅' : '❌'}</span></div>
-  `;
-  document.getElementById('debug-raw-session').textContent = JSON.stringify({ user, profile, metadata }, null, 2);
+// Debug View Functions
+function getDebugViewRole() {
+  return sessionStorage.getItem(DEBUG_VIEW_KEY);
 }
 
-document.getElementById('debug-refresh')?.addEventListener('click', async () => { await CRCAuth.init(); renderAuthDebug(); });
-document.getElementById('debug-sign-out')?.addEventListener('click', async () => { await CRCAuth.signOut(); window.location.href = '/sign-in/'; });
+function setDebugViewRole(role) {
+  if (role) {
+    sessionStorage.setItem(DEBUG_VIEW_KEY, role);
+  } else {
+    sessionStorage.removeItem(DEBUG_VIEW_KEY);
+  }
+  renderDebugView();
+}
 
-// Load Stats & Status
-async function loadDashboard() {
-  // System status
+function renderDebugView() {
+  const debugRole = getDebugViewRole();
+  const warning = document.getElementById('debug-active-warning');
+  const roleLabel = document.getElementById('current-debug-role');
+  const optionsEl = document.getElementById('debug-role-options');
+  
+  // Show/hide warning
+  if (debugRole) {
+    warning.hidden = false;
+    roleLabel.textContent = debugRole.charAt(0).toUpperCase() + debugRole.slice(1);
+  } else {
+    warning.hidden = true;
+  }
+  
+  // Role options
+  const roles = [
+    { id: 'admin', name: 'Admin', icon: '🛡️', desc: 'Moderation tools, no financials' },
+    { id: 'verifier', name: 'Verifier', icon: '✓', desc: 'Only assigned game queues' },
+    { id: 'user', name: 'User', icon: '👤', desc: 'Standard user experience' }
+  ];
+  
+  // Filter based on actual role
+  const availableRoles = actualRole === 'super_admin' ? roles : 
+                         actualRole === 'admin' ? roles.filter(r => r.id !== 'admin') : 
+                         roles.filter(r => r.id === 'user');
+  
+  optionsEl.innerHTML = availableRoles.map(r => `
+    <div class="debug-role-card ${debugRole === r.id ? 'active' : ''}" data-role="${r.id}">
+      <div class="debug-role-card__icon">${r.icon}</div>
+      <div class="debug-role-card__name">${r.name}</div>
+      <div class="debug-role-card__desc">${r.desc}</div>
+    </div>
+  `).join('');
+  
+  // Add click handlers
+  optionsEl.querySelectorAll('.debug-role-card').forEach(card => {
+    card.addEventListener('click', () => {
+      setDebugViewRole(card.dataset.role);
+    });
+  });
+  
+  // Exit button
+  document.getElementById('exit-debug-view')?.addEventListener('click', () => {
+    setDebugViewRole(null);
+  });
+  
+  // Update permissions display
+  const effectiveRole = debugRole || actualRole;
+  document.getElementById('perm-role').textContent = effectiveRole;
+  document.getElementById('perm-runner-id').textContent = CRCAuth.getProfile()?.runner_id || '-';
+  document.getElementById('perm-profiles').textContent = ['super_admin', 'admin'].includes(effectiveRole) ? '✅ Yes' : '❌ No';
+  document.getElementById('perm-games').textContent = ['super_admin', 'admin'].includes(effectiveRole) ? '✅ Yes' : '❌ No';
+  document.getElementById('perm-runs').textContent = ['super_admin', 'admin', 'verifier'].includes(effectiveRole) ? '✅ Yes' : '❌ No';
+  document.getElementById('perm-financials').textContent = effectiveRole === 'super_admin' ? '✅ Yes' : '❌ No';
+}
+
+// Check System Status
+async function checkSystemStatus() {
   document.getElementById('status-timestamp').textContent = new Date().toLocaleTimeString();
   
+  // Supabase
   if (supabase) {
     try {
+      const start = Date.now();
       await supabase.from('runner_profiles').select('id', { count: 'exact', head: true });
-      document.getElementById('status-supabase').textContent = 'Connected';
-      document.getElementById('status-dot-supabase').classList.add('ok');
+      const latency = Date.now() - start;
+      document.getElementById('status-supabase').textContent = `Connected (${latency}ms)`;
+      document.getElementById('status-dot-supabase').className = 'status-dot ok';
     } catch { 
       document.getElementById('status-supabase').textContent = 'Error';
-      document.getElementById('status-dot-supabase').classList.add('error');
+      document.getElementById('status-dot-supabase').className = 'status-dot error';
     }
   }
   
+  // Auth
   document.getElementById('status-auth').textContent = CRCAuth.isSignedIn() ? 'Active' : 'Not signed in';
-  document.getElementById('status-dot-auth').classList.add(CRCAuth.isSignedIn() ? 'ok' : 'warn');
-  document.getElementById('status-dot-github').classList.add('ok');
-  document.getElementById('status-github').textContent = 'Active';
-  document.getElementById('status-dot-jekyll').classList.add('ok');
+  document.getElementById('status-dot-auth').className = 'status-dot ' + (CRCAuth.isSignedIn() ? 'ok' : 'warn');
+  
+  // GitHub (check status API)
+  try {
+    const res = await fetch('https://www.githubstatus.com/api/v2/status.json');
+    const data = await res.json();
+    const isOk = data.status?.indicator === 'none';
+    document.getElementById('status-github').textContent = isOk ? 'Operational' : 'Degraded';
+    document.getElementById('status-dot-github').className = 'status-dot ' + (isOk ? 'ok' : 'warn');
+  } catch {
+    document.getElementById('status-github').textContent = 'Unknown';
+    document.getElementById('status-dot-github').className = 'status-dot warn';
+  }
+  
+  // Cloudflare (check if page loaded via CF by checking headers)
+  try {
+    const res = await fetch(window.location.origin + '/', { method: 'HEAD' });
+    const cfRay = res.headers.get('cf-ray');
+    if (cfRay) {
+      document.getElementById('status-cloudflare').textContent = 'Active';
+      document.getElementById('status-dot-cloudflare').className = 'status-dot ok';
+    } else {
+      document.getElementById('status-cloudflare').textContent = 'Active (no ray)';
+      document.getElementById('status-dot-cloudflare').className = 'status-dot ok';
+    }
+  } catch {
+    document.getElementById('status-cloudflare').textContent = 'Unknown';
+    document.getElementById('status-dot-cloudflare').className = 'status-dot warn';
+  }
+}
+
+// Load Dashboard Data
+async function loadDashboard() {
+  await checkSystemStatus();
   
   // Stats
   if (supabase) {
     try {
       const { count: profiles } = await supabase.from('pending_profiles').select('*', { count: 'exact', head: true }).eq('status', 'pending');
       document.getElementById('stat-profiles').textContent = profiles || 0;
-      if (profiles > 0) { const b = document.getElementById('action-profiles-badge'); if (b) { b.hidden = false; b.textContent = profiles; } }
       
       const { count: runners } = await supabase.from('runner_profiles').select('*', { count: 'exact', head: true });
       document.getElementById('stat-total-runners').textContent = runners || 0;
       document.getElementById('stat-total-runners-2').textContent = runners || 0;
+      
+      // Update usage bars
+      if (runners) {
+        const rowPercent = Math.min((runners / 100000) * 100, 100);
+        document.getElementById('usage-bar-rows').style.width = rowPercent + '%';
+        document.getElementById('usage-rows').textContent = `~${runners} / 100k`;
+        
+        document.getElementById('usage-bar-auth').style.width = (runners / 50000) * 100 + '%';
+        document.getElementById('usage-auth').textContent = `~${runners} / 50k`;
+      }
     } catch (e) { console.error(e); }
   }
   
@@ -687,19 +708,28 @@ async function loadDashboard() {
   `;
 }
 
+// Refresh button
+document.getElementById('refresh-status')?.addEventListener('click', checkSystemStatus);
+
 // Initialize
 (async function() {
   await CRCAuth.init();
   const isSignedIn = CRCAuth.isSignedIn();
   const profile = CRCAuth.getProfile();
   const metadata = CRCAuth.getProviderMetadata();
-  const isAdmin = profile?.runner_id && ADMIN_IDS.includes(profile.runner_id) || metadata?.providerUsername?.toLowerCase() === 'garyasher';
+  const runnerId = profile?.runner_id?.toLowerCase() || '';
+  const username = metadata?.providerUsername?.toLowerCase() || '';
+  
+  const isSuperAdmin = SUPER_ADMIN_IDS.includes(runnerId) || SUPER_ADMIN_IDS.some(id => username === id || username === id.replace(/-/g, '_'));
+  const isAdmin = isSuperAdmin || ADMIN_IDS.includes(runnerId) || ADMIN_IDS.some(id => username === id || username === id.replace(/-/g, '_'));
+  
+  actualRole = isSuperAdmin ? 'super_admin' : isAdmin ? 'admin' : 'user';
   
   authCheck.hidden = true;
   if (isSignedIn && isAdmin) {
     adminContent.hidden = false;
     supabase = CRCAuth.getSupabaseClient?.();
-    renderAuthDebug();
+    renderDebugView();
     loadDashboard();
   } else {
     notAuthorized.hidden = false;
