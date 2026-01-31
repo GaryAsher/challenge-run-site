@@ -11,18 +11,18 @@
       <a href="{{ '/games/' | relative_url }}">Games</a>
       <a href="{{ '/runners/' | relative_url }}">Runners</a>
       <a href="{{ '/teams/' | relative_url }}">Teams</a>
-      <a href="{{ '/news/' | relative_url }}">News</a>
     </div>
 
     <div class="nav-group">
-      <div class="nav-dropdown">
+      <div class="nav-dropdown" id="more-dropdown">
         <button type="button" class="nav-dropdown__toggle" aria-expanded="false" aria-haspopup="true">
           More <span class="nav-dropdown__caret">▾</span>
         </button>
         <div class="nav-dropdown__menu" hidden>
-          <a href="{{ '/rules/' | relative_url }}" class="nav-dropdown__item">Rules</a>
-          <a href="{{ '/glossary/' | relative_url }}" class="nav-dropdown__item">Glossary</a>
-          <a href="{{ '/support/' | relative_url }}" class="nav-dropdown__item">Support</a>
+          <a href="{{ '/news/' | relative_url }}" class="nav-dropdown__item">📰 News</a>
+          <a href="{{ '/rules/' | relative_url }}" class="nav-dropdown__item">📜 Rules</a>
+          <a href="{{ '/glossary/' | relative_url }}" class="nav-dropdown__item">📖 Glossary</a>
+          <a href="{{ '/support/' | relative_url }}" class="nav-dropdown__item">💬 Support</a>
           <hr class="nav-dropdown__divider">
           <a href="{{ '/feed.xml' | relative_url }}" class="nav-dropdown__item">📡 RSS Feed</a>
         </div>
@@ -36,15 +36,10 @@
 
     <!-- User Account Section -->
     <div class="nav-group nav-user" id="nav-user">
-      <!-- Signed out state -->
       <a href="{{ '/sign-in/' | relative_url }}" class="nav-user__signin" id="nav-signin">Sign In</a>
-      
-      <!-- Signed in state - Avatar button -->
       <button type="button" class="nav-user__avatar-btn" id="nav-user-avatar-btn" hidden aria-label="Account menu">
         <img class="nav-user__avatar" id="nav-user-avatar" src="/assets/img/site/default-runner.png" alt="" />
       </button>
-      
-      <!-- User dropdown menu -->
       <div class="nav-user__menu" id="nav-user-menu" hidden>
         <div class="nav-user__menu-header">
           <img class="nav-user__menu-avatar" id="nav-user-menu-avatar" src="/assets/img/site/default-runner.png" alt="" />
@@ -63,10 +58,6 @@
           <a href="{{ '/profile/theme/' | relative_url }}" class="nav-user__menu-item">
             <span class="nav-user__menu-icon">🎨</span> Theme
           </a>
-          <a href="#" class="nav-user__menu-item nav-user__menu-item--disabled" id="nav-messages-link">
-            <span class="nav-user__menu-icon">💬</span> Messages
-            <span class="nav-user__menu-soon">Soon</span>
-          </a>
           <hr class="nav-user__menu-divider">
           <div class="nav-user__menu-section">
             <span class="nav-user__menu-section-title">Pending Submissions</span>
@@ -84,51 +75,94 @@
   </nav>
 </header>
 
-<!-- Admin Panel (slides from left, admins only) -->
+<!-- ============================================================
+     ADMIN / VERIFIER PANEL
+     Role-based panel with different views for different roles
+     ============================================================ -->
 <div class="admin-panel" id="admin-panel" hidden>
   <div class="admin-panel__backdrop" id="admin-panel-backdrop"></div>
   <aside class="admin-panel__content">
     <div class="admin-panel__header">
       <span class="admin-panel__title">
-        <span class="admin-badge">Admin</span>
-        Moderation
+        <span class="admin-badge" id="admin-role-badge">Admin</span>
+        <span id="admin-panel-title">Moderation</span>
       </span>
       <button type="button" class="admin-panel__close" id="admin-panel-close">&times;</button>
     </div>
     <nav class="admin-panel__nav">
-      <!-- Dashboard at TOP -->
-      <a href="/admin/test/" class="admin-panel__item admin-panel__item--highlight">
+      <!-- Home Button (always visible) -->
+      <a href="/" class="admin-panel__item admin-panel__item--home">
+        <span class="admin-panel__icon">🏠</span>
+        <span class="admin-panel__text">Home</span>
+      </a>
+      <hr class="admin-panel__divider">
+      
+      <!-- Dashboard (Admin/Super Admin only) -->
+      <a href="/admin/test/" class="admin-panel__item" id="admin-dashboard-link">
         <span class="admin-panel__icon">📊</span>
         <span class="admin-panel__text">Dashboard</span>
       </a>
-      <hr class="admin-panel__divider">
-      <a href="/admin/profiles/" class="admin-panel__item">
+      <hr class="admin-panel__divider" id="admin-divider-1">
+      
+      <!-- Moderation Queue (order: Profiles -> Games -> Runs) -->
+      <a href="/admin/profiles/" class="admin-panel__item" id="admin-profiles-link">
         <span class="admin-panel__icon">👥</span>
         <span class="admin-panel__text">Pending Profiles</span>
         <span class="admin-panel__badge" id="admin-profiles-badge" hidden>0</span>
       </a>
-      <a href="/admin/games/" class="admin-panel__item">
+      <a href="/admin/games/" class="admin-panel__item" id="admin-games-link">
         <span class="admin-panel__icon">🎮</span>
         <span class="admin-panel__text">Pending Games</span>
         <span class="admin-panel__badge" id="admin-games-badge" hidden>0</span>
       </a>
-      <a href="/admin/runs/" class="admin-panel__item">
+      <a href="/admin/runs/" class="admin-panel__item" id="admin-runs-link">
         <span class="admin-panel__icon">🏃</span>
         <span class="admin-panel__text">Pending Runs</span>
         <span class="admin-panel__badge" id="admin-runs-badge" hidden>0</span>
       </a>
-      <hr class="admin-panel__divider">
-      <a href="/admin/support/" class="admin-panel__item">
+      <hr class="admin-panel__divider" id="admin-divider-2">
+      
+      <!-- Support & Reports (Admin only) -->
+      <a href="/admin/support/" class="admin-panel__item" id="admin-support-link">
         <span class="admin-panel__icon">🎫</span>
         <span class="admin-panel__text">Support Tickets</span>
         <span class="admin-panel__badge" id="admin-support-badge" hidden>0</span>
       </a>
-      <a href="/admin/reports/" class="admin-panel__item">
+      <a href="/admin/reports/" class="admin-panel__item" id="admin-reports-link">
         <span class="admin-panel__icon">⚠️</span>
         <span class="admin-panel__text">User Reports</span>
         <span class="admin-panel__badge" id="admin-reports-badge" hidden>0</span>
       </a>
+      
+      <!-- Super Admin Only Section -->
+      <div id="super-admin-section" hidden>
+        <hr class="admin-panel__divider">
+        <div class="admin-panel__section-title">Super Admin</div>
+        <a href="/admin/health/" class="admin-panel__item">
+          <span class="admin-panel__icon">💚</span>
+          <span class="admin-panel__text">Site Health</span>
+        </a>
+        <a href="/admin/users/" class="admin-panel__item">
+          <span class="admin-panel__icon">📧</span>
+          <span class="admin-panel__text">User Data</span>
+        </a>
+      </div>
+      
+      <!-- Verifier Only Section (shows assigned games) -->
+      <div id="verifier-section" hidden>
+        <hr class="admin-panel__divider">
+        <div class="admin-panel__section-title">Your Verification Queue</div>
+        <div id="verifier-games-list">
+          <!-- Populated by JS based on assigned games -->
+        </div>
+      </div>
     </nav>
+    
+    <!-- Panel Footer -->
+    <div class="admin-panel__footer">
+      <a href="/legal/privacy/" class="admin-panel__footer-link">Privacy</a>
+      <a href="/legal/terms/" class="admin-panel__footer-link">Terms</a>
+    </div>
   </aside>
 </div>
 
@@ -159,26 +193,36 @@
 .admin-panel__title { display: flex; align-items: center; gap: 8px; font-weight: 600; }
 .admin-panel__close { background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; padding: 0.25rem; line-height: 1; }
 .admin-panel__nav { padding: 0.75rem 0; overflow-y: auto; flex: 1; }
-.admin-panel__item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: var(--fg); text-decoration: none; transition: background 0.15s ease; }
-.admin-panel__item:hover { background: var(--bg-hover); }
-.admin-panel__item--highlight { background: rgba(var(--accent-rgb), 0.1); border-left: 3px solid var(--accent); }
-.admin-panel__item--highlight:hover { background: rgba(var(--accent-rgb), 0.2); }
+
+/* Panel Items - with hover effect */
+.admin-panel__item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: var(--fg); text-decoration: none; transition: all 0.15s ease; border-left: 3px solid transparent; }
+.admin-panel__item:hover { background: rgba(var(--accent-rgb), 0.15); border-left-color: var(--accent); }
+.admin-panel__item--home { color: var(--text-muted); }
+.admin-panel__item--home:hover { color: var(--fg); }
+
 .admin-panel__icon { font-size: 1.1rem; width: 24px; text-align: center; }
 .admin-panel__text { flex: 1; }
 .admin-panel__badge { background: #dc3545; color: white; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 10px; min-width: 18px; text-align: center; }
 .admin-panel__badge[hidden] { display: none; }
 .admin-panel__divider { margin: 0.5rem 1rem; border: none; border-top: 1px solid var(--border); }
+.admin-panel__section-title { padding: 0.5rem 1rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 600; }
 .admin-badge { background: var(--accent); color: var(--bg); font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-/* Nav dropdown (copied from original for completeness) */
+/* Panel Footer */
+.admin-panel__footer { padding: 0.75rem 1rem; border-top: 1px solid var(--border); display: flex; gap: 1rem; }
+.admin-panel__footer-link { font-size: 0.8rem; color: var(--text-muted); text-decoration: none; }
+.admin-panel__footer-link:hover { color: var(--accent); }
+
+/* Nav dropdown */
 .nav-dropdown { position: relative; }
 .nav-dropdown__toggle { background: none; border: none; color: var(--fg); cursor: pointer; padding: 0.5rem; font-size: inherit; display: flex; align-items: center; gap: 4px; }
 .nav-dropdown__toggle:hover { color: var(--accent); }
-.nav-dropdown__caret { font-size: 0.75em; }
+.nav-dropdown__caret { font-size: 0.75em; transition: transform 0.15s ease; }
+.nav-dropdown.is-open .nav-dropdown__caret { transform: rotate(180deg); }
 .nav-dropdown__menu { position: absolute; top: 100%; right: 0; min-width: 180px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: 0 4px 12px rgba(0,0,0,0.3); padding: 0.5rem 0; z-index: 100; }
 .nav-dropdown__menu[hidden] { display: none; }
-.nav-dropdown__item { display: block; padding: 0.5rem 1rem; color: var(--fg); text-decoration: none; }
-.nav-dropdown__item:hover { background: var(--bg-hover); }
+.nav-dropdown__item { display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1rem; color: var(--fg); text-decoration: none; transition: background 0.15s ease; }
+.nav-dropdown__item:hover { background: var(--bg-hover); color: var(--accent); }
 .nav-dropdown__divider { margin: 0.5rem 0; border: none; border-top: 1px solid var(--border); }
 </style>
 
@@ -212,6 +256,39 @@
   input.addEventListener('focus',function(){if(input.value.length>=2)render(search(input.value),input.value);});
 })();
 
+// More dropdown toggle (FIXED)
+(function() {
+  var dropdown = document.getElementById('more-dropdown');
+  if (!dropdown) return;
+  var toggle = dropdown.querySelector('.nav-dropdown__toggle');
+  var menu = dropdown.querySelector('.nav-dropdown__menu');
+  if (!toggle || !menu) return;
+  
+  toggle.addEventListener('click', function(e) {
+    e.stopPropagation();
+    var isOpen = !menu.hidden;
+    menu.hidden = isOpen;
+    dropdown.classList.toggle('is-open', !isOpen);
+    toggle.setAttribute('aria-expanded', !isOpen);
+  });
+  
+  document.addEventListener('click', function(e) {
+    if (!dropdown.contains(e.target)) {
+      menu.hidden = true;
+      dropdown.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+  });
+  
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && !menu.hidden) {
+      menu.hidden = true;
+      dropdown.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+  });
+})();
+
 // User menu toggle
 (function() {
   var btn = document.getElementById('nav-user-avatar-btn'), menu = document.getElementById('nav-user-menu');
@@ -242,7 +319,6 @@
       if (theme.bg) document.documentElement.style.setProperty('--bg', theme.bg);
       if (theme.surface) document.documentElement.style.setProperty('--surface', theme.surface);
       if (theme.bgImage) document.body.style.backgroundImage = 'url(' + theme.bgImage + ')';
-      if (theme.bgOpacity) document.body.style.setProperty('--theme-bg-opacity', theme.bgOpacity);
     } catch (e) {}
   }
 })();
@@ -251,7 +327,9 @@
 <script type="module">
 import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
 
-const ADMIN_IDS = ['gary-asher'];
+// Role definitions
+const SUPER_ADMIN_IDS = ['gary-asher'];  // Super Admins (you)
+const ADMIN_IDS = ['gary-asher'];         // Regular Admins
 
 async function initHeaderAuth() {
   try {
@@ -271,7 +349,6 @@ async function initHeaderAuth() {
     
     if (!CRCAuth.isSignedIn()) return;
     
-    // User is signed in - swap Sign In for avatar
     const metadata = CRCAuth.getProviderMetadata();
     const profile = CRCAuth.getProfile();
     
@@ -299,11 +376,12 @@ async function initHeaderAuth() {
     
     loadUserSubmissions(submissionsEl);
     
-    // Check admin
-    const isAdmin = await checkAdminStatus();
-    if (isAdmin) {
+    // Check roles and setup panel
+    const role = await getUserRole();
+    if (role !== 'none') {
       brandLink.hidden = true;
       adminToggle.hidden = false;
+      setupAdminPanel(role, profile);
       loadAdminCounts();
     }
     
@@ -311,22 +389,82 @@ async function initHeaderAuth() {
   } catch (err) { console.error('[Header] Auth error:', err); }
 }
 
-async function checkAdminStatus() {
+async function getUserRole() {
   const profile = CRCAuth.getProfile();
   const metadata = CRCAuth.getProviderMetadata();
-  if (profile?.runner_id && ADMIN_IDS.includes(profile.runner_id.toLowerCase())) return true;
-  const username = metadata?.providerUsername?.toLowerCase() || '';
-  if (ADMIN_IDS.some(id => username === id || username === id.replace(/-/g, '_'))) return true;
-  
   const supabase = CRCAuth.getSupabaseClient?.();
-  if (supabase) {
-    const user = CRCAuth.getUser();
-    if (user) {
-      const { data } = await supabase.from('runner_profiles').select('is_admin').eq('user_id', user.id).single();
-      if (data?.is_admin) return true;
-    }
+  const user = CRCAuth.getUser();
+  
+  // Check Super Admin
+  const runnerId = profile?.runner_id?.toLowerCase() || '';
+  const username = metadata?.providerUsername?.toLowerCase() || '';
+  
+  if (SUPER_ADMIN_IDS.includes(runnerId) || SUPER_ADMIN_IDS.some(id => username === id || username === id.replace(/-/g, '_'))) {
+    return 'super_admin';
   }
-  return false;
+  
+  // Check Admin from database
+  if (supabase && user) {
+    const { data } = await supabase.from('runner_profiles').select('is_admin, role, verified_games').eq('user_id', user.id).single();
+    if (data?.is_admin) return 'admin';
+    if (data?.role === 'verifier' && data?.verified_games?.length > 0) return 'verifier';
+  }
+  
+  // Check if in ADMIN_IDS
+  if (ADMIN_IDS.includes(runnerId)) return 'admin';
+  
+  return 'none';
+}
+
+function setupAdminPanel(role, profile) {
+  const roleBadge = document.getElementById('admin-role-badge');
+  const panelTitle = document.getElementById('admin-panel-title');
+  const superAdminSection = document.getElementById('super-admin-section');
+  const verifierSection = document.getElementById('verifier-section');
+  
+  // Hide elements based on role
+  if (role === 'super_admin') {
+    roleBadge.textContent = 'Super Admin';
+    roleBadge.style.background = '#9b59b6';
+    panelTitle.textContent = 'Administration';
+    superAdminSection.hidden = false;
+  } else if (role === 'admin') {
+    roleBadge.textContent = 'Admin';
+    panelTitle.textContent = 'Moderation';
+  } else if (role === 'verifier') {
+    roleBadge.textContent = 'Verifier';
+    roleBadge.style.background = '#3498db';
+    panelTitle.textContent = 'Verification';
+    
+    // Hide admin-only items
+    document.getElementById('admin-dashboard-link').hidden = true;
+    document.getElementById('admin-divider-1').hidden = true;
+    document.getElementById('admin-profiles-link').hidden = true;
+    document.getElementById('admin-games-link').hidden = true;
+    document.getElementById('admin-support-link').hidden = true;
+    document.getElementById('admin-reports-link').hidden = true;
+    document.getElementById('admin-divider-2').hidden = true;
+    
+    // Show verifier section with their games
+    verifierSection.hidden = false;
+    loadVerifierGames(profile?.verified_games || []);
+  }
+}
+
+async function loadVerifierGames(gameIds) {
+  const list = document.getElementById('verifier-games-list');
+  if (!gameIds || gameIds.length === 0) {
+    list.innerHTML = '<p class="muted" style="padding: 0 1rem; font-size: 0.85rem;">No games assigned yet.</p>';
+    return;
+  }
+  
+  // Generate links for each assigned game
+  list.innerHTML = gameIds.map(gameId => `
+    <a href="/admin/runs/?game=${gameId}" class="admin-panel__item">
+      <span class="admin-panel__icon">🎮</span>
+      <span class="admin-panel__text">${gameId}</span>
+    </a>
+  `).join('');
 }
 
 async function loadUserSubmissions(el) {
@@ -353,12 +491,10 @@ async function loadAdminCounts() {
   try {
     const { count: profiles } = await supabase.from('pending_profiles').select('*', { count: 'exact', head: true }).eq('status', 'pending');
     if (profiles > 0) {
-      document.getElementById('admin-profiles-badge')?.classList.remove('hidden');
-      document.getElementById('admin-profiles-badge').hidden = false;
-      document.getElementById('admin-profiles-badge').textContent = profiles;
+      const badge = document.getElementById('admin-profiles-badge');
+      if (badge) { badge.hidden = false; badge.textContent = profiles; }
       total += profiles;
     }
-    // TODO: games, runs, support, reports counts
     
     if (total > 0) {
       const mainBadge = document.getElementById('brand-admin-badge');
