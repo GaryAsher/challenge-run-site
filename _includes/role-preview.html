@@ -1,28 +1,9 @@
-<!-- Role Preview Bar - Shows when previewing as another role -->
-<div class="role-preview-bar" id="role-preview-bar" hidden>
-  <div class="role-preview-content">
-    <span class="role-preview-icon">👁️</span>
-    <span class="role-preview-text">
-      Viewing as: <strong id="preview-role-name">User</strong>
-    </span>
-    <button type="button" class="btn btn--small" id="exit-preview">Exit Preview</button>
-  </div>
-</div>
-
-<!-- Role Preview Selector (in admin panel) -->
-<div class="role-preview-selector" id="role-preview-selector">
-  <div class="role-preview-header">
-    <span class="role-preview-icon">👁️</span>
-    <span>View Site As...</span>
-  </div>
-  <div class="role-preview-options">
-    <!-- Options populated based on current role -->
-  </div>
-</div>
+<!-- Debug View Mode - Controlled from Dashboard only -->
+<!-- No UI elements are shown here - all debug view controls are in /admin/test/ -->
 
 <style>
-/* Role Preview Bar - Fixed at top when active */
-.role-preview-bar {
+/* Debug View Banner - Shows when debug view is active */
+.debug-view-active-bar {
   position: fixed;
   top: 0;
   left: 0;
@@ -36,9 +17,9 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
-.role-preview-bar[hidden] { display: none; }
+.debug-view-active-bar[hidden] { display: none; }
 
-.role-preview-content {
+.debug-view-active-content {
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -46,206 +27,103 @@
   width: 100%;
 }
 
-.role-preview-icon { font-size: 1.1rem; }
+.debug-view-active-icon { font-size: 1.1rem; }
 
-.role-preview-text {
+.debug-view-active-text {
   flex: 1;
   font-size: 0.9rem;
 }
 
-.role-preview-bar .btn--small {
+.debug-view-active-bar .btn--small {
   background: rgba(0,0,0,0.2);
   border: 1px solid rgba(0,0,0,0.3);
   color: #000;
 }
 
-.role-preview-bar .btn--small:hover {
+.debug-view-active-bar .btn--small:hover {
   background: rgba(0,0,0,0.3);
 }
 
-/* Shift body down when preview is active */
-body.preview-mode {
+/* Shift body down when debug view is active */
+body.debug-view-active {
   padding-top: 44px;
 }
 
-body.preview-mode .site-header {
+body.debug-view-active .site-header {
   top: 44px;
-}
-
-/* Role Preview Selector in Admin Panel */
-.role-preview-selector {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border);
-}
-
-.role-preview-header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  font-weight: 600;
-}
-
-.role-preview-options {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  padding: 0.5rem;
-}
-
-.role-preview-option {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.6rem 0.75rem;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--fg);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  font-size: 0.85rem;
-}
-
-.role-preview-option:hover {
-  background: rgba(var(--accent-rgb), 0.1);
-  border-color: var(--accent);
-}
-
-.role-preview-option__icon {
-  font-size: 1rem;
-}
-
-.role-preview-option__info {
-  flex: 1;
-  text-align: left;
-}
-
-.role-preview-option__name {
-  display: block;
-  font-weight: 500;
-}
-
-.role-preview-option__desc {
-  display: block;
-  font-size: 0.75rem;
-  color: var(--text-muted);
 }
 </style>
 
 <script>
+// Debug View System - Controlled from Dashboard
 (function() {
-  const PREVIEW_KEY = 'crc-role-preview';
-  const ROLE_HIERARCHY = ['super_admin', 'admin', 'verifier', 'user'];
+  const DEBUG_VIEW_KEY = 'crc-debug-view-role';
   
   const ROLE_INFO = {
-    super_admin: { name: 'Super Admin', icon: '👑', desc: 'Full access to everything' },
-    admin: { name: 'Admin', icon: '🛡️', desc: 'Moderation & testing tools' },
-    verifier: { name: 'Verifier', icon: '✓', desc: 'Game verification queue only' },
-    user: { name: 'User', icon: '👤', desc: 'Standard user experience' }
+    super_admin: { name: 'Super Admin', icon: '👑' },
+    admin: { name: 'Admin', icon: '🛡️' },
+    verifier: { name: 'Verifier', icon: '✓' },
+    user: { name: 'User', icon: '👤' }
   };
   
-  // Check for active preview
-  const activePreview = sessionStorage.getItem(PREVIEW_KEY);
-  if (activePreview) {
-    activatePreviewMode(activePreview);
-  }
+  // Check if debug view is active
+  const activeDebugRole = sessionStorage.getItem(DEBUG_VIEW_KEY);
   
-  // Expose functions globally
-  window.CRCRolePreview = {
-    // Get available preview options based on current role
-    getAvailableRoles: function(currentRole) {
-      const currentIndex = ROLE_HIERARCHY.indexOf(currentRole);
-      if (currentIndex === -1) return [];
+  if (activeDebugRole) {
+    // Show debug view indicator
+    const roleInfo = ROLE_INFO[activeDebugRole];
+    if (roleInfo) {
+      document.body.classList.add('debug-view-active');
       
-      // Can preview as any role below current
-      return ROLE_HIERARCHY.slice(currentIndex + 1);
-    },
-    
-    // Start previewing as a role
-    startPreview: function(role) {
-      if (!ROLE_INFO[role]) return;
+      // Create the debug bar
+      const bar = document.createElement('div');
+      bar.className = 'debug-view-active-bar';
+      bar.innerHTML = `
+        <div class="debug-view-active-content">
+          <span class="debug-view-active-icon">⚠️</span>
+          <span class="debug-view-active-text">
+            <strong>Debug View:</strong> Viewing as ${roleInfo.name} · Submissions disabled
+          </span>
+          <button type="button" class="btn btn--small" id="exit-debug-view">Return to Admin</button>
+        </div>
+      `;
+      document.body.prepend(bar);
       
-      sessionStorage.setItem(PREVIEW_KEY, role);
-      activatePreviewMode(role);
-      
-      // Close admin panel if open
-      const panel = document.getElementById('admin-panel');
-      if (panel) panel.hidden = true;
-      
-      // Refresh page to apply role changes
-      window.location.reload();
-    },
-    
-    // Exit preview mode
-    exitPreview: function() {
-      sessionStorage.removeItem(PREVIEW_KEY);
-      document.body.classList.remove('preview-mode');
-      window.location.reload();
-    },
-    
-    // Check if currently in preview mode
-    isPreviewMode: function() {
-      return !!sessionStorage.getItem(PREVIEW_KEY);
-    },
-    
-    // Get current preview role (or null if not previewing)
-    getPreviewRole: function() {
-      return sessionStorage.getItem(PREVIEW_KEY);
-    },
-    
-    // Render preview options in admin panel
-    renderPreviewOptions: function(containerEl, currentRole) {
-      const availableRoles = this.getAvailableRoles(currentRole);
-      
-      if (availableRoles.length === 0) {
-        containerEl.innerHTML = '<p class="muted" style="padding: 0.5rem 1rem; font-size: 0.8rem;">No preview options available</p>';
-        return;
-      }
-      
-      containerEl.innerHTML = availableRoles.map(role => {
-        const info = ROLE_INFO[role];
-        return `
-          <button type="button" class="role-preview-option" data-role="${role}">
-            <span class="role-preview-option__icon">${info.icon}</span>
-            <span class="role-preview-option__info">
-              <span class="role-preview-option__name">${info.name}</span>
-              <span class="role-preview-option__desc">${info.desc}</span>
-            </span>
-          </button>
-        `;
-      }).join('');
-      
-      // Add click handlers
-      containerEl.querySelectorAll('.role-preview-option').forEach(btn => {
-        btn.addEventListener('click', () => {
-          this.startPreview(btn.dataset.role);
-        });
+      // Exit button handler
+      bar.querySelector('#exit-debug-view')?.addEventListener('click', () => {
+        sessionStorage.removeItem(DEBUG_VIEW_KEY);
+        window.location.reload();
       });
     }
-  };
-  
-  function activatePreviewMode(role) {
-    const info = ROLE_INFO[role];
-    if (!info) return;
-    
-    document.body.classList.add('preview-mode');
-    
-    const bar = document.getElementById('role-preview-bar');
-    const roleName = document.getElementById('preview-role-name');
-    
-    if (bar && roleName) {
-      bar.hidden = false;
-      roleName.textContent = info.name;
-    }
-    
-    // Exit button
-    document.getElementById('exit-preview')?.addEventListener('click', () => {
-      window.CRCRolePreview.exitPreview();
-    });
   }
+  
+  // Expose debug view helpers globally
+  window.CRCDebugView = {
+    isActive: function() {
+      return !!sessionStorage.getItem(DEBUG_VIEW_KEY);
+    },
+    
+    getRole: function() {
+      return sessionStorage.getItem(DEBUG_VIEW_KEY);
+    },
+    
+    setRole: function(role) {
+      if (role) {
+        sessionStorage.setItem(DEBUG_VIEW_KEY, role);
+      } else {
+        sessionStorage.removeItem(DEBUG_VIEW_KEY);
+      }
+    },
+    
+    exit: function() {
+      sessionStorage.removeItem(DEBUG_VIEW_KEY);
+      window.location.reload();
+    },
+    
+    // Check if submissions should be blocked
+    shouldBlockSubmissions: function() {
+      return this.isActive();
+    }
+  };
 })();
 </script>
