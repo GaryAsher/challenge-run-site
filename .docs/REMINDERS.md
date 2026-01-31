@@ -11,16 +11,6 @@ This document consolidates all reminders, future ideas, and planned features for
 ## Immediate Priorities
 
 ### 1. Admin Panels
-- [ ] Dashboard:
-  - Cloudflare Workers = Unknown?
-  - Remove Quick Actions
-  - Panel order: Data Usage -> System Status -> Site Statistics -> Recent Activity
-  - Remove Auth Debug tab.
-  - Add Debug tab to see the site from a lower role point of view. 
-    - Add "Return to User Profile" option.
-    - This feature also does not allow for submissions of any kind.
-- [ ] Panel Itself:
-  - Remove User Data
 - [ ] Financials:
   - Allow click to toggle on/off for Service Cost Breakdown
   - Allow "Future Ideas" section
@@ -29,7 +19,6 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Site Health
   - How do we connect Github Actions to the site health?
   - Are there other things we should be tracking?
-- [ ] Remove "View Site As..." that is on the top of the header.
 
 ### 2. Runner Profiles
 - [ ] add profile/edit/ page
