@@ -241,6 +241,32 @@ title: "Profile Settings"
   min-width: 120px;
   color: var(--text-muted);
 }
+
+.linked-account__disconnect {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.15s ease;
+  margin-left: auto;
+}
+
+.linked-account:hover .linked-account__disconnect {
+  opacity: 1;
+}
+
+.linked-account__disconnect:hover {
+  background: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
 </style>
 
 <script type="module">
@@ -283,6 +309,7 @@ function renderLinkedAccounts(linkedAccounts, primaryProvider) {
   } else {
     linkedAccounts.forEach(account => {
       const isPrimary = account.provider === primaryProvider;
+      const canDisconnect = linkedAccounts.length > 1 && !isPrimary;
       const div = document.createElement('div');
       div.className = 'linked-account';
       div.innerHTML = `
@@ -294,8 +321,15 @@ function renderLinkedAccounts(linkedAccounts, primaryProvider) {
           <div class="linked-account__provider">${account.provider.charAt(0).toUpperCase() + account.provider.slice(1)}</div>
         </div>
         ${isPrimary ? '<span class="linked-account__badge linked-account__badge--primary">Primary</span>' : ''}
+        ${canDisconnect ? `<button type="button" class="linked-account__disconnect" data-provider="${account.provider}" title="Disconnect">×</button>` : ''}
       `;
       linkedAccountsEl.appendChild(div);
+      
+      // Add disconnect handler
+      if (canDisconnect) {
+        const disconnectBtn = div.querySelector('.linked-account__disconnect');
+        disconnectBtn?.addEventListener('click', () => confirmDisconnect(account.provider));
+      }
     });
   }
   
@@ -316,6 +350,42 @@ function renderLinkedAccounts(linkedAccounts, primaryProvider) {
   
   if (linkedProviders.size >= 2) {
     linkActionsEl.innerHTML = '<p class="muted" style="margin: 0;">All supported accounts are linked!</p>';
+  }
+}
+
+async function confirmDisconnect(provider) {
+  const providerName = provider.charAt(0).toUpperCase() + provider.slice(1);
+  const confirmed = confirm(`Are you sure you want to disconnect your ${providerName} account?\n\nYou will no longer be able to sign in with ${providerName}.`);
+  
+  if (!confirmed) return;
+  
+  try {
+    const supabase = CRCAuth.getSupabaseClient();
+    if (!supabase) throw new Error('Auth not initialized');
+    
+    // Get user identities
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError) throw userError;
+    
+    const identity = user?.identities?.find(i => i.provider === provider);
+    if (!identity) {
+      showMessage(`${providerName} account not found`, 'error');
+      return;
+    }
+    
+    // Unlink the identity
+    const { error } = await supabase.auth.unlinkIdentity(identity);
+    
+    if (error) throw error;
+    
+    showMessage(`${providerName} account disconnected successfully!`, 'success');
+    
+    // Reload to refresh the list
+    setTimeout(() => window.location.reload(), 1500);
+    
+  } catch (err) {
+    console.error('[Settings] Disconnect error:', err);
+    showMessage(`Failed to disconnect: ${err.message}`, 'error');
   }
 }
 
