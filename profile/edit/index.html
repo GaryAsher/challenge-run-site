@@ -117,12 +117,8 @@ title: "Edit Profile"
           </div>
           
           <div class="form-group">
-            <label class="form-label" for="accent-color">Accent Color</label>
-            <div class="color-picker-wrap">
-              <input type="color" id="accent-color" name="accent_color" class="form-color" value="#6366f1" />
-              <input type="text" id="accent-color-text" class="form-input form-input--color" maxlength="7" placeholder="#6366f1" />
-            </div>
-            <p class="form-help">Your profile's accent color</p>
+            <label class="form-label">Accent Color</label>
+            <p class="form-help">Customize your accent color in <a href="/profile/theme/">Theme Settings</a>.</p>
           </div>
         </div>
         
@@ -739,8 +735,6 @@ function populateForm(profile) {
   // Customization
   document.getElementById('avatar-url').value = profile.avatar_url || '';
   document.getElementById('banner-url').value = profile.banner_url || '';
-  document.getElementById('accent-color').value = profile.accent_color || '#6366f1';
-  document.getElementById('accent-color-text').value = profile.accent_color || '#6366f1';
   
   // Update preview
   document.getElementById('preview-name').textContent = profile.display_name || 'Display Name';
@@ -798,7 +792,6 @@ form.addEventListener('submit', async (e) => {
       status: document.getElementById('status').value.trim() || null,
       avatar_url: document.getElementById('avatar-url').value.trim() || null,
       banner_url: document.getElementById('banner-url').value.trim() || null,
-      accent_color: document.getElementById('accent-color').value || null,
       socials: {
         twitch: document.getElementById('twitch').value.trim() || null,
         youtube: document.getElementById('youtube').value.trim() || null,
