@@ -28,6 +28,9 @@ This document consolidates all reminders, future ideas, and planned features for
   - Cloudflare Pro $20/mo
   - Supabase Pro $25/mo
 
+### 1.75 Admin Profile
+- [ ] Move Admin Panel to somewhere actually not annoying. Ideally where the CRC logo is.
+
 ### 2. Runner Profiles
 - [ ] Profile Settings
   - Profile Information to be above Linked Accounts
