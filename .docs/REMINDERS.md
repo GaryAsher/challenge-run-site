@@ -11,7 +11,6 @@ This document consolidates all reminders, future ideas, and planned features for
 ## Immediate Priorities
 
 ### 1. Security
-- [ ] Cloudflare = review all
 - [ ] GitHub = review all
 - [ ] Application-Level
   - Token storage
