@@ -309,6 +309,23 @@ title: "Site Health"
           <!-- Populated by JS -->
         </div>
       </div>
+      
+      <!-- Historical Slow Queries -->
+      <div class="api-history mt-3">
+        <h3>📊 Historical Slow Queries</h3>
+        <p class="muted mb-2">Export slow queries (>200ms) from the past time period:</p>
+        <div class="history-export-btns">
+          <button type="button" class="btn btn--small" onclick="exportSlowQueriesCSV(12)">12 hours</button>
+          <button type="button" class="btn btn--small" onclick="exportSlowQueriesCSV(24)">24 hours</button>
+          <button type="button" class="btn btn--small" onclick="exportSlowQueriesCSV(72)">3 days</button>
+          <button type="button" class="btn btn--small" onclick="exportSlowQueriesCSV(168)">7 days</button>
+          <button type="button" class="btn btn--small" onclick="exportSlowQueriesCSV(336)">2 weeks</button>
+          <button type="button" class="btn btn--small" onclick="exportSlowQueriesCSV(672)">4 weeks</button>
+        </div>
+        <div class="history-summary mt-2" id="history-summary">
+          <!-- Populated by JS -->
+        </div>
+      </div>
     </div>
     
     <!-- Recent Events Log -->
@@ -784,6 +801,32 @@ title: "Site Health"
   color: #ef4444;
 }
 
+/* Historical Slow Queries */
+.api-history {
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.api-history h3 {
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+
+.history-export-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.history-summary {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.history-summary strong {
+  color: var(--fg);
+}
+
 /* Log Filters */
 .log-filters {
   display: flex;
@@ -932,15 +975,79 @@ async function timedQuery(queryFn, label) {
   try {
     const result = await queryFn();
     const latency = Date.now() - start;
-    apiResponseTimes.push({ label, latency, timestamp: Date.now() });
+    const queryData = { name: label, latency, timestamp: Date.now() };
+    apiResponseTimes.push(queryData);
     if (apiResponseTimes.length > 10) apiResponseTimes.shift();
+    
+    // Store slow queries to localStorage for historical tracking
+    if (latency > 200) {
+      saveSlowQuery(queryData);
+    }
+    
     return { result, latency };
   } catch (error) {
     const latency = Date.now() - start;
-    apiResponseTimes.push({ label, latency, timestamp: Date.now(), error: true });
+    const queryData = { name: label, latency, timestamp: Date.now(), error: true };
+    apiResponseTimes.push(queryData);
     if (apiResponseTimes.length > 10) apiResponseTimes.shift();
+    
+    if (latency > 200) {
+      saveSlowQuery(queryData);
+    }
+    
     throw error;
   }
+}
+
+// Save slow queries to localStorage
+function saveSlowQuery(query) {
+  try {
+    const stored = JSON.parse(localStorage.getItem('crc_slow_queries') || '[]');
+    stored.push(query);
+    // Keep only last 4 weeks of data (about 1000 entries max)
+    const fourWeeksAgo = Date.now() - (28 * 24 * 60 * 60 * 1000);
+    const filtered = stored.filter(q => q.timestamp > fourWeeksAgo).slice(-1000);
+    localStorage.setItem('crc_slow_queries', JSON.stringify(filtered));
+  } catch (e) {
+    console.error('[Health] Failed to save slow query:', e);
+  }
+}
+
+// Get historical slow queries
+function getSlowQueries(hours = 24) {
+  try {
+    const stored = JSON.parse(localStorage.getItem('crc_slow_queries') || '[]');
+    const cutoff = Date.now() - (hours * 60 * 60 * 1000);
+    return stored.filter(q => q.timestamp > cutoff);
+  } catch (e) {
+    return [];
+  }
+}
+
+// Export slow queries as CSV
+function exportSlowQueriesCSV(hours) {
+  const queries = getSlowQueries(hours);
+  if (queries.length === 0) {
+    alert('No slow queries found in the selected time range.');
+    return;
+  }
+  
+  const csv = [
+    'Timestamp,Query Name,Latency (ms),Status',
+    ...queries.map(q => {
+      const date = new Date(q.timestamp).toISOString();
+      const status = q.error ? 'Error' : (q.latency > 500 ? 'Critical' : 'Warning');
+      return `"${date}","${q.name}",${q.latency},"${status}"`;
+    })
+  ].join('\n');
+  
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `slow-queries-${hours}h-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function updateApiPerfChart() {
@@ -1094,6 +1201,29 @@ async function checkHealth() {
   await loadResources();
   updateApiPerfChart();
   updatePerformanceReport();
+  updateHistorySummary();
+}
+
+function updateHistorySummary() {
+  const summary = document.getElementById('history-summary');
+  if (!summary) return;
+  
+  const last24h = getSlowQueries(24);
+  const last7d = getSlowQueries(168);
+  
+  if (last7d.length === 0) {
+    summary.innerHTML = '<p>No slow queries recorded yet. Slow queries will be tracked automatically.</p>';
+  } else {
+    const yellow24h = last24h.filter(q => q.latency > 200 && q.latency <= 500).length;
+    const red24h = last24h.filter(q => q.latency > 500).length;
+    const yellow7d = last7d.filter(q => q.latency > 200 && q.latency <= 500).length;
+    const red7d = last7d.filter(q => q.latency > 500).length;
+    
+    summary.innerHTML = `
+      <p><strong>Last 24 hours:</strong> 🟡 ${yellow24h} warnings, 🔴 ${red24h} critical</p>
+      <p><strong>Last 7 days:</strong> 🟡 ${yellow7d} warnings, 🔴 ${red7d} critical</p>
+    `;
+  }
 }
 
 async function loadResources() {
