@@ -156,23 +156,6 @@ title: "Admin Dashboard"
           </div>
         </div>
         
-        <!-- Test Games -->
-        <div class="card">
-          <h2>🧪 Test Games</h2>
-          <p class="muted mb-2">Hidden games for testing:</p>
-          <ul class="test-games-list">
-            {% for g in site.games %}
-              {% if g.test_only == true or g.published == false %}
-                <li>
-                  <a href="{{ g.url | relative_url }}">{{ g.game_name }}</a>
-                  {% if g.test_only %}<span class="tag tag--small">test-only</span>{% endif %}
-                  {% if g.published == false %}<span class="tag tag--small">unpublished</span>{% endif %}
-                </li>
-              {% endif %}
-            {% endfor %}
-          </ul>
-        </div>
-        
       </div>
     </section>
     
@@ -285,15 +268,7 @@ title: "Admin Dashboard"
     <section class="tab-panel" data-panel="debug-view">
       <div class="card">
         <h2>👁️ Debug View Mode</h2>
-        <p class="muted mb-3">Preview the site as a different role. Submissions are disabled while in debug mode.</p>
-        
-        <div class="debug-view-warning" id="debug-active-warning" hidden>
-          <div class="debug-view-banner">
-            <span class="debug-view-icon">⚠️</span>
-            <span>Currently viewing as: <strong id="current-debug-role">-</strong></span>
-            <button type="button" class="btn btn--small" id="exit-debug-view">Return to Admin View</button>
-          </div>
-        </div>
+        <p class="muted mb-3">Preview the site as a different role. When active, an orange banner appears at the top of every page showing your current debug role.</p>
         
         <div class="debug-role-cards" id="debug-role-options">
           <!-- Populated by JS based on current role -->
@@ -305,7 +280,7 @@ title: "Admin Dashboard"
             <li>🔒 <strong>Disables submissions</strong> - No profile, game, or run submissions while active</li>
             <li>👁️ <strong>Shows restricted views</strong> - See what users/verifiers see</li>
             <li>🧪 <strong>Session-based</strong> - Resets when you close the browser</li>
-            <li>↩️ <strong>Easy exit</strong> - Return to your normal role anytime</li>
+            <li>📢 <strong>Banner reminder</strong> - Orange banner in header shows active debug role</li>
           </ul>
         </div>
       </div>
