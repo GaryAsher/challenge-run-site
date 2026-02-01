@@ -1,10 +1,13 @@
 <header class="site-header">
-  <!-- Brand/Logo - Admin panel toggle (only for admins) -->
-  <a class="brand" href="{{ '/' | relative_url }}" id="brand-link">CRC</a>
-  <button type="button" class="brand brand--admin-toggle" id="brand-admin-toggle" hidden aria-label="Admin panel">
-    <span class="brand__text">CRC</span>
-    <span class="brand__admin-badge" id="brand-admin-badge" hidden>0</span>
-  </button>
+  <!-- Debug View Banner (shows when viewing as different role) -->
+  <div class="debug-view-header-banner" id="header-debug-banner" hidden>
+    <span class="debug-view-header-banner__icon">👁️</span>
+    <span class="debug-view-header-banner__text">Viewing as: <strong id="header-debug-role">User</strong></span>
+    <button type="button" class="btn btn--small" id="header-exit-debug">Exit</button>
+  </div>
+  
+  <!-- Brand/Logo -->
+  <a class="brand" href="{{ '/' | relative_url }}" id="brand-link" title="Go to Home">CRC</a>
 
   <nav class="nav" aria-label="Primary navigation">
     <div class="nav-group">
@@ -39,6 +42,7 @@
       <a href="{{ '/sign-in/' | relative_url }}" class="nav-user__signin" id="nav-signin">Sign In</a>
       <button type="button" class="nav-user__avatar-btn" id="nav-user-avatar-btn" hidden aria-label="Account menu">
         <img class="nav-user__avatar" id="nav-user-avatar" src="/assets/img/site/default-runner.png" alt="" />
+        <span class="nav-user__admin-indicator" id="nav-user-admin-indicator" hidden></span>
       </button>
       <div class="nav-user__menu" id="nav-user-menu" hidden>
         <div class="nav-user__menu-header">
@@ -59,6 +63,13 @@
             <span class="nav-user__menu-icon">⚙️</span> Account Settings
           </a>
           <hr class="nav-user__menu-divider">
+          <!-- Admin Panel Toggle (only shows for admins/verifiers) -->
+          <button type="button" class="nav-user__menu-item" id="nav-admin-panel-toggle" hidden>
+            <span class="nav-user__menu-icon">🛡️</span> 
+            <span>Admin Panel</span>
+            <span class="nav-user__menu-badge" id="nav-admin-badge" hidden>0</span>
+          </button>
+          <hr class="nav-user__menu-divider" id="nav-admin-divider" hidden>
           <div class="nav-user__menu-section">
             <span class="nav-user__menu-section-title">Pending Submissions</span>
             <div id="nav-user-submissions" class="nav-user__submissions">
@@ -303,14 +314,35 @@
   document.addEventListener('keydown', function(e) { if (e.key === 'Escape') menu.hidden = true; });
 })();
 
-// Admin panel toggle
+// Admin panel toggle (now in user menu)
 (function() {
-  var btn = document.getElementById('brand-admin-toggle'), panel = document.getElementById('admin-panel');
+  var btn = document.getElementById('nav-admin-panel-toggle'), panel = document.getElementById('admin-panel');
   if (!btn || !panel) return;
-  btn.addEventListener('click', function() { panel.hidden = false; });
+  btn.addEventListener('click', function() { 
+    panel.hidden = false; 
+    document.getElementById('nav-user-menu').hidden = true; // Close user menu
+  });
   document.getElementById('admin-panel-backdrop')?.addEventListener('click', function() { panel.hidden = true; });
   document.getElementById('admin-panel-close')?.addEventListener('click', function() { panel.hidden = true; });
   document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && !panel.hidden) panel.hidden = true; });
+})();
+
+// Debug view header banner
+(function() {
+  var debugRole = sessionStorage.getItem('crc_debug_role');
+  var banner = document.getElementById('header-debug-banner');
+  var roleText = document.getElementById('header-debug-role');
+  var exitBtn = document.getElementById('header-exit-debug');
+  
+  if (debugRole && banner && roleText) {
+    banner.hidden = false;
+    roleText.textContent = debugRole.charAt(0).toUpperCase() + debugRole.slice(1);
+  }
+  
+  exitBtn?.addEventListener('click', function() {
+    sessionStorage.removeItem('crc_debug_role');
+    window.location.reload();
+  });
 })();
 
 // Apply saved theme on page load
@@ -384,8 +416,16 @@ async function initHeaderAuth() {
     // Check roles and setup panel
     const role = await getUserRole();
     if (role !== 'none') {
-      brandLink.hidden = true;
-      adminToggle.hidden = false;
+      // Show admin panel toggle in user menu
+      const adminToggle = document.getElementById('nav-admin-panel-toggle');
+      const adminDivider = document.getElementById('nav-admin-divider');
+      const adminBadge = document.getElementById('nav-admin-badge');
+      const adminIndicator = document.getElementById('nav-user-admin-indicator');
+      
+      if (adminToggle) adminToggle.hidden = false;
+      if (adminDivider) adminDivider.hidden = false;
+      if (adminIndicator) adminIndicator.hidden = false;
+      
       setupAdminPanel(role, profile);
       loadAdminCounts();
     }
