@@ -61,61 +61,75 @@ title: "Financials"
     
     <div class="finance-grid">
       <!-- Revenue Sources -->
-      <div class="card">
-        <div class="card-header">
+      <div class="card collapsible-section" id="revenue-section">
+        <div class="collapsible-header" id="revenue-header">
           <h2>📈 Revenue Sources</h2>
-          <button class="btn btn--small" id="add-revenue">+ Add</button>
+          <button type="button" class="btn btn--small btn--ghost toggle-btn">
+            <span class="toggle-icon" id="revenue-icon">▼</span>
+          </button>
         </div>
-        <table class="finance-table">
-          <thead>
-            <tr>
-              <th>Source</th>
-              <th>Description</th>
-              <th>Type</th>
-              <th>Amount</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="revenue-table">
-            <tr class="empty-row">
-              <td colspan="5" class="muted">No revenue entries yet</td>
-            </tr>
-          </tbody>
-          <tfoot>
-            <tr>
-              <td colspan="3"><strong>Total Revenue</strong></td>
-              <td colspan="2"><strong id="total-revenue">$0.00</strong></td>
-            </tr>
-          </tfoot>
-        </table>
+        <div class="collapsible-content" id="revenue-content">
+          <table class="finance-table">
+            <thead>
+              <tr>
+                <th>Source</th>
+                <th>Description</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="revenue-table">
+              <tr class="empty-row">
+                <td colspan="5" class="muted">No revenue entries yet</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3"><strong>Total Revenue</strong></td>
+                <td colspan="2"><strong id="total-revenue">$0.00</strong></td>
+              </tr>
+            </tfoot>
+          </table>
+          <div class="table-actions">
+            <button class="btn btn--small" id="add-revenue">+ Add Revenue</button>
+          </div>
+        </div>
       </div>
       
       <!-- Expenses -->
-      <div class="card">
-        <div class="card-header">
+      <div class="card collapsible-section" id="expenses-section">
+        <div class="collapsible-header" id="expenses-header">
           <h2>📉 Expenses & Services</h2>
-          <button class="btn btn--small" id="add-expense">+ Add</button>
+          <button type="button" class="btn btn--small btn--ghost toggle-btn">
+            <span class="toggle-icon" id="expenses-icon">▼</span>
+          </button>
         </div>
-        <table class="finance-table">
-          <thead>
-            <tr>
-              <th>Service</th>
-              <th>Description</th>
-              <th>Type</th>
-              <th>Amount</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="expenses-table">
-            <!-- Pre-populated with known services -->
-          </tbody>
-          <tfoot>
-            <tr>
-              <td colspan="3"><strong>Total Expenses</strong></td>
-              <td colspan="2"><strong id="total-expenses">$0.00</strong></td>
-            </tr>
-          </tfoot>
-        </table>
+        <div class="collapsible-content" id="expenses-content">
+          <table class="finance-table">
+            <thead>
+              <tr>
+                <th>Service</th>
+                <th>Description</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="expenses-table">
+              <!-- Pre-populated with known services -->
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3"><strong>Total Expenses</strong></td>
+                <td colspan="2"><strong id="total-expenses">$0.00</strong></td>
+              </tr>
+            </tfoot>
+          </table>
+          <div class="table-actions">
+            <button class="btn btn--small" id="add-expense">+ Add Expense</button>
+          </div>
+        </div>
       </div>
     </div>
     
@@ -513,6 +527,14 @@ title: "Financials"
 .finance-table tfoot td {
   background: var(--bg);
   border-top: 2px solid var(--border);
+}
+
+.table-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
 }
 
 .empty-row td {
@@ -1175,6 +1197,30 @@ function setupEventListeners() {
 
 // Collapsible sections
 function setupCollapsibles() {
+  // Revenue section
+  document.getElementById('revenue-header')?.addEventListener('click', (e) => {
+    if (e.target.closest('.toggle-btn') || e.target.closest('h2')) {
+      const content = document.getElementById('revenue-content');
+      const icon = document.getElementById('revenue-icon');
+      content.classList.toggle('collapsed');
+      if (icon) {
+        icon.style.transform = content.classList.contains('collapsed') ? 'rotate(-90deg)' : 'rotate(0deg)';
+      }
+    }
+  });
+  
+  // Expenses section
+  document.getElementById('expenses-header')?.addEventListener('click', (e) => {
+    if (e.target.closest('.toggle-btn') || e.target.closest('h2')) {
+      const content = document.getElementById('expenses-content');
+      const icon = document.getElementById('expenses-icon');
+      content.classList.toggle('collapsed');
+      if (icon) {
+        icon.style.transform = content.classList.contains('collapsed') ? 'rotate(-90deg)' : 'rotate(0deg)';
+      }
+    }
+  });
+  
   // Services section
   document.getElementById('services-header')?.addEventListener('click', () => {
     const content = document.getElementById('services-content');
