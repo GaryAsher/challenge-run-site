@@ -301,6 +301,14 @@ title: "Site Health"
           <p class="muted">Waiting for performance data...</p>
         </div>
       </div>
+      
+      <!-- Slow Query Details -->
+      <div class="api-slow-queries mt-3" id="slow-queries-section" hidden>
+        <h3>🐢 Slow Query Details</h3>
+        <div class="slow-queries-list" id="slow-queries-list">
+          <!-- Populated by JS -->
+        </div>
+      </div>
     </div>
     
     <!-- Recent Events Log -->
@@ -710,6 +718,72 @@ title: "Site Health"
   color: var(--text-muted);
 }
 
+/* Slow Queries */
+.api-slow-queries {
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.api-slow-queries h3 {
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+}
+
+.slow-queries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.slow-query-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+}
+
+.slow-query-item--yellow {
+  border-left: 3px solid #f59e0b;
+}
+
+.slow-query-item--red {
+  border-left: 3px solid #ef4444;
+}
+
+.slow-query-item__status {
+  font-size: 1.25rem;
+}
+
+.slow-query-item__info {
+  flex: 1;
+}
+
+.slow-query-item__name {
+  font-weight: 600;
+}
+
+.slow-query-item__time {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.slow-query-item__latency {
+  font-weight: 700;
+  font-family: monospace;
+}
+
+.slow-query-item--yellow .slow-query-item__latency {
+  color: #f59e0b;
+}
+
+.slow-query-item--red .slow-query-item__latency {
+  color: #ef4444;
+}
+
 /* Log Filters */
 .log-filters {
   display: flex;
@@ -1089,10 +1163,14 @@ async function loadResources() {
 
 function updatePerformanceReport() {
   const reportEl = document.getElementById('api-perf-report');
+  const slowQueriesSection = document.getElementById('slow-queries-section');
+  const slowQueriesList = document.getElementById('slow-queries-list');
+  
   if (!reportEl) return;
   
   if (apiResponseTimes.length < 3) {
     reportEl.innerHTML = '<p class="muted">Collecting performance data... (need at least 3 queries)</p>';
+    if (slowQueriesSection) slowQueriesSection.hidden = true;
     return;
   }
   
@@ -1100,8 +1178,12 @@ function updatePerformanceReport() {
   const avg = Math.round(times.reduce((a, b) => a + b, 0) / times.length);
   const max = Math.max(...times);
   const min = Math.min(...times);
-  const slowQueries = times.filter(t => t > 200).length;
-  const verySlowQueries = times.filter(t => t > 500).length;
+  
+  // Get slow queries (>200ms = yellow, >500ms = red)
+  const yellowQueries = apiResponseTimes.filter(r => r.latency > 200 && r.latency <= 500);
+  const redQueries = apiResponseTimes.filter(r => r.latency > 500);
+  const slowQueries = yellowQueries.length;
+  const verySlowQueries = redQueries.length;
   
   let healthStatus = 'good';
   let healthClass = 'report-good';
@@ -1137,6 +1219,34 @@ function updatePerformanceReport() {
   report += `<p class="muted" style="margin-top: 0.5rem; font-size: 0.8rem;">Range: ${min}ms - ${max}ms | Queries analyzed: ${times.length}</p>`;
   
   reportEl.innerHTML = report;
+  
+  // Show slow query details
+  if (slowQueriesSection && slowQueriesList) {
+    const allSlowQueries = [...redQueries, ...yellowQueries];
+    
+    if (allSlowQueries.length > 0) {
+      slowQueriesSection.hidden = false;
+      slowQueriesList.innerHTML = allSlowQueries.map(q => {
+        const isRed = q.latency > 500;
+        const statusIcon = isRed ? '🔴' : '🟡';
+        const itemClass = isRed ? 'slow-query-item--red' : 'slow-query-item--yellow';
+        const timeStr = new Date(q.timestamp).toLocaleTimeString();
+        
+        return `
+          <div class="slow-query-item ${itemClass}">
+            <span class="slow-query-item__status">${statusIcon}</span>
+            <div class="slow-query-item__info">
+              <span class="slow-query-item__name">${q.name || 'Unknown Query'}</span>
+              <span class="slow-query-item__time">${timeStr}</span>
+            </div>
+            <span class="slow-query-item__latency">${q.latency}ms</span>
+          </div>
+        `;
+      }).join('');
+    } else {
+      slowQueriesSection.hidden = true;
+    }
+  }
 }
 
 // Log filtering
