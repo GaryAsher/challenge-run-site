@@ -87,7 +87,7 @@
 // Unified Focus States (Accessibility)
 // ──────────────────────────────────────────────────────────
 :where(a, button, input, select, textarea, .tag-chip, .tag-suggestion, .tab):focus-visible {
-  outline: 2px solid var(--focus);        // Accent-colored focus ring
+  outline: 2px solid var(--accent);             // Accent-colored focus ring
   outline-offset: 2px;
 }
 
