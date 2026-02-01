@@ -10,18 +10,13 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ## Immediate Priorities
 
-### 1. Admin Panels
-- [ ] Site Health
-  - How do we connect Github Actions to the site health?
-  - Are there other things we should be tracking?
+### 1. Security
 
 ### 2. Runner Profiles
-- [ ] add profile/edit/ page
+- [ ] Move Profile Information to be above Linked Accounts
 - [ ] Themes
-  - [ ] Ability for Admins to upload a background image for a Theme (for now).
   - [ ] Add white font border around text that is black. and the same vice versa? this is just to read the text easier.
-- [ ] Badges placeholder structure
-- [ ] Featured runs section below their Bio
+- [ ] Fix issues with /profile/edit
 
 ### 2.5 Games/runs/ tab again
 - [ ] Add the option for multiple runners (up to 5) to be listed for the same run
