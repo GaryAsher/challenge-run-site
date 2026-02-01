@@ -11,11 +11,28 @@ This document consolidates all reminders, future ideas, and planned features for
 ## Immediate Priorities
 
 ### 1. Security
+- [ ] Supabase = public.moderation_queue
+- [ ] Cloudflare = review all
+- [ ] GitHub = review all
+- [ ] Application-Level
+  - Token storage
+  - Input validation
+  - Content Security Policy
+  - Other Headers
+- [ ] Data Protection = all
+- [ ] Look into
+  - Sentry
+  - Uptime Monitoring
+  - Security Header Scanner
+  - Autho0 or Clerk - Advanced auth features
+  - Cloudflare Pro $20/mo
+  - Supabase Pro $25/mo
 
 ### 2. Runner Profiles
-- [ ] Move Profile Information to be above Linked Accounts
+- [ ] Profile Settings
+  - Profile Information to be above Linked Accounts
 - [ ] Themes
-  - [ ] Add white font border around text that is black. and the same vice versa? this is just to read the text easier.
+  - Add white font border around text that is black. and the same vice versa? this is just to read the text easier.
 - [ ] Fix issues with /profile/edit
 
 ### 2.5 Games/runs/ tab again
