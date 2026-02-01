@@ -115,7 +115,7 @@
 
 .btn--filter-toggle.is-active {
   border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--focus-2);
+  box-shadow: 0 0 0 1px rgba(var(--accent-rgb), 0.35);
 }
 
 // ──────────────────────────────────────────────────────────
