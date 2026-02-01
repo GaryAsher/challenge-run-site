@@ -30,6 +30,15 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ### 1.75 Admin Profile
 - [ ] Move Admin Panel to somewhere actually not annoying. Ideally where the CRC logo is.
+Site Health:
+  - [ ] Change API Perfromance to use Green instead of theme for good queries.
+  - [ ] fix page switching js for 12 hours, 24 hours, 3 days, etc.
+Financials:
+  - [ ] Down-drop not working properly.
+  - [ ] Fix page switching js
+Dashboard:
+  - [ ] Site Statistics not showing?
+  - [ ] Recent Activity not showing?
 
 ### 2. Runner Profiles
 - [ ] Profile Settings
