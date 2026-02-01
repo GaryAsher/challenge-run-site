@@ -60,74 +60,73 @@ title: "Financials"
     </div>
     
     <div class="finance-grid">
-      <!-- Revenue Sources -->
-      <div class="card collapsible-section" id="revenue-section">
-        <div class="collapsible-header" id="revenue-header">
-          <h2>📈 Revenue Sources</h2>
+      <!-- Revenue & Expenses Combined -->
+      <div class="card collapsible-section full-width" id="finance-section">
+        <div class="collapsible-header" id="finance-header">
+          <h2>📊 Revenue & Expenses</h2>
           <button type="button" class="btn btn--small btn--ghost toggle-btn">
-            <span class="toggle-icon" id="revenue-icon">▼</span>
+            <span class="toggle-icon" id="finance-icon">▼</span>
           </button>
         </div>
-        <div class="collapsible-content" id="revenue-content">
-          <table class="finance-table">
-            <thead>
-              <tr>
-                <th>Source</th>
-                <th>Description</th>
-                <th>Type</th>
-                <th>Amount</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="revenue-table">
-              <tr class="empty-row">
-                <td colspan="5" class="muted">No revenue entries yet</td>
-              </tr>
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colspan="3"><strong>Total Revenue</strong></td>
-                <td colspan="2"><strong id="total-revenue">$0.00</strong></td>
-              </tr>
-            </tfoot>
-          </table>
-          <div class="table-actions">
-            <button class="btn btn--small" id="add-revenue">+ Add Revenue</button>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Expenses -->
-      <div class="card collapsible-section" id="expenses-section">
-        <div class="collapsible-header" id="expenses-header">
-          <h2>📉 Expenses & Services</h2>
-          <button type="button" class="btn btn--small btn--ghost toggle-btn">
-            <span class="toggle-icon" id="expenses-icon">▼</span>
-          </button>
-        </div>
-        <div class="collapsible-content" id="expenses-content">
-          <table class="finance-table">
-            <thead>
-              <tr>
-                <th>Service</th>
-                <th>Description</th>
-                <th>Type</th>
-                <th>Amount</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="expenses-table">
-              <!-- Pre-populated with known services -->
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colspan="3"><strong>Total Expenses</strong></td>
-                <td colspan="2"><strong id="total-expenses">$0.00</strong></td>
-              </tr>
-            </tfoot>
-          </table>
-          <div class="table-actions">
-            <button class="btn btn--small" id="add-expense">+ Add Expense</button>
+        <div class="collapsible-content" id="finance-content">
+          <div class="finance-tables-grid">
+            <!-- Revenue Sources -->
+            <div class="finance-table-section">
+              <h3>📈 Revenue Sources</h3>
+              <table class="finance-table">
+                <thead>
+                  <tr>
+                    <th>Source</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="revenue-table">
+                  <tr class="empty-row">
+                    <td colspan="5" class="muted">No revenue entries yet</td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="3"><strong>Total Revenue</strong></td>
+                    <td colspan="2"><strong id="total-revenue">$0.00</strong></td>
+                  </tr>
+                </tfoot>
+              </table>
+              <div class="table-actions">
+                <button class="btn btn--small" id="add-revenue">+ Add Revenue</button>
+              </div>
+            </div>
+            
+            <!-- Expenses -->
+            <div class="finance-table-section">
+              <h3>📉 Expenses & Services</h3>
+              <table class="finance-table">
+                <thead>
+                  <tr>
+                    <th>Service</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="expenses-table">
+                  <!-- Pre-populated with known services -->
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="3"><strong>Total Expenses</strong></td>
+                    <td colspan="2"><strong id="total-expenses">$0.00</strong></td>
+                  </tr>
+                </tfoot>
+              </table>
+              <div class="table-actions">
+                <button class="btn btn--small" id="add-expense">+ Add Expense</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -260,13 +259,6 @@ title: "Financials"
         
         <div class="ideas-grid" id="ideas-grid">
           <!-- Ideas will be populated by JS -->
-        </div>
-        
-        <div class="ideas-notes mt-4">
-          <h4>📝 Notes & Plans</h4>
-          <textarea id="future-notes" class="form-input" rows="4" placeholder="Add your notes about future plans, timeline, priorities..."></textarea>
-          <button type="button" class="btn btn--small mt-2" id="save-notes-btn">💾 Save Notes</button>
-          <span class="save-status muted ml-2" id="notes-save-status"></span>
         </div>
       </div>
     </div>
@@ -535,6 +527,53 @@ title: "Financials"
   margin-top: 1rem;
   padding-top: 0.75rem;
   border-top: 1px solid var(--border);
+}
+
+/* Full width finance section */
+.finance-grid .full-width {
+  grid-column: 1 / -1;
+}
+
+.finance-tables-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+}
+
+@media (max-width: 900px) {
+  .finance-tables-grid { grid-template-columns: 1fr; }
+}
+
+.finance-table-section h3 {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+/* Year Filter Select */
+.year-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.year-filter label {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.form-input--small {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--fg);
+  min-width: 100px;
+}
+
+.form-input--small:focus {
+  outline: none;
+  border-color: var(--accent);
 }
 
 .empty-row td {
@@ -1190,30 +1229,15 @@ function setupEventListeners() {
   document.getElementById('modal-backdrop')?.addEventListener('click', closeModal);
   document.getElementById('modal-cancel')?.addEventListener('click', closeModal);
   document.getElementById('modal-save')?.addEventListener('click', saveEntry);
-  
-  // Notes save
-  document.getElementById('save-notes-btn')?.addEventListener('click', saveNotes);
 }
 
 // Collapsible sections
 function setupCollapsibles() {
-  // Revenue section
-  document.getElementById('revenue-header')?.addEventListener('click', (e) => {
+  // Combined Finance section (Revenue & Expenses)
+  document.getElementById('finance-header')?.addEventListener('click', (e) => {
     if (e.target.closest('.toggle-btn') || e.target.closest('h2')) {
-      const content = document.getElementById('revenue-content');
-      const icon = document.getElementById('revenue-icon');
-      content.classList.toggle('collapsed');
-      if (icon) {
-        icon.style.transform = content.classList.contains('collapsed') ? 'rotate(-90deg)' : 'rotate(0deg)';
-      }
-    }
-  });
-  
-  // Expenses section
-  document.getElementById('expenses-header')?.addEventListener('click', (e) => {
-    if (e.target.closest('.toggle-btn') || e.target.closest('h2')) {
-      const content = document.getElementById('expenses-content');
-      const icon = document.getElementById('expenses-icon');
+      const content = document.getElementById('finance-content');
+      const icon = document.getElementById('finance-icon');
       content.classList.toggle('collapsed');
       if (icon) {
         icon.style.transform = content.classList.contains('collapsed') ? 'rotate(-90deg)' : 'rotate(0deg)';
