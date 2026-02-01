@@ -109,12 +109,6 @@ title: "Theme Customization"
           <button type="button" class="btn btn--small" id="clear-bg">Clear Background</button>
         </div>
       </div>
-      
-      <!-- Actions -->
-      <div class="theme-actions">
-        <button type="button" class="btn" id="reset-theme">Reset to Default</button>
-        <button type="button" class="btn btn--primary" id="save-theme">💾 Save Theme</button>
-      </div>
     </div>
     
     <!-- Live Preview -->
@@ -137,6 +131,12 @@ title: "Theme Customization"
             <p class="muted">Cards use the surface color.</p>
           </div>
         </div>
+      </div>
+      
+      <!-- Actions - Below Preview for visibility -->
+      <div class="theme-actions mt-3">
+        <button type="button" class="btn" id="reset-theme">Reset to Default</button>
+        <button type="button" class="btn btn--primary" id="save-theme">💾 Save Theme</button>
       </div>
     </div>
   </div>
@@ -313,11 +313,11 @@ function updateSyncStatus() {
   if (isSignedIn) {
     status.className = 'sync-status synced';
     icon.textContent = '☁️';
-    text.textContent = 'Theme syncs to your account (works across devices)';
+    text.textContent = 'Signed in - theme syncs across devices';
   } else {
     status.className = 'sync-status local';
     icon.textContent = '💾';
-    text.textContent = 'Theme saved locally only. Sign in to sync across devices.';
+    text.textContent = 'Theme saved locally. Sign in to sync across devices.';
   }
   
   // Premium features
@@ -443,26 +443,27 @@ async function saveTheme() {
         .update({ theme_settings: currentTheme })
         .eq('user_id', user.id);
       
-      showNotification('Theme saved and synced to your account! ☁️', 'success');
+      showNotification('Theme saved! ✓', 'success');
     } catch (e) {
       console.error('[Theme] Supabase save error:', e);
       showNotification('Theme saved locally (sync failed)', 'warning');
     }
   } else {
-    showNotification('Theme saved locally!', 'success');
+    showNotification('Theme saved! ✓', 'success');
   }
   
   applyThemeToPage(currentTheme);
 }
 
 function showNotification(message, type = 'info') {
-  // Simple notification
+  // Use accent color for success
+  const accent = document.getElementById('color-accent')?.value || '#3BC36E';
   const notif = document.createElement('div');
   notif.className = `theme-notification theme-notification--${type}`;
   notif.textContent = message;
   notif.style.cssText = `
     position: fixed; bottom: 20px; right: 20px; padding: 1rem 1.5rem;
-    background: ${type === 'success' ? '#10b981' : type === 'warning' ? '#f59e0b' : 'var(--surface)'};
+    background: ${type === 'success' ? accent : type === 'warning' ? '#f59e0b' : 'var(--surface)'};
     color: ${type === 'success' || type === 'warning' ? '#000' : 'var(--fg)'};
     border-radius: 8px; font-weight: 500; z-index: 1000;
     animation: slideIn 0.3s ease;
