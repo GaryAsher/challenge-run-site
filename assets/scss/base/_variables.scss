@@ -37,8 +37,8 @@
   // ──────────────────────────────────────────────────────────
   // COLORS - Focus States
   // ──────────────────────────────────────────────────────────
-  --focus: rgba(59, 195, 110, 0.6);           // Focus ring (accent)
-  --focus-2: rgba(59, 195, 110, 0.35);        // Subtle focus glow
+  --focus: rgba(var(--accent-rgb), 0.6);           // Focus ring (uses accent)
+  --focus-2: rgba(var(--accent-rgb), 0.35);        // Subtle focus glow
 
   // ──────────────────────────────────────────────────────────
   // COLORS - Overlays
