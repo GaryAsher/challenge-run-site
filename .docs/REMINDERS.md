@@ -12,16 +12,16 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ### 1 Admin Profile
 - [ ] Move Admin Panel to somewhere actually not annoying. Ideally where the CRC logo is.
-  Site Health:
-    - [ ] Page switching (12h, 24h, 3d): Does not work as export. Ask user if they want to export it first.
-    - [ ] Uptime Monitor: add "API configuration not available on free tier"
-    - [ ] GitHub Actions: Need to confire GitHub API token
-  Financials:
-    - [ ] Combine Revenue and Expenses together to look like an Income/Expense Tracker.
-      - Update Add item to allow picking Income vs Expense
-      - Allow "yearly" as an option.
-  Dashboard:
-    - [ ] Need to totally revamp Debug View
+- [ ] Site Health:
+  - Page switching (12h, 24h, 3d): Does not work as export. Ask user if they want to export it first.
+  - Uptime Monitor: add "API configuration not available on free tier"
+  - GitHub Actions: Need to confire GitHub API token
+- [ ] Financials:
+  - Combine Revenue and Expenses together to look like an Income/Expense Tracker.
+    - Update Add item to allow picking Income vs Expense
+    - Allow "yearly" as an option.
+- [ ] Dashboard:
+  - Need to totally revamp Debug View
 
 ### 2. Runner Profiles
 - [ ] Profile Settings
