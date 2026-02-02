@@ -66,7 +66,8 @@ title: "Financials"
           <h2>📈 Revenue Sources</h2>
           <button class="btn btn--small" id="add-revenue">+ Add</button>
         </div>
-        <table class="finance-table">
+        <div class="finance-table-wrap">
+          <table class="finance-table">
           <thead>
             <tr>
               <th>Source</th>
@@ -87,7 +88,8 @@ title: "Financials"
               <td colspan="2"><strong id="total-revenue">$0.00</strong></td>
             </tr>
           </tfoot>
-        </table>
+          </table>
+        </div>
       </div>
       
       <!-- Expenses -->
@@ -96,7 +98,8 @@ title: "Financials"
           <h2>📉 Expenses & Services</h2>
           <button class="btn btn--small" id="add-expense">+ Add</button>
         </div>
-        <table class="finance-table">
+        <div class="finance-table-wrap">
+          <table class="finance-table">
           <thead>
             <tr>
               <th>Service</th>
@@ -115,7 +118,8 @@ title: "Financials"
               <td colspan="2"><strong id="total-expenses">$0.00</strong></td>
             </tr>
           </tfoot>
-        </table>
+          </table>
+        </div>
       </div>
     </div>
     
@@ -295,13 +299,6 @@ title: "Financials"
               <span class="idea-estimate">Partnership deals</span>
             </div>
           </div>
-        </div>
-        
-        <div class="ideas-notes mt-4">
-          <h4>📝 Notes & Plans</h4>
-          <textarea id="future-notes" class="form-input" rows="4" placeholder="Add your notes about future plans, timeline, priorities..."></textarea>
-          <button type="button" class="btn btn--small mt-2" id="save-notes-btn">💾 Save Notes</button>
-          <span class="save-status muted ml-2" id="notes-save-status"></span>
         </div>
       </div>
     </div>
@@ -489,10 +486,18 @@ title: "Financials"
 
 .card-header h2 { margin: 0; }
 
+/* Finance Table Wrapper - prevents overflow */
+.finance-table-wrap {
+  overflow-x: auto;
+  margin: 0 -0.5rem;
+  padding: 0 0.5rem;
+}
+
 /* Finance Table */
 .finance-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 400px;
 }
 
 .finance-table th,
@@ -501,6 +506,7 @@ title: "Financials"
   text-align: left;
   border-bottom: 1px solid var(--border);
   font-size: 0.9rem;
+  white-space: nowrap;
 }
 
 .finance-table th {
@@ -508,6 +514,11 @@ title: "Financials"
   font-weight: 600;
   font-size: 0.8rem;
   color: var(--text-muted);
+}
+
+.finance-table td:nth-child(2) {
+  white-space: normal;
+  max-width: 200px;
 }
 
 .finance-table tfoot td {
@@ -632,11 +643,34 @@ title: "Financials"
   font-size: 0.85rem;
   color: var(--text-muted);
 }
+
+/* Small form input - styled select dropdown */
 .form-input--small {
   padding: 0.4rem 0.75rem;
   font-size: 0.85rem;
   width: auto;
-  min-width: 100px;
+  min-width: 110px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--fg);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  padding-right: 1.75rem;
+}
+
+.form-input--small:hover {
+  border-color: var(--accent);
+}
+
+.form-input--small:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.2);
 }
 
 /* Future Ideas Grid */
