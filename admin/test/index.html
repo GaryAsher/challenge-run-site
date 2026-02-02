@@ -156,23 +156,6 @@ title: "Admin Dashboard"
           </div>
         </div>
         
-        <!-- Test Games -->
-        <div class="card">
-          <h2>🧪 Test Games</h2>
-          <p class="muted mb-2">Hidden games for testing:</p>
-          <ul class="test-games-list">
-            {% for g in site.games %}
-              {% if g.test_only == true or g.published == false %}
-                <li>
-                  <a href="{{ g.url | relative_url }}">{{ g.game_name }}</a>
-                  {% if g.test_only %}<span class="tag tag--small">test-only</span>{% endif %}
-                  {% if g.published == false %}<span class="tag tag--small">unpublished</span>{% endif %}
-                </li>
-              {% endif %}
-            {% endfor %}
-          </ul>
-        </div>
-        
       </div>
     </section>
     
@@ -339,9 +322,26 @@ title: "Admin Dashboard"
 
 /* Tabs */
 .dashboard-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; }
-.dashboard-tabs .tab { padding: 0.5rem 1rem; background: transparent; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; font-size: 0.9rem; transition: all 0.15s; }
-.dashboard-tabs .tab:hover { border-color: var(--accent); }
-.dashboard-tabs .tab.active { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.dashboard-tabs .tab { 
+  padding: 0.5rem 1rem; 
+  background: var(--surface); 
+  border: 1px solid var(--border); 
+  border-radius: var(--radius-sm); 
+  cursor: pointer; 
+  font-size: 0.9rem; 
+  transition: all 0.15s; 
+  color: var(--fg);
+}
+.dashboard-tabs .tab:hover { 
+  border-color: var(--accent); 
+  background: var(--bg);
+}
+.dashboard-tabs .tab.active { 
+  background: var(--accent); 
+  border-color: var(--accent); 
+  color: #fff; 
+  font-weight: 500;
+}
 .tab-panel { display: none; }
 .tab-panel.active { display: block; }
 
@@ -376,11 +376,6 @@ title: "Admin Dashboard"
 .usage-bar-wrap { flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
 .usage-bar { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.3s; }
 .usage-value { font-size: 0.8rem; color: var(--text-muted); min-width: 90px; text-align: right; }
-
-/* Test Games */
-.test-games-list { list-style: none; padding: 0; margin: 0; }
-.test-games-list li { padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
-.test-games-list li:last-child { border-bottom: none; }
 
 /* Simulators */
 .sim-form { max-width: 500px; }
