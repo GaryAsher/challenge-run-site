@@ -10,19 +10,6 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ## Immediate Priorities
 
-### 1. Security
-- [ ] Application-Level
-  - Token storage
-  - Input validation
-  - Content Security Policy
-  - Other Headers
-- [ ] Data Protection = all
-- [ ] Look into
-  - Sentry
-  - Autho0 or Clerk - Advanced auth features
-  - Cloudflare Pro $20/mo
-  - Supabase Pro $25/mo
-
 ### 1.75 Admin Profile
 - [ ] Move Admin Panel to somewhere actually not annoying. Ideally where the CRC logo is.
   Site Health:
