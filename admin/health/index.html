@@ -569,7 +569,7 @@ title: "Site Health"
 
 .api-perf-bar {
   flex: 1;
-  background: var(--accent);
+  background: #10b981; /* Green for good queries - NOT theme accent */
   border-radius: 2px 2px 0 0;
   min-height: 4px;
   transition: height 0.3s ease;
@@ -590,8 +590,8 @@ title: "Site Health"
   white-space: nowrap;
 }
 
-.api-perf-bar.slow { background: #f59e0b; }
-.api-perf-bar.very-slow { background: #ef4444; }
+.api-perf-bar.slow { background: #f59e0b; } /* Yellow/orange for slow */
+.api-perf-bar.very-slow { background: #ef4444; } /* Red for very slow */
 
 .api-perf-stats {
   display: grid;
