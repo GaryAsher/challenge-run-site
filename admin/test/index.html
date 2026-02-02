@@ -156,6 +156,23 @@ title: "Admin Dashboard"
           </div>
         </div>
         
+        <!-- Test Games -->
+        <div class="card">
+          <h2>🧪 Test Games</h2>
+          <p class="muted mb-2">Hidden games for testing:</p>
+          <ul class="test-games-list">
+            {% for g in site.games %}
+              {% if g.test_only == true or g.published == false %}
+                <li>
+                  <a href="{{ g.url | relative_url }}">{{ g.game_name }}</a>
+                  {% if g.test_only %}<span class="tag tag--small">test-only</span>{% endif %}
+                  {% if g.published == false %}<span class="tag tag--small">unpublished</span>{% endif %}
+                </li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        </div>
+        
       </div>
     </section>
     
@@ -268,7 +285,15 @@ title: "Admin Dashboard"
     <section class="tab-panel" data-panel="debug-view">
       <div class="card">
         <h2>👁️ Debug View Mode</h2>
-        <p class="muted mb-3">Preview the site as a different role. When active, an orange banner appears at the top of every page showing your current debug role.</p>
+        <p class="muted mb-3">Preview the site as a different role. Submissions are disabled while in debug mode.</p>
+        
+        <div class="debug-view-warning" id="debug-active-warning" hidden>
+          <div class="debug-view-banner">
+            <span class="debug-view-icon">⚠️</span>
+            <span>Currently viewing as: <strong id="current-debug-role">-</strong></span>
+            <button type="button" class="btn btn--small" id="exit-debug-view">Return to Admin View</button>
+          </div>
+        </div>
         
         <div class="debug-role-cards" id="debug-role-options">
           <!-- Populated by JS based on current role -->
@@ -280,7 +305,7 @@ title: "Admin Dashboard"
             <li>🔒 <strong>Disables submissions</strong> - No profile, game, or run submissions while active</li>
             <li>👁️ <strong>Shows restricted views</strong> - See what users/verifiers see</li>
             <li>🧪 <strong>Session-based</strong> - Resets when you close the browser</li>
-            <li>📢 <strong>Banner reminder</strong> - Orange banner in header shows active debug role</li>
+            <li>↩️ <strong>Easy exit</strong> - Return to your normal role anytime</li>
           </ul>
         </div>
       </div>
@@ -314,9 +339,9 @@ title: "Admin Dashboard"
 
 /* Tabs */
 .dashboard-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; }
-.dashboard-tabs .tab { padding: 0.5rem 1rem; background: transparent; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; font-size: 0.9rem; transition: all 0.15s; color: var(--fg); }
+.dashboard-tabs .tab { padding: 0.5rem 1rem; background: transparent; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; font-size: 0.9rem; transition: all 0.15s; }
 .dashboard-tabs .tab:hover { border-color: var(--accent); }
-.dashboard-tabs .tab.active { background: var(--accent); border-color: var(--accent); color: #000; }
+.dashboard-tabs .tab.active { background: var(--accent); border-color: var(--accent); color: var(--bg); }
 .tab-panel { display: none; }
 .tab-panel.active { display: block; }
 
@@ -648,12 +673,26 @@ async function checkSystemStatus() {
 async function loadDashboard() {
   await checkSystemStatus();
   
-  // Stats
+  // Quick Stats (from Supabase)
   if (supabase) {
     try {
+      // Pending counts
       const { count: profiles } = await supabase.from('pending_profiles').select('*', { count: 'exact', head: true }).eq('status', 'pending');
       document.getElementById('stat-profiles').textContent = profiles || 0;
       
+      // Pending games (if table exists)
+      try {
+        const { count: games } = await supabase.from('pending_games').select('*', { count: 'exact', head: true }).eq('status', 'pending');
+        document.getElementById('stat-games').textContent = games || 0;
+      } catch { document.getElementById('stat-games').textContent = '0'; }
+      
+      // Pending runs (if table exists)  
+      try {
+        const { count: runs } = await supabase.from('pending_runs').select('*', { count: 'exact', head: true }).eq('status', 'pending');
+        document.getElementById('stat-runs').textContent = runs || 0;
+      } catch { document.getElementById('stat-runs').textContent = '0'; }
+      
+      // Total runners from Supabase
       const { count: runners } = await supabase.from('runner_profiles').select('*', { count: 'exact', head: true });
       document.getElementById('stat-total-runners').textContent = runners || 0;
       document.getElementById('stat-total-runners-2').textContent = runners || 0;
@@ -661,26 +700,105 @@ async function loadDashboard() {
       // Update usage bars
       if (runners) {
         const rowPercent = Math.min((runners / 100000) * 100, 100);
-        document.getElementById('usage-bar-rows').style.width = rowPercent + '%';
+        document.getElementById('usage-bar-rows').style.width = Math.max(rowPercent, 1) + '%';
         document.getElementById('usage-rows').textContent = `~${runners} / 100k`;
         
-        document.getElementById('usage-bar-auth').style.width = (runners / 50000) * 100 + '%';
+        document.getElementById('usage-bar-auth').style.width = Math.max((runners / 50000) * 100, 1) + '%';
         document.getElementById('usage-auth').textContent = `~${runners} / 50k`;
       }
-    } catch (e) { console.error(e); }
+      
+      // Load recent activity from audit log or profile submissions
+      await loadRecentActivity();
+      
+    } catch (e) { 
+      console.error('[Dashboard] Error loading stats:', e); 
+    }
   }
   
-  document.getElementById('stat-games').textContent = '0';
-  document.getElementById('stat-runs').textContent = '0';
-  document.getElementById('stat-total-games').textContent = '{{ site.games.size }}';
-  document.getElementById('stat-total-runs').textContent = '{{ site.runs.size }}';
-  document.getElementById('stat-verified-runs').textContent = '-';
+  // Site Statistics from Jekyll (static values rendered at build time)
+  const totalGames = parseInt('{{ site.games | where_exp: "g", "g.test_only != true" | size }}') || 0;
+  const totalRuns = parseInt('{{ site.runs.size }}') || 0;
   
-  // Activity placeholder
-  document.getElementById('recent-activity').innerHTML = `
-    <div class="activity-item">Profile created: gary-asher <span class="activity-time">2 days ago</span></div>
-    <div class="activity-item">Run submitted: Hades 2 Any% <span class="activity-time">3 days ago</span></div>
-  `;
+  document.getElementById('stat-total-games').textContent = totalGames;
+  document.getElementById('stat-total-runs').textContent = totalRuns;
+  document.getElementById('stat-verified-runs').textContent = totalRuns; // All runs in Jekyll are verified
+}
+
+// Load Recent Activity
+async function loadRecentActivity() {
+  const activityEl = document.getElementById('recent-activity');
+  if (!supabase) {
+    activityEl.innerHTML = '<p class="muted">Unable to load activity</p>';
+    return;
+  }
+  
+  try {
+    const activities = [];
+    
+    // Get recent profile submissions
+    const { data: recentProfiles } = await supabase
+      .from('runner_profiles')
+      .select('runner_id, display_name, created_at')
+      .order('created_at', { ascending: false })
+      .limit(5);
+    
+    if (recentProfiles) {
+      recentProfiles.forEach(p => {
+        activities.push({
+          type: 'profile',
+          text: `Profile created: ${p.display_name || p.runner_id}`,
+          time: new Date(p.created_at)
+        });
+      });
+    }
+    
+    // Get recent pending profiles
+    const { data: pendingProfiles } = await supabase
+      .from('pending_profiles')
+      .select('display_name, submitted_at, status')
+      .order('submitted_at', { ascending: false })
+      .limit(5);
+    
+    if (pendingProfiles) {
+      pendingProfiles.forEach(p => {
+        const statusIcon = p.status === 'pending' ? '⏳' : p.status === 'approved' ? '✅' : '❌';
+        activities.push({
+          type: 'pending',
+          text: `${statusIcon} Profile submission: ${p.display_name}`,
+          time: new Date(p.submitted_at)
+        });
+      });
+    }
+    
+    // Sort by time descending and take top 8
+    activities.sort((a, b) => b.time - a.time);
+    const recentActivities = activities.slice(0, 8);
+    
+    if (recentActivities.length === 0) {
+      activityEl.innerHTML = '<p class="muted">No recent activity</p>';
+      return;
+    }
+    
+    activityEl.innerHTML = recentActivities.map(a => {
+      const timeAgo = getTimeAgo(a.time);
+      return `<div class="activity-item">${a.text} <span class="activity-time">${timeAgo}</span></div>`;
+    }).join('');
+    
+  } catch (e) {
+    console.error('[Dashboard] Activity error:', e);
+    activityEl.innerHTML = '<p class="muted">Unable to load activity</p>';
+  }
+}
+
+// Helper: Time ago string
+function getTimeAgo(date) {
+  const seconds = Math.floor((new Date() - date) / 1000);
+  
+  if (seconds < 60) return 'just now';
+  if (seconds < 3600) return Math.floor(seconds / 60) + ' min ago';
+  if (seconds < 86400) return Math.floor(seconds / 3600) + ' hours ago';
+  if (seconds < 604800) return Math.floor(seconds / 86400) + ' days ago';
+  return date.toLocaleDateString();
 }
 
 // Refresh button
