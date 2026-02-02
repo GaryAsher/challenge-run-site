@@ -26,32 +26,8 @@ title: "Financials"
       <p class="muted">Track revenue, expenses, and service costs</p>
     </div>
     
-    <!-- Summary Cards -->
-    <div class="finance-summary">
-      <div class="finance-card finance-card--revenue">
-        <span class="finance-card__label">Monthly Revenue</span>
-        <span class="finance-card__value" id="monthly-revenue">$0.00</span>
-        <span class="finance-card__change positive" id="revenue-change">+0%</span>
-      </div>
-      <div class="finance-card finance-card--expenses">
-        <span class="finance-card__label">Monthly Expenses</span>
-        <span class="finance-card__value" id="monthly-expenses">$0.00</span>
-        <span class="finance-card__change" id="expenses-change">0%</span>
-      </div>
-      <div class="finance-card finance-card--profit">
-        <span class="finance-card__label">Net Profit</span>
-        <span class="finance-card__value" id="net-profit">$0.00</span>
-        <span class="finance-card__change" id="profit-change">-</span>
-      </div>
-      <div class="finance-card finance-card--members">
-        <span class="finance-card__label">Premium Members</span>
-        <span class="finance-card__value" id="premium-members">0</span>
-        <span class="finance-card__change" id="members-change">-</span>
-      </div>
-    </div>
-    
-    <!-- Month Selector -->
-    <div class="card">
+    <!-- Month Selector (FIRST) -->
+    <div class="card month-card">
       <div class="month-selector">
         <button class="btn btn--small" id="prev-month">← Previous</button>
         <span class="current-month" id="current-month">January 2026</span>
@@ -59,245 +35,86 @@ title: "Financials"
       </div>
     </div>
     
-    <!-- Combined Income/Expense Tracker -->
-    <div class="card">
-      <div class="card-header">
+    <!-- Summary Cards -->
+    <div class="finance-summary">
+      <div class="finance-card finance-card--revenue">
+        <span class="finance-card__label">Monthly Revenue</span>
+        <span class="finance-card__value" id="monthly-revenue">$0.00</span>
+      </div>
+      <div class="finance-card finance-card--expenses">
+        <span class="finance-card__label">Monthly Expenses</span>
+        <span class="finance-card__value" id="monthly-expenses">$0.00</span>
+      </div>
+      <div class="finance-card finance-card--profit">
+        <span class="finance-card__label">Net Profit</span>
+        <span class="finance-card__value" id="net-profit">$0.00</span>
+      </div>
+      <div class="finance-card finance-card--members">
+        <span class="finance-card__label">Premium Members</span>
+        <span class="finance-card__value" id="premium-members">0</span>
+      </div>
+    </div>
+    
+    <!-- Income/Expense Tracker (Collapsible) -->
+    <div class="card mt-4 collapsible-section">
+      <div class="collapsible-header" id="tracker-header">
         <h2>📒 Income / Expense Tracker</h2>
-        <button class="btn btn--small btn--primary" id="add-entry">+ Add Entry</button>
-      </div>
-      <div class="finance-table-wrap">
-        <table class="finance-table">
-          <thead>
-            <tr>
-              <th>Type</th>
-              <th>Source</th>
-              <th>Description</th>
-              <th>Frequency</th>
-              <th>Amount</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="entries-table">
-            <tr class="empty-row">
-              <td colspan="6" class="muted">No entries yet</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      
-      <!-- Summary Row -->
-      <div class="finance-summary-row">
-        <div class="summary-item summary-item--income">
-          <span class="summary-label">Total Income</span>
-          <span class="summary-value" id="total-income">$0.00</span>
-        </div>
-        <div class="summary-item summary-item--expense">
-          <span class="summary-label">Total Expenses</span>
-          <span class="summary-value" id="total-expenses">$0.00</span>
-        </div>
-        <div class="summary-item summary-item--net">
-          <span class="summary-label">Net</span>
-          <span class="summary-value" id="net-total">$0.00</span>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Service Cost Breakdown (Collapsible) -->
-    <div class="card mt-4 collapsible-section" id="services-section">
-      <div class="collapsible-header" id="services-header">
-        <h2>🔧 Service Cost Breakdown</h2>
         <button type="button" class="btn btn--small btn--ghost toggle-btn">
-          <span class="toggle-icon" id="services-icon">▼</span>
+          <span class="toggle-icon" id="tracker-icon">▼</span>
         </button>
       </div>
-      <div class="collapsible-content" id="services-content">
-        <p class="muted mb-3">Current and projected costs for all services</p>
-      
-      <div class="service-grid">
-        <div class="service-card">
-          <div class="service-icon">🌐</div>
-          <div class="service-info">
-            <h4>GoDaddy Domain</h4>
-            <p class="muted">challengerun.net</p>
-          </div>
-          <div class="service-cost">
-            <span class="cost-amount">$20/year</span>
-            <span class="cost-monthly">~$1.67/mo</span>
-          </div>
-          <span class="service-status active">Active</span>
+      <div class="collapsible-content" id="tracker-content">
+        <div class="finance-table-wrap">
+          <table class="finance-table accounting-table">
+            <thead>
+              <tr>
+                <th class="col-type">Type</th>
+                <th class="col-freq">Frequency</th>
+                <th class="col-source">Source</th>
+                <th class="col-desc">Description</th>
+                <th class="col-income">Income</th>
+                <th class="col-expense">Expense</th>
+                <th class="col-action">
+                  <button class="btn btn--small btn--primary" id="add-entry">+ Add</button>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="entries-table">
+              <tr class="empty-row">
+                <td colspan="7" class="muted">No entries yet</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr class="totals-row">
+                <td colspan="4" class="totals-label">Totals</td>
+                <td class="totals-income" id="total-income">$0.00</td>
+                <td class="totals-expense" id="total-expenses">$0.00</td>
+                <td class="totals-net">
+                  <span class="net-label">Net:</span>
+                  <span id="net-total">$0.00</span>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
         </div>
-        
-        <div class="service-card">
-          <div class="service-icon">☁️</div>
-          <div class="service-info">
-            <h4>Cloudflare Pages</h4>
-            <p class="muted">Hosting & CDN</p>
-          </div>
-          <div class="service-cost">
-            <span class="cost-amount">Free</span>
-            <span class="cost-monthly">$0/mo</span>
-          </div>
-          <span class="service-status active">Active</span>
-        </div>
-        
-        <div class="service-card">
-          <div class="service-icon">🗄️</div>
-          <div class="service-info">
-            <h4>Supabase</h4>
-            <p class="muted">Database & Auth</p>
-          </div>
-          <div class="service-cost">
-            <span class="cost-amount">Free</span>
-            <span class="cost-monthly">$0/mo</span>
-          </div>
-          <span class="service-status active">Free Tier</span>
-        </div>
-        
-        <div class="service-card">
-          <div class="service-icon">🐙</div>
-          <div class="service-info">
-            <h4>GitHub</h4>
-            <p class="muted">Code & Actions</p>
-          </div>
-          <div class="service-cost">
-            <span class="cost-amount">Free</span>
-            <span class="cost-monthly">$0/mo</span>
-          </div>
-          <span class="service-status active">Free Tier</span>
-        </div>
-        
-        <div class="service-card service-card--future">
-          <div class="service-icon">🗄️</div>
-          <div class="service-info">
-            <h4>Supabase Pro</h4>
-            <p class="muted">When you outgrow free tier</p>
-          </div>
-          <div class="service-cost">
-            <span class="cost-amount">$25/mo</span>
-            <span class="cost-monthly">Projected</span>
-          </div>
-          <span class="service-status future">Future</span>
-        </div>
-        
-        <div class="service-card service-card--future">
-          <div class="service-icon">☁️</div>
-          <div class="service-info">
-            <h4>Cloudflare Pro</h4>
-            <p class="muted">Enhanced features</p>
-          </div>
-          <div class="service-cost">
-            <span class="cost-amount">$20/mo</span>
-            <span class="cost-monthly">Projected</span>
-          </div>
-          <span class="service-status future">Future</span>
-        </div>
-      </div>
-      
-      <div class="cost-projection">
-        <h3>Cost Projections</h3>
-        <div class="projection-grid">
-          <div class="projection-item">
-            <span class="projection-label">Current Monthly</span>
-            <span class="projection-value">~$1.67</span>
-          </div>
-          <div class="projection-item">
-            <span class="projection-label">Projected (Growth)</span>
-            <span class="projection-value">~$46.67</span>
-          </div>
-          <div class="projection-item">
-            <span class="projection-label">Break-even Members</span>
-            <span class="projection-value">~10 @ $5/mo</span>
-          </div>
-        </div>
-      </div>
       </div>
     </div>
     
-    <!-- Future Ideas Section (Collapsible) -->
-    <div class="card mt-4 collapsible-section" id="ideas-section">
-      <div class="collapsible-header" id="ideas-header">
-        <h2>💡 Future Ideas</h2>
+    <!-- Monthly Overview (Collapsible) -->
+    <div class="card mt-4 collapsible-section">
+      <div class="collapsible-header" id="overview-header">
+        <div class="header-with-filter">
+          <h2>📊 Monthly Overview</h2>
+          <div class="year-filter">
+            <label for="year-select">Year:</label>
+            <select id="year-select" class="form-input form-input--small"></select>
+          </div>
+        </div>
         <button type="button" class="btn btn--small btn--ghost toggle-btn">
-          <span class="toggle-icon" id="ideas-icon">▼</span>
+          <span class="toggle-icon" id="overview-icon">▼</span>
         </button>
       </div>
-      <div class="collapsible-content" id="ideas-content">
-        <p class="muted mb-3">Revenue streams and features to consider for the future</p>
-        
-        <div class="ideas-grid">
-          <div class="idea-card">
-            <div class="idea-icon">💎</div>
-            <div class="idea-content">
-              <h4>Premium Memberships</h4>
-              <p class="muted">Monthly subscriptions with perks: custom themes, extra badge slots, priority verification, supporter badge</p>
-              <span class="idea-estimate">Est: $3-10/mo per user</span>
-            </div>
-          </div>
-          
-          <div class="idea-card">
-            <div class="idea-icon">🎨</div>
-            <div class="idea-content">
-              <h4>Custom Themes</h4>
-              <p class="muted">Premium feature: Custom background images, animated elements, profile customization</p>
-              <span class="idea-estimate">Included in Premium</span>
-            </div>
-          </div>
-          
-          <div class="idea-card">
-            <div class="idea-icon">🏆</div>
-            <div class="idea-content">
-              <h4>Tournament Hosting</h4>
-              <p class="muted">Host challenge run competitions with entry fees and prize pools</p>
-              <span class="idea-estimate">% of entry fees</span>
-            </div>
-          </div>
-          
-          <div class="idea-card">
-            <div class="idea-icon">☕</div>
-            <div class="idea-content">
-              <h4>Patreon / Ko-fi</h4>
-              <p class="muted">Community donations with tiers and exclusive perks</p>
-              <span class="idea-estimate">Variable</span>
-            </div>
-          </div>
-          
-          <div class="idea-card">
-            <div class="idea-icon">🎮</div>
-            <div class="idea-content">
-              <h4>Game Dev Partnerships</h4>
-              <p class="muted">Partner with indie devs to feature their games, sponsored challenge runs</p>
-              <span class="idea-estimate">Sponsorships</span>
-            </div>
-          </div>
-          
-          <div class="idea-card">
-            <div class="idea-icon">📺</div>
-            <div class="idea-content">
-              <h4>Content Creator Program</h4>
-              <p class="muted">Revenue sharing with streamers who feature CRC runs</p>
-              <span class="idea-estimate">Partnership deals</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Historical Chart (placeholder) -->
-    <div class="card mt-4">
-      <div class="card-header">
-        <h2>📊 Monthly Overview</h2>
-        <div class="year-filter">
-          <label for="year-select">Year:</label>
-          <select id="year-select" class="form-input form-input--small">
-            <option value="all">All Years</option>
-            <option value="2026" selected>2026</option>
-            <option value="2025">2025</option>
-            <option value="2024">2024</option>
-          </select>
-        </div>
-      </div>
-      <div class="chart-placeholder" id="finance-chart">
-        <p class="muted">Chart will display revenue vs expenses over time</p>
+      <div class="collapsible-content" id="overview-content">
         <table class="history-table">
           <thead>
             <tr>
@@ -307,20 +124,73 @@ title: "Financials"
               <th>Net</th>
             </tr>
           </thead>
-          <tbody id="history-table">
-            <!-- Populated by JS -->
-          </tbody>
+          <tbody id="history-table"></tbody>
         </table>
       </div>
     </div>
     
+    <!-- Service Cost Breakdown (Collapsible) -->
+    <div class="card mt-4 collapsible-section">
+      <div class="collapsible-header" id="services-header">
+        <h2>🔧 Service Cost Breakdown</h2>
+        <button type="button" class="btn btn--small btn--ghost toggle-btn">
+          <span class="toggle-icon" id="services-icon">▼</span>
+        </button>
+      </div>
+      <div class="collapsible-content" id="services-content">
+        <p class="muted mb-3">Current costs for all services</p>
+        <div class="service-grid">
+          <div class="service-card">
+            <div class="service-icon">🌐</div>
+            <div class="service-info"><h4>GoDaddy Domain</h4><p class="muted">challengerun.net</p></div>
+            <div class="service-cost"><span class="cost-amount">$20/year</span><span class="cost-monthly">~$1.67/mo</span></div>
+            <span class="service-status active">Active</span>
+          </div>
+          <div class="service-card">
+            <div class="service-icon">☁️</div>
+            <div class="service-info"><h4>Cloudflare</h4><p class="muted">CDN & Security</p></div>
+            <div class="service-cost"><span class="cost-amount">Free</span><span class="cost-monthly">$0/mo</span></div>
+            <span class="service-status active">Free Tier</span>
+          </div>
+          <div class="service-card">
+            <div class="service-icon">🗄️</div>
+            <div class="service-info"><h4>Supabase</h4><p class="muted">Database & Auth</p></div>
+            <div class="service-cost"><span class="cost-amount">Free</span><span class="cost-monthly">$0/mo</span></div>
+            <span class="service-status active">Free Tier</span>
+          </div>
+          <div class="service-card">
+            <div class="service-icon">🐙</div>
+            <div class="service-info"><h4>GitHub</h4><p class="muted">Code & Actions</p></div>
+            <div class="service-cost"><span class="cost-amount">Free</span><span class="cost-monthly">$0/mo</span></div>
+            <span class="service-status active">Free Tier</span>
+          </div>
+        </div>
+        <div class="cost-summary mt-3"><strong>Current Monthly Cost:</strong> ~$1.67/month (~$20/year)</div>
+      </div>
+    </div>
+    
+    <!-- Future Ideas (Collapsible) -->
+    <div class="card mt-4 collapsible-section">
+      <div class="collapsible-header" id="ideas-header">
+        <h2>💡 Future Ideas</h2>
+        <button type="button" class="btn btn--small btn--ghost toggle-btn">
+          <span class="toggle-icon" id="ideas-icon">▼</span>
+        </button>
+      </div>
+      <div class="collapsible-content" id="ideas-content">
+        <p class="muted mb-3">Revenue streams and features to consider</p>
+        <div class="ideas-grid" id="ideas-grid"></div>
+        <button type="button" class="btn btn--small mt-3" id="add-idea">+ Add Idea</button>
+      </div>
+    </div>
+    
     <!-- Add Entry Modal -->
-    <div class="finance-modal" id="finance-modal" hidden>
-      <div class="finance-modal__backdrop" id="modal-backdrop"></div>
+    <div class="finance-modal" id="entry-modal" hidden>
+      <div class="finance-modal__backdrop" id="entry-modal-backdrop"></div>
       <div class="finance-modal__content">
         <div class="finance-modal__header">
-          <h2 id="modal-title">Add Entry</h2>
-          <button class="finance-modal__close" id="modal-close">&times;</button>
+          <h2>Add Entry</h2>
+          <button class="finance-modal__close" id="entry-modal-close">&times;</button>
         </div>
         <div class="finance-modal__body">
           <div class="form-group">
@@ -337,47 +207,66 @@ title: "Financials"
             </div>
           </div>
           <div class="form-group">
+            <label class="form-label">Frequency</label>
+            <div class="frequency-options">
+              <label class="frequency-option"><input type="radio" name="entry-frequency" value="monthly" checked /><span class="frequency-option__btn">🔄 Monthly</span></label>
+              <label class="frequency-option"><input type="radio" name="entry-frequency" value="yearly" /><span class="frequency-option__btn">📅 Yearly</span></label>
+              <label class="frequency-option"><input type="radio" name="entry-frequency" value="once" /><span class="frequency-option__btn">📌 One-Time</span></label>
+            </div>
+          </div>
+          <div class="form-group">
             <label class="form-label">Source / Service</label>
-            <input type="text" id="entry-source" class="form-input" placeholder="e.g., Patreon, GoDaddy, Donations" />
+            <input type="text" id="entry-source" class="form-input" placeholder="e.g., Patreon, GoDaddy" />
           </div>
           <div class="form-group">
             <label class="form-label">Description</label>
-            <input type="text" id="entry-description" class="form-input" placeholder="e.g., Monthly subscription, Domain renewal" />
+            <input type="text" id="entry-description" class="form-input" placeholder="e.g., Monthly subscription" />
           </div>
           <div class="form-group">
             <label class="form-label">Amount ($)</label>
             <input type="number" id="entry-amount" class="form-input" step="0.01" min="0" placeholder="0.00" />
           </div>
+        </div>
+        <div class="finance-modal__footer">
+          <button class="btn" id="entry-modal-cancel">Cancel</button>
+          <button class="btn btn--primary" id="entry-modal-save">Save Entry</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Add Idea Modal -->
+    <div class="finance-modal" id="idea-modal" hidden>
+      <div class="finance-modal__backdrop" id="idea-modal-backdrop"></div>
+      <div class="finance-modal__content">
+        <div class="finance-modal__header">
+          <h2>Add Idea</h2>
+          <button class="finance-modal__close" id="idea-modal-close">&times;</button>
+        </div>
+        <div class="finance-modal__body">
           <div class="form-group">
-            <label class="form-label">Frequency</label>
-            <div class="frequency-options">
-              <label class="frequency-option">
-                <input type="radio" name="entry-frequency" value="monthly" checked />
-                <span class="frequency-option__btn">
-                  <span class="frequency-option__icon">🔄</span>
-                  <span class="frequency-option__text">Monthly</span>
-                </span>
-              </label>
-              <label class="frequency-option">
-                <input type="radio" name="entry-frequency" value="yearly" />
-                <span class="frequency-option__btn">
-                  <span class="frequency-option__icon">📅</span>
-                  <span class="frequency-option__text">Yearly</span>
-                </span>
-              </label>
-              <label class="frequency-option">
-                <input type="radio" name="entry-frequency" value="once" />
-                <span class="frequency-option__btn">
-                  <span class="frequency-option__icon">📌</span>
-                  <span class="frequency-option__text">One-Time</span>
-                </span>
-              </label>
+            <label class="form-label">Category</label>
+            <div class="idea-category-options">
+              <label class="idea-category-option"><input type="radio" name="idea-category" value="acquisition" checked /><span class="idea-category-btn">🎯 Acquisition</span></label>
+              <label class="idea-category-option"><input type="radio" name="idea-category" value="revenue" /><span class="idea-category-btn">💰 Revenue</span></label>
+              <label class="idea-category-option"><input type="radio" name="idea-category" value="engagement" /><span class="idea-category-btn">🔥 Engagement</span></label>
             </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Idea Title</label>
+            <input type="text" id="idea-title" class="form-input" placeholder="e.g., Premium Memberships" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea id="idea-description" class="form-input" rows="2" placeholder="Brief description..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Rough Estimate (optional)</label>
+            <input type="text" id="idea-estimate" class="form-input" placeholder="e.g., $5-10/mo per user" />
           </div>
         </div>
         <div class="finance-modal__footer">
-          <button class="btn" id="modal-cancel">Cancel</button>
-          <button class="btn btn--primary" id="modal-save">Save Entry</button>
+          <button class="btn" id="idea-modal-cancel">Cancel</button>
+          <button class="btn btn--primary" id="idea-modal-save">Save Idea</button>
         </div>
       </div>
     </div>
@@ -385,787 +274,245 @@ title: "Financials"
 </div>
 
 <style>
-.super-admin-badge {
-  display: inline-block;
-  background: #9b59b6;
-  color: white;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.25rem 0.75rem;
-  border-radius: 4px;
-  margin-bottom: 0.5rem;
-}
-
+.super-admin-badge { display: inline-block; background: #9b59b6; color: white; font-size: 0.75rem; font-weight: 600; padding: 0.25rem 0.75rem; border-radius: 4px; margin-bottom: 0.5rem; }
 .page-header { margin-bottom: 1.5rem; }
 .page-header h1 { margin-bottom: 0.25rem; }
-
-/* Summary Cards */
-.finance-summary {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.finance-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 1.25rem;
-  text-align: center;
-}
-
-.finance-card__label {
-  display: block;
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  margin-bottom: 0.5rem;
-}
-
-.finance-card__value {
-  display: block;
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin-bottom: 0.25rem;
-}
-
+.month-card { margin-bottom: 1rem; }
+.month-selector { display: flex; align-items: center; justify-content: center; gap: 1.5rem; padding: 0.5rem; }
+.current-month { font-size: 1.25rem; font-weight: 600; min-width: 180px; text-align: center; }
+.finance-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+@media (max-width: 900px) { .finance-summary { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 500px) { .finance-summary { grid-template-columns: 1fr; } }
+.finance-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.25rem; text-align: center; }
+.finance-card__label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; }
+.finance-card__value { display: block; font-size: 1.75rem; font-weight: 700; }
 .finance-card--revenue .finance-card__value { color: #10b981; }
 .finance-card--expenses .finance-card__value { color: #ef4444; }
 .finance-card--profit .finance-card__value { color: var(--accent); }
-.finance-card--members .finance-card__value { color: #8b5cf6; }
-
-.finance-card__change {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-.finance-card__change.positive { color: #10b981; }
-.finance-card__change.negative { color: #ef4444; }
-
-/* Month Selector */
-.month-selector {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.current-month {
-  font-size: 1.1rem;
-  font-weight: 600;
-  min-width: 150px;
-  text-align: center;
-}
-
-/* Finance Grid */
-.finance-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 1.5rem;
-}
-
-@media (max-width: 900px) {
-  .finance-grid { grid-template-columns: 1fr; }
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.card-header h2 { margin: 0; }
-
-/* Finance Table Wrapper - prevents overflow */
-.finance-table-wrap {
-  overflow-x: auto;
-  margin: 0 -0.5rem;
-  padding: 0 0.5rem;
-}
-
-/* Finance Table */
-.finance-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 400px;
-}
-
-.finance-table th,
-.finance-table td {
-  padding: 0.75rem;
-  text-align: left;
-  border-bottom: 1px solid var(--border);
-  font-size: 0.9rem;
-  white-space: nowrap;
-}
-
-.finance-table th {
-  background: var(--bg);
-  font-weight: 600;
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-.finance-table td:nth-child(2) {
-  white-space: normal;
-  max-width: 200px;
-}
-
-.finance-table tfoot td {
-  background: var(--bg);
-  border-top: 2px solid var(--border);
-}
-
-.empty-row td {
-  text-align: center;
-  padding: 2rem;
-}
-
-/* Finance Summary Row */
-.finance-summary-row {
-  display: flex;
-  gap: 1rem;
-  padding: 1rem;
-  margin-top: 1rem;
-  background: var(--bg);
-  border-top: 2px solid var(--border);
-  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
-}
-
-.summary-item {
-  flex: 1;
-  text-align: center;
-  padding: 0.75rem;
-  border-radius: var(--radius-sm);
-}
-
-.summary-item--income { background: rgba(16, 185, 129, 0.1); }
-.summary-item--expense { background: rgba(239, 68, 68, 0.1); }
-.summary-item--net { background: var(--surface); border: 1px solid var(--border); }
-
-.summary-label {
-  display: block;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  margin-bottom: 0.25rem;
-}
-
-.summary-value {
-  display: block;
-  font-size: 1.25rem;
-  font-weight: 700;
-}
-
-.summary-item--income .summary-value { color: #10b981; }
-.summary-item--expense .summary-value { color: #ef4444; }
-
-/* Entry Type Badge in Table */
-.entry-type-badge {
-  display: inline-block;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.entry-type-badge--income {
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
-}
-
-.entry-type-badge--expense {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-}
-
-/* Frequency Badge */
-.frequency-badge {
-  display: inline-block;
-  padding: 0.15rem 0.4rem;
-  border-radius: 4px;
-  font-size: 0.7rem;
-  font-weight: 500;
-  background: var(--surface);
-  border: 1px solid var(--border);
-}
-
-.frequency-badge--monthly { color: #3b82f6; border-color: #3b82f6; }
-.frequency-badge--yearly { color: #10b981; border-color: #10b981; }
-.frequency-badge--once { color: #8b5cf6; border-color: #8b5cf6; }
-  padding: 2rem;
-}
-
-/* Service Grid */
-.service-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.service-card {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-}
-
-.service-card--future {
-  opacity: 0.6;
-  border-style: dashed;
-}
-
-.service-icon {
-  font-size: 1.5rem;
-  width: 40px;
-  text-align: center;
-}
-
-.service-info {
-  flex: 1;
-}
-
-.service-info h4 {
-  font-size: 0.95rem;
-  margin-bottom: 0.15rem;
-}
-
-.service-info p {
-  font-size: 0.8rem;
-  margin: 0;
-}
-
-.service-cost {
-  text-align: right;
-}
-
-.cost-amount {
-  display: block;
-  font-weight: 600;
-}
-
-.cost-monthly {
-  display: block;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
-.service-status {
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  text-transform: uppercase;
-}
-
-.service-status.active { background: #10b981; color: white; }
-.service-status.future { background: var(--text-muted); color: var(--bg); }
-
-/* Collapsible Sections */
-.collapsible-section { }
-.collapsible-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  padding-bottom: 0.5rem;
-  margin-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border);
-  user-select: none;
-}
-.collapsible-header:hover { opacity: 0.8; }
-.collapsible-header h2 { margin: 0; }
-.toggle-btn { background: none; border: none; padding: 0.25rem 0.5rem; cursor: pointer; }
-.toggle-icon { display: inline-block; transition: transform 0.2s ease; font-size: 0.9rem; color: var(--text-muted); }
+.collapsible-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 0.5rem 0; }
+.collapsible-header h2 { margin: 0; flex: 1; }
+.header-with-filter { display: flex; align-items: center; gap: 1.5rem; flex: 1; }
+.toggle-icon { transition: transform 0.2s ease; display: inline-block; }
 .collapsible-content.collapsed { display: none; }
-.collapsed .toggle-icon, .collapsible-section.collapsed .toggle-icon { transform: rotate(-90deg); }
-
-/* Type Badges (Recurring/One-time) */
-.type-badge {
-  display: inline-block;
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  white-space: nowrap;
-}
-.type-badge--recurring { background: #3b82f6; color: white; }
-.type-badge--one-time { background: #8b5cf6; color: white; }
-.type-badge--monthly { background: #3b82f6; color: white; }
-.type-badge--yearly { background: #10b981; color: white; }
-
-/* Year Filter */
-.year-filter {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.year-filter label {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}
-
-/* Small form input - styled select dropdown */
-.form-input--small {
-  padding: 0.4rem 0.75rem;
-  font-size: 0.85rem;
-  width: auto;
-  min-width: 110px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--fg);
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.5rem center;
-  padding-right: 1.75rem;
-}
-
-.form-input--small:hover {
-  border-color: var(--accent);
-}
-
-.form-input--small:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.2);
-}
-
-/* Future Ideas Grid */
-.ideas-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1rem;
-}
-.idea-card {
-  display: flex;
-  gap: 1rem;
-  padding: 1rem;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  align-items: flex-start;
-}
-.idea-icon {
-  font-size: 1.5rem;
-  flex-shrink: 0;
-}
-.idea-content {
-  flex: 1;
-}
-.idea-content h4 {
-  font-size: 0.95rem;
-  margin-bottom: 0.25rem;
-}
-.idea-content p {
-  font-size: 0.8rem;
-  margin: 0 0 0.5rem 0;
-}
-.idea-estimate {
-  display: inline-block;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--accent);
-  background: rgba(var(--accent-rgb), 0.1);
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-}
-
-.save-status {
-  font-size: 0.8rem;
-}
-.ml-2 { margin-left: 0.5rem; }
-
-/* Cost Projection */
-.cost-projection {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 1.25rem;
-}
-
-.cost-projection h3 {
-  font-size: 1rem;
-  margin-bottom: 1rem;
-}
-
-.projection-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-}
-
-@media (max-width: 600px) {
-  .projection-grid { grid-template-columns: 1fr; }
-}
-
-.projection-item {
-  text-align: center;
-}
-
-.projection-label {
-  display: block;
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  margin-bottom: 0.25rem;
-}
-
-.projection-value {
-  display: block;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--accent);
-}
-
-/* Chart Placeholder */
-.chart-placeholder {
-  padding: 1rem;
-}
-
-.history-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
-}
-
-.history-table th,
-.history-table td {
-  padding: 0.75rem;
-  text-align: left;
-  border-bottom: 1px solid var(--border);
-}
-
-.history-table th {
-  background: var(--bg);
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-/* Modal */
-.finance-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-}
-
-.finance-modal[hidden] { display: none; }
-
-.finance-modal__backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-}
-
-.finance-modal__content {
-  position: relative;
-  width: 100%;
-  max-width: 450px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-}
-
-.finance-modal__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.finance-modal__header h2 { font-size: 1.1rem; margin: 0; }
-
-.finance-modal__close {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: var(--text-muted);
-  cursor: pointer;
-}
-
+.finance-table-wrap { overflow-x: auto; }
+.accounting-table { width: 100%; border-collapse: collapse; }
+.accounting-table th, .accounting-table td { padding: 0.6rem 0.75rem; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+.accounting-table th { background: var(--bg); font-weight: 600; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
+.accounting-table .col-type { width: 90px; }
+.accounting-table .col-freq { width: 90px; }
+.accounting-table .col-source { width: 120px; }
+.accounting-table .col-income { width: 100px; text-align: right; }
+.accounting-table .col-expense { width: 100px; text-align: right; }
+.accounting-table .col-action { width: 70px; text-align: center; }
+.accounting-table td.income-cell { text-align: right; color: #10b981; font-weight: 600; }
+.accounting-table td.expense-cell { text-align: right; color: #ef4444; font-weight: 600; }
+.accounting-table td.empty-cell { text-align: right; color: var(--text-muted); }
+.totals-row { background: var(--bg); font-weight: 600; }
+.totals-row td { border-top: 2px solid var(--border); padding: 0.75rem; }
+.totals-label { text-align: right; padding-right: 1rem; }
+.totals-income { text-align: right; color: #10b981; }
+.totals-expense { text-align: right; color: #ef4444; }
+.totals-net { text-align: center; }
+.net-label { font-size: 0.75rem; color: var(--text-muted); margin-right: 0.25rem; }
+.type-badge { display: inline-block; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
+.type-badge--income { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+.type-badge--expense { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.freq-badge { display: inline-block; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.7rem; background: var(--surface); border: 1px solid var(--border); }
+.delete-btn { background: transparent; border: none; cursor: pointer; opacity: 0.5; transition: opacity 0.15s; font-size: 0.9rem; }
+.delete-btn:hover { opacity: 1; }
+.year-filter { display: flex; align-items: center; gap: 0.5rem; }
+.year-filter label { font-size: 0.85rem; color: var(--text-muted); }
+.form-input--small { padding: 0.4rem 0.75rem; font-size: 0.85rem; width: auto; min-width: 100px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--fg); }
+.history-table { width: 100%; border-collapse: collapse; }
+.history-table th, .history-table td { padding: 0.6rem 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
+.history-table th { background: var(--bg); font-weight: 600; font-size: 0.75rem; color: var(--text-muted); }
+.service-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
+.service-card { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.service-icon { font-size: 1.5rem; }
+.service-info { flex: 1; }
+.service-info h4 { font-size: 0.9rem; margin: 0 0 0.15rem 0; }
+.service-info p { font-size: 0.75rem; margin: 0; }
+.service-cost { text-align: right; }
+.cost-amount { display: block; font-weight: 600; font-size: 0.9rem; }
+.cost-monthly { display: block; font-size: 0.7rem; color: var(--text-muted); }
+.service-status { font-size: 0.65rem; font-weight: 600; padding: 0.2rem 0.4rem; border-radius: 4px; text-transform: uppercase; }
+.service-status.active { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+.cost-summary { padding: 0.75rem; background: var(--surface); border-radius: var(--radius-sm); font-size: 0.9rem; }
+.ideas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+.idea-card { padding: 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); position: relative; }
+.idea-card__header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
+.idea-card__title { font-weight: 600; font-size: 0.95rem; }
+.idea-card__category { font-size: 0.65rem; font-weight: 600; padding: 0.15rem 0.4rem; border-radius: 4px; text-transform: uppercase; }
+.idea-card__category--acquisition { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+.idea-card__category--revenue { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+.idea-card__category--engagement { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+.idea-card__desc { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+.idea-card__estimate { font-size: 0.75rem; font-weight: 600; color: var(--accent); }
+.idea-card__delete { position: absolute; top: 0.5rem; right: 0.5rem; background: transparent; border: none; cursor: pointer; opacity: 0.3; font-size: 0.8rem; }
+.idea-card__delete:hover { opacity: 1; }
+.finance-modal { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; }
+.finance-modal__backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.6); }
+.finance-modal__content { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); width: 90%; max-width: 450px; max-height: 90vh; overflow-y: auto; }
+.finance-modal__header { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid var(--border); }
+.finance-modal__header h2 { margin: 0; font-size: 1.1rem; }
+.finance-modal__close { background: transparent; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); line-height: 1; }
 .finance-modal__body { padding: 1rem; }
-
-/* Entry Type Toggle */
-.entry-type-toggle {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.entry-type-option {
-  flex: 1;
-  cursor: pointer;
-}
-
+.finance-modal__footer { display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1rem; border-top: 1px solid var(--border); }
+.form-group { margin-bottom: 1rem; }
+.form-label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.5rem; }
+.form-input { width: 100%; padding: 0.6rem 0.75rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--fg); font-size: 0.9rem; }
+.form-input:focus { outline: none; border-color: var(--accent); }
+.entry-type-toggle { display: flex; gap: 0.75rem; }
+.entry-type-option { flex: 1; cursor: pointer; }
 .entry-type-option input { display: none; }
-
-.entry-type-btn {
-  display: block;
-  padding: 0.75rem 1rem;
-  text-align: center;
-  font-weight: 600;
-  border: 2px solid var(--border);
-  border-radius: var(--radius-sm);
-  transition: all 0.15s ease;
-}
-
-.entry-type-option:hover .entry-type-btn {
-  border-color: var(--text-muted);
-}
-
-.entry-type-option:has(input:checked) .entry-type-btn--income {
-  border-color: #10b981;
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
-}
-
-.entry-type-option:has(input:checked) .entry-type-btn--expense {
-  border-color: #ef4444;
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-}
-
-/* Frequency Options */
-.frequency-options {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.frequency-option {
-  flex: 1;
-  cursor: pointer;
-}
-
+.entry-type-btn { display: block; padding: 0.6rem; text-align: center; font-weight: 500; font-size: 0.9rem; border: 2px solid var(--border); border-radius: var(--radius-sm); transition: all 0.15s; }
+.entry-type-option:has(input:checked) .entry-type-btn--income { border-color: #10b981; background: rgba(16, 185, 129, 0.1); color: #10b981; }
+.entry-type-option:has(input:checked) .entry-type-btn--expense { border-color: #ef4444; background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.frequency-options { display: flex; gap: 0.5rem; }
+.frequency-option { flex: 1; cursor: pointer; }
 .frequency-option input { display: none; }
-
-.frequency-option__btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.75rem 0.5rem;
-  border: 2px solid var(--border);
-  border-radius: var(--radius-sm);
-  transition: all 0.15s ease;
-}
-
-.frequency-option:hover .frequency-option__btn {
-  border-color: var(--accent);
-}
-
-.frequency-option:has(input:checked) .frequency-option__btn {
-  border-color: var(--accent);
-  background: rgba(var(--accent-rgb), 0.1);
-}
-
-.frequency-option__icon { font-size: 1.25rem; }
-.frequency-option__text { font-size: 0.8rem; font-weight: 500; }
-
-.finance-modal__footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  padding: 1rem;
-  border-top: 1px solid var(--border);
-}
+.frequency-option__btn { display: block; padding: 0.5rem; text-align: center; font-size: 0.8rem; border: 1px solid var(--border); border-radius: var(--radius-sm); transition: all 0.15s; }
+.frequency-option:has(input:checked) .frequency-option__btn { border-color: var(--accent); background: rgba(var(--accent-rgb), 0.1); }
+.idea-category-options { display: flex; gap: 0.5rem; }
+.idea-category-option { flex: 1; cursor: pointer; }
+.idea-category-option input { display: none; }
+.idea-category-btn { display: block; padding: 0.5rem; text-align: center; font-size: 0.8rem; border: 1px solid var(--border); border-radius: var(--radius-sm); transition: all 0.15s; }
+.idea-category-option:has(input:checked) .idea-category-btn { border-color: var(--accent); background: rgba(var(--accent-rgb), 0.1); }
+.empty-row td { text-align: center; padding: 2rem; }
+.mt-3 { margin-top: 1rem; }
+.mt-4 { margin-top: 1.5rem; }
+.mb-3 { margin-bottom: 1rem; }
 </style>
 
 <script type="module">
 import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
 
 const SUPER_ADMIN_IDS = ['gary-asher'];
-let supabase = null;
 let currentMonth = new Date();
 let financialData = {};
-let selectedYear = '2026'; // Match the default selected option in HTML
+let ideasData = [];
+let selectedYear = new Date().getFullYear().toString();
 
 const authCheck = document.getElementById('auth-check');
 const notAuthorized = document.getElementById('not-authorized');
 const adminContent = document.getElementById('admin-content');
 
-// Default entries (services as expenses)
 const DEFAULT_ENTRIES = [
-  { type: 'expense', source: 'GoDaddy', description: 'Domain registration (yearly)', amount: 1.67, frequency: 'monthly' }
+  { type: 'expense', source: 'GoDaddy', description: 'Domain registration', amount: 1.67, frequency: 'monthly' }
 ];
 
-// Initialize
+const DEFAULT_IDEAS = [
+  { category: 'revenue', title: 'Premium Memberships', description: 'Monthly subscriptions with perks', estimate: '$3-10/mo per user' },
+  { category: 'revenue', title: 'Patreon / Ko-fi', description: 'Community donations with tiers', estimate: 'Variable' },
+  { category: 'engagement', title: 'Tournament Hosting', description: 'Challenge run competitions', estimate: '% of entry fees' },
+  { category: 'acquisition', title: 'Game Dev Partnerships', description: 'Partner with indie devs', estimate: 'Sponsorships' }
+];
+
 (async function() {
   await CRCAuth.init();
-  
   const profile = CRCAuth.getProfile();
   const metadata = CRCAuth.getProviderMetadata();
   const runnerId = profile?.runner_id?.toLowerCase() || '';
   const username = metadata?.providerUsername?.toLowerCase() || '';
-  
-  const isSuperAdmin = SUPER_ADMIN_IDS.includes(runnerId) || 
-                       SUPER_ADMIN_IDS.some(id => username === id || username === id.replace(/-/g, '_'));
+  const isSuperAdmin = SUPER_ADMIN_IDS.includes(runnerId) || SUPER_ADMIN_IDS.some(id => username === id || username === id.replace(/-/g, '_'));
   
   authCheck.hidden = true;
-  
   if (CRCAuth.isSignedIn() && isSuperAdmin) {
     adminContent.hidden = false;
-    supabase = CRCAuth.getSupabaseClient?.();
-    await loadFinancialData();
+    loadData();
     setupEventListeners();
-    setupCollapsibles();
+    populateYearSelector();
   } else {
     notAuthorized.hidden = false;
   }
 })();
 
-async function loadFinancialData() {
-  // Try to load from localStorage
+function loadData() {
   const saved = localStorage.getItem('crc-financials-v2');
-  if (saved) {
-    try {
-      financialData = JSON.parse(saved);
-    } catch (e) {}
-  }
+  if (saved) try { financialData = JSON.parse(saved); } catch (e) {}
   
-  // Migrate old data format if needed
   const oldSaved = localStorage.getItem('crc-financials');
   if (oldSaved && !saved) {
     try {
       const oldData = JSON.parse(oldSaved);
-      // Convert old format to new
       for (const [key, data] of Object.entries(oldData)) {
         financialData[key] = { entries: [] };
-        if (data.revenue) {
-          data.revenue.forEach(r => {
-            financialData[key].entries.push({
-              type: 'income',
-              source: r.source,
-              description: r.description,
-              amount: r.amount,
-              frequency: r.recurring || 'monthly'
-            });
-          });
-        }
-        if (data.expenses) {
-          data.expenses.forEach(e => {
-            financialData[key].entries.push({
-              type: 'expense',
-              source: e.source,
-              description: e.description,
-              amount: e.amount,
-              frequency: e.recurring || 'monthly'
-            });
-          });
-        }
+        if (data.revenue) data.revenue.forEach(r => financialData[key].entries.push({ type: 'income', source: r.source, description: r.description, amount: r.amount, frequency: r.recurring || 'monthly' }));
+        if (data.expenses) data.expenses.forEach(e => financialData[key].entries.push({ type: 'expense', source: e.source, description: e.description, amount: e.amount, frequency: e.recurring || 'monthly' }));
       }
-      saveData();
+      saveFinancialData();
     } catch (e) {}
   }
   
-  // Ensure current month exists
-  const monthKey = getMonthKey(currentMonth);
-  if (!financialData[monthKey]) {
-    financialData[monthKey] = {
-      entries: [...DEFAULT_ENTRIES]
-    };
-  }
+  const savedIdeas = localStorage.getItem('crc-ideas');
+  if (savedIdeas) try { ideasData = JSON.parse(savedIdeas); } catch (e) {}
+  if (ideasData.length === 0) { ideasData = [...DEFAULT_IDEAS]; saveIdeasData(); }
   
-  renderFinancials();
-  renderHistory();
+  const monthKey = getMonthKey(currentMonth);
+  if (!financialData[monthKey]) financialData[monthKey] = { entries: [...DEFAULT_ENTRIES] };
+  
+  renderAll();
 }
 
-function getMonthKey(date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+function getMonthKey(date) { return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0'); }
+function getMonthName(date) { return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); }
+
+function populateYearSelector() {
+  const select = document.getElementById('year-select');
+  const currentYear = new Date().getFullYear();
+  const years = [];
+  for (let y = 2025; y <= currentYear + 2; y++) years.push(y);
+  select.innerHTML = years.map(y => '<option value="' + y + '"' + (y == selectedYear ? ' selected' : '') + '>' + y + '</option>').join('');
 }
 
-function getMonthName(date) {
-  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-}
+function renderAll() { renderFinancials(); renderHistory(); renderIdeas(); }
 
 function renderFinancials() {
   const monthKey = getMonthKey(currentMonth);
-  const data = financialData[monthKey] || { entries: [...DEFAULT_ENTRIES] };
-  
+  const data = financialData[monthKey] || { entries: [] };
   document.getElementById('current-month').textContent = getMonthName(currentMonth);
   
-  // Calculate totals
-  const totalIncome = data.entries.filter(e => e.type === 'income').reduce((sum, e) => sum + e.amount, 0);
-  const totalExpenses = data.entries.filter(e => e.type === 'expense').reduce((sum, e) => sum + e.amount, 0);
+  const entries = data.entries || [];
+  const totalIncome = entries.filter(e => e.type === 'income').reduce((sum, e) => sum + e.amount, 0);
+  const totalExpenses = entries.filter(e => e.type === 'expense').reduce((sum, e) => sum + e.amount, 0);
   const netTotal = totalIncome - totalExpenses;
   
-  // Update summary cards
   document.getElementById('monthly-revenue').textContent = '$' + totalIncome.toFixed(2);
   document.getElementById('monthly-expenses').textContent = '$' + totalExpenses.toFixed(2);
-  document.getElementById('net-profit').textContent = '$' + netTotal.toFixed(2);
-  document.getElementById('net-profit').style.color = netTotal >= 0 ? '#10b981' : '#ef4444';
-  
-  // Update tracker summary
-  document.getElementById('total-income').textContent = '$' + totalIncome.toFixed(2);
-  document.getElementById('total-expenses').textContent = '$' + totalExpenses.toFixed(2);
-  const netEl = document.getElementById('net-total');
-  netEl.textContent = (netTotal >= 0 ? '+' : '') + '$' + netTotal.toFixed(2);
+  const netEl = document.getElementById('net-profit');
+  netEl.textContent = '$' + netTotal.toFixed(2);
   netEl.style.color = netTotal >= 0 ? '#10b981' : '#ef4444';
   
-  // Render combined table
-  renderEntriesTable(data.entries);
+  document.getElementById('total-income').textContent = '$' + totalIncome.toFixed(2);
+  document.getElementById('total-expenses').textContent = '$' + totalExpenses.toFixed(2);
+  const netTotalEl = document.getElementById('net-total');
+  netTotalEl.textContent = (netTotal >= 0 ? '+' : '') + '$' + netTotal.toFixed(2);
+  netTotalEl.style.color = netTotal >= 0 ? '#10b981' : '#ef4444';
+  
+  renderEntriesTable(entries);
 }
 
 function renderEntriesTable(entries) {
   const tbody = document.getElementById('entries-table');
   if (!entries || entries.length === 0) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="6" class="muted">No entries yet</td></tr>';
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="7" class="muted">No entries yet</td></tr>';
     return;
   }
-  
-  // Sort: income first, then expenses
-  const sorted = [...entries].sort((a, b) => {
-    if (a.type === b.type) return 0;
-    return a.type === 'income' ? -1 : 1;
-  });
-  
-  tbody.innerHTML = sorted.map((item, i) => {
-    const originalIndex = entries.indexOf(item);
-    const typeClass = item.type === 'income' ? 'income' : 'expense';
+  tbody.innerHTML = entries.map((item, i) => {
     const typeLabel = item.type === 'income' ? '📈 Income' : '📉 Expense';
-    const freqLabel = item.frequency === 'yearly' ? '📅 Yearly' : 
-                      item.frequency === 'once' ? '📌 One-Time' : '🔄 Monthly';
-    const freqClass = item.frequency || 'monthly';
-    const amountColor = item.type === 'income' ? '#10b981' : '#ef4444';
-    const amountPrefix = item.type === 'income' ? '+' : '-';
-    
-    return `
-    <tr>
-      <td><span class="entry-type-badge entry-type-badge--${typeClass}">${typeLabel}</span></td>
-      <td>${item.source}</td>
-      <td>${item.description || '-'}</td>
-      <td><span class="frequency-badge frequency-badge--${freqClass}">${freqLabel}</span></td>
-      <td style="color: ${amountColor}; font-weight: 600;">${amountPrefix}$${item.amount.toFixed(2)}</td>
-      <td><button class="btn btn--small" onclick="deleteEntry(${originalIndex})">🗑️</button></td>
-    </tr>
-  `;}).join('');
+    const freqLabel = item.frequency === 'yearly' ? '📅 Yearly' : item.frequency === 'once' ? '📌 Once' : '🔄 Monthly';
+    const incomeCell = item.type === 'income' ? '<td class="income-cell">$' + item.amount.toFixed(2) + '</td>' : '<td class="empty-cell">-</td>';
+    const expenseCell = item.type === 'expense' ? '<td class="expense-cell">$' + item.amount.toFixed(2) + '</td>' : '<td class="empty-cell">-</td>';
+    return '<tr><td><span class="type-badge type-badge--' + item.type + '">' + typeLabel + '</span></td><td><span class="freq-badge">' + freqLabel + '</span></td><td>' + item.source + '</td><td>' + (item.description || '-') + '</td>' + incomeCell + expenseCell + '<td style="text-align:center;"><button class="delete-btn" onclick="deleteEntry(' + i + ')">🗑️</button></td></tr>';
+  }).join('');
 }
 
 function renderHistory() {
   const tbody = document.getElementById('history-table');
   let months = Object.keys(financialData).sort().reverse();
-  
-  // Filter by selected year
-  if (selectedYear && selectedYear !== 'all') {
-    months = months.filter(key => key.startsWith(selectedYear));
-  }
-  
-  months = months.slice(0, 12); // Show up to 12 months
-  
-  if (months.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="4" class="muted">No data for selected year</td></tr>';
-    return;
-  }
-  
+  if (selectedYear) months = months.filter(key => key.startsWith(selectedYear));
+  months = months.slice(0, 12);
+  if (months.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="muted">No data for selected year</td></tr>'; return; }
   tbody.innerHTML = months.map(key => {
     const data = financialData[key];
     const entries = data.entries || [];
@@ -1174,125 +521,97 @@ function renderHistory() {
     const net = income - expenses;
     const [year, month] = key.split('-');
     const monthName = new Date(year, parseInt(month) - 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-    
-    return `
-      <tr>
-        <td>${monthName}</td>
-        <td style="color: #10b981">$${income.toFixed(2)}</td>
-        <td style="color: #ef4444">$${expenses.toFixed(2)}</td>
-        <td style="color: ${net >= 0 ? '#10b981' : '#ef4444'}">$${net.toFixed(2)}</td>
-      </tr>
-    `;
+    return '<tr><td>' + monthName + '</td><td style="color:#10b981">$' + income.toFixed(2) + '</td><td style="color:#ef4444">$' + expenses.toFixed(2) + '</td><td style="color:' + (net >= 0 ? '#10b981' : '#ef4444') + '">$' + net.toFixed(2) + '</td></tr>';
   }).join('');
 }
 
-function saveData() {
-  localStorage.setItem('crc-financials-v2', JSON.stringify(financialData));
+function renderIdeas() {
+  const grid = document.getElementById('ideas-grid');
+  if (ideasData.length === 0) { grid.innerHTML = '<p class="muted">No ideas yet.</p>'; return; }
+  const icons = { acquisition: '🎯', revenue: '💰', engagement: '🔥' };
+  grid.innerHTML = ideasData.map((idea, i) => '<div class="idea-card"><button class="idea-card__delete" onclick="deleteIdea(' + i + ')">✕</button><div class="idea-card__header"><span class="idea-card__title">' + (icons[idea.category] || '💡') + ' ' + idea.title + '</span><span class="idea-card__category idea-card__category--' + idea.category + '">' + idea.category + '</span></div><p class="idea-card__desc">' + (idea.description || '') + '</p>' + (idea.estimate ? '<span class="idea-card__estimate">Est: ' + idea.estimate + '</span>' : '') + '</div>').join('');
 }
+
+function saveFinancialData() { localStorage.setItem('crc-financials-v2', JSON.stringify(financialData)); }
+function saveIdeasData() { localStorage.setItem('crc-ideas', JSON.stringify(ideasData)); }
 
 window.deleteEntry = function(index) {
   const monthKey = getMonthKey(currentMonth);
-  if (financialData[monthKey]?.entries) {
-    financialData[monthKey].entries.splice(index, 1);
-    saveData();
-    renderFinancials();
-    renderHistory();
-  }
+  if (financialData[monthKey]?.entries) { financialData[monthKey].entries.splice(index, 1); saveFinancialData(); renderFinancials(); renderHistory(); }
+};
+
+window.deleteIdea = function(index) {
+  if (confirm('Delete this idea?')) { ideasData.splice(index, 1); saveIdeasData(); renderIdeas(); }
 };
 
 function setupEventListeners() {
-  // Month navigation
-  document.getElementById('prev-month')?.addEventListener('click', () => {
-    currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1);
-    loadFinancialData();
-  });
+  document.getElementById('prev-month')?.addEventListener('click', () => { currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1); const mk = getMonthKey(currentMonth); if (!financialData[mk]) financialData[mk] = { entries: [] }; renderFinancials(); });
+  document.getElementById('next-month')?.addEventListener('click', () => { currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1); const mk = getMonthKey(currentMonth); if (!financialData[mk]) financialData[mk] = { entries: [] }; renderFinancials(); });
+  document.getElementById('year-select')?.addEventListener('change', (e) => { selectedYear = e.target.value; renderHistory(); });
   
-  document.getElementById('next-month')?.addEventListener('click', () => {
-    currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1);
-    loadFinancialData();
-  });
+  setupCollapsible('tracker-header', 'tracker-content', 'tracker-icon');
+  setupCollapsible('overview-header', 'overview-content', 'overview-icon');
+  setupCollapsible('services-header', 'services-content', 'services-icon');
+  setupCollapsible('ideas-header', 'ideas-content', 'ideas-icon');
   
-  // Year filter for history
-  document.getElementById('year-select')?.addEventListener('change', (e) => {
-    selectedYear = e.target.value;
-    renderHistory();
-  });
+  document.getElementById('add-entry')?.addEventListener('click', () => openModal('entry-modal'));
+  document.getElementById('entry-modal-close')?.addEventListener('click', () => closeModal('entry-modal'));
+  document.getElementById('entry-modal-backdrop')?.addEventListener('click', () => closeModal('entry-modal'));
+  document.getElementById('entry-modal-cancel')?.addEventListener('click', () => closeModal('entry-modal'));
+  document.getElementById('entry-modal-save')?.addEventListener('click', saveEntry);
   
-  // Add entry button
-  document.getElementById('add-entry')?.addEventListener('click', openModal);
-  
-  // Modal
-  document.getElementById('modal-close')?.addEventListener('click', closeModal);
-  document.getElementById('modal-backdrop')?.addEventListener('click', closeModal);
-  document.getElementById('modal-cancel')?.addEventListener('click', closeModal);
-  document.getElementById('modal-save')?.addEventListener('click', saveEntry);
+  document.getElementById('add-idea')?.addEventListener('click', () => openModal('idea-modal'));
+  document.getElementById('idea-modal-close')?.addEventListener('click', () => closeModal('idea-modal'));
+  document.getElementById('idea-modal-backdrop')?.addEventListener('click', () => closeModal('idea-modal'));
+  document.getElementById('idea-modal-cancel')?.addEventListener('click', () => closeModal('idea-modal'));
+  document.getElementById('idea-modal-save')?.addEventListener('click', saveIdea);
 }
 
-// Collapsible sections
-function setupCollapsibles() {
-  // Services section
-  document.getElementById('services-header')?.addEventListener('click', () => {
-    const content = document.getElementById('services-content');
-    const icon = document.getElementById('services-icon');
+function setupCollapsible(headerId, contentId, iconId) {
+  document.getElementById(headerId)?.addEventListener('click', (e) => {
+    if (e.target.closest('.year-filter')) return;
+    const content = document.getElementById(contentId);
+    const icon = document.getElementById(iconId);
     content.classList.toggle('collapsed');
-    if (icon) {
-      icon.style.transform = content.classList.contains('collapsed') ? 'rotate(-90deg)' : 'rotate(0deg)';
-    }
-  });
-  
-  // Ideas section
-  document.getElementById('ideas-header')?.addEventListener('click', () => {
-    const content = document.getElementById('ideas-content');
-    const icon = document.getElementById('ideas-icon');
-    content.classList.toggle('collapsed');
-    if (icon) {
-      icon.style.transform = content.classList.contains('collapsed') ? 'rotate(-90deg)' : 'rotate(0deg)';
-    }
+    if (icon) icon.style.transform = content.classList.contains('collapsed') ? 'rotate(-90deg)' : 'rotate(0deg)';
   });
 }
 
-function openModal() {
-  document.getElementById('modal-title').textContent = 'Add Entry';
-  document.getElementById('finance-modal').hidden = false;
-  // Reset form
-  document.querySelector('input[name="entry-type"][value="income"]').checked = true;
-  document.querySelector('input[name="entry-frequency"][value="monthly"]').checked = true;
-}
-
-function closeModal() {
-  document.getElementById('finance-modal').hidden = true;
-  document.getElementById('entry-source').value = '';
-  document.getElementById('entry-description').value = '';
-  document.getElementById('entry-amount').value = '';
+function openModal(id) { document.getElementById(id).hidden = false; }
+function closeModal(id) {
+  document.getElementById(id).hidden = true;
+  if (id === 'entry-modal') {
+    document.getElementById('entry-source').value = '';
+    document.getElementById('entry-description').value = '';
+    document.getElementById('entry-amount').value = '';
+    document.querySelector('input[name="entry-type"][value="income"]').checked = true;
+    document.querySelector('input[name="entry-frequency"][value="monthly"]').checked = true;
+  } else if (id === 'idea-modal') {
+    document.getElementById('idea-title').value = '';
+    document.getElementById('idea-description').value = '';
+    document.getElementById('idea-estimate').value = '';
+    document.querySelector('input[name="idea-category"][value="acquisition"]').checked = true;
+  }
 }
 
 function saveEntry() {
   const monthKey = getMonthKey(currentMonth);
   const entryType = document.querySelector('input[name="entry-type"]:checked')?.value || 'expense';
   const frequency = document.querySelector('input[name="entry-frequency"]:checked')?.value || 'monthly';
-  
-  const entry = {
-    type: entryType,
-    source: document.getElementById('entry-source').value,
-    description: document.getElementById('entry-description').value,
-    amount: parseFloat(document.getElementById('entry-amount').value) || 0,
-    frequency: frequency
-  };
-  
-  if (!entry.source || entry.amount <= 0) {
-    alert('Please fill in all required fields');
-    return;
-  }
-  
-  if (!financialData[monthKey]) {
-    financialData[monthKey] = { entries: [...DEFAULT_ENTRIES] };
-  }
-  
+  const entry = { type: entryType, source: document.getElementById('entry-source').value.trim(), description: document.getElementById('entry-description').value.trim(), amount: parseFloat(document.getElementById('entry-amount').value) || 0, frequency: frequency };
+  if (!entry.source || entry.amount <= 0) { alert('Please fill in Source and Amount'); return; }
+  if (!financialData[monthKey]) financialData[monthKey] = { entries: [] };
   financialData[monthKey].entries.push(entry);
-  
-  saveData();
-  renderFinancials();
-  renderHistory();
-  closeModal();
+  saveFinancialData(); renderFinancials(); renderHistory(); closeModal('entry-modal');
+}
+
+function saveIdea() {
+  const category = document.querySelector('input[name="idea-category"]:checked')?.value || 'revenue';
+  const title = document.getElementById('idea-title').value.trim();
+  const description = document.getElementById('idea-description').value.trim();
+  const estimate = document.getElementById('idea-estimate').value.trim();
+  if (!title) { alert('Please enter an idea title'); return; }
+  ideasData.push({ category, title, description, estimate });
+  saveIdeasData(); renderIdeas(); closeModal('idea-modal');
 }
 </script>
