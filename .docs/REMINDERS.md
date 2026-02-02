@@ -45,6 +45,17 @@ This document consolidates all reminders, future ideas, and planned features for
   - Link runner_id to authenticated user
     - Add option to list other runners. Other runners will need to confirm that they participated in this run.
 
+### 3.5 Legal Document Review
+- [ ] Review Terms of Service line-by-line
+- [ ] Review Privacy Policy line-by-line
+- [ ] Add 13+ age requirement (like Speedrun.com)
+- [ ] Add third-party services disclosure (Supabase, Cloudflare, Discord/Twitch OAuth)
+- [ ] Document all data collected in Privacy Policy
+- [ ] Add DMCA/Copyright policy
+- [ ] Add content license agreement for submissions
+- [ ] Consider user data export feature (GDPR compliance)
+- [ ] Create disaster recovery plan document
+
 ---
 
 ## Short-Term Priorities
@@ -80,20 +91,21 @@ Migration plan:
 - [ ] Add real-time run verification
 - [ ] Deploy to Vercel or similar
 
-### 8. Dark/Light Mode Toggle and other themes.
+### 8. Dark/Light Mode Toggle and Accessibilities features
 - [ ] Add light mode CSS variables
 - [ ] Add toggle button to header
+- [ ] Colorblind mode
 - [ ] Store preference in localStorage
 - [ ] Respect `prefers-color-scheme`
 
-### 9. News & History Integration
-- Requires News page activity first
-- Combine news posts with game history for unified timeline
-
-### 10. History Tab Refinement
+### 9. History Tab Refinement
 - Needs Runner Profiles with Badges first
 - Focus on: rule changes, discussions, community milestones
 - NOT global submissions from anyone
+
+### 10. News & History Integration
+- Requires News page activity first
+- Combine news posts with game history for unified timeline
 
 ### 11. Forum Integration
 Decision needed: GitHub Discussions vs Discord
