@@ -19,8 +19,6 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Data Protection = all
 - [ ] Look into
   - Sentry
-  - Uptime Monitoring
-  - Security Header Scanner
   - Autho0 or Clerk - Advanced auth features
   - Cloudflare Pro $20/mo
   - Supabase Pro $25/mo
