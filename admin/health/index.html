@@ -106,7 +106,7 @@ title: "Site Health"
         <div class="health-card__header">
           <span class="health-card__icon">🐙</span>
           <h3>GitHub Actions</h3>
-          <span class="health-card__status" id="github-status">Unknown</span>
+          <span class="health-card__status" id="github-status">Not Configured</span>
         </div>
         <div class="health-card__body">
           <div class="health-metric">
@@ -121,6 +121,9 @@ title: "Site Health"
             <span class="health-metric__label">Status</span>
             <span class="health-metric__value" id="github-workflow-status">-</span>
           </div>
+          <div class="health-metric health-metric--note">
+            <span class="health-metric__note">⚠️ Requires GitHub API token to be configured</span>
+          </div>
         </div>
       </div>
       
@@ -129,9 +132,13 @@ title: "Site Health"
         <div class="health-card__header">
           <span class="health-card__icon">📈</span>
           <h3>Uptime Monitor</h3>
-          <span class="health-card__status" id="uptime-status">Unknown</span>
+          <span class="health-card__status ok" id="uptime-status">Active</span>
         </div>
         <div class="health-card__body">
+          <div class="health-metric">
+            <span class="health-metric__label">Status Page</span>
+            <span class="health-metric__value"><a href="https://stats.uptimerobot.com/kXOmjgBk1r" target="_blank" rel="noopener" style="color: var(--accent);">View →</a></span>
+          </div>
           <div class="health-metric">
             <span class="health-metric__label">Last 24h</span>
             <span class="health-metric__value" id="uptime-24h">-</span>
@@ -140,12 +147,8 @@ title: "Site Health"
             <span class="health-metric__label">Last 7 Days</span>
             <span class="health-metric__value" id="uptime-7d">-</span>
           </div>
-          <div class="health-metric">
-            <span class="health-metric__label">Last Incident</span>
-            <span class="health-metric__value" id="uptime-last-incident">-</span>
-          </div>
-          <div class="health-metric uptime-config-note">
-            <a href="https://uptimerobot.com/" target="_blank" rel="noopener" class="uptime-config-link">Configure UptimeRobot →</a>
+          <div class="health-metric health-metric--note">
+            <span class="health-metric__note">ℹ️ API stats not available on free tier</span>
           </div>
         </div>
       </div>
@@ -315,12 +318,12 @@ title: "Site Health"
         <h3>📊 Historical Slow Queries</h3>
         <p class="muted mb-2">Export slow queries (>200ms) from the past time period:</p>
         <div class="history-export-btns">
-          <button type="button" class="btn btn--small" onclick="exportSlowQueriesCSV(12)">12 hours</button>
-          <button type="button" class="btn btn--small" onclick="exportSlowQueriesCSV(24)">24 hours</button>
-          <button type="button" class="btn btn--small" onclick="exportSlowQueriesCSV(72)">3 days</button>
-          <button type="button" class="btn btn--small" onclick="exportSlowQueriesCSV(168)">7 days</button>
-          <button type="button" class="btn btn--small" onclick="exportSlowQueriesCSV(336)">2 weeks</button>
-          <button type="button" class="btn btn--small" onclick="exportSlowQueriesCSV(672)">4 weeks</button>
+          <button type="button" class="btn btn--small" onclick="confirmExport(12)">12 hours</button>
+          <button type="button" class="btn btn--small" onclick="confirmExport(24)">24 hours</button>
+          <button type="button" class="btn btn--small" onclick="confirmExport(72)">3 days</button>
+          <button type="button" class="btn btn--small" onclick="confirmExport(168)">7 days</button>
+          <button type="button" class="btn btn--small" onclick="confirmExport(336)">2 weeks</button>
+          <button type="button" class="btn btn--small" onclick="confirmExport(672)">4 weeks</button>
         </div>
         <div class="history-summary mt-2" id="history-summary">
           <!-- Populated by JS -->
@@ -489,6 +492,19 @@ title: "Site Health"
 
 .health-metric__label { font-size: 0.85rem; color: var(--text-muted); }
 .health-metric__value { font-size: 0.85rem; font-weight: 500; }
+
+.health-metric--note {
+  justify-content: center;
+  padding-top: 0.75rem;
+  margin-top: 0.5rem;
+  border-top: 1px dashed var(--border);
+}
+
+.health-metric__note {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
 
 .uptime-config-note { justify-content: center; }
 .uptime-config-link { font-size: 0.8rem; color: var(--accent); }
@@ -1021,6 +1037,14 @@ function getSlowQueries(hours = 24) {
     return stored.filter(q => q.timestamp > cutoff);
   } catch (e) {
     return [];
+  }
+}
+
+// Confirm before exporting
+function confirmExport(hours) {
+  const label = hours < 24 ? `${hours} hours` : hours < 168 ? `${Math.round(hours/24)} days` : `${Math.round(hours/168)} weeks`;
+  if (confirm(`Export slow queries from the last ${label} as CSV?`)) {
+    exportSlowQueriesCSV(hours);
   }
 }
 
