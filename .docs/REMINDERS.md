@@ -2,7 +2,7 @@
 
 This document consolidates all reminders, future ideas, and planned features for CRC.
 
-**Last updated:** 2026/02/01
+**Last updated:** 2026/02/02
 
 ---
 
@@ -10,28 +10,25 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ## Immediate Priorities
 
-### 1.75 Admin Profile
+### 1 Admin Profile
 - [ ] Move Admin Panel to somewhere actually not annoying. Ideally where the CRC logo is.
   Site Health:
-    - [ ] Change API Perfromance to use Green instead of theme for good queries.
-    - [ ] fix page switching js for 12 hours, 24 hours, 3 days, etc.
-    - [ ] Connect Uptime Monitor
-    - [ ] GitHub Actions? Needed?
+    - [ ] Page switching (12h, 24h, 3d): Does not work as export. Ask user if they want to export it first.
+    - [ ] Uptime Monitor: add "API configuration not available on free tier"
+    - [ ] GitHub Actions: Need to confire GitHub API token
   Financials:
-    - [ ] Expenses & Services journal entry is jutting out of the container.
-    - [ ] Notes & Plans can be removed
-    - [ ] <select id="year-select" class="form-input form-input--small"> 
-      - need proper styling.
-      - can start with year 2026
+    - [ ] Combine Revenue and Expenses together to look like an Income/Expense Tracker.
+      - Update Add item to allow picking Income vs Expense
+      - Allow "yearly" as an option.
   Dashboard:
-    - [ ] <button class="tab" data-tab="test-profile" type="button">Test Profile</button> and other variables are not easily visible because of button background
-    - [ ] Remove Test Games
+    - [ ] Need to totally revamp Debug View
 
 ### 2. Runner Profiles
 - [ ] Profile Settings
   - Profile Information to be above Linked Accounts
 - [ ] Themes
   - Add white font border around text that is black. and the same vice versa? this is just to read the text easier.
+  - Add font options to themes.
 - [ ] Fix issues with /profile/edit
 
 ### 2.5 Games/runs/ tab again
@@ -46,6 +43,7 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] New Run Submission 
   - Test variables. Update if needed.
   - Link runner_id to authenticated user
+    - Add option to list other runners. Other runners will need to confirm that they participated in this run.
 
 ---
 
