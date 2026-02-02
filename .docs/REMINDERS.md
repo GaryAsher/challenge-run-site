@@ -15,12 +15,17 @@ This document consolidates all reminders, future ideas, and planned features for
   Site Health:
     - [ ] Change API Perfromance to use Green instead of theme for good queries.
     - [ ] fix page switching js for 12 hours, 24 hours, 3 days, etc.
+    - [ ] Connect Uptime Monitor
+    - [ ] GitHub Actions? Needed?
   Financials:
-    - [ ] Down-drop not working properly.
-    - [ ] Fix page switching js
+    - [ ] Expenses & Services journal entry is jutting out of the container.
+    - [ ] Notes & Plans can be removed
+    - [ ] <select id="year-select" class="form-input form-input--small"> 
+      - need proper styling.
+      - can start with year 2026
   Dashboard:
-    - [ ] Site Statistics not showing?
-    - [ ] Recent Activity not showing?
+    - [ ] <button class="tab" data-tab="test-profile" type="button">Test Profile</button> and other variables are not easily visible because of button background
+    - [ ] Remove Test Games
 
 ### 2. Runner Profiles
 - [ ] Profile Settings
