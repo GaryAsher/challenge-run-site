@@ -59,66 +59,45 @@ title: "Financials"
       </div>
     </div>
     
-    <div class="finance-grid">
-      <!-- Revenue Sources -->
-      <div class="card">
-        <div class="card-header">
-          <h2>📈 Revenue Sources</h2>
-          <button class="btn btn--small" id="add-revenue">+ Add</button>
-        </div>
-        <div class="finance-table-wrap">
-          <table class="finance-table">
+    <!-- Combined Income/Expense Tracker -->
+    <div class="card">
+      <div class="card-header">
+        <h2>📒 Income / Expense Tracker</h2>
+        <button class="btn btn--small btn--primary" id="add-entry">+ Add Entry</button>
+      </div>
+      <div class="finance-table-wrap">
+        <table class="finance-table">
           <thead>
             <tr>
+              <th>Type</th>
               <th>Source</th>
               <th>Description</th>
-              <th>Type</th>
+              <th>Frequency</th>
               <th>Amount</th>
               <th></th>
             </tr>
           </thead>
-          <tbody id="revenue-table">
+          <tbody id="entries-table">
             <tr class="empty-row">
-              <td colspan="5" class="muted">No revenue entries yet</td>
+              <td colspan="6" class="muted">No entries yet</td>
             </tr>
           </tbody>
-          <tfoot>
-            <tr>
-              <td colspan="3"><strong>Total Revenue</strong></td>
-              <td colspan="2"><strong id="total-revenue">$0.00</strong></td>
-            </tr>
-          </tfoot>
-          </table>
-        </div>
+        </table>
       </div>
       
-      <!-- Expenses -->
-      <div class="card">
-        <div class="card-header">
-          <h2>📉 Expenses & Services</h2>
-          <button class="btn btn--small" id="add-expense">+ Add</button>
+      <!-- Summary Row -->
+      <div class="finance-summary-row">
+        <div class="summary-item summary-item--income">
+          <span class="summary-label">Total Income</span>
+          <span class="summary-value" id="total-income">$0.00</span>
         </div>
-        <div class="finance-table-wrap">
-          <table class="finance-table">
-          <thead>
-            <tr>
-              <th>Service</th>
-              <th>Description</th>
-              <th>Type</th>
-              <th>Amount</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="expenses-table">
-            <!-- Pre-populated with known services -->
-          </tbody>
-          <tfoot>
-            <tr>
-              <td colspan="3"><strong>Total Expenses</strong></td>
-              <td colspan="2"><strong id="total-expenses">$0.00</strong></td>
-            </tr>
-          </tfoot>
-          </table>
+        <div class="summary-item summary-item--expense">
+          <span class="summary-label">Total Expenses</span>
+          <span class="summary-value" id="total-expenses">$0.00</span>
+        </div>
+        <div class="summary-item summary-item--net">
+          <span class="summary-label">Net</span>
+          <span class="summary-value" id="net-total">$0.00</span>
         </div>
       </div>
     </div>
@@ -345,41 +324,52 @@ title: "Financials"
         </div>
         <div class="finance-modal__body">
           <div class="form-group">
-            <label class="form-label">Type</label>
-            <select id="entry-type" class="form-input">
-              <option value="revenue">Revenue</option>
-              <option value="expense">Expense</option>
-            </select>
+            <label class="form-label">Entry Type</label>
+            <div class="entry-type-toggle">
+              <label class="entry-type-option">
+                <input type="radio" name="entry-type" value="income" checked />
+                <span class="entry-type-btn entry-type-btn--income">📈 Income</span>
+              </label>
+              <label class="entry-type-option">
+                <input type="radio" name="entry-type" value="expense" />
+                <span class="entry-type-btn entry-type-btn--expense">📉 Expense</span>
+              </label>
+            </div>
           </div>
           <div class="form-group">
-            <label class="form-label">Source/Service</label>
-            <input type="text" id="entry-source" class="form-input" placeholder="e.g., Patreon, GoDaddy" />
+            <label class="form-label">Source / Service</label>
+            <input type="text" id="entry-source" class="form-input" placeholder="e.g., Patreon, GoDaddy, Donations" />
           </div>
           <div class="form-group">
             <label class="form-label">Description</label>
-            <input type="text" id="entry-description" class="form-input" placeholder="e.g., Monthly subscription" />
+            <input type="text" id="entry-description" class="form-input" placeholder="e.g., Monthly subscription, Domain renewal" />
           </div>
           <div class="form-group">
             <label class="form-label">Amount ($)</label>
             <input type="number" id="entry-amount" class="form-input" step="0.01" min="0" placeholder="0.00" />
           </div>
           <div class="form-group">
-            <label class="form-label">Payment Type</label>
-            <div class="recurring-options">
-              <label class="recurring-option">
-                <input type="radio" name="entry-recurring" value="monthly" checked />
-                <span class="recurring-option__icon">🔄</span>
-                <span class="recurring-option__text">
-                  <strong>Recurring</strong>
-                  <span class="muted">Monthly charge</span>
+            <label class="form-label">Frequency</label>
+            <div class="frequency-options">
+              <label class="frequency-option">
+                <input type="radio" name="entry-frequency" value="monthly" checked />
+                <span class="frequency-option__btn">
+                  <span class="frequency-option__icon">🔄</span>
+                  <span class="frequency-option__text">Monthly</span>
                 </span>
               </label>
-              <label class="recurring-option">
-                <input type="radio" name="entry-recurring" value="once" />
-                <span class="recurring-option__icon">📌</span>
-                <span class="recurring-option__text">
-                  <strong>One-Time</strong>
-                  <span class="muted">Single payment</span>
+              <label class="frequency-option">
+                <input type="radio" name="entry-frequency" value="yearly" />
+                <span class="frequency-option__btn">
+                  <span class="frequency-option__icon">📅</span>
+                  <span class="frequency-option__text">Yearly</span>
+                </span>
+              </label>
+              <label class="frequency-option">
+                <input type="radio" name="entry-frequency" value="once" />
+                <span class="frequency-option__btn">
+                  <span class="frequency-option__icon">📌</span>
+                  <span class="frequency-option__text">One-Time</span>
                 </span>
               </label>
             </div>
@@ -528,6 +518,81 @@ title: "Financials"
 
 .empty-row td {
   text-align: center;
+  padding: 2rem;
+}
+
+/* Finance Summary Row */
+.finance-summary-row {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  margin-top: 1rem;
+  background: var(--bg);
+  border-top: 2px solid var(--border);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
+.summary-item {
+  flex: 1;
+  text-align: center;
+  padding: 0.75rem;
+  border-radius: var(--radius-sm);
+}
+
+.summary-item--income { background: rgba(16, 185, 129, 0.1); }
+.summary-item--expense { background: rgba(239, 68, 68, 0.1); }
+.summary-item--net { background: var(--surface); border: 1px solid var(--border); }
+
+.summary-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+.summary-value {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.summary-item--income .summary-value { color: #10b981; }
+.summary-item--expense .summary-value { color: #ef4444; }
+
+/* Entry Type Badge in Table */
+.entry-type-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.entry-type-badge--income {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.entry-type-badge--expense {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+/* Frequency Badge */
+.frequency-badge {
+  display: inline-block;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.frequency-badge--monthly { color: #3b82f6; border-color: #3b82f6; }
+.frequency-badge--yearly { color: #10b981; border-color: #10b981; }
+.frequency-badge--once { color: #8b5cf6; border-color: #8b5cf6; }
   padding: 2rem;
 }
 
@@ -713,15 +778,6 @@ title: "Financials"
   border-radius: 4px;
 }
 
-/* Ideas Notes */
-.ideas-notes {
-  padding-top: 1rem;
-  border-top: 1px solid var(--border);
-}
-.ideas-notes h4 {
-  font-size: 0.9rem;
-  margin-bottom: 0.75rem;
-}
 .save-status {
   font-size: 0.8rem;
 }
@@ -840,47 +896,80 @@ title: "Financials"
 
 .finance-modal__body { padding: 1rem; }
 
-/* Recurring Options Radio Buttons */
-.recurring-options {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+/* Entry Type Toggle */
+.entry-type-toggle {
+  display: flex;
   gap: 0.75rem;
 }
-.recurring-option {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  background: var(--bg);
+
+.entry-type-option {
+  flex: 1;
+  cursor: pointer;
+}
+
+.entry-type-option input { display: none; }
+
+.entry-type-btn {
+  display: block;
+  padding: 0.75rem 1rem;
+  text-align: center;
+  font-weight: 600;
   border: 2px solid var(--border);
   border-radius: var(--radius-sm);
-  cursor: pointer;
   transition: all 0.15s ease;
 }
-.recurring-option:hover {
+
+.entry-type-option:hover .entry-type-btn {
+  border-color: var(--text-muted);
+}
+
+.entry-type-option:has(input:checked) .entry-type-btn--income {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.entry-type-option:has(input:checked) .entry-type-btn--expense {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+/* Frequency Options */
+.frequency-options {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.frequency-option {
+  flex: 1;
+  cursor: pointer;
+}
+
+.frequency-option input { display: none; }
+
+.frequency-option__btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.75rem 0.5rem;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+}
+
+.frequency-option:hover .frequency-option__btn {
   border-color: var(--accent);
 }
-.recurring-option:has(input:checked) {
+
+.frequency-option:has(input:checked) .frequency-option__btn {
   border-color: var(--accent);
   background: rgba(var(--accent-rgb), 0.1);
 }
-.recurring-option input {
-  display: none;
-}
-.recurring-option__icon {
-  font-size: 1.25rem;
-}
-.recurring-option__text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.3;
-}
-.recurring-option__text strong {
-  font-size: 0.9rem;
-}
-.recurring-option__text .muted {
-  font-size: 0.75rem;
-}
+
+.frequency-option__icon { font-size: 1.25rem; }
+.frequency-option__text { font-size: 0.8rem; font-weight: 500; }
 
 .finance-modal__footer {
   display: flex;
@@ -904,9 +993,9 @@ const authCheck = document.getElementById('auth-check');
 const notAuthorized = document.getElementById('not-authorized');
 const adminContent = document.getElementById('admin-content');
 
-// Default expenses (services)
-const DEFAULT_EXPENSES = [
-  { id: 'godaddy', source: 'GoDaddy', description: 'Domain registration (yearly)', amount: 1.67, recurring: 'monthly' }
+// Default entries (services as expenses)
+const DEFAULT_ENTRIES = [
+  { type: 'expense', source: 'GoDaddy', description: 'Domain registration (yearly)', amount: 1.67, frequency: 'monthly' }
 ];
 
 // Initialize
@@ -928,7 +1017,6 @@ const DEFAULT_EXPENSES = [
     supabase = CRCAuth.getSupabaseClient?.();
     await loadFinancialData();
     setupEventListeners();
-    loadNotes();
     setupCollapsibles();
   } else {
     notAuthorized.hidden = false;
@@ -936,11 +1024,46 @@ const DEFAULT_EXPENSES = [
 })();
 
 async function loadFinancialData() {
-  // Try to load from Supabase or localStorage
-  const saved = localStorage.getItem('crc-financials');
+  // Try to load from localStorage
+  const saved = localStorage.getItem('crc-financials-v2');
   if (saved) {
     try {
       financialData = JSON.parse(saved);
+    } catch (e) {}
+  }
+  
+  // Migrate old data format if needed
+  const oldSaved = localStorage.getItem('crc-financials');
+  if (oldSaved && !saved) {
+    try {
+      const oldData = JSON.parse(oldSaved);
+      // Convert old format to new
+      for (const [key, data] of Object.entries(oldData)) {
+        financialData[key] = { entries: [] };
+        if (data.revenue) {
+          data.revenue.forEach(r => {
+            financialData[key].entries.push({
+              type: 'income',
+              source: r.source,
+              description: r.description,
+              amount: r.amount,
+              frequency: r.recurring || 'monthly'
+            });
+          });
+        }
+        if (data.expenses) {
+          data.expenses.forEach(e => {
+            financialData[key].entries.push({
+              type: 'expense',
+              source: e.source,
+              description: e.description,
+              amount: e.amount,
+              frequency: e.recurring || 'monthly'
+            });
+          });
+        }
+      }
+      saveData();
     } catch (e) {}
   }
   
@@ -948,8 +1071,7 @@ async function loadFinancialData() {
   const monthKey = getMonthKey(currentMonth);
   if (!financialData[monthKey]) {
     financialData[monthKey] = {
-      revenue: [],
-      expenses: [...DEFAULT_EXPENSES]
+      entries: [...DEFAULT_ENTRIES]
     };
   }
   
@@ -967,63 +1089,63 @@ function getMonthName(date) {
 
 function renderFinancials() {
   const monthKey = getMonthKey(currentMonth);
-  const data = financialData[monthKey] || { revenue: [], expenses: DEFAULT_EXPENSES };
+  const data = financialData[monthKey] || { entries: [...DEFAULT_ENTRIES] };
   
   document.getElementById('current-month').textContent = getMonthName(currentMonth);
   
   // Calculate totals
-  const totalRevenue = data.revenue.reduce((sum, r) => sum + r.amount, 0);
-  const totalExpenses = data.expenses.reduce((sum, e) => sum + e.amount, 0);
-  const netProfit = totalRevenue - totalExpenses;
+  const totalIncome = data.entries.filter(e => e.type === 'income').reduce((sum, e) => sum + e.amount, 0);
+  const totalExpenses = data.entries.filter(e => e.type === 'expense').reduce((sum, e) => sum + e.amount, 0);
+  const netTotal = totalIncome - totalExpenses;
   
-  document.getElementById('monthly-revenue').textContent = '$' + totalRevenue.toFixed(2);
+  // Update summary cards
+  document.getElementById('monthly-revenue').textContent = '$' + totalIncome.toFixed(2);
   document.getElementById('monthly-expenses').textContent = '$' + totalExpenses.toFixed(2);
-  document.getElementById('net-profit').textContent = '$' + netProfit.toFixed(2);
-  document.getElementById('net-profit').style.color = netProfit >= 0 ? '#10b981' : '#ef4444';
+  document.getElementById('net-profit').textContent = '$' + netTotal.toFixed(2);
+  document.getElementById('net-profit').style.color = netTotal >= 0 ? '#10b981' : '#ef4444';
   
-  document.getElementById('total-revenue').textContent = '$' + totalRevenue.toFixed(2);
+  // Update tracker summary
+  document.getElementById('total-income').textContent = '$' + totalIncome.toFixed(2);
   document.getElementById('total-expenses').textContent = '$' + totalExpenses.toFixed(2);
+  const netEl = document.getElementById('net-total');
+  netEl.textContent = (netTotal >= 0 ? '+' : '') + '$' + netTotal.toFixed(2);
+  netEl.style.color = netTotal >= 0 ? '#10b981' : '#ef4444';
   
-  // Render tables
-  renderRevenueTable(data.revenue);
-  renderExpensesTable(data.expenses);
+  // Render combined table
+  renderEntriesTable(data.entries);
 }
 
-function renderRevenueTable(items) {
-  const tbody = document.getElementById('revenue-table');
-  if (items.length === 0) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="5" class="muted">No revenue entries yet</td></tr>';
+function renderEntriesTable(entries) {
+  const tbody = document.getElementById('entries-table');
+  if (!entries || entries.length === 0) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="6" class="muted">No entries yet</td></tr>';
     return;
   }
   
-  tbody.innerHTML = items.map((item, i) => {
-    const typeClass = item.recurring === 'once' ? 'one-time' : item.recurring || 'monthly';
-    const typeLabel = item.recurring === 'once' ? '📌 One-Time' : 
-                      item.recurring === 'yearly' ? '📅 Yearly' : '🔄 Monthly';
+  // Sort: income first, then expenses
+  const sorted = [...entries].sort((a, b) => {
+    if (a.type === b.type) return 0;
+    return a.type === 'income' ? -1 : 1;
+  });
+  
+  tbody.innerHTML = sorted.map((item, i) => {
+    const originalIndex = entries.indexOf(item);
+    const typeClass = item.type === 'income' ? 'income' : 'expense';
+    const typeLabel = item.type === 'income' ? '📈 Income' : '📉 Expense';
+    const freqLabel = item.frequency === 'yearly' ? '📅 Yearly' : 
+                      item.frequency === 'once' ? '📌 One-Time' : '🔄 Monthly';
+    const freqClass = item.frequency || 'monthly';
+    const amountColor = item.type === 'income' ? '#10b981' : '#ef4444';
+    const amountPrefix = item.type === 'income' ? '+' : '-';
+    
     return `
     <tr>
+      <td><span class="entry-type-badge entry-type-badge--${typeClass}">${typeLabel}</span></td>
       <td>${item.source}</td>
       <td>${item.description || '-'}</td>
-      <td><span class="type-badge type-badge--${typeClass}">${typeLabel}</span></td>
-      <td>$${item.amount.toFixed(2)}</td>
-      <td><button class="btn btn--small" onclick="deleteEntry('revenue', ${i})">🗑️</button></td>
-    </tr>
-  `;}).join('');
-}
-
-function renderExpensesTable(items) {
-  const tbody = document.getElementById('expenses-table');
-  tbody.innerHTML = items.map((item, i) => {
-    const typeClass = item.recurring === 'once' ? 'one-time' : item.recurring || 'monthly';
-    const typeLabel = item.recurring === 'once' ? '📌 One-Time' : 
-                      item.recurring === 'yearly' ? '📅 Yearly' : '🔄 Monthly';
-    return `
-    <tr>
-      <td>${item.source}</td>
-      <td>${item.description || '-'}</td>
-      <td><span class="type-badge type-badge--${typeClass}">${typeLabel}</span></td>
-      <td>$${item.amount.toFixed(2)}</td>
-      <td><button class="btn btn--small" onclick="deleteEntry('expense', ${i})">🗑️</button></td>
+      <td><span class="frequency-badge frequency-badge--${freqClass}">${freqLabel}</span></td>
+      <td style="color: ${amountColor}; font-weight: 600;">${amountPrefix}$${item.amount.toFixed(2)}</td>
+      <td><button class="btn btn--small" onclick="deleteEntry(${originalIndex})">🗑️</button></td>
     </tr>
   `;}).join('');
 }
@@ -1046,16 +1168,17 @@ function renderHistory() {
   
   tbody.innerHTML = months.map(key => {
     const data = financialData[key];
-    const revenue = data.revenue.reduce((sum, r) => sum + r.amount, 0);
-    const expenses = data.expenses.reduce((sum, e) => sum + e.amount, 0);
-    const net = revenue - expenses;
+    const entries = data.entries || [];
+    const income = entries.filter(e => e.type === 'income').reduce((sum, e) => sum + e.amount, 0);
+    const expenses = entries.filter(e => e.type === 'expense').reduce((sum, e) => sum + e.amount, 0);
+    const net = income - expenses;
     const [year, month] = key.split('-');
     const monthName = new Date(year, parseInt(month) - 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
     
     return `
       <tr>
         <td>${monthName}</td>
-        <td style="color: #10b981">$${revenue.toFixed(2)}</td>
+        <td style="color: #10b981">$${income.toFixed(2)}</td>
         <td style="color: #ef4444">$${expenses.toFixed(2)}</td>
         <td style="color: ${net >= 0 ? '#10b981' : '#ef4444'}">$${net.toFixed(2)}</td>
       </tr>
@@ -1064,19 +1187,17 @@ function renderHistory() {
 }
 
 function saveData() {
-  localStorage.setItem('crc-financials', JSON.stringify(financialData));
+  localStorage.setItem('crc-financials-v2', JSON.stringify(financialData));
 }
 
-window.deleteEntry = function(type, index) {
+window.deleteEntry = function(index) {
   const monthKey = getMonthKey(currentMonth);
-  if (type === 'revenue') {
-    financialData[monthKey].revenue.splice(index, 1);
-  } else {
-    financialData[monthKey].expenses.splice(index, 1);
+  if (financialData[monthKey]?.entries) {
+    financialData[monthKey].entries.splice(index, 1);
+    saveData();
+    renderFinancials();
+    renderHistory();
   }
-  saveData();
-  renderFinancials();
-  renderHistory();
 };
 
 function setupEventListeners() {
@@ -1097,18 +1218,14 @@ function setupEventListeners() {
     renderHistory();
   });
   
-  // Add buttons
-  document.getElementById('add-revenue')?.addEventListener('click', () => openModal('revenue'));
-  document.getElementById('add-expense')?.addEventListener('click', () => openModal('expense'));
+  // Add entry button
+  document.getElementById('add-entry')?.addEventListener('click', openModal);
   
   // Modal
   document.getElementById('modal-close')?.addEventListener('click', closeModal);
   document.getElementById('modal-backdrop')?.addEventListener('click', closeModal);
   document.getElementById('modal-cancel')?.addEventListener('click', closeModal);
   document.getElementById('modal-save')?.addEventListener('click', saveEntry);
-  
-  // Notes save
-  document.getElementById('save-notes-btn')?.addEventListener('click', saveNotes);
 }
 
 // Collapsible sections
@@ -1134,28 +1251,12 @@ function setupCollapsibles() {
   });
 }
 
-// Notes functionality
-function loadNotes() {
-  const saved = localStorage.getItem('crc-financials-notes');
-  if (saved) {
-    document.getElementById('future-notes').value = saved;
-  }
-}
-
-function saveNotes() {
-  const notes = document.getElementById('future-notes')?.value || '';
-  localStorage.setItem('crc-financials-notes', notes);
-  const status = document.getElementById('notes-save-status');
-  if (status) {
-    status.textContent = '✓ Saved!';
-    setTimeout(() => { status.textContent = ''; }, 2000);
-  }
-}
-
-function openModal(type) {
-  document.getElementById('entry-type').value = type;
-  document.getElementById('modal-title').textContent = type === 'revenue' ? 'Add Revenue' : 'Add Expense';
+function openModal() {
+  document.getElementById('modal-title').textContent = 'Add Entry';
   document.getElementById('finance-modal').hidden = false;
+  // Reset form
+  document.querySelector('input[name="entry-type"][value="income"]').checked = true;
+  document.querySelector('input[name="entry-frequency"][value="monthly"]').checked = true;
 }
 
 function closeModal() {
@@ -1167,30 +1268,27 @@ function closeModal() {
 
 function saveEntry() {
   const monthKey = getMonthKey(currentMonth);
-  const type = document.getElementById('entry-type').value;
-  const recurringValue = document.querySelector('input[name="entry-recurring"]:checked')?.value || 'monthly';
+  const entryType = document.querySelector('input[name="entry-type"]:checked')?.value || 'expense';
+  const frequency = document.querySelector('input[name="entry-frequency"]:checked')?.value || 'monthly';
   
   const entry = {
+    type: entryType,
     source: document.getElementById('entry-source').value,
     description: document.getElementById('entry-description').value,
     amount: parseFloat(document.getElementById('entry-amount').value) || 0,
-    recurring: recurringValue
+    frequency: frequency
   };
   
   if (!entry.source || entry.amount <= 0) {
-    alert('Please fill in all fields');
+    alert('Please fill in all required fields');
     return;
   }
   
   if (!financialData[monthKey]) {
-    financialData[monthKey] = { revenue: [], expenses: [...DEFAULT_EXPENSES] };
+    financialData[monthKey] = { entries: [...DEFAULT_ENTRIES] };
   }
   
-  if (type === 'revenue') {
-    financialData[monthKey].revenue.push(entry);
-  } else {
-    financialData[monthKey].expenses.push(entry);
-  }
+  financialData[monthKey].entries.push(entry);
   
   saveData();
   renderFinancials();
