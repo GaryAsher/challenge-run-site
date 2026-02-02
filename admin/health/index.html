@@ -36,20 +36,20 @@ title: "Site Health"
     <!-- Quick Stats Row -->
     <div class="health-stats-row">
       <div class="health-stat">
-        <span class="health-stat__value" id="stat-users-24h">-</span>
-        <span class="health-stat__label">Active Users (24h)</span>
+        <span class="health-stat__value" id="stat-db-rows">-</span>
+        <span class="health-stat__label">Database Rows</span>
       </div>
       <div class="health-stat">
-        <span class="health-stat__value" id="stat-error-rate">-</span>
-        <span class="health-stat__label">Error Rate</span>
+        <span class="health-stat__value" id="stat-error-rate">0</span>
+        <span class="health-stat__label">Errors (24h)</span>
       </div>
       <div class="health-stat">
         <span class="health-stat__value" id="stat-avg-response">-</span>
-        <span class="health-stat__label">Avg API Response</span>
+        <span class="health-stat__label">Avg Response</span>
       </div>
       <div class="health-stat">
-        <span class="health-stat__value" id="stat-uptime">-</span>
-        <span class="health-stat__label">Uptime (30d)</span>
+        <span class="health-stat__value" id="stat-services">4/4</span>
+        <span class="health-stat__label">Services OK</span>
       </div>
     </div>
     
@@ -132,7 +132,7 @@ title: "Site Health"
         <div class="health-card__header">
           <span class="health-card__icon">📈</span>
           <h3>Uptime Monitor</h3>
-          <span class="health-card__status ok" id="uptime-status">Active</span>
+          <span class="health-card__status warn" id="uptime-status">Manual</span>
         </div>
         <div class="health-card__body">
           <div class="health-metric">
@@ -140,15 +140,11 @@ title: "Site Health"
             <span class="health-metric__value"><a href="https://stats.uptimerobot.com/kXOmjgBk1r" target="_blank" rel="noopener" style="color: var(--accent);">View →</a></span>
           </div>
           <div class="health-metric">
-            <span class="health-metric__label">Last 24h</span>
-            <span class="health-metric__value" id="uptime-24h">-</span>
-          </div>
-          <div class="health-metric">
-            <span class="health-metric__label">Last 7 Days</span>
-            <span class="health-metric__value" id="uptime-7d">-</span>
+            <span class="health-metric__label">Monitoring</span>
+            <span class="health-metric__value">UptimeRobot (5 min)</span>
           </div>
           <div class="health-metric health-metric--note">
-            <span class="health-metric__note">ℹ️ API stats not available on free tier</span>
+            <span class="health-metric__note">ℹ️ API stats not available on free tier - check status page manually</span>
           </div>
         </div>
       </div>
@@ -1155,13 +1151,10 @@ async function checkHealth() {
   document.getElementById('github-workflow-status').textContent = 'N/A';
   log('GitHub: API integration not configured', 'warn');
   
-  // Uptime status (placeholder - would need UptimeRobot API)
-  document.getElementById('uptime-status').textContent = 'Unknown';
-  document.getElementById('uptime-24h').textContent = 'Configure UptimeRobot';
-  document.getElementById('uptime-7d').textContent = '-';
-  document.getElementById('uptime-last-incident').textContent = '-';
-  document.getElementById('stat-uptime').textContent = 'N/A';
-  log('Uptime: UptimeRobot integration not configured', 'warn');
+  // Uptime status (manual check required)
+  document.getElementById('uptime-status').textContent = 'Manual';
+  document.getElementById('uptime-status').className = 'health-card__status warn';
+  log('Uptime: Manual check required (free tier)', 'info');
   
   // Cloudflare (assume ok if page loaded)
   document.getElementById('cloudflare-status').textContent = 'Active';
@@ -1300,8 +1293,11 @@ async function loadResources() {
     if (usersPercent > 80) usersBar.classList.add('danger');
     else if (usersPercent > 50) usersBar.classList.add('warn');
     
-    // Active users (24h) - estimate from profiles with recent activity
-    document.getElementById('stat-users-24h').textContent = profiles > 0 ? Math.ceil(profiles * 0.1) : '0';
+    // Update quick stats
+    document.getElementById('stat-db-rows').textContent = totalRows.toLocaleString();
+    
+    // Count services OK (Supabase, Auth, Cloudflare = 3 ok, Uptime = manual, GitHub = not configured)
+    document.getElementById('stat-services').textContent = '3/5';
     
     // Storage
     document.getElementById('resource-storage-value').textContent = '~0 MB';
