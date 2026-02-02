@@ -11,7 +11,6 @@ This document consolidates all reminders, future ideas, and planned features for
 ## Immediate Priorities
 
 ### 1 Admin Profile
-- [ ] Move Admin Panel to somewhere actually not annoying. Ideally where the CRC logo is.
 - [ ] Site Health:
   - Page switching (12h, 24h, 3d): Does not work as export. Ask user if they want to export it first.
   - Uptime Monitor: add "API configuration not available on free tier"
@@ -22,6 +21,7 @@ This document consolidates all reminders, future ideas, and planned features for
     - Allow "yearly" as an option.
 - [ ] Dashboard:
   - Need to totally revamp Debug View
+- [ ] Move Admin Panel to somewhere actually not annoying. Ideally where the CRC logo is.
 
 ### 2. Runner Profiles
 - [ ] Profile Settings
