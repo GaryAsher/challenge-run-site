@@ -23,20 +23,24 @@ This document consolidates all reminders, future ideas, and planned features for
 ### 2. Runner Profiles
 - [ ] Edit Profile
   - Error: invalid input value for enum profile_status: "test status"
-  - All Socials should require the correct domain.
-  - Remove "Personal Website"
-  - Run Schema validation on everything that is submitted.
-  - Require approval for anything that is "Other Links"
-- [ ] Users to uplaod png or jpg for profile:
-  - Supabase Storage
-    - Create a storage bucket for avatars
-    - Add file type validation (PNG, JPG only)
-    - Set max file size (e.g., 2MB)
-    - Use RLS policies to ensure users can only upload to their own folder
-- [ ] Info from Edit Profile is not updating to the Runner's Page?
+  - [ ] Info from Edit Profile is not updating to the Runner's Page?
+  - [ ] Users to uplaod png or jpg for profile:
+    - Supabase Storage
+      - Create a storage bucket for avatars
+      - Add file type validation (PNG, JPG only)
+      - Set max file size (e.g., 2MB)
+      - Use RLS policies to ensure users can only upload to their own folder
 
 ### 2.5 Games/runs/ tab again
 - [ ] Add the option for multiple runners (up to 5) to be listed for the same run
+    - Add option to list other runners. Other runners will need to confirm that they participated in this run.
+      - Add Reminder for Messages to require those runners to accept that they were in the run.
+      - Runners need to fill out their "Character" if there is one for that game.
+
+### Modded Game Support
+- [ ] Allow modded versions of games
+- [ ] Link between modded and main game pages
+- [ ] "Modded" tag for categories
 
 ### 2.75 Games page
 - [ ] Add A Game for "Multi-Game Runs". These are multiple games done in succession. The Game page that it belongs to will have a link to these below the "Modded Game"
@@ -46,10 +50,6 @@ This document consolidates all reminders, future ideas, and planned features for
   - Check Discord Webhook by submitting a new game. Has been updated, but not tested.
 - [ ] New Run Submission 
   - Test variables. Update if needed.
-  - Link runner_id to authenticated user
-    - Add option to list other runners. Other runners will need to confirm that they participated in this run.
-      - Add Reminder for Messages to require those runners to accept that they were in the run.
-      - Runners need to fill out their "Character" if there is one for that game.
 
 ### 3.5 Legal Document Review
 - [ ] Review Terms of Service line-by-line
@@ -119,11 +119,6 @@ Decision needed: GitHub Discussions vs Discord
 ---
 
 ##  Future Features (Backlog)
-
-### Modded Game Support
-- [ ] Allow modded versions of games
-- [ ] Link between modded and main game pages
-- [ ] "Modded" tag for categories
 
 ### Community Building
 - [ ] Leaderboards (per-game, per-challenge)
