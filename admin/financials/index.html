@@ -118,13 +118,21 @@ title: "Financials"
         <table class="history-table">
           <thead>
             <tr>
-              <th>Month</th>
+              <th class="sortable" id="sort-month">Month <span class="sort-icon">▲</span></th>
               <th>Revenue</th>
               <th>Expenses</th>
               <th>Net</th>
             </tr>
           </thead>
           <tbody id="history-table"></tbody>
+          <tfoot id="history-totals">
+            <tr class="totals-row">
+              <td><strong>Total</strong></td>
+              <td id="history-total-revenue">$0.00</td>
+              <td id="history-total-expenses">$0.00</td>
+              <td id="history-total-net">$0.00</td>
+            </tr>
+          </tfoot>
         </table>
       </div>
     </div>
@@ -333,6 +341,12 @@ title: "Financials"
 .history-table { width: 100%; border-collapse: collapse; }
 .history-table th, .history-table td { padding: 0.6rem 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
 .history-table th { background: var(--bg); font-weight: 600; font-size: 0.75rem; color: var(--text-muted); }
+.history-table th.sortable { cursor: pointer; user-select: none; }
+.history-table th.sortable:hover { color: var(--accent); }
+.history-table .sort-icon { font-size: 0.65rem; margin-left: 0.25rem; }
+.history-table tfoot td { background: var(--bg); font-weight: 600; border-top: 2px solid var(--border); }
+.history-table tfoot td:nth-child(2) { color: #10b981; }
+.history-table tfoot td:nth-child(3) { color: #ef4444; }
 .service-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
 .service-card { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); flex-wrap: wrap; }
 .service-icon { font-size: 1.5rem; flex-shrink: 0; }
@@ -346,10 +360,10 @@ title: "Financials"
 .service-status.active { background: rgba(16, 185, 129, 0.15); color: #10b981; }
 .cost-summary { padding: 0.75rem; background: var(--surface); border-radius: var(--radius-sm); font-size: 0.9rem; }
 .ideas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
-.idea-card { padding: 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); position: relative; }
-.idea-card__header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
-.idea-card__title { font-weight: 600; font-size: 0.95rem; }
-.idea-card__category { font-size: 0.65rem; font-weight: 600; padding: 0.15rem 0.4rem; border-radius: 4px; text-transform: uppercase; }
+.idea-card { padding: 1rem; padding-right: 2.5rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); position: relative; }
+.idea-card__header { display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
+.idea-card__category { font-size: 0.65rem; font-weight: 600; padding: 0.15rem 0.4rem; border-radius: 4px; text-transform: uppercase; order: -1; }
+.idea-card__title { font-weight: 600; font-size: 0.95rem; flex: 1; }
 .idea-card__category--acquisition { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
 .idea-card__category--revenue { background: rgba(16, 185, 129, 0.15); color: #10b981; }
 .idea-card__category--engagement { background: rgba(249, 115, 22, 0.15); color: #f97316; }
@@ -519,12 +533,49 @@ function renderEntriesTable(entries) {
   }).join('');
 }
 
+let sortAscending = true; // Default: ascending (January at top)
+
 function renderHistory() {
   const tbody = document.getElementById('history-table');
-  let months = Object.keys(financialData).sort().reverse();
+  let months = Object.keys(financialData).sort();
+  
+  // Apply sort direction
+  if (!sortAscending) {
+    months = months.reverse();
+  }
+  
   if (selectedYear) months = months.filter(key => key.startsWith(selectedYear));
-  months = months.slice(0, 12);
-  if (months.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="muted">No data for selected year</td></tr>'; return; }
+  
+  // Calculate totals for all filtered months (before slicing)
+  let totalRevenue = 0;
+  let totalExpenses = 0;
+  
+  months.forEach(key => {
+    const data = financialData[key];
+    const entries = data.entries || [];
+    totalRevenue += entries.filter(e => e.type === 'income').reduce((sum, e) => sum + e.amount, 0);
+    totalExpenses += entries.filter(e => e.type === 'expense').reduce((sum, e) => sum + e.amount, 0);
+  });
+  
+  const totalNet = totalRevenue - totalExpenses;
+  
+  // Update totals row
+  document.getElementById('history-total-revenue').textContent = '$' + totalRevenue.toFixed(2);
+  document.getElementById('history-total-revenue').style.color = '#10b981';
+  document.getElementById('history-total-expenses').textContent = '$' + totalExpenses.toFixed(2);
+  document.getElementById('history-total-expenses').style.color = '#ef4444';
+  document.getElementById('history-total-net').textContent = '$' + totalNet.toFixed(2);
+  document.getElementById('history-total-net').style.color = totalNet >= 0 ? '#10b981' : '#ef4444';
+  
+  // Update sort icon
+  const sortIcon = document.querySelector('#sort-month .sort-icon');
+  if (sortIcon) sortIcon.textContent = sortAscending ? '▲' : '▼';
+  
+  if (months.length === 0) { 
+    tbody.innerHTML = '<tr><td colspan="4" class="muted">No data for selected year</td></tr>'; 
+    return; 
+  }
+  
   tbody.innerHTML = months.map(key => {
     const data = financialData[key];
     const entries = data.entries || [];
@@ -571,6 +622,12 @@ function setupEventListeners() {
   document.getElementById('prev-month')?.addEventListener('click', () => { currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1); const mk = getMonthKey(currentMonth); if (!financialData[mk]) financialData[mk] = { entries: [] }; renderFinancials(); });
   document.getElementById('next-month')?.addEventListener('click', () => { currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1); const mk = getMonthKey(currentMonth); if (!financialData[mk]) financialData[mk] = { entries: [] }; renderFinancials(); });
   document.getElementById('year-select')?.addEventListener('change', (e) => { selectedYear = e.target.value; renderHistory(); });
+  
+  // Sort toggle for Monthly Overview
+  document.getElementById('sort-month')?.addEventListener('click', () => {
+    sortAscending = !sortAscending;
+    renderHistory();
+  });
   
   setupCollapsible('tracker-header', 'tracker-content', 'tracker-icon');
   setupCollapsible('overview-header', 'overview-content', 'overview-icon');
