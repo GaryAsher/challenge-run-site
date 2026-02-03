@@ -93,9 +93,9 @@ title: "Edit Profile"
           </div>
           
           <div class="form-group">
-            <label class="form-label" for="status">Status</label>
-            <input type="text" id="status" name="status" class="form-input" maxlength="100" placeholder="Finishing my profile, then back to runs!" />
-            <p class="form-help">A short status message shown on your profile</p>
+            <label class="form-label" for="status-message">Status Message</label>
+            <input type="text" id="status-message" name="status_message" class="form-input" maxlength="100" placeholder="Finishing my profile, then back to runs!" />
+            <p class="form-help">A short status message shown on your profile (not approval status)</p>
           </div>
         </div>
         
@@ -131,50 +131,69 @@ title: "Edit Profile"
           <div class="form-row">
             <div class="form-group form-group--flex">
               <label class="form-label" for="twitch">Twitch</label>
-              <input type="url" id="twitch" name="twitch" class="form-input" placeholder="https://twitch.tv/username" />
+              <input type="url" id="twitch" name="twitch" class="form-input social-input" data-domain="twitch.tv" placeholder="https://twitch.tv/username" />
+              <span class="form-validation" id="twitch-validation"></span>
             </div>
             
             <div class="form-group form-group--flex">
               <label class="form-label" for="youtube">YouTube</label>
-              <input type="url" id="youtube" name="youtube" class="form-input" placeholder="https://youtube.com/@channel" />
+              <input type="url" id="youtube" name="youtube" class="form-input social-input" data-domain="youtube.com,youtu.be" placeholder="https://youtube.com/@channel" />
+              <span class="form-validation" id="youtube-validation"></span>
             </div>
           </div>
           
           <div class="form-row">
             <div class="form-group form-group--flex">
               <label class="form-label" for="discord">Discord</label>
-              <input type="url" id="discord" name="discord" class="form-input" placeholder="https://discord.gg/invite" />
+              <input type="url" id="discord" name="discord" class="form-input social-input" data-domain="discord.gg,discord.com" placeholder="https://discord.gg/invite" />
+              <span class="form-validation" id="discord-validation"></span>
             </div>
             
             <div class="form-group form-group--flex">
               <label class="form-label" for="twitter">Twitter/X</label>
-              <input type="url" id="twitter" name="twitter" class="form-input" placeholder="https://twitter.com/username" />
+              <input type="url" id="twitter" name="twitter" class="form-input social-input" data-domain="twitter.com,x.com" placeholder="https://twitter.com/username" />
+              <span class="form-validation" id="twitter-validation"></span>
             </div>
           </div>
           
           <div class="form-row">
             <div class="form-group form-group--flex">
               <label class="form-label" for="bluesky">Bluesky</label>
-              <input type="url" id="bluesky" name="bluesky" class="form-input" placeholder="https://bsky.app/profile/username" />
+              <input type="url" id="bluesky" name="bluesky" class="form-input social-input" data-domain="bsky.app" placeholder="https://bsky.app/profile/username" />
+              <span class="form-validation" id="bluesky-validation"></span>
             </div>
             
             <div class="form-group form-group--flex">
               <label class="form-label" for="instagram">Instagram</label>
-              <input type="url" id="instagram" name="instagram" class="form-input" placeholder="https://instagram.com/username" />
+              <input type="url" id="instagram" name="instagram" class="form-input social-input" data-domain="instagram.com" placeholder="https://instagram.com/username" />
+              <span class="form-validation" id="instagram-validation"></span>
             </div>
           </div>
           
-          <div class="form-group">
-            <label class="form-label" for="website">Personal Website</label>
-            <input type="url" id="website" name="website" class="form-input" placeholder="https://yoursite.com" />
+          <div class="form-row">
+            <div class="form-group form-group--flex">
+              <label class="form-label" for="speedruncom">Speedrun.com</label>
+              <input type="url" id="speedruncom" name="speedruncom" class="form-input social-input" data-domain="speedrun.com" placeholder="https://speedrun.com/users/username" />
+              <span class="form-validation" id="speedruncom-validation"></span>
+            </div>
+            
+            <div class="form-group form-group--flex">
+              <label class="form-label" for="steam">Steam</label>
+              <input type="url" id="steam" name="steam" class="form-input social-input" data-domain="steamcommunity.com" placeholder="https://steamcommunity.com/id/username" />
+              <span class="form-validation" id="steam-validation"></span>
+            </div>
           </div>
           
           <!-- Other Links -->
           <div class="other-links-section">
             <label class="form-label">Other Links</label>
+            <div class="approval-notice">
+              <span class="approval-icon">⚠️</span>
+              <span>Other links require moderator approval before appearing on your profile.</span>
+            </div>
             <div id="other-links-container"></div>
             <button type="button" class="btn btn--small mt-2" id="add-other-link">+ Add Link</button>
-            <p class="form-help">Up to 3 additional links</p>
+            <p class="form-help">Up to 3 additional links (must be valid URLs)</p>
           </div>
         </div>
         
@@ -516,6 +535,65 @@ title: "Edit Profile"
   text-align: center;
   color: var(--text-muted);
 }
+
+/* Social Input Validation */
+.form-validation {
+  display: block;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  min-height: 1rem;
+}
+.form-validation.is-valid {
+  color: #10b981;
+}
+.form-validation.is-invalid {
+  color: #ef4444;
+}
+.social-input.is-invalid {
+  border-color: #ef4444;
+}
+.social-input.is-valid {
+  border-color: #10b981;
+}
+
+/* Approval Notice */
+.approval-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: var(--radius-sm);
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  color: #f59e0b;
+}
+.approval-icon {
+  flex-shrink: 0;
+}
+
+/* Pending Links Notice */
+.pending-links-notice {
+  padding: 0.75rem 1rem;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: var(--radius-sm);
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+}
+.pending-links-notice p {
+  margin: 0 0 0.5rem 0;
+}
+.pending-links-notice ul {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+.pending-links-notice li {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  word-break: break-all;
+}
 </style>
 
 <script type="module">
@@ -551,6 +629,198 @@ function showMessage(text, type) {
 
 function hideMessage() {
   formMessage.hidden = true;
+}
+
+// ============================================
+// Social URL Validation
+// ============================================
+const SOCIAL_DOMAINS = {
+  twitch: ['twitch.tv'],
+  youtube: ['youtube.com', 'youtu.be', 'www.youtube.com'],
+  discord: ['discord.gg', 'discord.com'],
+  twitter: ['twitter.com', 'x.com'],
+  bluesky: ['bsky.app'],
+  instagram: ['instagram.com', 'www.instagram.com'],
+  speedruncom: ['speedrun.com', 'www.speedrun.com'],
+  steam: ['steamcommunity.com']
+};
+
+function validateSocialUrl(input) {
+  const value = input.value.trim();
+  const id = input.id;
+  const validationEl = document.getElementById(`${id}-validation`);
+  
+  // If empty, clear validation
+  if (!value) {
+    input.classList.remove('is-valid', 'is-invalid');
+    if (validationEl) validationEl.textContent = '';
+    return { valid: true, empty: true };
+  }
+  
+  // Check if it's a valid URL first
+  let url;
+  try {
+    url = new URL(value);
+  } catch {
+    input.classList.remove('is-valid');
+    input.classList.add('is-invalid');
+    if (validationEl) {
+      validationEl.textContent = '✗ Invalid URL format';
+      validationEl.className = 'form-validation is-invalid';
+    }
+    return { valid: false, error: 'Invalid URL format' };
+  }
+  
+  // Check domain
+  const allowedDomains = SOCIAL_DOMAINS[id] || [];
+  const hostname = url.hostname.replace('www.', '');
+  
+  if (allowedDomains.length > 0 && !allowedDomains.some(d => hostname === d || hostname === 'www.' + d)) {
+    input.classList.remove('is-valid');
+    input.classList.add('is-invalid');
+    if (validationEl) {
+      validationEl.textContent = `✗ Must be a ${allowedDomains[0]} link`;
+      validationEl.className = 'form-validation is-invalid';
+    }
+    return { valid: false, error: `Invalid domain for ${id}` };
+  }
+  
+  // Valid!
+  input.classList.remove('is-invalid');
+  input.classList.add('is-valid');
+  if (validationEl) {
+    validationEl.textContent = '✓ Valid';
+    validationEl.className = 'form-validation is-valid';
+  }
+  return { valid: true };
+}
+
+function validateAllSocials() {
+  const socialInputs = document.querySelectorAll('.social-input');
+  const errors = [];
+  
+  socialInputs.forEach(input => {
+    const result = validateSocialUrl(input);
+    if (!result.valid) {
+      errors.push(`${input.id}: ${result.error}`);
+    }
+  });
+  
+  return errors;
+}
+
+// Add validation listeners to all social inputs
+document.querySelectorAll('.social-input').forEach(input => {
+  input.addEventListener('blur', () => validateSocialUrl(input));
+  input.addEventListener('input', () => {
+    // Clear invalid state on typing
+    if (input.classList.contains('is-invalid')) {
+      input.classList.remove('is-invalid');
+      const validationEl = document.getElementById(`${input.id}-validation`);
+      if (validationEl) validationEl.textContent = '';
+    }
+  });
+});
+
+// ============================================
+// Schema Validation
+// ============================================
+const VALIDATION_SCHEMA = {
+  display_name: {
+    required: true,
+    minLength: 2,
+    maxLength: 50,
+    pattern: /^[^<>{}[\]\\\/]+$/,
+    errorMsg: 'Display name must be 2-50 characters, no special symbols'
+  },
+  pronouns: {
+    maxLength: 30,
+    pattern: /^[a-zA-Z\/\s]*$/,
+    errorMsg: 'Pronouns can only contain letters, slashes, and spaces'
+  },
+  location: {
+    maxLength: 50,
+    pattern: /^[^<>{}[\]\\]*$/,
+    errorMsg: 'Location contains invalid characters'
+  },
+  bio: {
+    maxLength: 1000
+  },
+  status_message: {
+    maxLength: 100,
+    pattern: /^[^<>{}[\]\\]*$/,
+    errorMsg: 'Status message contains invalid characters'
+  },
+  avatar_url: {
+    pattern: /^(https?:\/\/|$)/,
+    errorMsg: 'Avatar must be a valid URL starting with http:// or https://'
+  },
+  accent_color: {
+    pattern: /^(#[0-9A-Fa-f]{6}|)$/,
+    errorMsg: 'Accent color must be a hex code like #3BC36E'
+  }
+};
+
+function validateField(name, value) {
+  const schema = VALIDATION_SCHEMA[name];
+  if (!schema) return { valid: true };
+  
+  if (schema.required && !value) {
+    return { valid: false, error: `${name} is required` };
+  }
+  
+  if (value) {
+    if (schema.minLength && value.length < schema.minLength) {
+      return { valid: false, error: schema.errorMsg || `${name} is too short` };
+    }
+    if (schema.maxLength && value.length > schema.maxLength) {
+      return { valid: false, error: `${name} is too long (max ${schema.maxLength})` };
+    }
+    if (schema.pattern && !schema.pattern.test(value)) {
+      return { valid: false, error: schema.errorMsg || `${name} contains invalid characters` };
+    }
+  }
+  
+  return { valid: true };
+}
+
+function validateForm() {
+  const errors = [];
+  
+  // Validate basic fields
+  const fields = ['display_name', 'pronouns', 'location', 'bio', 'status_message', 'avatar_url', 'accent_color'];
+  fields.forEach(field => {
+    const input = document.getElementById(field.replace(/_/g, '-'));
+    if (input) {
+      const result = validateField(field, input.value.trim());
+      if (!result.valid) {
+        errors.push(result.error);
+      }
+    }
+  });
+  
+  // Validate display name specifically
+  const displayName = document.getElementById('display-name')?.value.trim();
+  if (!displayName) {
+    errors.push('Display name is required');
+  }
+  
+  // Validate social URLs
+  const socialErrors = validateAllSocials();
+  errors.push(...socialErrors);
+  
+  // Validate other links (must be valid URLs)
+  otherLinks.forEach((link, i) => {
+    if (link.trim()) {
+      try {
+        new URL(link);
+      } catch {
+        errors.push(`Other link ${i + 1} is not a valid URL`);
+      }
+    }
+  });
+  
+  return errors;
 }
 
 // Live preview updates
@@ -716,7 +986,7 @@ function populateForm(profile) {
   document.getElementById('pronouns').value = profile.pronouns || '';
   document.getElementById('location').value = profile.location || '';
   document.getElementById('bio').value = profile.bio || '';
-  document.getElementById('status').value = profile.status || '';
+  document.getElementById('status-message').value = profile.status_message || '';
   
   // Customization
   document.getElementById('avatar-url').value = profile.avatar_url || '';
@@ -743,11 +1013,28 @@ function populateForm(profile) {
   document.getElementById('twitter').value = socials.twitter || '';
   document.getElementById('bluesky').value = socials.bluesky || '';
   document.getElementById('instagram').value = socials.instagram || '';
-  document.getElementById('website').value = socials.website || '';
+  document.getElementById('speedruncom').value = socials.speedruncom || '';
+  document.getElementById('steam').value = socials.steam || '';
   
-  // Other links
+  // Other links (show approved ones, or pending for editing)
   otherLinks = socials.other || [];
   renderOtherLinks();
+  
+  // Show pending notice if there are pending other links
+  if (profile.other_links_pending && profile.other_links_pending.length > 0) {
+    showPendingLinksNotice(profile.other_links_pending);
+  }
+}
+
+function showPendingLinksNotice(pendingLinks) {
+  const container = document.getElementById('other-links-container');
+  const notice = document.createElement('div');
+  notice.className = 'pending-links-notice';
+  notice.innerHTML = `
+    <p><strong>Pending approval:</strong></p>
+    <ul>${pendingLinks.map(l => `<li>${l}</li>`).join('')}</ul>
+  `;
+  container.parentNode.insertBefore(notice, container);
 }
 
 // Handle form submission
@@ -789,12 +1076,25 @@ form.addEventListener('submit', async (e) => {
       currentThemeSettings.accentRgb = `${r}, ${g}, ${b}`;
     }
     
+    // Run validation first
+    const validationErrors = validateForm();
+    if (validationErrors.length > 0) {
+      throw new Error(validationErrors[0]);
+    }
+    
+    // Get the current approved other links from the profile
+    const currentOtherLinks = currentProfile?.socials?.other || [];
+    const newOtherLinks = otherLinks.filter(l => l.trim());
+    
+    // Check if other links changed - if so, put them in pending
+    const otherLinksChanged = JSON.stringify(currentOtherLinks) !== JSON.stringify(newOtherLinks);
+    
     const formData = {
       display_name: document.getElementById('display-name').value.trim(),
       pronouns: document.getElementById('pronouns').value.trim() || null,
       location: document.getElementById('location').value.trim() || null,
       bio: document.getElementById('bio').value.trim() || null,
-      status: document.getElementById('status').value.trim() || null,
+      status_message: document.getElementById('status-message').value.trim() || null,
       avatar_url: document.getElementById('avatar-url').value.trim() || null,
       theme_settings: currentThemeSettings,
       socials: {
@@ -804,11 +1104,18 @@ form.addEventListener('submit', async (e) => {
         twitter: document.getElementById('twitter').value.trim() || null,
         bluesky: document.getElementById('bluesky').value.trim() || null,
         instagram: document.getElementById('instagram').value.trim() || null,
-        website: document.getElementById('website').value.trim() || null,
-        other: otherLinks.filter(l => l.trim())
+        speedruncom: document.getElementById('speedruncom').value.trim() || null,
+        steam: document.getElementById('steam').value.trim() || null,
+        // Keep current approved links, new ones go to pending
+        other: otherLinksChanged ? currentOtherLinks : newOtherLinks
       },
       updated_at: new Date().toISOString()
     };
+    
+    // If other links changed, add them to pending for approval
+    if (otherLinksChanged && newOtherLinks.length > 0) {
+      formData.other_links_pending = newOtherLinks;
+    }
     
     if (!formData.display_name) {
       throw new Error('Display name is required');
@@ -824,7 +1131,11 @@ form.addEventListener('submit', async (e) => {
     // Also update localStorage theme
     localStorage.setItem('crc-theme', JSON.stringify(currentThemeSettings));
     
-    showMessage('Profile saved successfully!', 'success');
+    if (otherLinksChanged && newOtherLinks.length > 0) {
+      showMessage('Profile saved! Other links submitted for approval.', 'success');
+    } else {
+      showMessage('Profile saved successfully!', 'success');
+    }
     await CRCAuth.init();
     
   } catch (err) {
