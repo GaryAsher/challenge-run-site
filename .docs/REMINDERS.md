@@ -20,17 +20,6 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ## Immediate Priorities
 
-### 1 Admin Profile
-- [ ] Site Health:
-  - it is checking systems again.. why does this keep happening?
-- [ ] Financials 
-  - Future Ideas:
-    - Move Revenue / Engagement / Acquisition button slightly to the left so it does not overlap with the delete button.
-  - Monthly Overview:
-    - Filter on Month column to sort by ascending / descending
-      - Default is Ascending (Where January is at the top)
-    - Total Row at the very bottom that sums everything in the column.
-
 ### 2. Runner Profiles
 - [ ] Profile Settings
   - Profile Information to be above Linked Accounts
