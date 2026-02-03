@@ -21,12 +21,16 @@ This document consolidates all reminders, future ideas, and planned features for
 ## Immediate Priorities
 
 ### 2. Runner Profiles
-- [ ] Profile Settings
-  - Profile Information to be above Linked Accounts
 - [ ] Themes
-  - Add white font border around text that is black. and the same vice versa? this is just to read the text easier.
-  - Add font options to themes.
-- [ ] Fix issues with /profile/edit
+  - Show selected font on the Live Preview
+- [ ] Profile Settings
+  - Hide email
+- [ ] Edit Profile
+  - Remove Featured Runs
+  - Error: Could not find the 'privacy' column of 'runner_profiles' in the schema cache
+  - How can we allow users to uplaod png or jpg safely? Can we 
+  - Accent Color needs to not redirect to Theme Settings, but instead ask for a Hex color.
+  - Status text should say something friendly, like "Finishing my profile, then back to runs!"
 
 ### 2.5 Games/runs/ tab again
 - [ ] Add the option for multiple runners (up to 5) to be listed for the same run
