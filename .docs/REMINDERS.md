@@ -23,9 +23,6 @@ This document consolidates all reminders, future ideas, and planned features for
 ### 1 Admin Profile
 - [ ] Site Health:
   - confire GitHub API token
-- [ ] Financials:
-  - Income / Expense Tracker
-    - Monthly Expenses ask if it is recurring, if yes, repeat for x months.
   - Future Udeas:
     - Add button to remove ideas.
 
