@@ -104,11 +104,6 @@ title: "Admin Dashboard"
               <span class="status-value" id="status-auth">Checking...</span>
             </div>
             <div class="status-item">
-              <span class="status-dot" id="status-dot-github"></span>
-              <span>GitHub Actions</span>
-              <span class="status-value" id="status-github">Checking...</span>
-            </div>
-            <div class="status-item">
               <span class="status-dot" id="status-dot-cloudflare"></span>
               <span>Cloudflare CDN</span>
               <span class="status-value" id="status-cloudflare">Checking...</span>
@@ -634,18 +629,6 @@ async function checkSystemStatus() {
   // Auth
   document.getElementById('status-auth').textContent = CRCAuth.isSignedIn() ? 'Active' : 'Not signed in';
   document.getElementById('status-dot-auth').className = 'status-dot ' + (CRCAuth.isSignedIn() ? 'ok' : 'warn');
-  
-  // GitHub (check status API)
-  try {
-    const res = await fetch('https://www.githubstatus.com/api/v2/status.json');
-    const data = await res.json();
-    const isOk = data.status?.indicator === 'none';
-    document.getElementById('status-github').textContent = isOk ? 'Operational' : 'Degraded';
-    document.getElementById('status-dot-github').className = 'status-dot ' + (isOk ? 'ok' : 'warn');
-  } catch {
-    document.getElementById('status-github').textContent = 'Unknown';
-    document.getElementById('status-dot-github').className = 'status-dot warn';
-  }
   
   // Cloudflare (check if page loaded via CF by checking headers)
   try {
