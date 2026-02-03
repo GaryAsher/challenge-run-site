@@ -101,36 +101,6 @@ title: "Site Health"
         </div>
       </div>
       
-      <!-- GitHub -->
-      <div class="health-card" id="health-github">
-        <div class="health-card__header">
-          <span class="health-card__icon">🐙</span>
-          <h3>GitHub Actions</h3>
-          <span class="health-card__status" id="github-status">Not Configured</span>
-        </div>
-        <div class="health-card__body">
-          <div class="health-metric">
-            <span class="health-metric__label">Last Deploy</span>
-            <span class="health-metric__value" id="github-last-deploy">-</span>
-          </div>
-          <div class="health-metric">
-            <span class="health-metric__label">Last Workflow</span>
-            <span class="health-metric__value" id="github-last-run">-</span>
-          </div>
-          <div class="health-metric">
-            <span class="health-metric__label">Status</span>
-            <span class="health-metric__value" id="github-workflow-status">-</span>
-          </div>
-          <div class="health-metric health-metric--config">
-            <div class="github-token-config" id="github-token-config">
-              <input type="password" id="github-token-input" class="token-input" placeholder="ghp_xxxxxxxxxxxx" />
-              <button type="button" class="btn btn--small" id="save-github-token">Save</button>
-            </div>
-            <p class="config-help">Enter a <a href="https://github.com/settings/tokens" target="_blank" rel="noopener">Personal Access Token</a> with <code>repo</code> scope</p>
-          </div>
-        </div>
-      </div>
-      
       <!-- Uptime Monitor -->
       <div class="health-card" id="health-uptime">
         <div class="health-card__header">
