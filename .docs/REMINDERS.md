@@ -21,16 +21,19 @@ This document consolidates all reminders, future ideas, and planned features for
 ## Immediate Priorities
 
 ### 2. Runner Profiles
-- [ ] Themes
-  - Show selected font on the Live Preview
-- [ ] Profile Settings
-  - Hide email
 - [ ] Edit Profile
-  - Remove Featured Runs
-  - Error: Could not find the 'privacy' column of 'runner_profiles' in the schema cache
-  - How can we allow users to uplaod png or jpg safely? Can we 
-  - Accent Color needs to not redirect to Theme Settings, but instead ask for a Hex color.
-  - Status text should say something friendly, like "Finishing my profile, then back to runs!"
+  - Error: invalid input value for enum profile_status: "test status"
+  - All Socials should require the correct domain.
+  - Remove "Personal Website"
+  - Run Schema validation on everything that is submitted.
+  - Require approval for anything that is "Other Links"
+- [ ] Users to uplaod png or jpg for profile:
+  - Supabase Storage
+    - Create a storage bucket for avatars
+    - Add file type validation (PNG, JPG only)
+    - Set max file size (e.g., 2MB)
+    - Use RLS policies to ensure users can only upload to their own folder
+- [ ] Info from Edit Profile is not updating to the Runner's Page?
 
 ### 2.5 Games/runs/ tab again
 - [ ] Add the option for multiple runners (up to 5) to be listed for the same run
