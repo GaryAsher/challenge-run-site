@@ -96,7 +96,6 @@ title: "Edit Profile"
             <label class="form-label" for="status-message">Status Message</label>
             <input type="text" id="status-message" name="status_message" class="form-input" maxlength="100" placeholder="Finishing my profile, then back to runs!" />
             <p class="form-help">A short status shown on your profile</p>
-            <p class="form-help muted"><em>Note: Requires database column `status_message` to be added.</em></p>
           </div>
         </div>
         
@@ -1095,8 +1094,7 @@ form.addEventListener('submit', async (e) => {
       pronouns: document.getElementById('pronouns').value.trim() || null,
       location: document.getElementById('location').value.trim() || null,
       bio: document.getElementById('bio').value.trim() || null,
-      // NOTE: status_message requires adding column to database
-      // status_message: document.getElementById('status-message').value.trim() || null,
+      status_message: document.getElementById('status-message').value.trim() || null,
       avatar_url: document.getElementById('avatar-url').value.trim() || null,
       theme_settings: currentThemeSettings,
       socials: {
