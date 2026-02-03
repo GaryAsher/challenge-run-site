@@ -293,6 +293,29 @@
             
             <span class="field-error" id="runnerId-error" role="alert" hidden></span>
           </div>
+          
+          <!-- =========================
+               ADDITIONAL RUNNERS (Co-op/Multi-runner)
+               ========================= -->
+          <div class="submit-field" id="additional-runners-section">
+            <label class="submit-label">Additional Runners</label>
+            <div class="submit-hint">For co-op or multi-runner runs. Up to 4 additional runners.</div>
+            
+            <div id="additional-runners-list" class="additional-runners-list">
+              <!-- Dynamic runner entries will be added here -->
+            </div>
+            
+            <button type="button" class="btn btn--small" id="add-runner-btn">
+              + Add Runner
+            </button>
+            
+            <div class="additional-runners-info">
+              <p class="muted">
+                <strong>Note:</strong> Additional runners will be notified and must confirm their participation.
+                The run will show as "pending confirmation" until all runners accept.
+              </p>
+            </div>
+          </div>
 
           <div class="submit-field">
             <label for="videoUrl" class="submit-label">Video URL <span class="required-marker">*</span></label>
