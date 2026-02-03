@@ -26,6 +26,108 @@
   const form = $("submitRunForm");
 
   // =============================================================================
+  // Additional Runners (Multi-runner/Co-op)
+  // =============================================================================
+  const MAX_ADDITIONAL_RUNNERS = 4;
+  let additionalRunners = [];
+  let currentGameCharacters = [];
+
+  function renderAdditionalRunners() {
+    const container = $("additional-runners-list");
+    if (!container) return;
+
+    container.innerHTML = additionalRunners.map((runner, i) => `
+      <div class="additional-runner-row" data-index="${i}">
+        <span class="additional-runner-row__number">${i + 2}.</span>
+        <div class="additional-runner-row__fields">
+          <div class="additional-runner-row__main">
+            <input 
+              type="text" 
+              class="additional-runner-row__input form-input"
+              placeholder="Runner ID"
+              value="${runner.runner_id || ''}"
+              data-field="runner_id"
+              pattern="[a-z0-9\\-]+"
+            />
+            ${currentGameCharacters.length > 0 ? `
+              <select class="additional-runner-row__character form-input" data-field="character">
+                <option value="">Character (optional)</option>
+                ${currentGameCharacters.map(c => `
+                  <option value="${c.id}" ${runner.character === c.id ? 'selected' : ''}>${c.name}</option>
+                `).join('')}
+              </select>
+            ` : ''}
+          </div>
+          <div class="additional-runner-row__status ${runner.status === 'confirmed' ? 'additional-runner-row__status--confirmed' : 'additional-runner-row__status--pending'}">
+            ${runner.status === 'confirmed' ? '✓ Confirmed' : '⏳ Will need to confirm'}
+          </div>
+        </div>
+        <button type="button" class="additional-runner-row__remove" data-remove="${i}" title="Remove runner">✕</button>
+      </div>
+    `).join('');
+
+    // Attach event listeners
+    container.querySelectorAll('.additional-runner-row__input, .additional-runner-row__character').forEach(input => {
+      input.addEventListener('input', (e) => {
+        const row = e.target.closest('.additional-runner-row');
+        const index = parseInt(row.dataset.index);
+        const field = e.target.dataset.field;
+        additionalRunners[index][field] = e.target.value.trim();
+        repaint();
+      });
+    });
+
+    container.querySelectorAll('[data-remove]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const index = parseInt(e.target.dataset.remove);
+        additionalRunners.splice(index, 1);
+        renderAdditionalRunners();
+        updateAddRunnerButton();
+        repaint();
+      });
+    });
+  }
+
+  function updateAddRunnerButton() {
+    const btn = $("add-runner-btn");
+    if (!btn) return;
+    
+    if (additionalRunners.length >= MAX_ADDITIONAL_RUNNERS) {
+      btn.disabled = true;
+      btn.textContent = `Maximum ${MAX_ADDITIONAL_RUNNERS} additional runners`;
+    } else {
+      btn.disabled = false;
+      btn.textContent = '+ Add Runner';
+    }
+  }
+
+  function setupAdditionalRunners() {
+    const btn = $("add-runner-btn");
+    if (!btn) return;
+
+    btn.addEventListener('click', () => {
+      if (additionalRunners.length >= MAX_ADDITIONAL_RUNNERS) return;
+      
+      additionalRunners.push({
+        runner_id: '',
+        character: '',
+        status: 'pending'
+      });
+      
+      renderAdditionalRunners();
+      updateAddRunnerButton();
+    });
+  }
+
+  function updateCharactersForAdditionalRunners(characters) {
+    currentGameCharacters = characters || [];
+    renderAdditionalRunners();
+  }
+
+  // Initialize additional runners
+  setupAdditionalRunners();
+
+  // =============================================================================
   // Loading State Management
   // =============================================================================
   function setLoading(isLoading) {
@@ -727,6 +829,8 @@
         if (section) section.style.display = "";
         fillSelect(characterSelect, chars, (c) => c.id, (c) => c.name, true, "Any / Not applicable");
       }
+      // Update characters for additional runners
+      updateCharactersForAdditionalRunners(chars);
     } else {
       if (characterSelect) {
         characterSelect.value = "";
@@ -734,6 +838,8 @@
         const section = $("characterSection");
         if (section) section.style.display = "none";
       }
+      // Clear characters for additional runners
+      updateCharactersForAdditionalRunners([]);
     }
 
     if (communityChallengeSelect) communityChallengeSelect.value = "";
@@ -763,9 +869,18 @@
 
     const v = parseVideo(video_url_raw);
 
+    // Build additional runners array (filter out empty entries)
+    const additional_runners = additionalRunners
+      .filter(r => r.runner_id && r.runner_id.trim())
+      .map(r => ({
+        runner_id: r.runner_id.trim(),
+        character: r.character || null,
+        status: 'pending_confirmation'
+      }));
+
     const payload = {
       kind: "run_submission",
-      schema_version: 6,
+      schema_version: 7, // Updated schema version for multi-runner support
 
       game_id,
       category_tier,
@@ -779,6 +894,7 @@
       restrictions,
 
       runner_id,
+      additional_runners: additional_runners.length > 0 ? additional_runners : undefined,
 
       video_url: v.ok ? v.canonical_url : video_url_raw,
       video_host: v.ok ? v.host : "",
@@ -830,6 +946,40 @@
       if (!runnerExists) {
         showFieldError("runnerId", "Runner ID not found. Please check your runner ID or create a profile first.");
         if (!firstError) firstError = "runnerId";
+      }
+    }
+
+    // Validate additional runners
+    if (payload.additional_runners && payload.additional_runners.length > 0) {
+      for (let i = 0; i < payload.additional_runners.length; i++) {
+        const ar = payload.additional_runners[i];
+        
+        // Check for duplicate runner IDs
+        if (ar.runner_id === payload.runner_id) {
+          setMsg(`Additional runner ${i + 1} cannot be the same as the main runner.`, "error");
+          if (!firstError) firstError = "additional-runners-list";
+          break;
+        }
+        
+        // Check for duplicates within additional runners
+        const isDuplicate = payload.additional_runners.some((other, j) => 
+          j !== i && other.runner_id === ar.runner_id
+        );
+        if (isDuplicate) {
+          setMsg(`Duplicate runner ID found in additional runners: ${ar.runner_id}`, "error");
+          if (!firstError) firstError = "additional-runners-list";
+          break;
+        }
+        
+        // Check if runner exists (if we have the runners list)
+        if (index.runners) {
+          const exists = index.runners.some(r => r.id === ar.runner_id);
+          if (!exists) {
+            setMsg(`Additional runner "${ar.runner_id}" not found. They need to create a profile first.`, "error");
+            if (!firstError) firstError = "additional-runners-list";
+            break;
+          }
+        }
       }
     }
 
