@@ -160,6 +160,7 @@ title: "Theme Customization"
     <div class="theme-preview">
       <div class="card">
         <h2>Live Preview</h2>
+        <div class="preview-font-info" id="preview-font-info">Font: System Default</div>
         <div class="preview-box" id="preview-box">
           <div class="preview-header">
             <span class="preview-brand">CRC</span>
@@ -308,6 +309,15 @@ body, h1, h2, h3, h4, h5, h6, p, span, a, li {
 
 /* Preview */
 .theme-preview { position: sticky; top: 80px; }
+.preview-font-info {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
 .preview-box {
   background: var(--bg);
   border: 1px solid var(--border);
@@ -538,6 +548,31 @@ function applyThemeToPage(theme) {
     }
     root.style.setProperty('--text-shadow', textShadow);
   }
+  
+  // Update preview box with font
+  const previewBox = document.getElementById('preview-box');
+  const fontInfo = document.getElementById('preview-font-info');
+  if (previewBox && theme.fontFamily && fontMap[theme.fontFamily]) {
+    previewBox.style.fontFamily = fontMap[theme.fontFamily];
+  }
+  
+  // Update font info display
+  const fontNames = {
+    'system': 'System Default',
+    'inter': 'Inter',
+    'roboto': 'Roboto',
+    'opensans': 'Open Sans',
+    'lato': 'Lato',
+    'poppins': 'Poppins',
+    'montserrat': 'Montserrat',
+    'nunito': 'Nunito',
+    'raleway': 'Raleway',
+    'sourcesans': 'Source Sans Pro',
+    'ubuntu': 'Ubuntu'
+  };
+  if (fontInfo) {
+    fontInfo.textContent = `Font: ${fontNames[theme.fontFamily] || 'System Default'}`;
+  }
 }
 
 function hexToRgb(hex) {
@@ -660,6 +695,18 @@ function setupEventListeners() {
     document.getElementById('bg-preview').style.backgroundImage = '';
     document.getElementById('bg-preview').innerHTML = '<span class="muted">No background image</span>';
     document.body.style.backgroundImage = '';
+  });
+  
+  // Font family
+  document.getElementById('font-family')?.addEventListener('change', () => {
+    applyThemeToPage(getCurrentThemeFromUI());
+  });
+  
+  // Text outline
+  document.querySelectorAll('input[name="text-outline"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      applyThemeToPage(getCurrentThemeFromUI());
+    });
   });
   
   // Save & Reset
