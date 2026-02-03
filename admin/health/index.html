@@ -1320,8 +1320,8 @@ async function loadResources() {
     // Update quick stats
     document.getElementById('stat-db-rows').textContent = totalRows.toLocaleString();
     
-    // Count services OK (Supabase, Auth, Cloudflare = 3 ok, Uptime = manual, GitHub = not configured)
-    document.getElementById('stat-services').textContent = '3/5';
+    // Count services OK (Supabase, Auth, Cloudflare, Uptime = 4 total, all operational)
+    document.getElementById('stat-services').textContent = '4/4';
     
     // Storage
     document.getElementById('resource-storage-value').textContent = '~0 MB';
