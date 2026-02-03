@@ -333,16 +333,16 @@ title: "Financials"
 .history-table { width: 100%; border-collapse: collapse; }
 .history-table th, .history-table td { padding: 0.6rem 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
 .history-table th { background: var(--bg); font-weight: 600; font-size: 0.75rem; color: var(--text-muted); }
-.service-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
-.service-card { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); }
-.service-icon { font-size: 1.5rem; }
-.service-info { flex: 1; }
+.service-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+.service-card { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); flex-wrap: wrap; }
+.service-icon { font-size: 1.5rem; flex-shrink: 0; }
+.service-info { flex: 1; min-width: 100px; }
 .service-info h4 { font-size: 0.9rem; margin: 0 0 0.15rem 0; }
 .service-info p { font-size: 0.75rem; margin: 0; }
-.service-cost { text-align: right; }
+.service-cost { text-align: right; flex-shrink: 0; }
 .cost-amount { display: block; font-weight: 600; font-size: 0.9rem; }
 .cost-monthly { display: block; font-size: 0.7rem; color: var(--text-muted); }
-.service-status { font-size: 0.65rem; font-weight: 600; padding: 0.2rem 0.4rem; border-radius: 4px; text-transform: uppercase; }
+.service-status { font-size: 0.65rem; font-weight: 600; padding: 0.2rem 0.4rem; border-radius: 4px; text-transform: uppercase; flex-shrink: 0; }
 .service-status.active { background: rgba(16, 185, 129, 0.15); color: #10b981; }
 .cost-summary { padding: 0.75rem; background: var(--surface); border-radius: var(--radius-sm); font-size: 0.9rem; }
 .ideas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
@@ -355,8 +355,8 @@ title: "Financials"
 .idea-card__category--engagement { background: rgba(249, 115, 22, 0.15); color: #f97316; }
 .idea-card__desc { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; }
 .idea-card__estimate { font-size: 0.75rem; font-weight: 600; color: var(--accent); }
-.idea-card__delete { position: absolute; top: 0.5rem; right: 0.5rem; background: transparent; border: none; cursor: pointer; opacity: 0.3; font-size: 0.8rem; }
-.idea-card__delete:hover { opacity: 1; }
+.idea-card__delete { position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 4px; cursor: pointer; opacity: 0.7; font-size: 0.75rem; padding: 0.2rem 0.4rem; color: #ef4444; transition: all 0.15s; }
+.idea-card__delete:hover { opacity: 1; background: rgba(239, 68, 68, 0.2); }
 .finance-modal { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; }
 .finance-modal__backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.6); }
 .finance-modal__content { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); width: 90%; max-width: 450px; max-height: 90vh; overflow-y: auto; }
@@ -541,7 +541,7 @@ function renderIdeas() {
   const grid = document.getElementById('ideas-grid');
   if (ideasData.length === 0) { grid.innerHTML = '<p class="muted">No ideas yet.</p>'; return; }
   const icons = { acquisition: '🎯', revenue: '💰', engagement: '🔥' };
-  grid.innerHTML = ideasData.map((idea, i) => '<div class="idea-card"><button class="idea-card__delete" onclick="deleteIdea(' + i + ')">✕</button><div class="idea-card__header"><span class="idea-card__title">' + (icons[idea.category] || '💡') + ' ' + idea.title + '</span><span class="idea-card__category idea-card__category--' + idea.category + '">' + idea.category + '</span></div><p class="idea-card__desc">' + (idea.description || '') + '</p>' + (idea.estimate ? '<span class="idea-card__estimate">Est: ' + idea.estimate + '</span>' : '') + '</div>').join('');
+  grid.innerHTML = ideasData.map((idea, i) => '<div class="idea-card"><button class="idea-card__delete" onclick="deleteIdea(' + i + ')" title="Delete idea">🗑️</button><div class="idea-card__header"><span class="idea-card__title">' + (icons[idea.category] || '💡') + ' ' + idea.title + '</span><span class="idea-card__category idea-card__category--' + idea.category + '">' + idea.category + '</span></div><p class="idea-card__desc">' + (idea.description || '') + '</p>' + (idea.estimate ? '<span class="idea-card__estimate">Est: ' + idea.estimate + '</span>' : '') + '</div>').join('');
 }
 
 function saveFinancialData() { localStorage.setItem('crc-financials-v2', JSON.stringify(financialData)); }
@@ -549,11 +549,22 @@ function saveIdeasData() { localStorage.setItem('crc-ideas', JSON.stringify(idea
 
 window.deleteEntry = function(index) {
   const monthKey = getMonthKey(currentMonth);
-  if (financialData[monthKey]?.entries) { financialData[monthKey].entries.splice(index, 1); saveFinancialData(); renderFinancials(); renderHistory(); }
+  const entry = financialData[monthKey]?.entries?.[index];
+  if (entry && confirm(`Are you sure you want to delete "${entry.source}"?`)) {
+    financialData[monthKey].entries.splice(index, 1);
+    saveFinancialData();
+    renderFinancials();
+    renderHistory();
+  }
 };
 
 window.deleteIdea = function(index) {
-  if (confirm('Delete this idea?')) { ideasData.splice(index, 1); saveIdeasData(); renderIdeas(); }
+  const idea = ideasData[index];
+  if (idea && confirm(`Are you sure you want to delete "${idea.title}"?`)) {
+    ideasData.splice(index, 1);
+    saveIdeasData();
+    renderIdeas();
+  }
 };
 
 function setupEventListeners() {
