@@ -214,6 +214,13 @@ title: "Financials"
               <label class="frequency-option"><input type="radio" name="entry-frequency" value="once" /><span class="frequency-option__btn">📌 One-Time</span></label>
             </div>
           </div>
+          <div class="form-group recurring-group" id="recurring-group" hidden>
+            <label class="form-label">Repeat for how many months?</label>
+            <div class="recurring-months-row">
+              <input type="number" id="entry-recurring-months" class="form-input" min="1" max="24" value="1" />
+              <span class="recurring-help">months (including this month)</span>
+            </div>
+          </div>
           <div class="form-group">
             <label class="form-label">Source / Service</label>
             <input type="text" id="entry-source" class="form-input" placeholder="e.g., Patreon, GoDaddy" />
@@ -373,6 +380,11 @@ title: "Financials"
 .frequency-option input { display: none; }
 .frequency-option__btn { display: block; padding: 0.5rem; text-align: center; font-size: 0.8rem; border: 1px solid var(--border); border-radius: var(--radius-sm); transition: all 0.15s; }
 .frequency-option:has(input:checked) .frequency-option__btn { border-color: var(--accent); background: rgba(var(--accent-rgb), 0.1); }
+
+.recurring-months-row { display: flex; align-items: center; gap: 0.75rem; }
+.recurring-months-row .form-input { width: 80px; text-align: center; }
+.recurring-help { font-size: 0.8rem; color: var(--text-muted); }
+
 .idea-category-options { display: flex; gap: 0.5rem; }
 .idea-category-option { flex: 1; cursor: pointer; }
 .idea-category-option input { display: none; }
@@ -560,6 +572,18 @@ function setupEventListeners() {
   document.getElementById('entry-modal-cancel')?.addEventListener('click', () => closeModal('entry-modal'));
   document.getElementById('entry-modal-save')?.addEventListener('click', saveEntry);
   
+  // Show/hide recurring months option based on frequency selection
+  document.querySelectorAll('input[name="entry-frequency"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      const recurringGroup = document.getElementById('recurring-group');
+      if (e.target.value === 'monthly') {
+        recurringGroup.hidden = false;
+      } else {
+        recurringGroup.hidden = true;
+      }
+    });
+  });
+  
   document.getElementById('add-idea')?.addEventListener('click', () => openModal('idea-modal'));
   document.getElementById('idea-modal-close')?.addEventListener('click', () => closeModal('idea-modal'));
   document.getElementById('idea-modal-backdrop')?.addEventListener('click', () => closeModal('idea-modal'));
@@ -584,6 +608,8 @@ function closeModal(id) {
     document.getElementById('entry-source').value = '';
     document.getElementById('entry-description').value = '';
     document.getElementById('entry-amount').value = '';
+    document.getElementById('entry-recurring-months').value = '1';
+    document.getElementById('recurring-group').hidden = false;
     document.querySelector('input[name="entry-type"][value="income"]').checked = true;
     document.querySelector('input[name="entry-frequency"][value="monthly"]').checked = true;
   } else if (id === 'idea-modal') {
@@ -595,14 +621,39 @@ function closeModal(id) {
 }
 
 function saveEntry() {
-  const monthKey = getMonthKey(currentMonth);
   const entryType = document.querySelector('input[name="entry-type"]:checked')?.value || 'expense';
   const frequency = document.querySelector('input[name="entry-frequency"]:checked')?.value || 'monthly';
-  const entry = { type: entryType, source: document.getElementById('entry-source').value.trim(), description: document.getElementById('entry-description').value.trim(), amount: parseFloat(document.getElementById('entry-amount').value) || 0, frequency: frequency };
-  if (!entry.source || entry.amount <= 0) { alert('Please fill in Source and Amount'); return; }
-  if (!financialData[monthKey]) financialData[monthKey] = { entries: [] };
-  financialData[monthKey].entries.push(entry);
-  saveFinancialData(); renderFinancials(); renderHistory(); closeModal('entry-modal');
+  const recurringMonths = frequency === 'monthly' ? parseInt(document.getElementById('entry-recurring-months')?.value) || 1 : 1;
+  
+  const entry = { 
+    type: entryType, 
+    source: document.getElementById('entry-source').value.trim(), 
+    description: document.getElementById('entry-description').value.trim(), 
+    amount: parseFloat(document.getElementById('entry-amount').value) || 0, 
+    frequency: frequency 
+  };
+  
+  if (!entry.source || entry.amount <= 0) { 
+    alert('Please fill in Source and Amount'); 
+    return; 
+  }
+  
+  // Add entry to current month and future months if recurring
+  for (let i = 0; i < recurringMonths; i++) {
+    const targetDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + i);
+    const monthKey = getMonthKey(targetDate);
+    if (!financialData[monthKey]) financialData[monthKey] = { entries: [] };
+    financialData[monthKey].entries.push({ ...entry });
+  }
+  
+  if (recurringMonths > 1) {
+    alert(`Entry added to ${recurringMonths} months`);
+  }
+  
+  saveFinancialData(); 
+  renderFinancials(); 
+  renderHistory(); 
+  closeModal('entry-modal');
 }
 
 function saveIdea() {
