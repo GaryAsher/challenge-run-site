@@ -1,0 +1,148 @@
+name: Sync Runner Profiles
+
+on:
+  # Run on schedule (every 6 hours)
+  schedule:
+    - cron: '0 */6 * * *'
+  
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      runner_id:
+        description: 'Specific runner ID to sync (leave empty for all)'
+        required: false
+        type: string
+      force:
+        description: 'Force overwrite all files'
+        required: false
+        type: boolean
+        default: false
+
+  # Webhook trigger (can be called from Supabase Edge Function)
+  repository_dispatch:
+    types: [profile-updated]
+
+# Prevent concurrent runs
+concurrency:
+  group: sync-runners
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    name: Sync Profiles
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Sync Runner Profiles
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          ARGS=""
+          
+          # Add runner ID if specified
+          if [ -n "${{ github.event.inputs.runner_id }}" ]; then
+            ARGS="$ARGS --runner ${{ github.event.inputs.runner_id }}"
+          fi
+          
+          # Add runner ID from repository_dispatch if present
+          if [ -n "${{ github.event.client_payload.runner_id }}" ]; then
+            ARGS="$ARGS --runner ${{ github.event.client_payload.runner_id }}"
+          fi
+          
+          # Add force flag if specified
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+            ARGS="$ARGS --force"
+          fi
+          
+          echo "Running: node scripts/sync-runner-profiles.js $ARGS"
+          node scripts/sync-runner-profiles.js $ARGS
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if [[ -n "$(git status --porcelain _runners/)" ]]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Changed files:"
+            git status --porcelain _runners/
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No changes to runner profiles"
+          fi
+
+      - name: Create Pull Request
+        if: steps.changes.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v6
+        id: cpr
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: Sync runner profiles from database [auto]"
+          branch: auto/sync-runner-profiles
+          delete-branch: true
+          title: "🔄 Sync runner profiles"
+          body: |
+            ## Automated Runner Profile Sync
+
+            This PR syncs runner profile changes from the Supabase database to Jekyll markdown files.
+
+            **Trigger:** ${{ github.event_name }}
+            ${{ github.event.inputs.runner_id && format('**Runner:** {0}', github.event.inputs.runner_id) || '' }}
+            ${{ github.event.client_payload.runner_id && format('**Runner:** {0}', github.event.client_payload.runner_id) || '' }}
+
+            ### What's synced
+            - Display name
+            - Bio
+            - Status message
+            - Social links
+            - Avatar URL
+            - Theme accent color
+            - Achievements
+            - Contributions
+
+            ### What's preserved
+            - Admin flags (`is_admin`, `can_view_test_content`)
+            - Manual overrides
+
+            ---
+            *This PR can be auto-merged if all checks pass.*
+          labels: |
+            automated
+            runner-sync
+          # Update existing PR if the branch already exists
+          update-operation: update
+
+      - name: Enable Auto-Merge
+        if: steps.changes.outputs.has_changes == 'true' && steps.cpr.outputs.pull-request-number
+        run: |
+          gh pr merge ${{ steps.cpr.outputs.pull-request-number }} --auto --squash || true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Summary
+        run: |
+          echo "## Runner Profile Sync Summary" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ steps.changes.outputs.has_changes }}" == "true" ]]; then
+            echo "✅ Created/Updated PR #${{ steps.cpr.outputs.pull-request-number }}" >> $GITHUB_STEP_SUMMARY
+            echo "🔗 ${{ steps.cpr.outputs.pull-request-url }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ No changes needed - profiles are in sync" >> $GITHUB_STEP_SUMMARY
+          fi
