@@ -121,8 +121,12 @@ title: "Site Health"
             <span class="health-metric__label">Status</span>
             <span class="health-metric__value" id="github-workflow-status">-</span>
           </div>
-          <div class="health-metric health-metric--note">
-            <span class="health-metric__note">⚠️ Requires GitHub API token to be configured</span>
+          <div class="health-metric health-metric--config">
+            <div class="github-token-config" id="github-token-config">
+              <input type="password" id="github-token-input" class="token-input" placeholder="ghp_xxxxxxxxxxxx" />
+              <button type="button" class="btn btn--small" id="save-github-token">Save</button>
+            </div>
+            <p class="config-help">Enter a <a href="https://github.com/settings/tokens" target="_blank" rel="noopener">Personal Access Token</a> with <code>repo</code> scope</p>
           </div>
         </div>
       </div>
@@ -504,6 +508,54 @@ title: "Site Health"
 
 .uptime-config-note { justify-content: center; }
 .uptime-config-link { font-size: 0.8rem; color: var(--accent); }
+
+/* GitHub Token Config */
+.health-metric--config {
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  margin-top: 0.5rem;
+  border-top: 1px dashed var(--border);
+}
+
+.github-token-config {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.token-input {
+  flex: 1;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.8rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--fg);
+  font-family: monospace;
+}
+
+.token-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.config-help {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.config-help a {
+  color: var(--accent);
+}
+
+.config-help code {
+  background: var(--bg);
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  font-size: 0.65rem;
+}
 
 /* Queue Grid */
 .queue-grid {
@@ -1093,6 +1145,127 @@ function updateApiPerfChart() {
   document.getElementById('api-perf-p95').textContent = sorted[Math.floor(sorted.length * 0.95)] + 'ms';
 }
 
+// GitHub API Integration
+const GITHUB_REPO = 'Gary-Ash/challenge-run-site'; // Update this if different
+
+function getGitHubToken() {
+  return localStorage.getItem('crc-github-token');
+}
+
+function saveGitHubToken(token) {
+  if (token) {
+    localStorage.setItem('crc-github-token', token);
+  } else {
+    localStorage.removeItem('crc-github-token');
+  }
+}
+
+async function checkGitHubStatus() {
+  const token = getGitHubToken();
+  const statusEl = document.getElementById('github-status');
+  const lastDeployEl = document.getElementById('github-last-deploy');
+  const lastRunEl = document.getElementById('github-last-run');
+  const workflowStatusEl = document.getElementById('github-workflow-status');
+  const tokenInput = document.getElementById('github-token-input');
+  
+  if (!token) {
+    statusEl.textContent = 'Not Configured';
+    statusEl.className = 'health-card__status';
+    lastDeployEl.textContent = '-';
+    lastRunEl.textContent = '-';
+    workflowStatusEl.textContent = '-';
+    log('GitHub: Token not configured', 'warn');
+    return;
+  }
+  
+  // Mask token in input
+  if (tokenInput) {
+    tokenInput.value = '••••••••' + token.slice(-4);
+  }
+  
+  try {
+    // Fetch recent workflow runs
+    const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/actions/runs?per_page=5`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        statusEl.textContent = 'Invalid Token';
+        statusEl.className = 'health-card__status error';
+        log('GitHub: Invalid or expired token', 'error');
+        return;
+      }
+      throw new Error(`HTTP ${response.status}`);
+    }
+    
+    const data = await response.json();
+    const runs = data.workflow_runs || [];
+    
+    if (runs.length === 0) {
+      statusEl.textContent = 'No Runs';
+      statusEl.className = 'health-card__status warn';
+      lastDeployEl.textContent = 'None found';
+      lastRunEl.textContent = 'None found';
+      workflowStatusEl.textContent = '-';
+      log('GitHub: Connected but no workflow runs found', 'info');
+      return;
+    }
+    
+    const latestRun = runs[0];
+    const conclusion = latestRun.conclusion;
+    const runDate = new Date(latestRun.created_at);
+    const timeAgo = getTimeAgo(runDate);
+    
+    // Find latest deploy (pages-build-deployment or similar)
+    const deployRun = runs.find(r => r.name.toLowerCase().includes('deploy') || r.name.toLowerCase().includes('pages'));
+    
+    if (conclusion === 'success') {
+      statusEl.textContent = 'Healthy';
+      statusEl.className = 'health-card__status ok';
+      workflowStatusEl.textContent = '✅ Success';
+      log('GitHub: All workflows passing', 'success');
+    } else if (conclusion === 'failure') {
+      statusEl.textContent = 'Failing';
+      statusEl.className = 'health-card__status error';
+      workflowStatusEl.textContent = '❌ Failed';
+      log('GitHub: Latest workflow failed', 'error');
+    } else if (!conclusion) {
+      statusEl.textContent = 'Running';
+      statusEl.className = 'health-card__status warn';
+      workflowStatusEl.textContent = '🔄 In Progress';
+      log('GitHub: Workflow in progress', 'info');
+    } else {
+      statusEl.textContent = 'Unknown';
+      statusEl.className = 'health-card__status warn';
+      workflowStatusEl.textContent = conclusion;
+    }
+    
+    lastRunEl.textContent = timeAgo;
+    lastDeployEl.textContent = deployRun ? getTimeAgo(new Date(deployRun.created_at)) : timeAgo;
+    
+  } catch (e) {
+    statusEl.textContent = 'Error';
+    statusEl.className = 'health-card__status error';
+    lastDeployEl.textContent = 'Error';
+    lastRunEl.textContent = 'Error';
+    workflowStatusEl.textContent = '-';
+    log('GitHub: API error - ' + e.message, 'error');
+  }
+}
+
+function getTimeAgo(date) {
+  const seconds = Math.floor((new Date() - date) / 1000);
+  if (seconds < 60) return 'Just now';
+  if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
+  if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+  if (seconds < 604800) return Math.floor(seconds / 86400) + 'd ago';
+  return date.toLocaleDateString();
+}
+
 async function checkHealth() {
   const indicator = document.getElementById('health-indicator');
   const text = document.getElementById('health-text');
@@ -1144,12 +1317,8 @@ async function checkHealth() {
     warnings++;
   }
   
-  // GitHub status (placeholder - would need GitHub API)
-  document.getElementById('github-status').textContent = 'Unknown';
-  document.getElementById('github-last-deploy').textContent = 'Check GitHub';
-  document.getElementById('github-last-run').textContent = 'Check GitHub';
-  document.getElementById('github-workflow-status').textContent = 'N/A';
-  log('GitHub: API integration not configured', 'warn');
+  // GitHub status - check if token is configured
+  await checkGitHubStatus();
   
   // Uptime status (manual check required)
   document.getElementById('uptime-status').textContent = 'Manual';
@@ -1445,6 +1614,34 @@ document.getElementById('export-log')?.addEventListener('click', () => {
 });
 
 document.getElementById('refresh-health')?.addEventListener('click', checkHealth);
+
+// GitHub token save
+document.getElementById('save-github-token')?.addEventListener('click', () => {
+  const input = document.getElementById('github-token-input');
+  const token = input.value.trim();
+  
+  // Don't save if it's the masked version
+  if (token.startsWith('••••')) {
+    log('GitHub: Token unchanged', 'info');
+    return;
+  }
+  
+  if (!token) {
+    saveGitHubToken(null);
+    log('GitHub: Token removed', 'info');
+    checkGitHubStatus();
+    return;
+  }
+  
+  if (!token.startsWith('ghp_') && !token.startsWith('github_pat_')) {
+    alert('Invalid token format. GitHub tokens start with "ghp_" or "github_pat_"');
+    return;
+  }
+  
+  saveGitHubToken(token);
+  log('GitHub: Token saved', 'success');
+  checkGitHubStatus();
+});
 
 // Initialize
 (async function() {
