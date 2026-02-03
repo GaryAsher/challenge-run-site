@@ -23,7 +23,7 @@ This document consolidates all reminders, future ideas, and planned features for
 ### 1 Admin Profile
 - [ ] Site Health:
   - confire GitHub API token
-  - Future Udeas:
+- [ ] Financials - Future Ideas:
     - Add button to remove ideas.
 
 ### 2. Runner Profiles
