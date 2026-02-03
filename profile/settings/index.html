@@ -431,9 +431,6 @@ function renderProfileInfo(profile, metadata) {
   if (profile?.display_name) {
     items.push({ label: 'Display Name', value: profile.display_name });
   }
-  if (metadata?.email) {
-    items.push({ label: 'Email', value: metadata.email });
-  }
   if (profile?._isPending) {
     items.push({ label: 'Status', value: '⏳ Pending Approval' });
   }
