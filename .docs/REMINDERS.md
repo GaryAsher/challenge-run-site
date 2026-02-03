@@ -22,7 +22,6 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ### 2. Runner Profiles
 - [ ] Edit Profile
-  - Error: invalid input value for enum profile_status: "test status"
   - [ ] Info from Edit Profile is not updating to the Runner's Page?
   - [ ] Users to uplaod png or jpg for profile:
     - Supabase Storage
@@ -30,12 +29,6 @@ This document consolidates all reminders, future ideas, and planned features for
       - Add file type validation (PNG, JPG only)
       - Set max file size (e.g., 2MB)
       - Use RLS policies to ensure users can only upload to their own folder
-
-### 2.5 Games/runs/ tab again
-- [ ] Add the option for multiple runners (up to 5) to be listed for the same run
-    - Add option to list other runners. Other runners will need to confirm that they participated in this run.
-      - Add Reminder for Messages to require those runners to accept that they were in the run.
-      - Runners need to fill out their "Character" if there is one for that game.
 
 ### Modded Game Support
 - [ ] Allow modded versions of games
