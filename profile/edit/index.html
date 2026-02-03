@@ -111,12 +111,6 @@ title: "Edit Profile"
           </div>
           
           <div class="form-group">
-            <label class="form-label" for="banner-url">Banner URL</label>
-            <input type="url" id="banner-url" name="banner_url" class="form-input" placeholder="https://example.com/banner.jpg" />
-            <p class="form-help">Direct link to your profile banner (recommended: 1200x300px)</p>
-          </div>
-          
-          <div class="form-group">
             <label class="form-label">Accent Color</label>
             <p class="form-help">Customize your accent color in <a href="/profile/theme/">Theme Settings</a>.</p>
           </div>
@@ -734,13 +728,11 @@ function populateForm(profile) {
   
   // Customization
   document.getElementById('avatar-url').value = profile.avatar_url || '';
-  document.getElementById('banner-url').value = profile.banner_url || '';
   
   // Update preview
   document.getElementById('preview-name').textContent = profile.display_name || 'Display Name';
   document.getElementById('preview-pronouns').textContent = profile.pronouns ? `(${profile.pronouns})` : '';
   if (profile.avatar_url) document.getElementById('preview-avatar').src = profile.avatar_url;
-  if (profile.banner_url) document.getElementById('preview-banner-img').src = profile.banner_url;
   
   // Update bio counter
   document.getElementById('bio-count').textContent = (profile.bio || '').length;
@@ -791,7 +783,6 @@ form.addEventListener('submit', async (e) => {
       bio: document.getElementById('bio').value.trim() || null,
       status: document.getElementById('status').value.trim() || null,
       avatar_url: document.getElementById('avatar-url').value.trim() || null,
-      banner_url: document.getElementById('banner-url').value.trim() || null,
       socials: {
         twitch: document.getElementById('twitch').value.trim() || null,
         youtube: document.getElementById('youtube').value.trim() || null,
