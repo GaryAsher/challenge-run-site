@@ -45,6 +45,8 @@ This document consolidates all reminders, future ideas, and planned features for
   - Test variables. Update if needed.
   - Link runner_id to authenticated user
     - Add option to list other runners. Other runners will need to confirm that they participated in this run.
+      - Add Reminder for Messages to require those runners to accept that they were in the run.
+      - Runners need to fill out their "Character" if there is one for that game.
 
 ### 3.5 Legal Document Review
 - [ ] Review Terms of Service line-by-line
