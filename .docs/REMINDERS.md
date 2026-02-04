@@ -28,7 +28,7 @@ This document consolidates all reminders, future ideas, and planned features for
       - Set max file size (e.g., 2MB)
       - Use RLS policies to ensure users can only upload to their own folder
 
-### Modded Game Support
+### 2.5 Modded Game Support
 - [ ] Allow modded versions of games
 - [ ] Link between modded and main game pages
 - [ ] "Modded" tag for categories
