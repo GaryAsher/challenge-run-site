@@ -62,13 +62,14 @@ layout: default
           {% assign g = site.games | where: "game_id", game_id | first %}
           {% assign game_runs = runs | where: "game_id", game_id %}
           {% assign run_count = game_runs.size %}
-          {% assign best_run = game_runs | sort: "time" | first %}
+          {% assign best_run = game_runs | sort: "time_primary" | first %}
+          {% assign best_time = best_run.time_primary | default: best_run.time %}
           {% assign game_avatar = g.avatar | default: "/assets/img/site/default-game.png" %}
           <a href="{{ '/runners/' | append: page.runner_id | append: '/runs/' | append: game_id | append: '/' | relative_url }}" class="runner-game-card card-lift">
             <div class="runner-game-card__bg" data-bg="{{ game_avatar | relative_url }}"></div>
             <div class="runner-game-card__overlay">
               <div class="runner-game-card__title">{% if g %}{{ g.game_name }}{% else %}{{ game_id }}{% endif %}</div>
-              <div class="runner-game-card__stats"><span class="runner-game-card__count">{{ run_count }} run{% if run_count != 1 %}s{% endif %}</span>{% if best_run.time and best_run.time != "" %}<span class="runner-game-card__best">Best: {{ best_run.time }}</span>{% endif %}</div>
+              <div class="runner-game-card__stats"><span class="runner-game-card__count">{{ run_count }} run{% if run_count != 1 %}s{% endif %}</span>{% if best_time and best_time != "" %}<span class="runner-game-card__best">Best: {{ best_time }}</span>{% endif %}</div>
             </div>
           </a>
         {% endfor %}
@@ -102,7 +103,7 @@ layout: default
 </div>
 
 <style>
-.live-data-notice{background:rgba(var(--accent-rgb),.1);border:1px solid var(--accent);color:var(--accent);padding:.5rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem;font-size:.85rem}.live-data-notice[hidden]{display:none}
+.live-data-notice{background:rgba(var(--accent-rgb,59,195,110),.1);border:1px solid var(--accent);color:var(--accent);padding:.5rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem;font-size:.85rem}.live-data-notice[hidden]{display:none}
 .runner-pronouns{font-size:.8em;font-weight:400;color:var(--text-muted)}.runner-location{margin:.25rem 0 0 0;font-size:.9rem}.runner-bio{margin-bottom:1.5rem}.runner-bio h2{margin:0 0 .5rem 0;font-size:1.1rem}.runner-bio p{margin:0;line-height:1.6;white-space:pre-wrap}
 .social-icon{width:16px;height:16px;flex-shrink:0}.runner-link--twitch:hover{color:#9146ff;border-color:#9146ff}.runner-link--youtube:hover{color:#ff0000;border-color:#ff0000}.runner-link--discord:hover{color:#5865f2;border-color:#5865f2}.runner-link--steam:hover{color:#00adee;border-color:#00adee}.runner-link--twitter:hover{color:#1da1f2;border-color:#1da1f2}.runner-link--bluesky:hover{color:#0085ff;border-color:#0085ff}.runner-link--speedrun:hover{color:#ffd700;border-color:#ffd700}
 .runner-games-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;margin-top:1rem}.runner-game-card{position:relative;display:block;aspect-ratio:16/10;border-radius:var(--radius-sm);overflow:hidden;text-decoration:none;color:#fff;background:var(--surface)}.runner-game-card__bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform .3s ease}.runner-game-card:hover .runner-game-card__bg{transform:scale(1.05)}.runner-game-card__overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.85) 0%,rgba(0,0,0,.4) 50%,rgba(0,0,0,.2) 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:1rem}.runner-game-card__title{font-weight:700;font-size:1rem;line-height:1.2;text-shadow:0 1px 3px rgba(0,0,0,.5)}.runner-game-card__stats{display:flex;gap:.75rem;margin-top:.35rem;font-size:.8rem;color:rgba(255,255,255,.8)}.runner-game-card__count{background:rgba(255,255,255,.15);padding:.15rem .5rem;border-radius:4px}.runner-game-card__best{color:var(--accent);font-weight:600}
@@ -118,14 +119,114 @@ layout: default
 </script>
 
 <script type="module">
-import{CRCAuth}from'{{ "/assets/js/auth.js" | relative_url }}';
-const PAGE_RUNNER_ID='{{ page.runner_id }}';
-async function loadLiveData(){try{await new Promise(r=>{if(CRCAuth.isSignedIn())return r();const c=setInterval(()=>{if(CRCAuth.isSignedIn()||document.readyState==='complete'){clearInterval(c);r()}},100);setTimeout(()=>{clearInterval(c);r()},3000)});if(!CRCAuth.isSignedIn())return;const profile=CRCAuth.getProfile();if(!profile||profile.runner_id!==PAGE_RUNNER_ID)return;document.getElementById('edit-profile-btn').hidden=false;const supabase=CRCAuth.getSupabaseClient?.();if(!supabase)return;const{data,error}=await supabase.from('runner_profiles').select('*').eq('runner_id',PAGE_RUNNER_ID).single();if(error||!data)return;document.getElementById('live-data-notice').hidden=false;
-const nameEl=document.getElementById('runner-display-name');if(nameEl&&data.display_name){let h=data.display_name;if(data.pronouns)h+=` <span class="runner-pronouns">(${data.pronouns})</span>`;nameEl.innerHTML=h}
-const locEl=document.getElementById('runner-location');if(locEl){if(data.location){locEl.textContent='📍 '+data.location;locEl.hidden=false}else locEl.hidden=true}
-const statEl=document.getElementById('runner-status');if(statEl){if(data.status_message){statEl.textContent=data.status_message;statEl.hidden=false}else statEl.hidden=true}
-const avatarEl=document.getElementById('runner-avatar');if(avatarEl&&data.avatar_url)avatarEl.style.backgroundImage=`url('${data.avatar_url}')`;
-const bioSec=document.getElementById('runner-bio-section'),bioEl=document.getElementById('runner-bio');if(bioSec&&bioEl){if(data.bio){bioEl.textContent=data.bio;bioSec.hidden=false}else bioSec.hidden=true}
-console.log('[Runner] Live data loaded')}catch(e){console.error('[Runner] Live data error:',e)}}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadLiveData);else loadLiveData();
+import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
+
+const PAGE_RUNNER_ID = '{{ page.runner_id }}';
+
+async function loadLiveData() {
+  try {
+    // Initialize auth first
+    await CRCAuth.init();
+    
+    // Check if user is signed in
+    if (!CRCAuth.isSignedIn()) {
+      console.log('[Runner] Not signed in, skipping live data');
+      return;
+    }
+    
+    // Check if viewing own profile
+    const profile = CRCAuth.getProfile();
+    if (!profile || profile.runner_id !== PAGE_RUNNER_ID) {
+      console.log('[Runner] Not own profile, skipping live data');
+      return;
+    }
+    
+    // Show edit button for own profile
+    const editBtn = document.getElementById('edit-profile-btn');
+    if (editBtn) editBtn.hidden = false;
+    
+    // Get Supabase client
+    const supabase = CRCAuth.getSupabaseClient();
+    if (!supabase) {
+      console.log('[Runner] No Supabase client available');
+      return;
+    }
+    
+    // Fetch fresh data from database
+    const { data, error } = await supabase
+      .from('runner_profiles')
+      .select('*')
+      .eq('runner_id', PAGE_RUNNER_ID)
+      .single();
+    
+    if (error || !data) {
+      console.log('[Runner] Could not fetch live data:', error?.message);
+      return;
+    }
+    
+    // Show live data notice
+    const notice = document.getElementById('live-data-notice');
+    if (notice) notice.hidden = false;
+    
+    // Update display name
+    const nameEl = document.getElementById('runner-display-name');
+    if (nameEl && data.display_name) {
+      let html = data.display_name;
+      if (data.pronouns) html += ` <span class="runner-pronouns">(${data.pronouns})</span>`;
+      nameEl.innerHTML = html;
+    }
+    
+    // Update location
+    const locEl = document.getElementById('runner-location');
+    if (locEl) {
+      if (data.location) {
+        locEl.textContent = '📍 ' + data.location;
+        locEl.hidden = false;
+      } else {
+        locEl.hidden = true;
+      }
+    }
+    
+    // Update status
+    const statEl = document.getElementById('runner-status');
+    if (statEl) {
+      if (data.status_message) {
+        statEl.textContent = data.status_message;
+        statEl.hidden = false;
+      } else {
+        statEl.hidden = true;
+      }
+    }
+    
+    // Update avatar
+    const avatarEl = document.getElementById('runner-avatar');
+    if (avatarEl && data.avatar_url) {
+      avatarEl.style.backgroundImage = `url('${data.avatar_url}')`;
+    }
+    
+    // Update bio
+    const bioSec = document.getElementById('runner-bio-section');
+    const bioEl = document.getElementById('runner-bio');
+    if (bioSec && bioEl) {
+      if (data.bio) {
+        bioEl.textContent = data.bio;
+        bioSec.hidden = false;
+      } else {
+        bioSec.hidden = true;
+      }
+    }
+    
+    console.log('[Runner] Live data loaded successfully');
+    
+  } catch (e) {
+    console.error('[Runner] Live data error:', e);
+  }
+}
+
+// Run when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', loadLiveData);
+} else {
+  loadLiveData();
+}
 </script>
