@@ -10,10 +10,10 @@
   <a class="brand" href="{{ '/' | relative_url }}" id="brand-link" title="Go to Home">CRC</a>
   
   <!-- Admin Panel Button (next to logo, only for admins) -->
-  <a href="{{ '/admin/test/' | relative_url }}" class="header-admin-btn" id="header-admin-btn" hidden title="Admin Panel">
+  <button type="button" class="header-admin-btn" id="header-admin-btn" hidden title="Admin Panel">
     <span class="header-admin-btn__icon">🛡️</span>
     <span class="header-admin-btn__badge" id="header-admin-badge" hidden>0</span>
-  </a>
+  </button>
 
   <nav class="nav" aria-label="Primary navigation">
     <div class="nav-group">
@@ -213,6 +213,7 @@
   border-radius: var(--radius-sm);
   color: var(--accent);
   text-decoration: none;
+  cursor: pointer;
   transition: all 0.15s ease;
 }
 .header-admin-btn:hover {
@@ -382,12 +383,14 @@
 
 // Admin panel toggle (now in user menu)
 (function() {
-  var btn = document.getElementById('nav-admin-panel-toggle'), panel = document.getElementById('admin-panel');
-  if (!btn || !panel) return;
-  btn.addEventListener('click', function() { 
-    panel.hidden = false; 
-    document.getElementById('nav-user-menu').hidden = true; // Close user menu
-  });
+  var btn = document.getElementById('header-admin-btn'), panel = document.getElementById('admin-panel');
+  if (!panel) return;
+  if (btn) {
+    btn.addEventListener('click', function() { 
+      panel.hidden = false; 
+      document.getElementById('nav-user-menu').hidden = true; // Close user menu if open
+    });
+  }
   document.getElementById('admin-panel-backdrop')?.addEventListener('click', function() { panel.hidden = true; });
   document.getElementById('admin-panel-close')?.addEventListener('click', function() { panel.hidden = true; });
   document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && !panel.hidden) panel.hidden = true; });
@@ -443,48 +446,48 @@ async function initHeaderAuth() {
     const userAvatar = document.getElementById('nav-user-avatar');
     const menuAvatar = document.getElementById('nav-user-menu-avatar');
     const menuName = document.getElementById('nav-user-menu-name');
-    const menuStatus = document.getElementById('nav-user-menu-status');
+    const menuRole = document.getElementById('nav-user-menu-role');
     const profileLink = document.getElementById('nav-profile-link');
     const signoutBtn = document.getElementById('nav-signout');
-    const submissionsEl = document.getElementById('nav-user-submissions');
     const brandLink = document.getElementById('brand-link');
-    const adminToggle = document.getElementById('brand-admin-toggle');
     
     if (!CRCAuth.isSignedIn()) return;
     
     const metadata = CRCAuth.getProviderMetadata();
     const profile = CRCAuth.getProfile();
     
-    signinLink.hidden = true;
-    avatarBtn.hidden = false;
+    if (signinLink) signinLink.hidden = true;
+    if (avatarBtn) avatarBtn.hidden = false;
     
     const avatarUrl = metadata.providerAvatar || '/assets/img/site/default-runner.png';
-    userAvatar.src = avatarUrl;
-    menuAvatar.src = avatarUrl;
-    menuName.textContent = profile?.display_name || metadata.providerUsername || 'User';
+    if (userAvatar) userAvatar.src = avatarUrl;
+    if (menuAvatar) menuAvatar.src = avatarUrl;
+    if (menuName) menuName.textContent = profile?.display_name || metadata.providerUsername || 'User';
     
     if (profile && !profile._isPending) {
-      menuStatus.textContent = 'Runner';
-      profileLink.href = '/runners/' + profile.runner_id + '/';
-      profileLink.innerHTML = '<span class="nav-user__menu-icon">👤</span> My Profile';
+      if (profileLink) {
+        profileLink.href = '/runners/' + profile.runner_id + '/';
+        profileLink.innerHTML = '<span class="nav-user__menu-icon">👤</span> My Profile';
+      }
     } else if (profile && profile._isPending) {
-      menuStatus.textContent = '⏳ Profile Pending';
-      profileLink.href = '/profile/status/';
-      profileLink.innerHTML = '<span class="nav-user__menu-icon">⏳</span> Profile Status';
+      if (profileLink) {
+        profileLink.href = '/profile/status/';
+        profileLink.innerHTML = '<span class="nav-user__menu-icon">⏳</span> Profile Status';
+      }
+      if (menuRole) menuRole.textContent = '⏳ Pending';
     } else {
-      menuStatus.textContent = 'No Profile';
-      profileLink.href = '/profile/create/';
-      profileLink.innerHTML = '<span class="nav-user__menu-icon">➕</span> Create Profile';
+      if (profileLink) {
+        profileLink.href = '/profile/create/';
+        profileLink.innerHTML = '<span class="nav-user__menu-icon">➕</span> Create Profile';
+      }
+      if (menuRole) menuRole.textContent = 'No Profile';
     }
-    
-    loadUserSubmissions(submissionsEl);
     
     // Check roles and setup panel
     const role = await getUserRole();
     
-    // Update user menu role display
-    const menuRole = document.getElementById('nav-user-menu-role');
-    if (menuRole) {
+    // Update user menu role display (only if not already set to pending/no profile)
+    if (menuRole && profile && !profile._isPending) {
       const roleLabels = {
         'super_admin': 'Super Admin',
         'admin': 'Admin',
@@ -497,7 +500,6 @@ async function initHeaderAuth() {
     if (role !== 'none') {
       // Show admin button in header (next to logo)
       const headerAdminBtn = document.getElementById('header-admin-btn');
-      const headerAdminBadge = document.getElementById('header-admin-badge');
       const adminIndicator = document.getElementById('nav-user-admin-indicator');
       
       if (headerAdminBtn) headerAdminBtn.hidden = false;
@@ -507,7 +509,12 @@ async function initHeaderAuth() {
       loadAdminCounts();
     }
     
-    signoutBtn?.addEventListener('click', async () => { await CRCAuth.signOut(); window.location.href = '/'; });
+    if (signoutBtn) {
+      signoutBtn.addEventListener('click', async () => { 
+        await CRCAuth.signOut(); 
+        window.location.href = '/'; 
+      });
+    }
   } catch (err) { console.error('[Header] Auth error:', err); }
 }
 
