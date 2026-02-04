@@ -105,12 +105,42 @@ title: "Edit Profile"
           <p class="muted mb-3">Customize your profile appearance.</p>
           
           <div class="form-group">
-            <label class="form-label" for="avatar-url">Avatar URL</label>
-            <input type="url" id="avatar-url" name="avatar_url" class="form-input" placeholder="https://example.com/avatar.png" />
-            <p class="form-help">
-              Direct link to your avatar image (recommended: 200x200px, PNG or JPG)<br>
-              <span class="muted">Tip: Upload your image to <a href="https://imgur.com" target="_blank" rel="noopener">Imgur</a> or <a href="https://imgbb.com" target="_blank" rel="noopener">ImgBB</a> and paste the direct link here</span>
-            </p>
+            <label class="form-label">Avatar</label>
+            
+            <!-- Avatar Preview & Upload -->
+            <div class="avatar-upload">
+              <div class="avatar-upload__preview">
+                <img src="/assets/img/site/default-runner.png" alt="Avatar preview" id="avatar-preview" />
+                <div class="avatar-upload__overlay" id="avatar-overlay">
+                  <span>📷</span>
+                </div>
+              </div>
+              
+              <div class="avatar-upload__controls">
+                <input type="file" id="avatar-file" accept="image/png,image/jpeg,image/jpg" hidden />
+                <button type="button" class="btn btn--small" id="avatar-upload-btn">
+                  <span class="btn__text">📤 Upload Image</span>
+                  <span class="btn__loading" hidden>
+                    <span class="spinner spinner--small"></span>
+                    Uploading...
+                  </span>
+                </button>
+                <button type="button" class="btn btn--small btn--outline" id="avatar-remove-btn" hidden>
+                  🗑️ Remove
+                </button>
+                
+                <p class="form-help mt-2">
+                  PNG or JPG, max 2MB<br>
+                  Recommended: 200×200px or larger (square)
+                </p>
+              </div>
+            </div>
+            
+            <!-- Hidden input for the actual URL (set by upload) -->
+            <input type="hidden" id="avatar-url" name="avatar_url" />
+            
+            <!-- Upload status message -->
+            <div id="avatar-message" class="avatar-message" hidden></div>
           </div>
           
           <div class="form-group">
@@ -594,6 +624,100 @@ title: "Edit Profile"
   color: var(--text-muted);
   word-break: break-all;
 }
+
+/* Avatar Upload */
+.avatar-upload {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.avatar-upload__preview {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--surface);
+  border: 3px solid var(--border);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.avatar-upload__preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-upload__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  font-size: 1.5rem;
+}
+
+.avatar-upload__preview:hover .avatar-upload__overlay {
+  opacity: 1;
+}
+
+.avatar-upload__controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.avatar-upload__controls .btn {
+  width: fit-content;
+}
+
+.avatar-message {
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+}
+
+.avatar-message.is-success {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.avatar-message.is-error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.avatar-message.is-info {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.spinner--small {
+  width: 14px;
+  height: 14px;
+  border-width: 2px;
+}
+
+@media (max-width: 480px) {
+  .avatar-upload {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .avatar-upload__controls {
+    align-items: center;
+  }
+}
 </style>
 
 <script type="module">
@@ -613,6 +737,11 @@ let selectedFeatured = [];
 let otherLinks = [];
 const MAX_OTHER_LINKS = 3;
 
+// Avatar upload constants
+const AVATAR_BUCKET = 'avatars';
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/jpg'];
+
 function showState(state) {
   loadingState.hidden = state !== 'loading';
   notSignedIn.hidden = state !== 'not-signed-in';
@@ -630,6 +759,180 @@ function showMessage(text, type) {
 function hideMessage() {
   formMessage.hidden = true;
 }
+
+// ============================================
+// Avatar Upload
+// ============================================
+const avatarPreview = document.getElementById('avatar-preview');
+const avatarFile = document.getElementById('avatar-file');
+const avatarUploadBtn = document.getElementById('avatar-upload-btn');
+const avatarRemoveBtn = document.getElementById('avatar-remove-btn');
+const avatarOverlay = document.getElementById('avatar-overlay');
+const avatarUrlInput = document.getElementById('avatar-url');
+const avatarMessage = document.getElementById('avatar-message');
+
+function showAvatarMessage(text, type) {
+  if (!avatarMessage) return;
+  avatarMessage.textContent = text;
+  avatarMessage.className = `avatar-message is-${type}`;
+  avatarMessage.hidden = false;
+}
+
+function hideAvatarMessage() {
+  if (avatarMessage) avatarMessage.hidden = true;
+}
+
+function setAvatarLoading(isLoading) {
+  if (!avatarUploadBtn) return;
+  const textEl = avatarUploadBtn.querySelector('.btn__text');
+  const loadingEl = avatarUploadBtn.querySelector('.btn__loading');
+  
+  avatarUploadBtn.disabled = isLoading;
+  if (textEl) textEl.hidden = isLoading;
+  if (loadingEl) loadingEl.hidden = !isLoading;
+}
+
+function updateAvatarPreview(url) {
+  if (avatarPreview) {
+    avatarPreview.src = url || '/assets/img/site/default-runner.png';
+  }
+  if (avatarUrlInput) {
+    avatarUrlInput.value = url || '';
+  }
+  // Update the profile preview too
+  const previewAvatar = document.getElementById('preview-avatar');
+  if (previewAvatar) {
+    previewAvatar.src = url || '/assets/img/site/default-runner.png';
+  }
+  // Show/hide remove button
+  if (avatarRemoveBtn) {
+    avatarRemoveBtn.hidden = !url;
+  }
+}
+
+async function uploadAvatar(file) {
+  hideAvatarMessage();
+  
+  // Validate file type
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    showAvatarMessage('Please upload a PNG or JPG image.', 'error');
+    return null;
+  }
+  
+  // Validate file size
+  if (file.size > MAX_FILE_SIZE) {
+    showAvatarMessage('Image must be less than 2MB.', 'error');
+    return null;
+  }
+  
+  setAvatarLoading(true);
+  
+  try {
+    const user = CRCAuth.getUser();
+    if (!user) throw new Error('Not signed in');
+    
+    // Generate unique filename: user_id/timestamp.ext
+    const ext = file.type === 'image/png' ? 'png' : 'jpg';
+    const timestamp = Date.now();
+    const filePath = `${user.id}/${timestamp}.${ext}`;
+    
+    // Delete old avatar if exists (clean up old files)
+    if (currentProfile?.avatar_url) {
+      try {
+        const oldUrl = new URL(currentProfile.avatar_url);
+        // Extract the path from the URL if it's from our storage
+        if (oldUrl.hostname.includes('supabase')) {
+          const pathMatch = oldUrl.pathname.match(/\/storage\/v1\/object\/public\/avatars\/(.+)/);
+          if (pathMatch) {
+            await supabase.storage.from(AVATAR_BUCKET).remove([pathMatch[1]]);
+          }
+        }
+      } catch (e) {
+        // Ignore errors when deleting old avatar
+        console.log('Could not delete old avatar:', e);
+      }
+    }
+    
+    // Upload new avatar
+    const { data, error } = await supabase.storage
+      .from(AVATAR_BUCKET)
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: true
+      });
+    
+    if (error) throw error;
+    
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from(AVATAR_BUCKET)
+      .getPublicUrl(filePath);
+    
+    const publicUrl = urlData.publicUrl;
+    
+    updateAvatarPreview(publicUrl);
+    showAvatarMessage('Avatar uploaded! Remember to save your profile.', 'success');
+    
+    return publicUrl;
+    
+  } catch (err) {
+    console.error('Avatar upload error:', err);
+    showAvatarMessage(`Upload failed: ${err.message}`, 'error');
+    return null;
+  } finally {
+    setAvatarLoading(false);
+  }
+}
+
+async function removeAvatar() {
+  hideAvatarMessage();
+  
+  try {
+    const user = CRCAuth.getUser();
+    if (!user) return;
+    
+    // Try to delete from storage if it's our hosted image
+    if (currentProfile?.avatar_url) {
+      try {
+        const oldUrl = new URL(currentProfile.avatar_url);
+        if (oldUrl.hostname.includes('supabase')) {
+          const pathMatch = oldUrl.pathname.match(/\/storage\/v1\/object\/public\/avatars\/(.+)/);
+          if (pathMatch) {
+            await supabase.storage.from(AVATAR_BUCKET).remove([pathMatch[1]]);
+          }
+        }
+      } catch (e) {
+        console.log('Could not delete avatar from storage:', e);
+      }
+    }
+    
+    updateAvatarPreview(null);
+    showAvatarMessage('Avatar removed. Remember to save your profile.', 'info');
+    
+  } catch (err) {
+    showAvatarMessage(`Error: ${err.message}`, 'error');
+  }
+}
+
+// Avatar event listeners
+avatarUploadBtn?.addEventListener('click', () => {
+  avatarFile?.click();
+});
+
+avatarOverlay?.addEventListener('click', () => {
+  avatarFile?.click();
+});
+
+avatarFile?.addEventListener('change', async (e) => {
+  const file = e.target.files?.[0];
+  if (file) {
+    await uploadAvatar(file);
+  }
+  // Reset file input so same file can be selected again
+  e.target.value = '';
+});
+
+avatarRemoveBtn?.addEventListener('click', removeAvatar);
 
 // ============================================
 // Social URL Validation
@@ -988,10 +1291,11 @@ function populateForm(profile) {
   document.getElementById('bio').value = profile.bio || '';
   document.getElementById('status-message').value = profile.status_message || '';
   
-  // Customization
+  // Customization - Avatar
   document.getElementById('avatar-url').value = profile.avatar_url || '';
+  updateAvatarPreview(profile.avatar_url);
   
-  // Update preview
+  // Update profile card preview
   document.getElementById('preview-name').textContent = profile.display_name || 'Display Name';
   document.getElementById('preview-pronouns').textContent = profile.pronouns ? `(${profile.pronouns})` : '';
   if (profile.avatar_url) document.getElementById('preview-avatar').src = profile.avatar_url;
