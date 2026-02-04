@@ -112,7 +112,8 @@ function supabaseRequest(endpoint, options = {}) {
 }
 
 /**
- * Fetch approved runner profiles from Supabase
+ * Fetch runner profiles from Supabase
+ * Note: If you add a status/approval column later, you can filter here
  */
 async function fetchRunnerProfiles(runnerId = null) {
   let endpoint = 'runner_profiles';
@@ -121,12 +122,13 @@ async function fetchRunnerProfiles(runnerId = null) {
     order: 'runner_id.asc'
   };
   
-  // Only fetch approved profiles (column is profile_status, not status)
-  params['profile_status'] = 'eq.approved';
-  
+  // Filter by specific runner if provided
   if (runnerId) {
     params['runner_id'] = `eq.${runnerId}`;
   }
+
+  // Note: Add status filter here if/when you have an approval column
+  // Example: params['profile_status'] = 'eq.approved';
 
   return supabaseRequest(endpoint, { params });
 }
