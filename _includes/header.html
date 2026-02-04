@@ -8,6 +8,12 @@
   
   <!-- Brand/Logo -->
   <a class="brand" href="{{ '/' | relative_url }}" id="brand-link" title="Go to Home">CRC</a>
+  
+  <!-- Admin Panel Button (next to logo, only for admins) -->
+  <a href="{{ '/admin/test/' | relative_url }}" class="header-admin-btn" id="header-admin-btn" hidden title="Admin Panel">
+    <span class="header-admin-btn__icon">🛡️</span>
+    <span class="header-admin-btn__badge" id="header-admin-badge" hidden>0</span>
+  </a>
 
   <nav class="nav" aria-label="Primary navigation">
     <div class="nav-group">
@@ -49,12 +55,15 @@
           <img class="nav-user__menu-avatar" id="nav-user-menu-avatar" src="/assets/img/site/default-runner.png" alt="" />
           <div class="nav-user__menu-info">
             <span class="nav-user__menu-name" id="nav-user-menu-name">User</span>
-            <span class="nav-user__menu-status" id="nav-user-menu-status">Signed In</span>
+            <span class="nav-user__menu-role" id="nav-user-menu-role">Runner</span>
           </div>
         </div>
         <div class="nav-user__menu-items">
           <a href="#" class="nav-user__menu-item" id="nav-profile-link">
             <span class="nav-user__menu-icon">👤</span> My Profile
+          </a>
+          <a href="{{ '/profile/edit/' | relative_url }}" class="nav-user__menu-item">
+            <span class="nav-user__menu-icon">✏️</span> Edit Profile
           </a>
           <a href="{{ '/profile/theme/' | relative_url }}" class="nav-user__menu-item">
             <span class="nav-user__menu-icon">🎨</span> Theme
@@ -63,19 +72,18 @@
             <span class="nav-user__menu-icon">⚙️</span> Account Settings
           </a>
           <hr class="nav-user__menu-divider">
-          <!-- Admin Panel Toggle (only shows for admins/verifiers) -->
-          <button type="button" class="nav-user__menu-item" id="nav-admin-panel-toggle" hidden>
-            <span class="nav-user__menu-icon">🛡️</span> 
-            <span>Admin Panel</span>
-            <span class="nav-user__menu-badge" id="nav-admin-badge" hidden>0</span>
-          </button>
-          <hr class="nav-user__menu-divider" id="nav-admin-divider" hidden>
-          <div class="nav-user__menu-section">
-            <span class="nav-user__menu-section-title">Pending Submissions</span>
-            <div id="nav-user-submissions" class="nav-user__submissions">
-              <span class="nav-user__menu-muted">No pending submissions</span>
-            </div>
-          </div>
+          <!-- Messages -->
+          <a href="{{ '/profile/messages/' | relative_url }}" class="nav-user__menu-item" id="nav-messages-link">
+            <span class="nav-user__menu-icon">💬</span> 
+            <span>Messages</span>
+            <span class="nav-user__menu-badge" id="nav-messages-badge" hidden>0</span>
+          </a>
+          <!-- Pending Submissions -->
+          <a href="{{ '/profile/submissions/' | relative_url }}" class="nav-user__menu-item" id="nav-submissions-link">
+            <span class="nav-user__menu-icon">📋</span> 
+            <span>Pending Submissions</span>
+            <span class="nav-user__menu-badge" id="nav-submissions-badge" hidden>0</span>
+          </a>
           <hr class="nav-user__menu-divider">
           <button type="button" class="nav-user__menu-item nav-user__menu-item--signout" id="nav-signout">
             <span class="nav-user__menu-icon">🚪</span> Sign Out
@@ -192,6 +200,64 @@
 </script>
 
 <style>
+/* Header Admin Button (next to logo) */
+.header-admin-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 0.4rem;
+  margin-left: 0.5rem;
+  background: rgba(var(--accent-rgb), 0.15);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  color: var(--accent);
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+.header-admin-btn:hover {
+  background: var(--accent);
+  color: var(--bg);
+}
+.header-admin-btn[hidden] { display: none; }
+.header-admin-btn__icon { font-size: 1rem; }
+.header-admin-btn__badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #dc3545;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 10px;
+  min-width: 16px;
+  text-align: center;
+}
+.header-admin-btn__badge[hidden] { display: none; }
+
+/* User Menu Role Badge */
+.nav-user__menu-role {
+  font-size: 0.75rem;
+  color: var(--accent);
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+/* User Menu Badge (for messages/submissions count) */
+.nav-user__menu-badge {
+  background: #dc3545;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 16px;
+  text-align: center;
+  margin-left: auto;
+}
+.nav-user__menu-badge[hidden] { display: none; }
+
 /* Admin Panel Toggle */
 .brand--admin-toggle { display: flex; align-items: center; gap: 6px; background: none; border: none; color: var(--accent); font-weight: 800; font-size: inherit; cursor: pointer; padding: 0.25rem 0.5rem; margin: -0.25rem -0.5rem; border-radius: 6px; position: relative; }
 .brand--admin-toggle:hover { background: var(--surface); }
@@ -415,15 +481,26 @@ async function initHeaderAuth() {
     
     // Check roles and setup panel
     const role = await getUserRole();
+    
+    // Update user menu role display
+    const menuRole = document.getElementById('nav-user-menu-role');
+    if (menuRole) {
+      const roleLabels = {
+        'super_admin': 'Super Admin',
+        'admin': 'Admin',
+        'verifier': 'Verifier',
+        'none': 'Runner'
+      };
+      menuRole.textContent = roleLabels[role] || 'Runner';
+    }
+    
     if (role !== 'none') {
-      // Show admin panel toggle in user menu
-      const adminToggle = document.getElementById('nav-admin-panel-toggle');
-      const adminDivider = document.getElementById('nav-admin-divider');
-      const adminBadge = document.getElementById('nav-admin-badge');
+      // Show admin button in header (next to logo)
+      const headerAdminBtn = document.getElementById('header-admin-btn');
+      const headerAdminBadge = document.getElementById('header-admin-badge');
       const adminIndicator = document.getElementById('nav-user-admin-indicator');
       
-      if (adminToggle) adminToggle.hidden = false;
-      if (adminDivider) adminDivider.hidden = false;
+      if (headerAdminBtn) headerAdminBtn.hidden = false;
       if (adminIndicator) adminIndicator.hidden = false;
       
       setupAdminPanel(role, profile);
@@ -541,8 +618,9 @@ async function loadAdminCounts() {
     }
     
     if (total > 0) {
-      const mainBadge = document.getElementById('brand-admin-badge');
-      if (mainBadge) { mainBadge.textContent = total; mainBadge.hidden = false; }
+      // Update header admin button badge
+      const headerBadge = document.getElementById('header-admin-badge');
+      if (headerBadge) { headerBadge.textContent = total; headerBadge.hidden = false; }
     }
   } catch (e) { console.error('[Header] Admin counts:', e); }
 }
