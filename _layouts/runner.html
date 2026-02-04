@@ -25,7 +25,10 @@ layout: default
       ></div>
 
       <div class="runner-name">
-        <h1>{{ page.runner_name }}</h1>
+        <h1>{{ page.runner_name }}{% if page.pronouns %} <span class="runner-pronouns">({{ page.pronouns }})</span>{% endif %}</h1>
+        {% if page.location %}
+          <p class="runner-location muted">📍 {{ page.location }}</p>
+        {% endif %}
         {% if page.status %}
           <p class="muted runner-status">{{ page.status }}</p>
         {% endif %}
@@ -119,6 +122,13 @@ layout: default
        PROFILE PANEL
        ========================================================== -->
   <section class="tab-panel active" data-panel="profile">
+    {% if page.bio and page.bio != "" %}
+      <div class="card runner-bio-card">
+        <h2>About</h2>
+        <p>{{ page.bio }}</p>
+      </div>
+    {% endif %}
+    
     {% if content and content != "" %}
       <div class="card">{{ content }}</div>
     {% endif %}
@@ -418,6 +428,21 @@ layout: default
      Tabs Script (switch panels without changing pages)
      ============================================================ -->
 <style>
+/* Runner Profile Info */
+.runner-pronouns {
+  font-size: 0.8em;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+.runner-location {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.9rem;
+}
+.runner-bio-card p {
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
 /* Social Icons */
 .social-icon {
   width: 16px;
