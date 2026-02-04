@@ -121,8 +121,8 @@ async function fetchRunnerProfiles(runnerId = null) {
     order: 'runner_id.asc'
   };
   
-  // Only fetch approved profiles
-  params['status'] = 'eq.approved';
+  // Only fetch approved profiles (column is profile_status, not status)
+  params['profile_status'] = 'eq.approved';
   
   if (runnerId) {
     params['runner_id'] = `eq.${runnerId}`;
