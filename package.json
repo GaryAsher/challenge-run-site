@@ -12,21 +12,23 @@
     "validate:terms": "node scripts/check-banned-terms.js",
     
     "//2": "=== GENERATION ===",
-    "generate": "npm run generate:codeowners && npm run generate:game-pages && npm run generate:run-categories && npm run generate:form-index",
+    "generate": "npm run generate:codeowners && npm run generate:game-pages && npm run generate:run-categories && npm run generate:form-index && npm run generate:runner-game-pages",
     "generate:codeowners": "node scripts/generate-codeowners.js",
     "generate:game-pages": "node scripts/generate-game-pages.js",
     "generate:run-categories": "node scripts/generate-run-category-pages.js",
     "generate:form-index": "node scripts/generate-form-index.js",
+    "generate:runner-game-pages": "node scripts/generate-runner-game-pages.js"
     
     "//3": "=== QUICK COMMANDS ===",
     "regen": "npm run generate && git add -A && git commit -m 'chore: Regenerate pages' && git push",
     "regen:dry": "npm run generate && git status",
     
     "//4": "=== CI CHECKS ===",
-    "check:all": "npm run check:run-categories && npm run check:codeowners && npm run check:game-pages",
+    "check:all": "npm run check:run-categories && npm run check:codeowners && npm run check:game-pages && npm run check:runner-game-pages",
     "check:run-categories": "node scripts/generate-run-category-pages.js --check",
     "check:codeowners": "node scripts/generate-codeowners.js --check",
     "check:game-pages": "node scripts/generate-game-pages.js --check",
+    "check:runner-game-pages": "node scripts/generate-runner-game-pages.js"
     
     "//5": "=== MODERATION ===",
     "promote:runs": "node scripts/promote-runs.js",
