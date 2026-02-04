@@ -23,9 +23,14 @@ This document consolidates all reminders, future ideas, and planned features for
 ## Immediate Priorities
 
 ### 1 Runner Profiles
-- [ ] fix Status Message
+- [ ] For Profile Editing:
+  - Keep static Jekyll pages for SEO and fast loading
+  - Add JavaScript to fetch live data from Supabase for the user's OWN profile
+  - Other visitors see the static version, but logged-in users see their live data
 - [ ] Fix Structure of Bio
-- [ ] Revamp completed runs
+- [ ] Completed Runs:
+  - fetch game image
+  - Generate Respective game pages
 - [ ] For Achievements, let runners post Community Achievements they have accomplished and to make an achievement of their own.
   - As an example. Maybe Hades 2 has a community achievement for getting a run with every aspect. On the game page, they track how many runners have achieved this.
   - The runner might also choose to make something like that of their own, but it would not be tied to a game page.
