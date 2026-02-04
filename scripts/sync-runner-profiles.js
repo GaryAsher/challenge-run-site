@@ -326,15 +326,16 @@ function writeRunnerFile(profile, existing) {
  * Check if file needs updating
  */
 function needsUpdate(profile, existing) {
-  if (FORCE) return true;
-  if (!existing) return true;
+  // Always update for now - we want changes to sync
+  // The PR will show the diff anyway
+  return true;
   
-  // Simple check: compare display name and socials
-  // In a real implementation, you'd do a deeper comparison
-  const currentName = existing.originalContent.match(/runner_name: (.+)/)?.[1];
-  if (currentName !== profile.display_name) return true;
-  
-  return false;
+  // Original logic (can re-enable later for optimization):
+  // if (FORCE) return true;
+  // if (!existing) return true;
+  // const currentName = existing.originalContent.match(/runner_name: (.+)/)?.[1];
+  // if (currentName !== profile.display_name) return true;
+  // return false;
 }
 
 // ============================================================
