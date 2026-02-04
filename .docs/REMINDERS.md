@@ -2,13 +2,12 @@
 
 This document consolidates all reminders, future ideas, and planned features for CRC.
 
-**Last updated:** 2026/02/03
+**Last updated:** 2026/02/04
 
 ---
 
 ## Revisit
 ### Admin Profile
-- [ ] Move Admin Panel to somewhere actually not annoying. Ideally where the CRC logo is.
 - [ ] Dashboard:
   - Debug View needs to be revamped.
 - [ ] Site Health:
@@ -22,7 +21,6 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ### 2. Runner Profiles
 - [ ] Edit Profile
-  - [ ] Info from Edit Profile is not updating to the Runner's Page?
   - [ ] Users to uplaod png or jpg for profile:
     - Supabase Storage
       - Create a storage bucket for avatars
