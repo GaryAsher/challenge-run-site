@@ -17,7 +17,7 @@
     "generate:game-pages": "node scripts/generate-game-pages.js",
     "generate:run-categories": "node scripts/generate-run-category-pages.js",
     "generate:form-index": "node scripts/generate-form-index.js",
-    "generate:runner-game-pages": "node scripts/generate-runner-game-pages.js"
+    "generate:runner-game-pages": "node scripts/generate-runner-game-pages.js",
     
     "//3": "=== QUICK COMMANDS ===",
     "regen": "npm run generate && git add -A && git commit -m 'chore: Regenerate pages' && git push",
@@ -28,12 +28,11 @@
     "check:run-categories": "node scripts/generate-run-category-pages.js --check",
     "check:codeowners": "node scripts/generate-codeowners.js --check",
     "check:game-pages": "node scripts/generate-game-pages.js --check",
-    "check:runner-game-pages": "node scripts/generate-runner-game-pages.js"
+    "check:runner-game-pages": "node scripts/generate-runner-game-pages.js --check",
     
     "//5": "=== MODERATION ===",
     "promote:runs": "node scripts/promote-runs.js",
     "promote:runs:dry": "node scripts/promote-runs.js --dry-run"
-    
   },
   "dependencies": {
     "js-yaml": "^4.1.0"
