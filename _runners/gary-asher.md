@@ -2,9 +2,10 @@
 layout: runner
 runner_id: gary-asher
 runner_name: Gary Asher
-avatar: /assets/img/runners/g/gary-asher.png
+avatar: https://riwcekvwpwmbtihjqhmh.supabase.co/storage/v1/object/public/avatars/1130d9b9-db13-41ad-b6b0-737826590e37/1770189169973.png
 pronouns: test pronouns
 location: test location
+status: "test status"
 cover_position: center
 
 # Admin privileges
