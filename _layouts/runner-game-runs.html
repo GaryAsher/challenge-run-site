@@ -1,0 +1,345 @@
+---
+layout: default
+---
+
+{% comment %}
+  Runner Game Runs Layout
+  Shows all runs by a specific runner for a specific game
+  URL: /runners/{runner_id}/runs/{game_id}/
+{% endcomment %}
+
+{% assign runner = site.runners | where: "runner_id", page.runner_id | first %}
+{% assign game = site.games | where: "game_id", page.game_id | first %}
+
+<!-- Breadcrumb -->
+<div class="page-width">
+  <p class="muted mb-3">
+    <a href="{{ '/runners/' | relative_url }}">Runners</a>
+    <span class="breadcrumb-sep">›</span>
+    <a href="{{ '/runners/' | append: page.runner_id | append: '/' | relative_url }}">{{ runner.runner_name | default: page.runner_id }}</a>
+    <span class="breadcrumb-sep">›</span>
+    <span>{{ game.game_name | default: page.game_id }}</span>
+  </p>
+
+  <!-- Header -->
+  <header class="runner-game-header">
+    <div class="runner-game-header__game">
+      {% if game %}
+        <div class="runner-game-header__cover" data-bg="{{ game.avatar | relative_url }}"></div>
+      {% endif %}
+      <div class="runner-game-header__info">
+        <h1>{{ game.game_name | default: page.game_id }}</h1>
+        <p class="muted">Runs by <a href="{{ '/runners/' | append: page.runner_id | append: '/' | relative_url }}">{{ runner.runner_name | default: page.runner_id }}</a></p>
+      </div>
+    </div>
+    
+    <div class="runner-game-header__actions">
+      <a href="{{ game.url | append: 'runs/' | relative_url }}" class="btn btn--outline">
+        View All {{ game.game_name }} Runs
+      </a>
+    </div>
+  </header>
+
+  {% comment %} Get this runner's runs for this game {% endcomment %}
+  {% assign all_runs = "" | split: "" %}
+  {% for r in site.runs %}
+    {% if r and r.runner_id %}
+      {% assign all_runs = all_runs | push: r %}
+    {% endif %}
+  {% endfor %}
+
+  {% assign rid = page.runner_id | default: "" | strip | downcase %}
+  {% assign gid = page.game_id | default: "" | strip | downcase %}
+  {% assign runner_runs = all_runs | where: "runner_id", rid | where: "game_id", gid | sort: "date_completed" | reverse %}
+
+  {% if runner_runs and runner_runs.size > 0 %}
+    <div class="card mb-3">
+      <p class="muted">{{ runner_runs.size }} run{% if runner_runs.size != 1 %}s{% endif %}</p>
+    </div>
+
+    {% comment %} Group runs by category {% endcomment %}
+    {% assign categories_seen = "" | split: "" %}
+    {% for r in runner_runs %}
+      {% assign cat = r.category | default: "Uncategorized" %}
+      {% unless categories_seen contains cat %}
+        {% assign categories_seen = categories_seen | push: cat %}
+      {% endunless %}
+    {% endfor %}
+
+    {% for category in categories_seen %}
+      {% assign category_runs = runner_runs | where: "category", category %}
+      {% if category == "Uncategorized" %}
+        {% assign category_runs = "" | split: "" %}
+        {% for r in runner_runs %}
+          {% if r.category == nil or r.category == "" %}
+            {% assign category_runs = category_runs | push: r %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+      
+      <div class="card mb-3">
+        <h2 class="category-title">{{ category }}</h2>
+        <p class="muted mb-3">{{ category_runs.size }} run{% if category_runs.size != 1 %}s{% endif %}</p>
+
+        <div class="runs-list">
+          {% for r in category_runs %}
+            {% assign r_video = r.video_url | default: r.video | default: "" %}
+            {% assign r_date = r.date_completed | default: "" %}
+            {% assign r_time = r.time | default: "" %}
+
+            {% comment %} Build challenge labels {% endcomment %}
+            {% assign challenge_labels = "" | split: "" %}
+            
+            {% if r.standard_challenges and r.standard_challenges.size > 0 %}
+              {% for ch_id in r.standard_challenges %}
+                {% assign ch_label = ch_id %}
+                {% if game and game.challenges_data %}
+                  {% for gch in game.challenges_data %}
+                    {% if gch.slug == ch_id %}
+                      {% assign ch_label = gch.label | default: ch_id %}
+                      {% break %}
+                    {% endif %}
+                  {% endfor %}
+                {% endif %}
+                {% if ch_label == ch_id %}
+                  {% assign chmeta = site.data.challenges[ch_id] %}
+                  {% if chmeta and chmeta.label %}{% assign ch_label = chmeta.label %}{% endif %}
+                {% endif %}
+                {% assign challenge_labels = challenge_labels | push: ch_label %}
+              {% endfor %}
+            {% endif %}
+            
+            {% if r.community_challenge and r.community_challenge != "" %}
+              {% assign challenge_labels = challenge_labels | push: r.community_challenge %}
+            {% endif %}
+
+            <article class="run-row">
+              <div class="run-row__main">
+                <div class="run-row__time">
+                  {% if r_time != "" %}
+                    <span class="time-value">{{ r_time }}</span>
+                  {% else %}
+                    <span class="time-value muted">—</span>
+                  {% endif %}
+                </div>
+                
+                <div class="run-row__details">
+                  {% if challenge_labels and challenge_labels.size > 0 %}
+                    <div class="run-row__challenges">
+                      {% for ch_lbl in challenge_labels %}
+                        <span class="tag tag--small">{{ ch_lbl }}</span>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                  
+                  <div class="run-row__meta">
+                    {% if r_date != "" %}
+                      <span><time datetime="{{ r_date }}">{{ r_date }}</time></span>
+                    {% endif %}
+                    
+                    {% if r.platform and r.platform != "" %}
+                      <span>{{ r.platform }}</span>
+                    {% endif %}
+                    
+                    {% if r.verified_by and r.verified_by != "" %}
+                      <span class="verified">✓ Verified</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              
+              <div class="run-row__actions">
+                {% if r_video != "" %}
+                  <a href="{{ r_video }}" target="_blank" rel="noopener" class="btn btn--small">
+                    ▶ Watch
+                  </a>
+                {% endif %}
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+
+  {% else %}
+    <div class="card">
+      <p class="muted">No runs found for this game.</p>
+    </div>
+  {% endif %}
+</div>
+
+<style>
+/* Breadcrumb */
+.breadcrumb-sep {
+  margin: 0 0.5rem;
+  opacity: 0.5;
+}
+
+/* Runner Game Header */
+.runner-game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.runner-game-header__game {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.runner-game-header__cover {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-sm);
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0;
+}
+
+.runner-game-header__info h1 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.5rem;
+}
+
+.runner-game-header__info p {
+  margin: 0;
+}
+
+.runner-game-header__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Category Title */
+.category-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+}
+
+/* Runs List */
+.runs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.run-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  gap: 1rem;
+}
+
+.run-row__main {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.run-row__time {
+  min-width: 80px;
+}
+
+.time-value {
+  font-weight: 700;
+  font-size: 1.1rem;
+  font-family: var(--font-mono, monospace);
+}
+
+.run-row__details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.run-row__challenges {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.run-row__meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.run-row__meta .verified {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.run-row__actions {
+  flex-shrink: 0;
+}
+
+.tag--small {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.4rem;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .runner-game-header {
+    flex-direction: column;
+  }
+  
+  .runner-game-header__actions {
+    width: 100%;
+  }
+  
+  .runner-game-header__actions .btn {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .run-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .run-row__main {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  
+  .run-row__actions {
+    width: 100%;
+  }
+  
+  .run-row__actions .btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* Lazy load backgrounds */
+[data-bg] {
+  background-color: var(--surface);
+}
+</style>
+
+<script>
+// Lazy load background images
+document.querySelectorAll('[data-bg]').forEach(el => {
+  const bg = el.dataset.bg;
+  if (bg) {
+    el.style.backgroundImage = `url('${bg}')`;
+  }
+});
+</script>
