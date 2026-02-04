@@ -85,7 +85,7 @@ layout: default
           {% for r in category_runs %}
             {% assign r_video = r.video_url | default: r.video | default: "" %}
             {% assign r_date = r.date_completed | default: "" %}
-            {% assign r_time = r.time | default: "" %}
+            {% assign r_time = r.time_primary | default: r.time | default: "" %}
 
             {% comment %} Build challenge labels {% endcomment %}
             {% assign challenge_labels = "" | split: "" %}
