@@ -40,7 +40,7 @@ layout: default
     </div>
   </header>
 
-  {% comment %} Get this runner's runs for this game {% endcomment %}
+  <!--  Get this runner's runs for this game -->
   {% assign all_runs = "" | split: "" %}
   {% for r in site.runs %}
     {% if r and r.runner_id %}
@@ -57,7 +57,7 @@ layout: default
       <p class="muted">{{ runner_runs.size }} run{% if runner_runs.size != 1 %}s{% endif %}</p>
     </div>
 
-    {% comment %} Group runs by category {% endcomment %}
+    <!--   Group runs by category -->
     {% assign categories_seen = "" | split: "" %}
     {% for r in runner_runs %}
       {% assign cat = r.category | default: "Uncategorized" %}
