@@ -12,28 +12,31 @@ This document consolidates all reminders, future ideas, and planned features for
   - Debug View needs to be revamped.
 - [ ] Site Health:
   - Performance Report needs to be revamped.
-  
+### Global
+- [ ] Icons for Admins, Super Admins, Verifiers. These would be attached to their profile.
+- [ ] Add default profile picture and default banner.
+
 ---
 
 # Priority Roadmap
 
 ## Immediate Priorities
 
-### 2. Runner Profiles
-- [ ] Edit Profile
-  - [ ] Users to uplaod png or jpg for profile:
-    - Supabase Storage
-      - Create a storage bucket for avatars
-      - Add file type validation (PNG, JPG only)
-      - Set max file size (e.g., 2MB)
-      - Use RLS policies to ensure users can only upload to their own folder
+### 1 Runner Profiles
+- [ ] fix Status Message
+- [ ] Fix Structure of Bio
+- [ ] Revamp completed runs
+- [ ] For Achievements, let runners post Community Achievements they have accomplished and to make an achievement of their own.
+  - As an example. Maybe Hades 2 has a community achievement for getting a run with every aspect. On the game page, they track how many runners have achieved this.
+  - The runner might also choose to make something like that of their own, but it would not be tied to a game page.
+- [ ] For Contributions, have these link to the appropriate achievements that the runner has been credited for.
 
-### 2.5 Modded Game Support
+### 2 Modded Game Support
 - [ ] Allow modded versions of games
 - [ ] Link between modded and main game pages
 - [ ] "Modded" tag for categories
 
-### 2.75 Games page
+### 2.5 Games page
 - [ ] Add A Game for "Multi-Game Runs". These are multiple games done in succession. The Game page that it belongs to will have a link to these below the "Modded Game"
 
 ### 3. Forms & Submissions
