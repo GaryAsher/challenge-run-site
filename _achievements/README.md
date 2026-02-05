@@ -19,8 +19,11 @@ game_id: hades-2
 runner_id: gary-asher
 achievement_slug: all-aspects-clear
 
+# Progress tracking (for partial completions)
+current_progress: 15          # Current progress toward total_required
+
 # Completion Info
-date_completed: 2025-01-15
+date_completed: 2025-01-15    # Empty if still in progress
 proof_url: https://youtube.com/watch?v=...
 
 # Optional
@@ -42,13 +45,19 @@ rejection_reason: ""    # only if rejected
 | `approved` | Verified and displayed |
 | `rejected` | Not accepted (reason provided) |
 
+## Progress Tracking
+
+- `current_progress` tracks partial completion toward `total_required` (defined in game's achievement)
+- If `date_completed` is set, the achievement is considered fully completed
+- If `date_completed` is empty but `current_progress` > 0, it shows as "In Progress"
+
 ## How Achievements Work
 
 1. **Game defines achievements** in `_games/{game}.md` under `community_achievements:`
 2. **Runner submits completion** via the achievement submission form
 3. **Admin reviews** the proof video and approves/rejects
 4. **Approved completions** appear on:
-   - The game's Achievements tab (with completion count)
+   - The game's Overview tab (with completion count and runner progress)
    - The runner's profile Achievements section
 
 ## Example Game Achievement Definition
