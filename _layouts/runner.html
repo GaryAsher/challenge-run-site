@@ -12,6 +12,55 @@ layout: default
 {% assign games_with_runs = "" | split: "" %}
 {% for r in all_runner_runs %}{% unless games_with_runs contains r.game_id %}{% assign games_with_runs = games_with_runs | push: r.game_id %}{% endunless %}{% endfor %}
 
+{% comment %} Calculate full runs vs mini-challenge runs {% endcomment %}
+{% assign full_run_count = 0 %}
+{% assign mini_run_count = 0 %}
+{% for r in all_runner_runs %}
+  {% assign game = site.games | where: "game_id", r.game_id | first %}
+  {% assign is_full_run = false %}
+  {% assign is_mini_run = false %}
+  
+  {% comment %} Check if category_slug matches a full_run {% endcomment %}
+  {% if game.full_runs %}
+    {% for fr in game.full_runs %}
+      {% if fr.slug == r.category_slug %}
+        {% assign is_full_run = true %}
+        {% break %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+  
+  {% comment %} Check if category_slug matches a mini_challenge (including nested children) {% endcomment %}
+  {% unless is_full_run %}
+    {% if game.mini_challenges %}
+      {% for mc in game.mini_challenges %}
+        {% if mc.slug == r.category_slug %}
+          {% assign is_mini_run = true %}
+          {% break %}
+        {% endif %}
+        {% if mc.children %}
+          {% for child in mc.children %}
+            {% if child.slug == r.category_slug %}
+              {% assign is_mini_run = true %}
+              {% break %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+        {% if is_mini_run %}{% break %}{% endif %}
+      {% endfor %}
+    {% endif %}
+  {% endunless %}
+  
+  {% if is_full_run %}
+    {% assign full_run_count = full_run_count | plus: 1 %}
+  {% elsif is_mini_run %}
+    {% assign mini_run_count = mini_run_count | plus: 1 %}
+  {% else %}
+    {% comment %} Default to full run if category type unknown {% endcomment %}
+    {% assign full_run_count = full_run_count | plus: 1 %}
+  {% endif %}
+{% endfor %}
+
 <div class="page-width">
   <p class="muted mb-3">
     <a href="{{ '/runners/' | relative_url }}">← Runners</a>
@@ -56,16 +105,37 @@ layout: default
 
   {% if page.bio and page.bio != "" %}<section class="runner-bio card" id="runner-bio-section"><h2>About</h2><p id="runner-bio">{{ page.bio }}</p></section>{% else %}<section class="runner-bio card" id="runner-bio-section" hidden><h2>About</h2><p id="runner-bio"></p></section>{% endif %}
 
-  <nav class="runner-tabs game-tabs"><button class="tab active" data-tab="runs" type="button">Completed Runs</button><button class="tab" data-tab="achievements" type="button">Achievements</button><button class="tab" data-tab="contributions" type="button">Contributions</button></nav>
+  <nav class="runner-tabs game-tabs"><button class="tab active" data-tab="runs" type="button">Run Statistics</button><button class="tab" data-tab="achievements" type="button">Achievements</button><button class="tab" data-tab="contributions" type="button">Contributions</button></nav>
 
   <!-- RUNS PANEL -->
   <section class="tab-panel active" data-panel="runs">
+    
+    <!-- Statistics Summary Card -->
+    <div class="runner-stats-card">
+      <div class="runner-stat">
+        <span class="runner-stat__value">{{ games_with_runs.size }}</span>
+        <span class="runner-stat__label">Game{% if games_with_runs.size != 1 %}s{% endif %}</span>
+      </div>
+      <div class="runner-stat">
+        <span class="runner-stat__value">{{ full_run_count }}</span>
+        <span class="runner-stat__label">Full Run{% if full_run_count != 1 %}s{% endif %}</span>
+      </div>
+      <div class="runner-stat">
+        <span class="runner-stat__value">{{ mini_run_count }}</span>
+        <span class="runner-stat__label">Mini-Challenge{% if mini_run_count != 1 %}s{% endif %}</span>
+      </div>
+      <div class="runner-stat runner-stat--total">
+        <span class="runner-stat__value">{{ all_runner_runs.size }}</span>
+        <span class="runner-stat__label">Total</span>
+      </div>
+    </div>
+
     {% if all_runner_runs and all_runner_runs.size > 0 %}
       
       <!-- Games Grid View (default, hidden when ?game= is set) -->
       <div id="runs-games-view">
         <div class="card">
-          <h2>Completed Runs</h2>
+          <h2>Run History</h2>
           <p class="muted">{{ all_runner_runs.size }} run{% if all_runner_runs.size != 1 %}s{% endif %} across {{ games_with_runs.size }} game{% if games_with_runs.size != 1 %}s{% endif %}</p>
         </div>
         <div class="runner-games-grid">
@@ -269,6 +339,15 @@ layout: default
 .live-data-notice{background:rgba(var(--accent-rgb,59,195,110),.1);border:1px solid var(--accent);color:var(--accent);padding:.5rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem;font-size:.85rem}.live-data-notice[hidden]{display:none}
 .runner-pronouns{font-size:.8em;font-weight:400;color:var(--text-muted)}.runner-location{margin:.25rem 0 0 0;font-size:.9rem}.runner-bio{margin-bottom:1.5rem}.runner-bio h2{margin:0 0 .5rem 0;font-size:1.1rem}.runner-bio p{margin:0;line-height:1.6;white-space:pre-wrap}
 .social-icon{width:16px;height:16px;flex-shrink:0}.runner-link--twitch:hover{color:#9146ff;border-color:#9146ff}.runner-link--youtube:hover{color:#ff0000;border-color:#ff0000}.runner-link--discord:hover{color:#5865f2;border-color:#5865f2}.runner-link--steam:hover{color:#00adee;border-color:#00adee}.runner-link--twitter:hover{color:#1da1f2;border-color:#1da1f2}.runner-link--bluesky:hover{color:#0085ff;border-color:#0085ff}.runner-link--speedrun:hover{color:#ffd700;border-color:#ffd700}
+
+/* Runner Statistics Card */
+.runner-stats-card{display:flex;gap:1rem;margin-bottom:1rem;padding:1rem 1.25rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg)}
+.runner-stat{display:flex;flex-direction:column;align-items:center;padding:0 1rem;border-right:1px solid var(--border)}
+.runner-stat:last-child{border-right:none}
+.runner-stat--total{margin-left:auto;padding-left:1.5rem;border-left:2px solid var(--accent);border-right:none}
+.runner-stat__value{font-size:1.75rem;font-weight:700;color:var(--accent);line-height:1}
+.runner-stat__label{font-size:.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-top:.25rem}
+
 .runner-games-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;margin-top:1rem}
 .runner-game-card{position:relative;display:block;aspect-ratio:16/10;border-radius:var(--radius-sm);overflow:hidden;text-decoration:none;color:#fff;background:var(--surface)}
 .runner-game-card__bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform .3s ease}
@@ -366,6 +445,9 @@ layout: default
 .empty-icon{display:block;font-size:3rem;margin-bottom:1rem;opacity:.5}
 .mt-3{margin-top:1rem}.mb-3{margin-bottom:1rem}
 @media(max-width:600px){
+  .runner-stats-card{flex-wrap:wrap;justify-content:center}
+  .runner-stat{padding:0 .75rem;min-width:70px}
+  .runner-stat--total{margin-left:0;border-left:none;border-top:1px solid var(--border);padding-top:.75rem;margin-top:.5rem;width:100%;flex-direction:row;justify-content:center;gap:.5rem}
   .runner-games-grid{grid-template-columns:1fr}
   .credits-grid{grid-template-columns:repeat(2,1fr)}
   .runs-detail-header{flex-direction:column;align-items:flex-start}
