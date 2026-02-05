@@ -226,20 +226,13 @@ mini_challenges:
     children:
       - slug: gruz-mother
         label: "Gruz Mother"
-        
+
 # =============================================================================
 # PLAYER-MADE CHALLENGES
 # Community-created challenges with arbitrary goals
 # Promoted from forum when popular enough
 # =============================================================================
 player_made: []
-# Example:
-#   - slug: no-dash
-#     label: "No Dash"
-#     description: "Complete a run without using the dash ability."
-#     creator: runner-slug
-#     created_date: 2026-01-15
-#     promoted_from_forum: true
 
 # =============================================================================
 # TIMING METHOD
@@ -260,6 +253,11 @@ characters_data: []
 # =============================================================================
 cover: /assets/img/games/h/hollow-knight.jpg
 cover_position: center
+
+# =============================================================================
+# COMMUNITY ACHIEVEMENTS
+# =============================================================================
+community_achievements: []
 ---
 
 Hollow Knight is a challenging 2D action-adventure game set in the vast, interconnected underground kingdom of Hallownest. The game features tight combat, intricate exploration, and a haunting atmosphere.
