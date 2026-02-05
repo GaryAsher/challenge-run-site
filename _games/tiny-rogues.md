@@ -94,9 +94,10 @@ glitches_relevant: false
 glitches_data: []
 
 # =============================================================================
-# RUN CATEGORIES
+# FULL RUNS
+# Require reaching some kind of ending
 # =============================================================================
-categories_data:
+full_runs:
   - slug: any
     label: "Any%"
     description: |
@@ -118,6 +119,19 @@ categories_data:
       Beat a Quest with all 16 Cinder modifiers active.
 
 # =============================================================================
+# MINI-CHALLENGES
+# In-game challenges that exist without requiring an ending
+# =============================================================================
+mini_challenges: []
+
+# =============================================================================
+# PLAYER-MADE CHALLENGES
+# Community-created challenges with arbitrary goals
+# Promoted from forum when popular enough
+# =============================================================================
+player_made: []
+
+# =============================================================================
 # TIMING METHOD
 # =============================================================================
 timing_method: IGT
@@ -136,6 +150,11 @@ characters_data: []
 # =============================================================================
 cover: /assets/img/games/t/tiny-rogues.jpg
 cover_position: center
+
+# =============================================================================
+# COMMUNITY ACHIEVEMENTS
+# =============================================================================
+community_achievements: []
 
 # =============================================================================
 # CREDITS
