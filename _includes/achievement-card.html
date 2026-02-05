@@ -1,0 +1,123 @@
+{% comment %}
+  Achievement Card Component
+  
+  Usage:
+    {% include achievement-card.html 
+       achievement=achievement 
+       game=game 
+       completions=completions 
+       show_game=true 
+       show_completions=true 
+       runner_progress=progress
+    %}
+  
+  Parameters:
+    - achievement: The achievement object (from community_achievements)
+    - game: The game object (optional, for linking)
+    - completions: Array of completion objects for this achievement
+    - show_game: Whether to show game name (default: false)
+    - show_completions: Whether to show completion count/list (default: true)
+    - runner_progress: Progress object for current runner {current: X, total: Y}
+{% endcomment %}
+
+{% assign ach = include.achievement %}
+{% assign g = include.game %}
+{% assign comps = include.completions | default: empty %}
+{% assign show_game = include.show_game | default: false %}
+{% assign show_completions = include.show_completions | default: true %}
+{% assign progress = include.runner_progress %}
+
+{% comment %} Difficulty colors {% endcomment %}
+{% case ach.difficulty %}
+  {% when 'easy' %}
+    {% assign diff_class = 'difficulty--easy' %}
+    {% assign diff_label = 'Easy' %}
+  {% when 'medium' %}
+    {% assign diff_class = 'difficulty--medium' %}
+    {% assign diff_label = 'Medium' %}
+  {% when 'hard' %}
+    {% assign diff_class = 'difficulty--hard' %}
+    {% assign diff_label = 'Hard' %}
+  {% when 'legendary' %}
+    {% assign diff_class = 'difficulty--legendary' %}
+    {% assign diff_label = 'Legendary' %}
+  {% else %}
+    {% assign diff_class = '' %}
+    {% assign diff_label = '' %}
+{% endcase %}
+
+{% comment %} Count approved completions {% endcomment %}
+{% assign approved_comps = "" | split: "" %}
+{% for c in comps %}
+  {% if c.status == 'approved' %}
+    {% assign approved_comps = approved_comps | push: c %}
+  {% endif %}
+{% endfor %}
+{% assign comp_count = approved_comps.size %}
+
+{% comment %} Find first completion {% endcomment %}
+{% assign first_completion = approved_comps | sort: 'date_completed' | first %}
+
+<div class="achievement-card {% if comp_count > 0 %}achievement-card--completed{% endif %}">
+  <div class="achievement-card__icon">{{ ach.icon | default: '🏆' }}</div>
+  
+  <div class="achievement-card__content">
+    <div class="achievement-card__header">
+      <h4 class="achievement-card__title">{{ ach.title }}</h4>
+      {% if diff_label != '' %}
+        <span class="achievement-card__difficulty {{ diff_class }}">{{ diff_label }}</span>
+      {% endif %}
+    </div>
+    
+    <p class="achievement-card__description">{{ ach.description }}</p>
+    
+    {% if show_game and g %}
+      <a href="{{ g.url | relative_url }}" class="achievement-card__game">{{ g.game_name }}</a>
+    {% endif %}
+    
+    {% if ach.requirements and ach.requirements.size > 0 %}
+      <details class="achievement-card__requirements">
+        <summary>Requirements</summary>
+        <ul>
+          {% for req in ach.requirements %}
+            <li>{{ req }}</li>
+          {% endfor %}
+        </ul>
+      </details>
+    {% endif %}
+    
+    {% if progress and ach.total_required %}
+      <div class="achievement-card__progress">
+        <div class="progress-bar">
+          <div class="progress-bar__fill" style="width: {% if progress.current >= ach.total_required %}100{% else %}{{ progress.current | times: 100 | divided_by: ach.total_required }}{% endif %}%"></div>
+        </div>
+        <span class="progress-bar__text">{{ progress.current }} / {{ ach.total_required }}</span>
+      </div>
+    {% endif %}
+  </div>
+  
+  {% if show_completions %}
+    <div class="achievement-card__completions">
+      {% if comp_count > 0 %}
+        <div class="achievement-card__count">
+          <span class="achievement-card__count-number">{{ comp_count }}</span>
+          <span class="achievement-card__count-label">completed</span>
+        </div>
+        {% if first_completion %}
+          <div class="achievement-card__first">
+            🥇 First: 
+            {% assign first_runner = site.runners | where: "runner_id", first_completion.runner_id | first %}
+            <a href="{{ '/runners/' | append: first_completion.runner_id | append: '/' | relative_url }}">
+              {{ first_runner.runner_name | default: first_completion.runner_id }}
+            </a>
+            <span class="muted">({{ first_completion.date_completed }})</span>
+          </div>
+        {% endif %}
+      {% else %}
+        <div class="achievement-card__count achievement-card__count--none">
+          <span class="achievement-card__count-label">Be the first!</span>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
