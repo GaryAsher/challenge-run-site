@@ -95,9 +95,10 @@ glitches_data:
     description: ""
 
 # =============================================================================
-# RUN CATEGORIES
+# FULL RUNS
+# Require reaching some kind of ending
 # =============================================================================
-categories_data:
+full_runs:
   - slug: any
     label: "Any%"
     description: ""
@@ -105,6 +106,19 @@ categories_data:
   - slug: "100"
     label: "100%"
     description: ""
+
+# =============================================================================
+# MINI-CHALLENGES
+# In-game challenges that exist without requiring an ending
+# =============================================================================
+mini_challenges: []
+
+# =============================================================================
+# PLAYER-MADE CHALLENGES
+# Community-created challenges with arbitrary goals
+# Promoted from forum when popular enough
+# =============================================================================
+player_made: []
 
 # =============================================================================
 # TIMING METHOD
@@ -125,6 +139,11 @@ characters_data: []
 # =============================================================================
 cover: /assets/img/games/t/the-legend-of-zelda-ocarina-of-time.jpg
 cover_position: center
+
+# =============================================================================
+# COMMUNITY ACHIEVEMENTS
+# =============================================================================
+community_achievements: []
 ---
 
 The Legend of Zelda: Ocarina of Time is a landmark action-adventure game originally released for the Nintendo 64 in 1998. Players control Link as he travels through time to save the land of Hyrule from the evil Ganondorf.
