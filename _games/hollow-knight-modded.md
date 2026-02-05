@@ -230,38 +230,16 @@ supported_mods:
 # COMMUNITY ACHIEVEMENTS
 # =============================================================================
 community_achievements:
-  - slug: gun-master
-    title: "Gun Master"
-    description: "Complete all 5 Pantheons using only the gun mod"
-    icon: "🔫"
-    difficulty: legendary
-    total_required: 5
-    requirements:
-      - "Complete Pantheon 1 (Gun Only)"
-      - "Complete Pantheon 2 (Gun Only)"
-      - "Complete Pantheon 3 (Gun Only)"
-      - "Complete Pantheon 4 (Gun Only)"
-      - "Complete Pantheon 5 (Gun Only)"
 
   - slug: absrad-gun
     title: "Absolute Firepower"
-    description: "Defeat Absolute Radiance using only the gun"
+    description: "Defeat Radiant Absolute Radiance using only the gun"
     icon: "☀️"
-    difficulty: hard
+    difficulty: Medium
     total_required: 1
-    requirements:
-      - "Defeat Absolute Radiance in P5 or Hall of Gods using only gun attacks"
-      - "No nail, no spells for damage"
-
-  - slug: rando-master
-    title: "Chaos Navigator"
-    description: "Complete 10 different randomizer seeds"
-    icon: "🎲"
-    difficulty: medium
-    total_required: 10
-    requirements:
-      - "Complete 10 unique randomizer seeds"
-      - "Each seed must have video proof"
+    requirements: |
+      - Defeat Absolute Radiance in Hall of Gods on Radiant Difficulty without getting damaged or hit
+      - Only Damage from gun is allowed.
 
 ---
 
