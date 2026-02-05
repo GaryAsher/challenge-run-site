@@ -398,3 +398,148 @@
     justify-content: space-between;
   }
 }
+
+// ──────────────────────────────────────────────────────────
+// Rules Accordion (Game Overview)
+// ──────────────────────────────────────────────────────────
+.rules-accordion {
+  &[open] .accordion-icon {
+    transform: rotate(180deg);
+  }
+}
+
+.rules-accordion__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  list-style: none;
+  padding: 0;
+  
+  &::-webkit-details-marker {
+    display: none;
+  }
+}
+
+.rules-accordion__title {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.rules-accordion__content {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+// ──────────────────────────────────────────────────────────
+// Game Link Banners (Modded/Base Game)
+// ──────────────────────────────────────────────────────────
+.game-link-banner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.game-link-banner--base {
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.game-link-banner--modded {
+  background: rgba(249, 115, 22, 0.1);
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+.game-link-banner__icon {
+  font-size: 1.5rem;
+}
+
+.game-link-banner__text {
+  flex: 1;
+  min-width: 200px;
+}
+
+.game-link-banner__links {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+// ──────────────────────────────────────────────────────────
+// Modded Badge
+// ──────────────────────────────────────────────────────────
+.modded-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.35rem 0.65rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.4);
+}
+
+.modded-badge--inline {
+  font-size: 0.6rem;
+  padding: 0.25rem 0.5rem;
+  vertical-align: middle;
+  margin-left: 0.5rem;
+}
+
+.modded-badge--card {
+  font-size: 0.6rem;
+  padding: 0.25rem 0.5rem;
+}
+
+// Game hero modded badge positioning
+.game-hero__modded-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
+}
+
+.game-hero--modded {
+  position: relative;
+}
+
+// Game card modded badge positioning
+.game-card__modded-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 5;
+}
+
+.game-card--modded {
+  position: relative;
+}
+
+// ──────────────────────────────────────────────────────────
+// Responsive: Modded/Link Banners
+// ──────────────────────────────────────────────────────────
+@media (max-width: 600px) {
+  .game-link-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+  
+  .game-link-banner__links {
+    width: 100%;
+  }
+  
+  .game-link-banner__links .btn {
+    flex: 1;
+    text-align: center;
+  }
+}
