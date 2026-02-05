@@ -141,11 +141,110 @@ layout: default
 
   <!-- ACHIEVEMENTS PANEL -->
   <section class="tab-panel" data-panel="achievements">
-    <div class="card"><h2>🏆 Personal Achievements</h2><p class="muted mb-3">Self-imposed challenges and personal goals.</p>
-      {% if page.achievements and page.achievements.size > 0 %}
-        <div class="achievements-list" id="achievements-list">{% for a in page.achievements %}<div class="achievement-item"><div class="achievement-icon">{{ a.icon | default: '🏆' }}</div><div class="achievement-info"><h4>{{ a.title }}</h4><p class="muted">{{ a.description }}</p>{% if a.game %}<span class="achievement-game">{{ a.game }}</span>{% endif %}</div>{% if a.completed %}<span class="achievement-status completed">✓ Completed</span>{% else %}<span class="achievement-status in-progress">In Progress</span>{% endif %}</div>{% endfor %}</div>
-      {% else %}<div class="empty-state" id="achievements-empty"><span class="empty-icon">🎯</span><p>No achievements listed yet.</p></div>{% endif %}
+    
+    {% comment %} Get this runner's community achievement completions {% endcomment %}
+    {% assign runner_completions = "" | split: "" %}
+    {% for ac in site.achievements %}
+      {% if ac.runner_id == page.runner_id and ac.status == 'approved' %}
+        {% assign runner_completions = runner_completions | push: ac %}
+      {% endif %}
+    {% endfor %}
+    
+    <!-- Community Achievements Section -->
+    <div class="card">
+      <h2>🏅 Community Achievements</h2>
+      <p class="muted mb-3">Verified achievements from game communities.</p>
+      
+      {% if runner_completions.size > 0 %}
+        <div class="community-achievements-list">
+          {% for comp in runner_completions %}
+            {% assign comp_game = site.games | where: "game_id", comp.game_id | first %}
+            {% assign comp_ach = nil %}
+            {% if comp_game.community_achievements %}
+              {% for ca in comp_game.community_achievements %}
+                {% if ca.slug == comp.achievement_slug %}
+                  {% assign comp_ach = ca %}
+                  {% break %}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+            
+            <div class="community-achievement-item">
+              <div class="community-achievement-item__icon">{{ comp_ach.icon | default: '🏆' }}</div>
+              <div class="community-achievement-item__content">
+                <div class="community-achievement-item__header">
+                  <h4>{{ comp_ach.title | default: comp.achievement_slug }}</h4>
+                  {% if comp_ach.difficulty %}
+                    <span class="difficulty difficulty--{{ comp_ach.difficulty }}">{{ comp_ach.difficulty | capitalize }}</span>
+                  {% endif %}
+                </div>
+                <p class="muted">{{ comp_ach.description | default: '' }}</p>
+                <div class="community-achievement-item__meta">
+                  <a href="{{ comp_game.url | relative_url }}" class="community-achievement-item__game">{{ comp_game.game_name }}</a>
+                  <span class="muted">•</span>
+                  <span class="muted">{{ comp.date_completed }}</span>
+                  <span class="muted">•</span>
+                  <span class="verified-badge">✓ Verified</span>
+                </div>
+              </div>
+              {% if comp.proof_url %}
+                <a href="{{ comp.proof_url }}" target="_blank" rel="noopener" class="btn btn--small">▶ Proof</a>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state-inline">
+          <p class="muted">No community achievements completed yet.</p>
+        </div>
+      {% endif %}
     </div>
+    
+    <!-- Personal Goals Section -->
+    <div class="card mt-3">
+      <h2>🎯 Personal Goals</h2>
+      <p class="muted mb-3">Self-set challenges and personal milestones.</p>
+      
+      {% if page.personal_goals and page.personal_goals.size > 0 %}
+        <div class="personal-goals-list" id="personal-goals-list">
+          {% for goal in page.personal_goals %}
+            <div class="personal-goal-item">
+              <div class="personal-goal-item__icon">{{ goal.icon | default: '🎯' }}</div>
+              <div class="personal-goal-item__content">
+                <div class="personal-goal-item__header">
+                  <h4>{{ goal.title }}</h4>
+                  {% if goal.completed %}
+                    <span class="goal-status goal-status--completed">✓ Completed</span>
+                  {% else %}
+                    <span class="goal-status goal-status--progress">In Progress</span>
+                  {% endif %}
+                </div>
+                <p class="muted">{{ goal.description }}</p>
+                {% if goal.game %}<span class="personal-goal-item__game">{{ goal.game }}</span>{% endif %}
+                
+                {% if goal.total and goal.total > 0 %}
+                  <div class="personal-goal-item__progress">
+                    <div class="progress-bar">
+                      <div class="progress-bar__fill" style="width: {{ goal.current | default: 0 | times: 100 | divided_by: goal.total }}%"></div>
+                    </div>
+                    <span class="progress-bar__text">{{ goal.current | default: 0 }} / {{ goal.total }}</span>
+                  </div>
+                {% endif %}
+                
+                {% if goal.date_completed %}
+                  <span class="muted personal-goal-item__date">Completed: {{ goal.date_completed }}</span>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state-inline" id="personal-goals-empty">
+          <p class="muted">No personal goals set yet.</p>
+        </div>
+      {% endif %}
+    </div>
+    
   </section>
 
   <!-- CONTRIBUTIONS PANEL -->
@@ -210,6 +309,51 @@ layout: default
 .achievement-status{font-size:.75rem;font-weight:600;padding:.25rem .5rem;border-radius:4px;white-space:nowrap}
 .achievement-status.completed{background:#10b981;color:#fff}
 .achievement-status.in-progress{background:#f59e0b;color:#000}
+
+/* Community Achievements */
+.community-achievements-list{display:flex;flex-direction:column;gap:.75rem}
+.community-achievement-item{display:flex;align-items:flex-start;gap:1rem;padding:1rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.community-achievement-item__icon{font-size:1.75rem;line-height:1}
+.community-achievement-item__content{flex:1;min-width:0}
+.community-achievement-item__header{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-bottom:.25rem}
+.community-achievement-item__header h4{margin:0;font-size:1rem}
+.community-achievement-item__meta{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-top:.5rem;font-size:.8rem}
+.community-achievement-item__game{color:var(--accent);text-decoration:none}
+.community-achievement-item__game:hover{text-decoration:underline}
+.verified-badge{color:#10b981;font-weight:500}
+
+/* Personal Goals */
+.personal-goals-list{display:flex;flex-direction:column;gap:.75rem}
+.personal-goal-item{display:flex;align-items:flex-start;gap:1rem;padding:1rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.personal-goal-item__icon{font-size:1.75rem;line-height:1}
+.personal-goal-item__content{flex:1;min-width:0}
+.personal-goal-item__header{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-bottom:.25rem}
+.personal-goal-item__header h4{margin:0;font-size:1rem}
+.personal-goal-item__game{display:inline-block;margin-top:.5rem;font-size:.75rem;background:var(--bg);padding:.2rem .5rem;border-radius:4px;color:var(--text-muted)}
+.personal-goal-item__progress{margin-top:.75rem}
+.personal-goal-item__date{display:block;margin-top:.5rem;font-size:.8rem}
+
+/* Goal Status */
+.goal-status{font-size:.7rem;font-weight:600;padding:.2rem .5rem;border-radius:4px;text-transform:uppercase;letter-spacing:.3px}
+.goal-status--completed{background:#10b981;color:#fff}
+.goal-status--progress{background:#3b82f6;color:#fff}
+
+/* Difficulty Badges */
+.difficulty{font-size:.65rem;font-weight:600;padding:.15rem .4rem;border-radius:3px;text-transform:uppercase;letter-spacing:.3px}
+.difficulty--easy{background:#22c55e;color:#fff}
+.difficulty--medium{background:#eab308;color:#000}
+.difficulty--hard{background:#f97316;color:#fff}
+.difficulty--legendary{background:linear-gradient(135deg,#8b5cf6,#ec4899);color:#fff}
+
+/* Progress Bar */
+.progress-bar{height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.progress-bar__fill{height:100%;background:var(--accent);border-radius:4px;transition:width .3s ease}
+.progress-bar__text{display:block;margin-top:.25rem;font-size:.75rem;color:var(--text-muted)}
+
+/* Empty State Inline */
+.empty-state-inline{padding:1rem 0}
+.empty-state-inline p{margin:0}
+
 .contribution-link{display:inline-block;margin-top:.5rem;font-size:.85rem;color:var(--accent)}
 .contribution-type{font-size:.7rem;text-transform:uppercase;letter-spacing:.5px;background:var(--surface);padding:.25rem .5rem;border-radius:4px;color:var(--text-muted)}
 .credits-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.75rem}
