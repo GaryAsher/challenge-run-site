@@ -15,6 +15,7 @@ game_name_aliases:
   - "HK Modded"
   - "Modded Hollow Knight"
   - "HK Gun Mod"
+  - "HK Randomizer"
 
 genres:
   - metroidvania
@@ -131,52 +132,82 @@ glitches_data:
       No glitches of any kind. The game must be played as intended (with mod content).
 
 # =============================================================================
-# FULL RUNS
+# FULL RUNS (Non-modded categories if any)
 # =============================================================================
-full_runs:
-  - slug: any-gun
-    label: "Any% (Gun)"
-    description: "Complete the game using the gun mod. Any ending accepted."
-
-  - slug: gun-only-any
-    label: "Gun Only Any%"
-    description: "Complete the game using ONLY the gun for all combat."
-
-  - slug: all-bosses-gun
-    label: "All Bosses (Gun)"
-    description: "Defeat all bosses using the gun mod."
-
-  - slug: pantheon-gun
-    label: "Pantheon Runs (Gun)"
-    description: "Complete Pantheon boss gauntlets using the gun mod."
-    children:
-      - slug: p1-gun
-        label: "Pantheon 1 (Gun)"
-        description: "Complete Pantheon of the Master with the gun mod."
-      - slug: p2-gun
-        label: "Pantheon 2 (Gun)"
-        description: "Complete Pantheon of the Artist with the gun mod."
-      - slug: p3-gun
-        label: "Pantheon 3 (Gun)"
-        description: "Complete Pantheon of the Sage with the gun mod."
-      - slug: p4-gun
-        label: "Pantheon 4 (Gun)"
-        description: "Complete Pantheon of the Knight with the gun mod."
-      - slug: p5-gun
-        label: "Pantheon 5 (Gun)"
-        description: "Complete Pantheon of Hallownest with the gun mod. The ultimate modded challenge."
+full_runs: []
 
 # =============================================================================
-# MINI-CHALLENGES
+# MODDED CATEGORIES
+# Uses mini_challenges structure: Mod = parent, Run category = child
 # =============================================================================
 mini_challenges:
-  - slug: boss-rushes
-    label: "Boss Rushes (Gun)"
-    description: "Hall of Gods challenges using the gun mod."
+  - slug: gun-mod
+    label: "Gun Mod (HKGun / Hollow Point)"
+    description: "Runs using the Gun Mod, which adds firearms to Hollow Knight."
     children:
-      - slug: radiant-gun
-        label: "All Radiant (Gun)"
-        description: "Defeat all bosses on Radiant difficulty using only the gun."
+      - slug: any
+        label: "Any%"
+        description: "Complete the game using the gun mod. Any ending accepted."
+      - slug: gun-only-any
+        label: "Gun Only Any%"
+        description: "Complete the game using ONLY the gun for all combat. No nail, no spells for damage."
+      - slug: all-bosses
+        label: "All Bosses"
+        description: "Defeat all bosses using the gun mod."
+      - slug: true-ending
+        label: "True Ending"
+        description: "Achieve the True Ending (Embrace the Void) using the gun mod."
+      - slug: low-percent
+        label: "Low%"
+        description: "Complete the game with minimum percentage using the gun mod."
+      - slug: p1
+        label: "Pantheon 1"
+        description: "Complete Pantheon of the Master with the gun mod."
+      - slug: p2
+        label: "Pantheon 2"
+        description: "Complete Pantheon of the Artist with the gun mod."
+      - slug: p3
+        label: "Pantheon 3"
+        description: "Complete Pantheon of the Sage with the gun mod."
+      - slug: p4
+        label: "Pantheon 4"
+        description: "Complete Pantheon of the Knight with the gun mod."
+      - slug: p5
+        label: "Pantheon 5"
+        description: "Complete Pantheon of Hallownest with the gun mod. The ultimate modded challenge."
+      - slug: all-radiant
+        label: "All Radiant"
+        description: "Defeat all bosses on Radiant difficulty in Hall of Gods using the gun."
+
+  - slug: randomizer
+    label: "Randomizer"
+    description: "Runs using the Randomizer mod, which shuffles item and ability locations."
+    children:
+      - slug: any
+        label: "Any%"
+        description: "Complete a randomizer seed as fast as possible."
+      - slug: all-skills
+        label: "All Skills"
+        description: "Collect all movement abilities in a randomizer seed."
+      - slug: all-bosses
+        label: "All Bosses"
+        description: "Defeat all bosses in a randomizer seed."
+
+  - slug: enemy-randomizer
+    label: "Enemy Randomizer"
+    description: "Runs using the Enemy Randomizer mod, which shuffles enemy placements."
+    children:
+      - slug: any
+        label: "Any%"
+        description: "Complete the game with randomized enemies."
+      - slug: all-bosses
+        label: "All Bosses"
+        description: "Defeat all bosses with randomized enemy placements."
+
+# =============================================================================
+# PLAYER-MADE CHALLENGES
+# =============================================================================
+player_made: []
 
 # =============================================================================
 # TIMING METHOD
@@ -201,6 +232,10 @@ characters_data:
     label: "SMG"
   - slug: mixed-loadout
     label: "Mixed Loadout"
+  - slug: randomizer-seed
+    label: "Randomizer (Seed)"
+  - slug: not-applicable
+    label: "N/A"
 
 # =============================================================================
 # COVER / DISPLAY
@@ -212,18 +247,28 @@ cover_position: center
 # SUPPORTED MODS
 # =============================================================================
 supported_mods:
-  - name: "HKGun / Hollow Point"
-    description: "Adds firearms to Hollow Knight, replacing or supplementing the nail with various gun types."
-    url: "https://github.com/example/hkgun"
-    version: "1.5.0+"
-    required: true
   - name: "Modding API"
     description: "Required base for all Hollow Knight mods."
     url: "https://github.com/hk-modding/api"
     version: "Latest"
     required: true
+  - name: "HKGun / Hollow Point"
+    description: "Adds firearms to Hollow Knight, replacing or supplementing the nail with various gun types."
+    url: "https://github.com/example/hkgun"
+    version: "1.5.0+"
+    required: false
+  - name: "Randomizer 4"
+    description: "Randomizes item, skill, and ability locations throughout Hallownest."
+    url: "https://github.com/hk-modding/RandomizerMod"
+    version: "4.0+"
+    required: false
+  - name: "Enemy Randomizer"
+    description: "Randomizes enemy placements throughout the game."
+    url: "https://github.com/example/enemyrando"
+    version: "1.0+"
+    required: false
   - name: "Custom Knight"
-    description: "Optional - allows custom skins for gun-wielding knight."
+    description: "Optional - allows custom skins for the knight."
     url: "https://github.com/example/customknight"
     required: false
 
@@ -254,17 +299,35 @@ community_achievements:
       - "Defeat Absolute Radiance in P5 or Hall of Gods using only gun attacks"
       - "No nail, no spells for damage"
 
+  - slug: rando-master
+    title: "Chaos Navigator"
+    description: "Complete 10 different randomizer seeds"
+    icon: "🎲"
+    difficulty: medium
+    total_required: 10
+    requirements:
+      - "Complete 10 unique randomizer seeds"
+      - "Each seed must have video proof"
+
 ---
 
-Welcome to the modded Hollow Knight challenge run community! This page tracks runs using the popular **Gun Mod** (HKGun/Hollow Point), which replaces or supplements the Knight's nail with various firearms.
+Welcome to the modded Hollow Knight challenge run community! This page tracks runs using popular mods that transform the Hollow Knight experience.
 
-**Why Gun Mod?**
+## Featured Mods
+
+### Gun Mod (HKGun / Hollow Point)
 The gun mod completely changes Hollow Knight's combat dynamics. Ranged combat creates new strategies for boss fights, platforming challenges, and speedrun routing. It's a fresh way to experience a classic game!
 
-**Getting Started:**
+### Randomizer
+The Randomizer mod shuffles items, abilities, and more throughout Hallownest. Every seed creates a unique routing puzzle - find your movement abilities and progress through the game in completely new ways.
+
+### Enemy Randomizer
+Tired of knowing exactly what's around every corner? Enemy Randomizer shuffles enemy placements, creating chaotic and unpredictable encounters.
+
+## Getting Started
 1. Install the Hollow Knight Modding API
-2. Download the Gun Mod from the Resources tab
-3. Configure your preferred gun type
+2. Download your desired mod(s) from the Resources tab
+3. Configure mod settings as needed
 4. Start running!
 
 For vanilla Hollow Knight runs without mods, visit the [main Hollow Knight page](/games/hollow-knight/).
