@@ -148,7 +148,7 @@ title: Games
         {% continue %}
       {% endif %}
       <a
-        class="game-card game-item card-lift"
+        class="game-card game-item card-lift{% if g.is_modded %} game-card--modded{% endif %}"
         href="{{ g.url | relative_url }}"
         data-name="{{ g.game_name | downcase }}"
         data-name-aliases="{% if g.game_name_aliases %}{{ g.game_name_aliases | join: ',' | downcase }}{% endif %}"
@@ -156,9 +156,15 @@ title: Games
         data-genres="{{ g.genres | join: ',' | downcase }}"
         data-platforms="{{ g.platforms | default: empty | join: ',' | downcase }}"
         data-challenges="{% for ch in g.challenges_data %}{{ ch.slug }}{% unless forloop.last %},{% endunless %}{% endfor %}"
+        data-modded="{{ g.is_modded | default: false }}"
       >
         {% assign game_cover = g.cover | default: "/assets/img/site/default-game.jpg" %}
         <div class="game-card__bg" style="background-image: url('{{ game_cover | relative_url }}');"></div>
+        {% if g.is_modded %}
+          <div class="game-card__modded-badge">
+            <span class="modded-badge modded-badge--card">🔧 MODDED</span>
+          </div>
+        {% endif %}
         <div class="game-card__overlay">
           <div class="game-card__title">{{ g.game_name }}</div>
         </div>
