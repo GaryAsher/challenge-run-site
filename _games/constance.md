@@ -98,9 +98,10 @@ glitches_data:
       No glitches of any kind.
 
 # =============================================================================
-# RUN CATEGORIES
+# FULL RUNS
+# Require reaching some kind of ending
 # =============================================================================
-categories_data:
+full_runs:
   - slug: any
     label: "Any%"
     description: ""
@@ -108,6 +109,19 @@ categories_data:
   - slug: "100"
     label: "100%"
     description: ""
+
+# =============================================================================
+# MINI-CHALLENGES
+# In-game challenges that exist without requiring an ending
+# =============================================================================
+mini_challenges: []
+
+# =============================================================================
+# PLAYER-MADE CHALLENGES
+# Community-created challenges with arbitrary goals
+# Promoted from forum when popular enough
+# =============================================================================
+player_made: []
 
 # =============================================================================
 # TIMING METHOD
@@ -128,6 +142,11 @@ characters_data: []
 # =============================================================================
 cover: /assets/img/games/c/constance.jpg
 cover_position: center
+
+# =============================================================================
+# COMMUNITY ACHIEVEMENTS
+# =============================================================================
+community_achievements: []
 
 # =============================================================================
 # SUBMISSION METADATA
