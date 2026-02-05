@@ -23,6 +23,8 @@ collections:
     permalink: /teams/:name/
   runs:
     output: false
+  achievements:
+    output: false
 
 # Posts are built-in, but we set defaults
 defaults:
@@ -37,6 +39,12 @@ defaults:
     values:
       layout: null
       verified: false
+  - scope:
+      path: ""
+      type: achievements
+    values:
+      layout: null
+      status: pending
   - scope:
       path: ""
       type: games
@@ -58,12 +66,6 @@ exclude:
   - package-lock.json
   - Gemfile
   - Gemfile.lock
-  - .lighthouserc.json
   - README.md
-  - LICENSE
-  - .docs
   - .github
-
-# Cloudflare Turnstile (captcha)
-turnstile_site_key: "0x4AAAAAACNQ1SYSD-234zPt"
-run_submit_endpoint: "https://crc-run-submissions.280sauce.workers.dev"
+  - .docs
