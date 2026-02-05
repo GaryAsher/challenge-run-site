@@ -26,9 +26,6 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Fix Structure of Bio
 - [ ] Completed Runs:
   - Restructure UI
-- [ ] For Achievements, let runners post Community Achievements they have accomplished and to make an achievement of their own.
-  - As an example. Maybe Hades 2 has a community achievement for getting a run with every aspect. On the game page, they track how many runners have achieved this.
-  - The runner might also choose to make something like that of their own, but it would not be tied to a game page.
 - [ ] For Contributions, have these link to the appropriate achievements that the runner has been credited for.
 
 ### 2 Modded Game Support
