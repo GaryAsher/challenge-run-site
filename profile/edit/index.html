@@ -227,6 +227,316 @@ title: "Edit Profile"
           </div>
         </div>
         
+        <!-- Personal Goals -->
+        <div class="card mb-4">
+          <h2>🎯 Personal Goals</h2>
+          <p class="muted mb-3">Set personal challenges and milestones to track your progress. These are visible on your profile.</p>
+          
+          <div id="personal-goals-editor">
+            <div id="goals-list" class="goals-editor-list">
+              <!-- Goals populated by JavaScript -->
+            </div>
+            
+            <button type="button" class="btn btn--small mt-3" id="add-goal-btn">
+              + Add Personal Goal
+            </button>
+            <p class="form-help">You can add up to 10 personal goals.</p>
+          </div>
+          
+          <!-- Hidden input to store goals JSON -->
+          <input type="hidden" id="personal-goals-data" name="personal_goals" value="[]" />
+        </div>
+        
+        <!-- Goal Editor Template (hidden) -->
+        <template id="goal-template">
+          <div class="goal-editor-item" data-goal-index="">
+            <div class="goal-editor-item__header">
+              <button type="button" class="goal-editor-item__drag" title="Drag to reorder">⋮⋮</button>
+              <span class="goal-editor-item__number">#1</span>
+              <button type="button" class="goal-editor-item__remove" title="Remove goal">×</button>
+            </div>
+            
+            <div class="goal-editor-item__content">
+              <div class="form-row">
+                <div class="form-group form-group--small">
+                  <label class="form-label">Icon</label>
+                  <input type="text" class="form-input goal-icon" maxlength="2" placeholder="🎯" />
+                </div>
+                <div class="form-group form-group--flex">
+                  <label class="form-label">Title *</label>
+                  <input type="text" class="form-input goal-title" maxlength="100" placeholder="e.g., 100 Hitless Runs" required />
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea class="form-input goal-description" maxlength="300" rows="2" placeholder="Describe your goal..."></textarea>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group form-group--flex">
+                  <label class="form-label">Game (optional)</label>
+                  <input type="text" class="form-input goal-game" maxlength="100" placeholder="e.g., Hades II" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Status</label>
+                  <select class="form-input goal-completed">
+                    <option value="false">In Progress</option>
+                    <option value="true">Completed</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="form-row goal-progress-row">
+                <div class="form-group">
+                  <label class="form-label">Progress (current)</label>
+                  <input type="number" class="form-input goal-current" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Progress (total)</label>
+                  <input type="number" class="form-input goal-total" min="0" placeholder="100" />
+                </div>
+                <div class="form-group form-group--flex">
+                  <label class="form-label">Date Completed</label>
+                  <input type="date" class="form-input goal-date" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+        
+        <style>
+        .goals-editor-list {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+        
+        .goal-editor-item {
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-sm);
+          overflow: hidden;
+        }
+        
+        .goal-editor-item__header {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.5rem 0.75rem;
+          background: var(--bg);
+          border-bottom: 1px solid var(--border);
+        }
+        
+        .goal-editor-item__drag {
+          cursor: grab;
+          background: none;
+          border: none;
+          color: var(--text-muted);
+          font-size: 1rem;
+          padding: 0.25rem;
+          line-height: 1;
+        }
+        
+        .goal-editor-item__drag:active {
+          cursor: grabbing;
+        }
+        
+        .goal-editor-item__number {
+          font-size: 0.8rem;
+          font-weight: 600;
+          color: var(--text-muted);
+        }
+        
+        .goal-editor-item__remove {
+          margin-left: auto;
+          background: none;
+          border: none;
+          color: var(--text-muted);
+          font-size: 1.25rem;
+          padding: 0.25rem 0.5rem;
+          cursor: pointer;
+          line-height: 1;
+          border-radius: 4px;
+        }
+        
+        .goal-editor-item__remove:hover {
+          background: rgba(239, 68, 68, 0.1);
+          color: #ef4444;
+        }
+        
+        .goal-editor-item__content {
+          padding: 1rem;
+        }
+        
+        .goal-editor-item__content .form-row {
+          display: flex;
+          gap: 1rem;
+        }
+        
+        .goal-editor-item__content .form-group {
+          margin-bottom: 0.75rem;
+        }
+        
+        .goal-editor-item__content .form-group--small {
+          flex: 0 0 70px;
+        }
+        
+        .goal-editor-item__content .form-group--flex {
+          flex: 1;
+        }
+        
+        .goal-editor-item__content .form-label {
+          font-size: 0.8rem;
+          margin-bottom: 0.25rem;
+        }
+        
+        .goal-editor-item__content .form-input {
+          font-size: 0.9rem;
+          padding: 0.5rem 0.75rem;
+        }
+        
+        .goal-progress-row {
+          padding-top: 0.5rem;
+          border-top: 1px dashed var(--border);
+          margin-top: 0.5rem;
+        }
+        
+        .goal-icon {
+          text-align: center;
+          font-size: 1.25rem;
+        }
+        
+        @media (max-width: 600px) {
+          .goal-editor-item__content .form-row {
+            flex-direction: column;
+            gap: 0;
+          }
+          
+          .goal-editor-item__content .form-group--small {
+            flex: none;
+            width: 100%;
+          }
+        }
+        </style>
+        
+        <script>
+        (function() {
+          const MAX_GOALS = 10;
+          let goals = [];
+          
+          const goalsList = document.getElementById('goals-list');
+          const goalsDataInput = document.getElementById('personal-goals-data');
+          const addBtn = document.getElementById('add-goal-btn');
+          const template = document.getElementById('goal-template');
+          
+          if (!goalsList || !template) return;
+          
+          // Initialize with existing goals from form
+          function initGoals(existingGoals) {
+            goals = existingGoals || [];
+            renderGoals();
+          }
+          
+          function renderGoals() {
+            goalsList.innerHTML = '';
+            
+            goals.forEach((goal, index) => {
+              const item = template.content.cloneNode(true).querySelector('.goal-editor-item');
+              item.dataset.goalIndex = index;
+              item.querySelector('.goal-editor-item__number').textContent = `#${index + 1}`;
+              
+              // Populate fields
+              item.querySelector('.goal-icon').value = goal.icon || '';
+              item.querySelector('.goal-title').value = goal.title || '';
+              item.querySelector('.goal-description').value = goal.description || '';
+              item.querySelector('.goal-game').value = goal.game || '';
+              item.querySelector('.goal-completed').value = goal.completed ? 'true' : 'false';
+              item.querySelector('.goal-current').value = goal.current || '';
+              item.querySelector('.goal-total').value = goal.total || '';
+              item.querySelector('.goal-date').value = goal.date_completed || '';
+              
+              // Add event listeners
+              item.querySelector('.goal-editor-item__remove').addEventListener('click', () => removeGoal(index));
+              
+              // Update on change
+              item.querySelectorAll('input, textarea, select').forEach(input => {
+                input.addEventListener('change', () => updateGoalFromDOM(index, item));
+                input.addEventListener('input', () => updateGoalFromDOM(index, item));
+              });
+              
+              goalsList.appendChild(item);
+            });
+            
+            updateGoalsData();
+            updateAddButton();
+          }
+          
+          function updateGoalFromDOM(index, item) {
+            goals[index] = {
+              icon: item.querySelector('.goal-icon').value.trim() || '🎯',
+              title: item.querySelector('.goal-title').value.trim(),
+              description: item.querySelector('.goal-description').value.trim(),
+              game: item.querySelector('.goal-game').value.trim() || null,
+              completed: item.querySelector('.goal-completed').value === 'true',
+              current: parseInt(item.querySelector('.goal-current').value) || 0,
+              total: parseInt(item.querySelector('.goal-total').value) || 0,
+              date_completed: item.querySelector('.goal-date').value || null
+            };
+            updateGoalsData();
+          }
+          
+          function addGoal() {
+            if (goals.length >= MAX_GOALS) return;
+            
+            goals.push({
+              icon: '🎯',
+              title: '',
+              description: '',
+              game: null,
+              completed: false,
+              current: 0,
+              total: 0,
+              date_completed: null
+            });
+            
+            renderGoals();
+            
+            // Focus the new goal's title
+            const lastItem = goalsList.lastElementChild;
+            if (lastItem) {
+              lastItem.querySelector('.goal-title').focus();
+            }
+          }
+          
+          function removeGoal(index) {
+            goals.splice(index, 1);
+            renderGoals();
+          }
+          
+          function updateGoalsData() {
+            // Filter out goals without titles
+            const validGoals = goals.filter(g => g.title && g.title.trim());
+            goalsDataInput.value = JSON.stringify(validGoals);
+          }
+          
+          function updateAddButton() {
+            addBtn.disabled = goals.length >= MAX_GOALS;
+            if (goals.length >= MAX_GOALS) {
+              addBtn.textContent = `Maximum ${MAX_GOALS} goals reached`;
+            } else {
+              addBtn.textContent = '+ Add Personal Goal';
+            }
+          }
+          
+          // Event listeners
+          addBtn.addEventListener('click', addGoal);
+          
+          // Expose init function for profile edit page to call
+          window.initPersonalGoalsEditor = initGoals;
+        })();
+        </script>
+        
         <!-- Submit -->
         <div class="form-actions">
           <button type="submit" class="btn btn--primary" id="save-btn">
