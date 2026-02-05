@@ -360,6 +360,8 @@ function main() {
 
   const gameFiles = fs.readdirSync(GAMES_DIR)
     .filter(f => f.endsWith('.md'))
+    .filter(f => f.toLowerCase() !== 'readme.md')
+    .filter(f => !f.startsWith('_'))
     .map(f => path.join(GAMES_DIR, f));
 
   let totalMissing = 0;
