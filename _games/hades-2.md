@@ -275,6 +275,26 @@ characters_data:
 # =============================================================================
 cover: /assets/img/games/h/hades-2.jpg
 cover_position: center
+
+# =============================================================================
+# COMMUNITY ACHIEVEMENTS
+# =============================================================================
+
+community_achievements:
+  - slug: all-aspects-clear
+    title: "All Aspects"
+    description: "Complete a successful run with every weapon aspect in the game"
+    icon: "⚔️"
+    difficulty: hard    # easy | medium | hard | legendary
+    total_required: 24       # For progress tracking (24 total aspects)
+    requirements:
+      - "Clear with Witch's Staff - All 4 aspects (Melinoë, Artemis, Circle, Pan)"
+      - "Clear with Sister Blades - All 4 aspects (Melinoë, Artemis, Hestia, Pan)"
+      - "Clear with Moonstone Axe - All 4 aspects (Melinoë, Charon, Thanatos, Nergal)"
+      - "Clear with Umbral Flames - All 4 aspects (Melinoë, Moros, Eos, Hypnos)"
+      - "Clear with Argent Skull - All 4 aspects (Melinoë, Medea, Persephone, Hel)"
+      - "Clear with Black Coat - All 4 aspects (Melinoë, Selene, Nyx, Shiva)"
+
 ---
 
 Hades II is an action roguelike from Supergiant Games, the sequel to the award-winning Hades. Play as Melinoë, Princess of the Underworld, as she battles through the realms to defeat the Titan of Time.
