@@ -85,9 +85,10 @@ glitches_relevant: false
 glitches_data: []
 
 # =============================================================================
-# RUN CATEGORIES
+# FULL RUNS
+# Require reaching some kind of ending
 # =============================================================================
-categories_data:
+full_runs:
   - slug: any
     label: "Any%"
     description: |
@@ -127,6 +128,19 @@ categories_data:
       - Complete all chapters, collect all 175 red berries, and collect the moon berry from a new file.
 
 # =============================================================================
+# MINI-CHALLENGES
+# In-game challenges that exist without requiring an ending
+# =============================================================================
+mini_challenges: []
+
+# =============================================================================
+# PLAYER-MADE CHALLENGES
+# Community-created challenges with arbitrary goals
+# Promoted from forum when popular enough
+# =============================================================================
+player_made: []
+
+# =============================================================================
 # TIMING METHOD
 # =============================================================================
 timing_method: IGT
@@ -145,6 +159,11 @@ characters_data: []
 # =============================================================================
 cover: /assets/img/games/c/celeste.jpg
 cover_position: center
+
+# =============================================================================
+# COMMUNITY ACHIEVEMENTS
+# =============================================================================
+community_achievements: []
 
 # =============================================================================
 # CREDITS
