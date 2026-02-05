@@ -1,382 +1,277 @@
 ---
 layout: default
-title: Games
 ---
 
-<!-- =========================================================
-     Page header + controls (constrained to page width)
-     ========================================================= -->
-<div class="page-width games-controls" id="games-controls">
-
-  <h1>Games</h1>
-  <p class="muted">Jump by letter or filter by platform, genre, and challenges.</p>
-
-  <!-- A–Z navigation -->
-  <div class="az" id="az">
-    <a href="#0-9" class="az-wide">#</a>
-    {% assign letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" | split: "" %}
-    {% for L in letters %}
-      <a href="#{{ L }}">{{ L }}</a>
-    {% endfor %}
-    <a href="#other" class="az-wide">Other</a>
-    <a href="#all" class="az-wide muted">All</a>
-  </div>
-
-  <!-- Text search -->
-  <div class="filter-wrap" style="margin-bottom: 1.25rem;">
-    <input
-      id="q"
-      class="filter"
-      type="text"
-      placeholder="Search by game name..."
-      autocomplete="off"
-      inputmode="search"
-      enterkeyhint="search"
-      aria-label="Search games"
-    />
-  </div>
-
-  <!-- Platform + Genre + Challenges row -->
-  <div class="filters-grid filters-grid--three">
-
-    <!-- Platform filter -->
-    <div class="tag-filter" id="platform-filter">
-      <div class="muted filter-label">Filter by platform:</div>
-
-      <div class="tag-picker">
-        <div class="tag-picked" id="platform-picked"></div>
-
-        <div class="filter-wrap">
-          <input
-            id="platform-search"
-            class="tag-search"
-            type="text"
-            placeholder="Type a platform..."
-            autocomplete="off"
-            inputmode="search"
-            enterkeyhint="done"
-            aria-label="Filter games by platform"
-          />
-        </div>
-
-        <div class="tag-suggestions" id="platform-suggestions" hidden></div>
-      </div>
-    </div>
-
-    <!-- Genre filter -->
-    <div class="tag-filter" id="genre-filter">
-      <div class="muted filter-label">Filter by genre:</div>
-
-      <div class="tag-picker">
-        <div class="tag-picked" id="genre-picked"></div>
-
-        <div class="filter-wrap">
-          <input
-            id="genre-search"
-            class="tag-search"
-            type="text"
-            placeholder="Type a genre..."
-            autocomplete="off"
-            inputmode="search"
-            enterkeyhint="done"
-            aria-label="Filter games by genre"
-          />
-        </div>
-
-        <div class="tag-suggestions" id="genre-suggestions" hidden></div>
-      </div>
-    </div>
-
-    <!-- Challenge filter -->
-    <div class="tag-filter" id="challenge-filter">
-      <div class="muted filter-label">Filter by challenges:</div>
-
-      <div class="tag-picker">
-        <div class="tag-picked" id="challenge-picked"></div>
-
-        <div class="filter-wrap">
-          <input
-            id="challenge-search"
-            class="tag-search"
-            type="text"
-            placeholder="Type a challenge..."
-            autocomplete="off"
-            inputmode="search"
-            enterkeyhint="done"
-            aria-label="Filter games by challenge"
-          />
-        </div>
-
-        <div class="tag-suggestions" id="challenge-suggestions" hidden></div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Results controls bar -->
-  <div class="results-bar">
-    <div class="results-bar__left">
-      <label class="muted" for="limit">Show</label>
-      <select id="limit" class="select">
-        <option value="10" selected>10</option>
-        <option value="25">25</option>
-        <option value="50">50</option>
-        <option value="100">100</option>
-        <option value="250">250</option>
-        <option value="0">All</option>
-      </select>
-    </div>
-    <div class="results-bar__center">
-      <p class="muted" id="status"></p>
-    </div>
-    <div class="results-bar__right">
-      <button type="button" class="btn btn--reset" id="reset-all" hidden>Reset Filters</button>
-    </div>
-  </div>
-
-</div>
+{% include game-header-tabs.html game=page active="overview" %}
 
 <!-- =========================================================
-     Games grid (constrained to page width)
+     Overview Tab - Restructured
+
+     ORDERING (new spec):
+     1. Modded/Base Game Links (if applicable)
+     2. Game Description (content) - or placeholder if empty
+     3. General Rules (accordion dropdown)
+     4. Community Achievements
+     5. Credits
      ========================================================= -->
 <div class="page-width">
-  <div class="grid" id="game-list">
-    {% assign sorted = site.games | sort: "game_name" %}
-    {% for g in sorted %}
-      {% comment %}Skip test-only and unpublished games in the public listing{% endcomment %}
-      {% if g.test_only == true or g.published == false %}
-        {% continue %}
-      {% endif %}
-      <a
-        class="game-card game-item card-lift{% if g.is_modded %} game-card--modded{% endif %}"
-        href="{{ g.url | relative_url }}"
-        data-name="{{ g.game_name | downcase }}"
-        data-name-aliases="{% if g.game_name_aliases %}{{ g.game_name_aliases | join: ',' | downcase }}{% endif %}"
-        data-letter="{{ g.game_name | strip | slice: 0, 1 | upcase }}"
-        data-genres="{{ g.genres | join: ',' | downcase }}"
-        data-platforms="{{ g.platforms | default: empty | join: ',' | downcase }}"
-        data-challenges="{% for ch in g.challenges_data %}{{ ch.slug }}{% unless forloop.last %},{% endunless %}{% endfor %}"
-        data-modded="{{ g.is_modded | default: false }}"
-      >
-        {% assign game_cover = g.cover | default: "/assets/img/site/default-game.jpg" %}
-        <div class="game-card__bg" style="background-image: url('{{ game_cover | relative_url }}');"></div>
-        {% if g.is_modded %}
-          <div class="game-card__modded-badge">
-            <span class="modded-badge modded-badge--card">🔧 MODDED</span>
+  <div class="game-shell">
+
+    <section class="tab-panel active" data-panel="overview">
+
+      <!-- =========================================================
+           1. Modded/Base Game Links
+           ========================================================= -->
+      {% if page.is_modded and page.base_game %}
+        {% assign base = site.games | where: "game_id", page.base_game | first %}
+        {% if base %}
+          <div class="game-link-banner game-link-banner--base">
+            <span class="game-link-banner__icon">🎮</span>
+            <span class="game-link-banner__text">This is a <strong>modded version</strong>. Looking for the vanilla game?</span>
+            <a href="{{ base.url | relative_url }}" class="btn btn--small">View {{ base.game_name }}</a>
           </div>
         {% endif %}
-        <div class="game-card__overlay">
-          <div class="game-card__title">{{ g.game_name }}</div>
+      {% endif %}
+      
+      {% comment %} Check if this game has modded versions {% endcomment %}
+      {% assign modded_versions = "" | split: "" %}
+      {% for g in site.games %}
+        {% if g.base_game == page.game_id and g.is_modded %}
+          {% assign modded_versions = modded_versions | push: g %}
+        {% endif %}
+      {% endfor %}
+      
+      {% if modded_versions.size > 0 %}
+        <div class="game-link-banner game-link-banner--modded">
+          <span class="game-link-banner__icon">🔧</span>
+          <span class="game-link-banner__text"><strong>Modded versions available!</strong> Run with custom content.</span>
+          <div class="game-link-banner__links">
+            {% for mod in modded_versions %}
+              <a href="{{ mod.url | relative_url }}" class="btn btn--small btn--outline">{{ mod.game_name }}</a>
+            {% endfor %}
+          </div>
         </div>
-      </a>
-    {% endfor %}
+      {% endif %}
+
+      <!-- =========================================================
+           2. Game Description
+           ========================================================= -->
+      {% assign stripped_content = content | strip %}
+      {% assign is_placeholder = false %}
+      {% if stripped_content == "" or stripped_content contains "Game submitted via form" or stripped_content contains "Awaiting review" %}
+        {% assign is_placeholder = true %}
+      {% endif %}
+
+      {% if is_placeholder %}
+        <div class="card">
+          <p class="muted"><em>📝 Game description needed. Want to help? <a href="{{ page.url | relative_url }}resources/">Visit the Resources tab</a> to learn how to contribute.</em></p>
+        </div>
+      {% elsif stripped_content != "" %}
+        <div class="card">
+          {{ content }}
+        </div>
+      {% endif %}
+
+      <!-- =========================================================
+           3. General Rules (Accordion)
+           ========================================================= -->
+      <div class="card card--compact mt-4" data-section-order="1">
+        <details class="rules-accordion" open>
+          <summary class="rules-accordion__header">
+            <h2 class="rules-accordion__title">📋 General Rules</h2>
+            <span class="accordion-icon">▼</span>
+          </summary>
+          <div class="rules-accordion__content">
+            {% if page.general_rules and page.general_rules.size > 0 %}
+              <p class="muted mb-3">Core rules that apply to all {{ page.game_name }} runs:</p>
+              <div class="md">
+                {{ page.general_rules | markdownify }}
+              </div>
+            {% elsif site.data.default-rules.general_rules %}
+              {% comment %} Fall back to global default-rules {% endcomment %}
+              <p class="muted mb-3">Core rules that apply to all runs:</p>
+              <div class="md">
+                {{ site.data.default-rules.general_rules | markdownify }}
+              </div>
+            {% else %}
+              <p class="muted mb-3">Core rules that apply to all runs:</p>
+              <ul>
+                <li><strong>Timing Method:</strong> {{ page.timing_method | default: "RTA (Real Time Attack)" }}</li>
+                <li><strong>Video Required:</strong> All submissions must include video proof</li>
+                <li><strong>No Cheats/Mods:</strong> External tools or gameplay-altering mods are not allowed</li>
+              </ul>
+            {% endif %}
+            
+            <p class="muted mt-3" style="font-size: 0.85rem;">
+              <em>For detailed category rules, challenges, restrictions, and glitch policies, see the <a href="{{ page.url | relative_url }}rules/">Rules tab</a>.</em>
+            </p>
+          </div>
+        </details>
+      </div>
+
+      <!-- =========================================================
+           4. Community Achievements
+           ========================================================= -->
+      {% if page.community_achievements and page.community_achievements.size > 0 %}
+        <div class="card card--compact mt-4" data-section-order="2">
+          <h2 class="mb-2">🏆 Community Achievements</h2>
+          <p class="muted mb-3">Community-defined challenges tracked for this game.</p>
+          
+          {% comment %} Get all achievement completions for this game {% endcomment %}
+          {% assign game_completions = "" | split: "" %}
+          {% for ac in site.achievements %}
+            {% if ac.game_id == page.game_id %}
+              {% assign game_completions = game_completions | push: ac %}
+            {% endif %}
+          {% endfor %}
+          
+          <div class="community-achievements-game">
+            {% for ach in page.community_achievements %}
+              {% comment %} Count completions for this specific achievement {% endcomment %}
+              {% assign ach_completions = "" | split: "" %}
+              {% assign ach_in_progress = "" | split: "" %}
+              {% for comp in game_completions %}
+                {% if comp.achievement_slug == ach.slug %}
+                  {% if comp.date_completed and comp.date_completed != "" %}
+                    {% assign ach_completions = ach_completions | push: comp %}
+                  {% else %}
+                    {% assign ach_in_progress = ach_in_progress | push: comp %}
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+              {% assign completed_count = ach_completions.size %}
+              {% assign in_progress_count = ach_in_progress.size %}
+              {% assign total_tracking = completed_count | plus: in_progress_count %}
+              
+              <details class="achievement-game-item">
+                <summary class="achievement-game-header">
+                  <div class="achievement-game-header__left">
+                    <span class="achievement-game-icon">{{ ach.icon | default: '🏆' }}</span>
+                    <div class="achievement-game-info">
+                      <h3 class="achievement-game-title">{{ ach.title }}</h3>
+                      <p class="achievement-game-desc">{{ ach.description }}</p>
+                    </div>
+                  </div>
+                  <div class="achievement-game-header__right">
+                    {% if ach.difficulty %}
+                      <span class="difficulty difficulty--{{ ach.difficulty }}">{{ ach.difficulty | capitalize }}</span>
+                    {% endif %}
+                    <span class="achievement-game-stat">
+                      <span class="achievement-game-stat__completed">{{ completed_count }} completed</span>
+                      {% if in_progress_count > 0 %}
+                        <span class="achievement-game-stat__progress">{{ in_progress_count }} in progress</span>
+                      {% endif %}
+                    </span>
+                    <span class="accordion-icon">▼</span>
+                  </div>
+                </summary>
+                <div class="achievement-game-content">
+                  {% if ach.requirements and ach.requirements.size > 0 %}
+                    <div class="achievement-game-requirements">
+                      <h4>Requirements</h4>
+                      <ul>
+                        {% for req in ach.requirements %}
+                          <li>{{ req }}</li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                  {% endif %}
+                  
+                  {% if total_tracking > 0 %}
+                    <div class="achievement-game-runners">
+                      <h4>Runner Progress</h4>
+                      <div class="achievement-runners-list">
+                        {% comment %} Show completed runners first, sorted by date {% endcomment %}
+                        {% assign sorted_completions = ach_completions | sort: "date_completed" %}
+                        {% for comp in sorted_completions %}
+                          {% assign runner = site.runners | where: "runner_id", comp.runner_id | first %}
+                          {% assign runner_name = runner.runner_name | default: comp.runner_id %}
+                          {% assign runner_avatar = runner.avatar | default: "/assets/img/site/default-runner.png" %}
+                          <div class="achievement-runner-row achievement-runner-row--completed">
+                            <a href="{{ runner.url | relative_url }}" class="achievement-runner-info">
+                              <div class="achievement-runner-avatar" style="background-image: url('{{ runner_avatar | relative_url }}')"></div>
+                              <span class="achievement-runner-name">{{ runner_name }}</span>
+                            </a>
+                            <div class="achievement-runner-progress">
+                              <div class="progress-bar progress-bar--full">
+                                <div class="progress-bar__fill" style="width: 100%"></div>
+                              </div>
+                              <span class="progress-bar__text">{{ ach.total_required | default: "?" }} / {{ ach.total_required | default: "?" }}</span>
+                            </div>
+                            <div class="achievement-runner-status">
+                              <span class="achievement-status-badge achievement-status-badge--completed">✓ Completed</span>
+                              <span class="achievement-runner-date">{{ comp.date_completed }}</span>
+                            </div>
+                            {% if comp.proof_url and comp.proof_url != "" %}
+                              <a href="{{ comp.proof_url }}" target="_blank" rel="noopener" class="btn btn--small">▶ Proof</a>
+                            {% endif %}
+                          </div>
+                        {% endfor %}
+                        
+                        {% comment %} Show in-progress runners {% endcomment %}
+                        {% assign sorted_progress = ach_in_progress | sort: "current_progress" | reverse %}
+                        {% for comp in sorted_progress %}
+                          {% assign runner = site.runners | where: "runner_id", comp.runner_id | first %}
+                          {% assign runner_name = runner.runner_name | default: comp.runner_id %}
+                          {% assign runner_avatar = runner.avatar | default: "/assets/img/site/default-runner.png" %}
+                          {% assign current = comp.current_progress | default: 0 %}
+                          {% assign total = ach.total_required | default: 1 %}
+                          {% assign percent = current | times: 100 | divided_by: total %}
+                          <div class="achievement-runner-row achievement-runner-row--progress">
+                            <a href="{{ runner.url | relative_url }}" class="achievement-runner-info">
+                              <div class="achievement-runner-avatar" style="background-image: url('{{ runner_avatar | relative_url }}')"></div>
+                              <span class="achievement-runner-name">{{ runner_name }}</span>
+                            </a>
+                            <div class="achievement-runner-progress">
+                              <div class="progress-bar">
+                                <div class="progress-bar__fill" style="width: {{ percent }}%"></div>
+                              </div>
+                              <span class="progress-bar__text">{{ current }} / {{ total }}</span>
+                            </div>
+                            <div class="achievement-runner-status">
+                              <span class="achievement-status-badge achievement-status-badge--progress">In Progress</span>
+                            </div>
+                          </div>
+                        {% endfor %}
+                      </div>
+                    </div>
+                  {% else %}
+                    <div class="achievement-game-empty">
+                      <p class="muted">No runners tracking this achievement yet. Be the first!</p>
+                    </div>
+                  {% endif %}
+                </div>
+              </details>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- =========================================================
+           5. Credits
+           ========================================================= -->
+      <div class="card card--compact mt-4" data-section-order="3">
+        <h2 class="mb-2">Credits</h2>
+        {% if page.credits and page.credits.size > 0 %}
+          <p class="muted mb-3">Contributors who helped establish this game's challenge run definitions:</p>
+          <ul class="credits-list">
+            {% for credit in page.credits %}
+              <li>
+                {% if credit.url %}
+                  <a href="{{ credit.url }}" target="_blank" rel="noopener">{{ credit.name }}</a>
+                {% else %}
+                  {{ credit.name }}
+                {% endif %}
+                {% if credit.role %}<span class="muted"> — {{ credit.role }}</span>{% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="muted">No credits listed yet.</p>
+        {% endif %}
+      </div>
+
+    </section>
+
   </div>
 </div>
-
-<!-- Load shared filter utilities -->
-<script src="{{ '/assets/js/filter-utils.js' | relative_url }}"></script>
-
-<script>
-(function() {
-  'use strict';
-  
-  // =========================================================
-  // Use shared utilities
-  // =========================================================
-  var F = window.CRCFilters;
-  var norm = F.norm;
-  var expandRomanNumerals = F.expandRomanNumerals;
-
-  // =========================================================
-  // DOM: cache everything once for speed + clarity
-  // =========================================================
-  var items = Array.from(document.querySelectorAll('.game-item'));
-  var totalItems = items.length; // Store total count
-  var input = document.getElementById('q');
-  var status = document.getElementById('status');
-  var limitSelect = document.getElementById('limit');
-  var resetBtn = document.getElementById('reset-all');
-
-  // =========================================================
-  // DOM: Filter elements - Genre, Platform, Challenge
-  // =========================================================
-  var genreFilterEl = document.getElementById('genre-filter');
-  var genrePickedEl = document.getElementById('genre-picked');
-  var genreSearchEl = document.getElementById('genre-search');
-  var genreSugEl = document.getElementById('genre-suggestions');
-
-  var platformFilterEl = document.getElementById('platform-filter');
-  var platformPickedEl = document.getElementById('platform-picked');
-  var platformSearchEl = document.getElementById('platform-search');
-  var platformSugEl = document.getElementById('platform-suggestions');
-
-  var challengeFilterEl = document.getElementById('challenge-filter');
-  var challengePickedEl = document.getElementById('challenge-picked');
-  var challengeSearchEl = document.getElementById('challenge-search');
-  var challengeSugEl = document.getElementById('challenge-suggestions');
-
-  var activeGenres = new Set();
-  var activePlatforms = new Set();
-  var activeChallenges = new Set();
-
-  // =========================================================
-  // Data: load label maps from Jekyll data files (safe via jsonify)
-  // =========================================================
-  var GENRES = [
-  {% for pair in site.data.genres %}
-    {
-      id: {{ pair[0] | jsonify }},
-      label: {{ pair[1].label | default: pair[0] | jsonify }}
-    }{% unless forloop.last %},{% endunless %}
-  {% endfor %}
-  ].sort(function(a, b) { return a.label.localeCompare(b.label); });
-
-  var PLATFORMS = [
-  {% for pair in site.data.platforms %}
-    {
-      id: {{ pair[0] | jsonify }},
-      label: {{ pair[1].label | default: pair[0] | jsonify }},
-      aliases: {{ pair[1].aliases | default: empty | jsonify }}
-    }{% unless forloop.last %},{% endunless %}
-  {% endfor %}
-  ].sort(function(a, b) { return a.label.localeCompare(b.label); });
-
-  var CHALLENGES = [
-  {% for pair in site.data.challenges %}
-    {
-      id: {{ pair[0] | jsonify }},
-      label: {{ pair[1].label | default: pair[0] | jsonify }},
-      aliases: {{ pair[1].aliases | default: empty | jsonify }}
-    }{% unless forloop.last %},{% endunless %}
-  {% endfor %}
-  ].sort(function(a, b) { return a.label.localeCompare(b.label); });
-
-  // =========================================================
-  // Reset button visibility
-  // =========================================================
-  function updateResetButton() {
-    var hasFilters = input.value.trim() ||
-                     activeGenres.size > 0 ||
-                     activePlatforms.size > 0 ||
-                     activeChallenges.size > 0 ||
-                     location.hash;
-    if (resetBtn) resetBtn.hidden = !hasFilters;
-  }
-
-  function resetAllFilters() {
-    input.value = '';
-    activeGenres.clear();
-    activePlatforms.clear();
-    activeChallenges.clear();
-    
-    // Clear hash
-    history.pushState('', document.title, window.location.pathname + window.location.search);
-    
-    // Re-render picked chips
-    F.renderPicked(activeGenres, GENRES, genrePickedEl, { onRemove: applyFilter });
-    F.renderPicked(activePlatforms, PLATFORMS, platformPickedEl, { onRemove: applyFilter });
-    F.renderPicked(activeChallenges, CHALLENGES, challengePickedEl, { onRemove: applyFilter });
-    
-    azNav.update();
-    applyFilter();
-  }
-
-  if (resetBtn) {
-    resetBtn.addEventListener('click', resetAllFilters);
-  }
-
-  // =========================================================
-  // Filtering: search + genres + platforms + challenges
-  // =========================================================
-  function applyFilter() {
-    var q = norm(input.value);
-    var qExpanded = expandRomanNumerals(input.value);
-    var limit = Number(limitSelect.value);
-    var matches = [];
-
-    var hashMode = F.getHashMode();
-
-    for (var i = 0; i < items.length; i++) {
-      var el = items[i];
-      var name = el.dataset.name || '';
-      var nameAliases = el.dataset.nameAliases || '';
-      var nameExpanded = expandRomanNumerals(name);
-      var genres = (el.dataset.genres || '').split(',').map(norm).filter(Boolean);
-      var platforms = (el.dataset.platforms || '').split(',').map(norm).filter(Boolean);
-      var challenges = (el.dataset.challenges || '').split(',').map(norm).filter(Boolean);
-
-      var letter = (el.dataset.letter || '').toUpperCase();
-
-      var okHash = F.matchesHashFilter(letter, hashMode);
-      var nameMatch = !q || name.includes(q) || nameExpanded.includes(qExpanded) || nameAliases.includes(q);
-
-      var okGenres = Array.from(activeGenres).every(function(g) { return genres.includes(g); });
-      var okPlatforms = Array.from(activePlatforms).every(function(p) { return platforms.includes(p); });
-      var okChallenges = Array.from(activeChallenges).every(function(c) { return challenges.includes(c); });
-
-      var ok = okHash && nameMatch && okGenres && okPlatforms && okChallenges;
-
-      if (ok) matches.push(el);
-      el.style.display = 'none';
-    }
-
-    var shown = limit === 0 ? matches.length : Math.min(limit, matches.length);
-    for (var j = 0; j < shown; j++) {
-      matches[j].style.display = '';
-    }
-
-    // Fixed: Show "X of [total]" instead of "X of [filtered]"
-    status.textContent = 'Showing ' + shown + ' of ' + totalItems + ' games.';
-    updateResetButton();
-  }
-
-  // =========================================================
-  // Init A-Z navigation
-  // =========================================================
-  var azNav = F.initAzNav({
-    onHashChange: applyFilter
-  });
-
-  // =========================================================
-  // Init dropdowns using shared utilities
-  // =========================================================
-  F.wireDropdown({
-    filterEl: genreFilterEl,
-    searchEl: genreSearchEl,
-    sugEl: genreSugEl,
-    set: activeGenres,
-    list: GENRES,
-    pickedEl: genrePickedEl,
-    onFilter: applyFilter
-  });
-
-  F.wireDropdown({
-    filterEl: platformFilterEl,
-    searchEl: platformSearchEl,
-    sugEl: platformSugEl,
-    set: activePlatforms,
-    list: PLATFORMS,
-    pickedEl: platformPickedEl,
-    onFilter: applyFilter
-  });
-
-  F.wireDropdown({
-    filterEl: challengeFilterEl,
-    searchEl: challengeSearchEl,
-    sugEl: challengeSugEl,
-    set: activeChallenges,
-    list: CHALLENGES,
-    pickedEl: challengePickedEl,
-    onFilter: applyFilter
-  });
-
-  // =========================================================
-  // Event listeners
-  // =========================================================
-  input.addEventListener('input', applyFilter);
-  limitSelect.addEventListener('change', applyFilter);
-
-  // Initial render
-  applyFilter();
-})();
-</script>
