@@ -259,6 +259,144 @@ layout: default
           <p class="muted">No credits listed yet.</p>
         {% endif %}
       </div>
+
+      <!-- =========================================================
+           7. Community Achievements
+           ========================================================= -->
+      {% if page.community_achievements and page.community_achievements.size > 0 %}
+        <div class="card card--compact mt-4" data-section-order="6">
+          <h2 class="mb-2">🏆 Community Achievements</h2>
+          <p class="muted mb-3">Community-defined challenges tracked for this game.</p>
+          
+          {% comment %} Get all achievement completions for this game {% endcomment %}
+          {% assign game_completions = "" | split: "" %}
+          {% for ac in site.achievements %}
+            {% if ac.game_id == page.game_id %}
+              {% assign game_completions = game_completions | push: ac %}
+            {% endif %}
+          {% endfor %}
+          
+          <div class="community-achievements-game">
+            {% for ach in page.community_achievements %}
+              {% comment %} Count completions for this specific achievement {% endcomment %}
+              {% assign ach_completions = "" | split: "" %}
+              {% assign ach_in_progress = "" | split: "" %}
+              {% for comp in game_completions %}
+                {% if comp.achievement_slug == ach.slug %}
+                  {% if comp.date_completed and comp.date_completed != "" %}
+                    {% assign ach_completions = ach_completions | push: comp %}
+                  {% else %}
+                    {% assign ach_in_progress = ach_in_progress | push: comp %}
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+              {% assign completed_count = ach_completions.size %}
+              {% assign in_progress_count = ach_in_progress.size %}
+              {% assign total_tracking = completed_count | plus: in_progress_count %}
+              
+              <details class="achievement-game-item">
+                <summary class="achievement-game-header">
+                  <div class="achievement-game-header__left">
+                    <span class="achievement-game-icon">{{ ach.icon | default: '🏆' }}</span>
+                    <div class="achievement-game-info">
+                      <h3 class="achievement-game-title">{{ ach.title }}</h3>
+                      <p class="achievement-game-desc">{{ ach.description }}</p>
+                    </div>
+                  </div>
+                  <div class="achievement-game-header__right">
+                    {% if ach.difficulty %}
+                      <span class="difficulty difficulty--{{ ach.difficulty }}">{{ ach.difficulty | capitalize }}</span>
+                    {% endif %}
+                    <span class="achievement-game-stat">
+                      <span class="achievement-game-stat__completed">{{ completed_count }} completed</span>
+                      {% if in_progress_count > 0 %}
+                        <span class="achievement-game-stat__progress">{{ in_progress_count }} in progress</span>
+                      {% endif %}
+                    </span>
+                    <span class="accordion-icon">▼</span>
+                  </div>
+                </summary>
+                <div class="achievement-game-content">
+                  {% if ach.requirements and ach.requirements.size > 0 %}
+                    <div class="achievement-game-requirements">
+                      <h4>Requirements</h4>
+                      <ul>
+                        {% for req in ach.requirements %}
+                          <li>{{ req }}</li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                  {% endif %}
+                  
+                  {% if total_tracking > 0 %}
+                    <div class="achievement-game-runners">
+                      <h4>Runner Progress</h4>
+                      <div class="achievement-runners-list">
+                        {% comment %} Show completed runners first, sorted by date {% endcomment %}
+                        {% assign sorted_completions = ach_completions | sort: "date_completed" %}
+                        {% for comp in sorted_completions %}
+                          {% assign runner = site.runners | where: "runner_id", comp.runner_id | first %}
+                          {% assign runner_name = runner.runner_name | default: comp.runner_id %}
+                          {% assign runner_avatar = runner.avatar | default: "/assets/img/site/default-runner.png" %}
+                          <div class="achievement-runner-row achievement-runner-row--completed">
+                            <a href="{{ runner.url | relative_url }}" class="achievement-runner-info">
+                              <div class="achievement-runner-avatar" style="background-image: url('{{ runner_avatar | relative_url }}')"></div>
+                              <span class="achievement-runner-name">{{ runner_name }}</span>
+                            </a>
+                            <div class="achievement-runner-progress">
+                              <div class="progress-bar progress-bar--full">
+                                <div class="progress-bar__fill" style="width: 100%"></div>
+                              </div>
+                              <span class="progress-bar__text">{{ ach.total_required | default: "?" }} / {{ ach.total_required | default: "?" }}</span>
+                            </div>
+                            <div class="achievement-runner-status">
+                              <span class="achievement-status-badge achievement-status-badge--completed">✓ Completed</span>
+                              <span class="achievement-runner-date">{{ comp.date_completed }}</span>
+                            </div>
+                            {% if comp.proof_url and comp.proof_url != "" %}
+                              <a href="{{ comp.proof_url }}" target="_blank" rel="noopener" class="btn btn--small">▶ Proof</a>
+                            {% endif %}
+                          </div>
+                        {% endfor %}
+                        
+                        {% comment %} Show in-progress runners {% endcomment %}
+                        {% assign sorted_progress = ach_in_progress | sort: "current_progress" | reverse %}
+                        {% for comp in sorted_progress %}
+                          {% assign runner = site.runners | where: "runner_id", comp.runner_id | first %}
+                          {% assign runner_name = runner.runner_name | default: comp.runner_id %}
+                          {% assign runner_avatar = runner.avatar | default: "/assets/img/site/default-runner.png" %}
+                          {% assign current = comp.current_progress | default: 0 %}
+                          {% assign total = ach.total_required | default: 1 %}
+                          {% assign percent = current | times: 100 | divided_by: total %}
+                          <div class="achievement-runner-row achievement-runner-row--progress">
+                            <a href="{{ runner.url | relative_url }}" class="achievement-runner-info">
+                              <div class="achievement-runner-avatar" style="background-image: url('{{ runner_avatar | relative_url }}')"></div>
+                              <span class="achievement-runner-name">{{ runner_name }}</span>
+                            </a>
+                            <div class="achievement-runner-progress">
+                              <div class="progress-bar">
+                                <div class="progress-bar__fill" style="width: {{ percent }}%"></div>
+                              </div>
+                              <span class="progress-bar__text">{{ current }} / {{ total }}</span>
+                            </div>
+                            <div class="achievement-runner-status">
+                              <span class="achievement-status-badge achievement-status-badge--progress">In Progress</span>
+                            </div>
+                          </div>
+                        {% endfor %}
+                      </div>
+                    </div>
+                  {% else %}
+                    <div class="achievement-game-empty">
+                      <p class="muted">No runners tracking this achievement yet. Be the first!</p>
+                    </div>
+                  {% endif %}
+                </div>
+              </details>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
     </section>
 
   </div>
