@@ -22,18 +22,13 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ## Immediate Priorities
 
-### 1 Runner Profiles
+### 1. Runner Profiles
 - [ ] Fix Structure of Bio
 - [ ] Completed Runs:
   - Restructure UI
 - [ ] For Contributions, have these link to the appropriate achievements that the runner has been credited for.
 
-### 2 Modded Game Support
-- [ ] Allow modded versions of games
-- [ ] Link between modded and main game pages
-- [ ] "Modded" tag for categories
-
-### 2.5 Games page
+### 2. Games page
 - [ ] Add A Game for "Multi-Game Runs". These are multiple games done in succession. The Game page that it belongs to will have a link to these below the "Modded Game"
 
 ### 3. Forms & Submissions
