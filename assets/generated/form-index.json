@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-04T05:08:12.845Z",
+  "generated_at": "2026-02-05T19:00:27.550Z",
   "games": [
     {
       "game_id": "celeste",
@@ -751,6 +751,166 @@
         "label": "Character"
       },
       "characters": [],
+      "timing_method": "LRT",
+      "timing_method_secondary": ""
+    },
+    {
+      "game_id": "hollow-knight-modded",
+      "title": "Hollow Knight (Modded)",
+      "category_tiers": {
+        "full_runs": [],
+        "mini_challenges": [
+          {
+            "slug": "gun-mod",
+            "name": "Gun Mod (HKGun / Hollow Point)"
+          },
+          {
+            "slug": "gun-mod/any",
+            "name": "Gun Mod (HKGun / Hollow Point): Any%"
+          },
+          {
+            "slug": "gun-mod/true-ending",
+            "name": "Gun Mod (HKGun / Hollow Point): True Ending"
+          },
+          {
+            "slug": "gun-mod/p5",
+            "name": "Gun Mod (HKGun / Hollow Point): Pantheon 5"
+          },
+          {
+            "slug": "randomizer",
+            "name": "Randomizer"
+          },
+          {
+            "slug": "randomizer/any",
+            "name": "Randomizer: Any%"
+          }
+        ],
+        "player_made": []
+      },
+      "categories": [
+        {
+          "slug": "gun-mod",
+          "name": "Gun Mod (HKGun / Hollow Point)",
+          "tier": "mini_challenges"
+        },
+        {
+          "slug": "gun-mod/any",
+          "name": "Gun Mod (HKGun / Hollow Point): Any%",
+          "tier": "mini_challenges"
+        },
+        {
+          "slug": "gun-mod/true-ending",
+          "name": "Gun Mod (HKGun / Hollow Point): True Ending",
+          "tier": "mini_challenges"
+        },
+        {
+          "slug": "gun-mod/p5",
+          "name": "Gun Mod (HKGun / Hollow Point): Pantheon 5",
+          "tier": "mini_challenges"
+        },
+        {
+          "slug": "randomizer",
+          "name": "Randomizer",
+          "tier": "mini_challenges"
+        },
+        {
+          "slug": "randomizer/any",
+          "name": "Randomizer: Any%",
+          "tier": "mini_challenges"
+        }
+      ],
+      "standard_challenges": [
+        {
+          "id": "hitless",
+          "name": "Hitless"
+        },
+        {
+          "id": "damageless",
+          "name": "Damageless"
+        },
+        {
+          "id": "deathless",
+          "name": "Deathless"
+        },
+        {
+          "id": "gun-only",
+          "name": "Gun Only"
+        },
+        {
+          "id": "no-hit-no-damage",
+          "name": "No-Hit / No-Damage"
+        }
+      ],
+      "glitches": [
+        {
+          "id": "unrestricted",
+          "name": "Unrestricted"
+        },
+        {
+          "id": "nmg",
+          "name": "No Major Glitches (NMG)"
+        },
+        {
+          "id": "glitchless",
+          "name": "Glitchless"
+        }
+      ],
+      "restrictions": [
+        {
+          "id": "vanilla-movement",
+          "name": "Vanilla Movement Only"
+        },
+        {
+          "id": "no-gun-upgrades",
+          "name": "No Gun Upgrades"
+        },
+        {
+          "id": "gun-and-nail",
+          "name": "Gun + Nail"
+        },
+        {
+          "id": "no-charms",
+          "name": "No Charms"
+        },
+        {
+          "id": "pacifist-gun",
+          "name": "Pacifist Gun"
+        }
+      ],
+      "character_column": {
+        "enabled": true,
+        "label": "Gun Type / Build"
+      },
+      "characters": [
+        {
+          "id": "pistol-standard",
+          "name": "Standard Pistol"
+        },
+        {
+          "id": "shotgun",
+          "name": "Shotgun"
+        },
+        {
+          "id": "rifle",
+          "name": "Rifle"
+        },
+        {
+          "id": "smg",
+          "name": "SMG"
+        },
+        {
+          "id": "mixed-loadout",
+          "name": "Mixed Loadout"
+        },
+        {
+          "id": "randomizer-seed",
+          "name": "Randomizer (Seed)"
+        },
+        {
+          "id": "not-applicable",
+          "name": "N/A"
+        }
+      ],
       "timing_method": "LRT",
       "timing_method_secondary": ""
     },
