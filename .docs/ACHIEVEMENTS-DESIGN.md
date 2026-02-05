@@ -45,8 +45,9 @@ community_achievements:
     description: "Complete a successful run with every weapon aspect"
     icon: "⚔️"
     difficulty: legendary    # easy | medium | hard | legendary
-    total_required: 20       # For progress tracking
+    total_required: 24       # For progress tracking
     requirements:
+      - "Clear with Witch's Staff - All 4 aspects"
       - "Clear with Sister Blades - All 4 aspects"
       - "Clear with Moonstone Axe - All 4 aspects"
       - "Clear with Umbral Flames - All 4 aspects"
