@@ -1,0 +1,11 @@
+---
+layout: default
+title: History
+---
+{% assign game = site.games | where: "game_id", "hollow-knight-modded" | first %}
+{% include game-header-tabs.html game=game active="history" %}
+<div class="page-width">
+  <div class="game-shell">
+    {% include game-history.html game=game %}
+  </div>
+</div>
