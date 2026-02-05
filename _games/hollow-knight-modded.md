@@ -148,36 +148,12 @@ mini_challenges:
       - slug: any
         label: "Any%"
         description: "Complete the game using the gun mod. Any ending accepted."
-      - slug: gun-only-any
-        label: "Gun Only Any%"
-        description: "Complete the game using ONLY the gun for all combat. No nail, no spells for damage."
-      - slug: all-bosses
-        label: "All Bosses"
-        description: "Defeat all bosses using the gun mod."
       - slug: true-ending
         label: "True Ending"
         description: "Achieve the True Ending (Embrace the Void) using the gun mod."
-      - slug: low-percent
-        label: "Low%"
-        description: "Complete the game with minimum percentage using the gun mod."
-      - slug: p1
-        label: "Pantheon 1"
-        description: "Complete Pantheon of the Master with the gun mod."
-      - slug: p2
-        label: "Pantheon 2"
-        description: "Complete Pantheon of the Artist with the gun mod."
-      - slug: p3
-        label: "Pantheon 3"
-        description: "Complete Pantheon of the Sage with the gun mod."
-      - slug: p4
-        label: "Pantheon 4"
-        description: "Complete Pantheon of the Knight with the gun mod."
       - slug: p5
         label: "Pantheon 5"
         description: "Complete Pantheon of Hallownest with the gun mod. The ultimate modded challenge."
-      - slug: all-radiant
-        label: "All Radiant"
-        description: "Defeat all bosses on Radiant difficulty in Hall of Gods using the gun."
 
   - slug: randomizer
     label: "Randomizer"
@@ -186,23 +162,6 @@ mini_challenges:
       - slug: any
         label: "Any%"
         description: "Complete a randomizer seed as fast as possible."
-      - slug: all-skills
-        label: "All Skills"
-        description: "Collect all movement abilities in a randomizer seed."
-      - slug: all-bosses
-        label: "All Bosses"
-        description: "Defeat all bosses in a randomizer seed."
-
-  - slug: enemy-randomizer
-    label: "Enemy Randomizer"
-    description: "Runs using the Enemy Randomizer mod, which shuffles enemy placements."
-    children:
-      - slug: any
-        label: "Any%"
-        description: "Complete the game with randomized enemies."
-      - slug: all-bosses
-        label: "All Bosses"
-        description: "Defeat all bosses with randomized enemy placements."
 
 # =============================================================================
 # PLAYER-MADE CHALLENGES
@@ -262,11 +221,6 @@ supported_mods:
     url: "https://github.com/hk-modding/RandomizerMod"
     version: "4.0+"
     required: false
-  - name: "Enemy Randomizer"
-    description: "Randomizes enemy placements throughout the game."
-    url: "https://github.com/example/enemyrando"
-    version: "1.0+"
-    required: false
   - name: "Custom Knight"
     description: "Optional - allows custom skins for the knight."
     url: "https://github.com/example/customknight"
@@ -320,9 +274,6 @@ The gun mod completely changes Hollow Knight's combat dynamics. Ranged combat cr
 
 ### Randomizer
 The Randomizer mod shuffles items, abilities, and more throughout Hallownest. Every seed creates a unique routing puzzle - find your movement abilities and progress through the game in completely new ways.
-
-### Enemy Randomizer
-Tired of knowing exactly what's around every corner? Enemy Randomizer shuffles enemy placements, creating chaotic and unpredictable encounters.
 
 ## Getting Started
 1. Install the Hollow Knight Modding API
