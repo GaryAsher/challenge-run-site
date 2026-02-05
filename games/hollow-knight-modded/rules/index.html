@@ -1,0 +1,11 @@
+---
+layout: default
+title: Rules
+---
+{% assign game = site.games | where: "game_id", "hollow-knight-modded" | first %}
+{% include game-header-tabs.html game=game active="rules" %}
+<div class="page-width">
+  <div class="game-shell">
+    {% include game-rules.html game=game %}
+  </div>
+</div>
