@@ -1,0 +1,111 @@
+---
+layout: default
+title: Resources
+---
+{% assign game = site.games | where: "game_id", "hollow-knight-modded" | first %}
+{% include game-header-tabs.html game=game active="resources" %}
+<div class="page-width">
+  <div class="game-shell">
+    <div class="card">
+      <h2>Resources</h2>
+      <p class="muted">Everything you need to get started with modded Hollow Knight challenge runs.</p>
+    </div>
+    
+    {% if game.supported_mods and game.supported_mods.size > 0 %}
+    <div class="card mt-4">
+      <h3>🔧 Required & Supported Mods</h3>
+      <p class="muted mb-3">Install these mods to participate in modded challenge runs:</p>
+      <div class="supported-mods-list">
+        {% for mod in game.supported_mods %}
+          <div class="supported-mod-item {% if mod.required %}supported-mod-item--required{% endif %}">
+            <div class="supported-mod-header">
+              <h4>{{ mod.name }}</h4>
+              {% if mod.required %}
+                <span class="mod-required-badge">Required</span>
+              {% else %}
+                <span class="mod-optional-badge">Optional</span>
+              {% endif %}
+            </div>
+            <p class="muted">{{ mod.description }}</p>
+            {% if mod.version %}<p class="mod-version">Version: {{ mod.version }}</p>{% endif %}
+            {% if mod.url %}<a href="{{ mod.url }}" target="_blank" rel="noopener" class="btn btn--small">Download →</a>{% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    
+    <div class="card mt-4">
+      <h3>📋 Installation Guide</h3>
+      <p class="muted mb-3">How to install mods for Hollow Knight:</p>
+      <ol class="install-steps">
+        <li>
+          <strong>Install the Modding API</strong>
+          <p class="muted">Download and install the Hollow Knight Modding API. This is required for all mods.</p>
+        </li>
+        <li>
+          <strong>Download the Gun Mod</strong>
+          <p class="muted">Get the latest version of HKGun/Hollow Point from the link above.</p>
+        </li>
+        <li>
+          <strong>Install to Mods Folder</strong>
+          <p class="muted">Place the mod .dll file in your Hollow Knight/Mods folder.</p>
+        </li>
+        <li>
+          <strong>Configure Your Settings</strong>
+          <p class="muted">Launch the game and configure gun settings in the mod menu.</p>
+        </li>
+        <li>
+          <strong>Verify Installation</strong>
+          <p class="muted">Make sure the gun appears in-game before starting a challenge run.</p>
+        </li>
+      </ol>
+    </div>
+    
+    <div class="card mt-4">
+      <h3>🎮 Gun Types & Strategies</h3>
+      <p class="muted mb-3">Overview of available gun types:</p>
+      <div class="gun-types-grid">
+        <div class="gun-type-card">
+          <h4>🔫 Standard Pistol</h4>
+          <p class="muted">Balanced damage and fire rate. Good for learning.</p>
+        </div>
+        <div class="gun-type-card">
+          <h4>💥 Shotgun</h4>
+          <p class="muted">High damage at close range. Great for bosses.</p>
+        </div>
+        <div class="gun-type-card">
+          <h4>🎯 Rifle</h4>
+          <p class="muted">High accuracy, slower fire rate. Precision gameplay.</p>
+        </div>
+        <div class="gun-type-card">
+          <h4>⚡ SMG</h4>
+          <p class="muted">Rapid fire, lower damage per shot. DPS focused.</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card mt-4">
+      <h3>📹 Video Guides</h3>
+      <p class="muted">Community tutorials and showcase videos coming soon!</p>
+    </div>
+  </div>
+</div>
+
+<style>
+.supported-mods-list{display:flex;flex-direction:column;gap:1rem}
+.supported-mod-item{padding:1rem;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.supported-mod-item--required{border-color:var(--accent);background:rgba(var(--accent-rgb),.05)}
+.supported-mod-header{display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem}
+.supported-mod-header h4{margin:0}
+.mod-required-badge{font-size:.65rem;font-weight:600;padding:.2rem .5rem;background:var(--accent);color:#fff;border-radius:3px;text-transform:uppercase}
+.mod-optional-badge{font-size:.65rem;font-weight:600;padding:.2rem .5rem;background:var(--surface);color:var(--text-muted);border-radius:3px;text-transform:uppercase}
+.mod-version{font-size:.8rem;color:var(--text-muted);margin:.25rem 0}
+.install-steps{padding-left:1.5rem}
+.install-steps li{margin:1rem 0}
+.install-steps li p{margin:.25rem 0 0 0}
+.gun-types-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem}
+.gun-type-card{padding:1rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.gun-type-card h4{margin:0 0 .5rem 0}
+.gun-type-card p{margin:0}
+</style>
