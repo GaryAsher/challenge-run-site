@@ -75,7 +75,7 @@ layout: default
             {% assign run_count = game_runs.size %}
             {% assign best_run = game_runs | sort: "time_primary" | first %}
             {% assign best_time = best_run.time_primary | default: best_run.time %}
-            {% assign game_avatar = g.avatar | default: "/assets/img/site/default-game.png" %}
+            {% assign game_avatar = g.cover | default: g.avatar | default: "/assets/img/site/default-game.png" %}
             <a href="?game={{ game_id }}" class="runner-game-card card-lift" data-game-id="{{ game_id }}">
               <div class="runner-game-card__bg" data-bg="{{ game_avatar | relative_url }}"></div>
               <div class="runner-game-card__overlay">
@@ -127,9 +127,9 @@ layout: default
         }{% unless forloop.last %},{% endunless %}{% endfor %}]
       </script>
       <script type="application/json" id="games-data">
-        { {% for game_id in games_with_runs %}{% assign g = site.games | where: "game_id", game_id | first %}{{ game_id | jsonify }}: {
+        { {% for game_id in games_with_runs %}{% assign g = site.games | where: "game_id", game_id | first %}{% assign g_img = g.cover | default: g.avatar | default: "/assets/img/site/default-game.png" %}{{ game_id | jsonify }}: {
           "name": {{ g.game_name | default: game_id | jsonify }},
-          "avatar": {{ g.avatar | default: "/assets/img/site/default-game.png" | relative_url | jsonify }},
+          "avatar": {{ g_img | relative_url | jsonify }},
           "url": {{ g.url | relative_url | jsonify }}
         }{% unless forloop.last %},{% endunless %}{% endfor %} }
       </script>
