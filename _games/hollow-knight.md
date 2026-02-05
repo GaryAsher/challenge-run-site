@@ -47,7 +47,7 @@ general_rules: |
   - **Main Menu Required:** Show main menu at start of run (proves no storage glitch active).
 
 # =============================================================================
-# STANDARD CHALLENGE TYPES
+# CHALLENGE TYPES
 # =============================================================================
 challenges_data:
   - slug: hitless
@@ -101,12 +101,8 @@ restrictions_data:
   - slug: no-spells
     label: "No Spells"
     description: |
-      Complete the run without using Vengeful Spirit, Desolate Dive, or Howling Wraiths (or their upgrades).
-
-  - slug: base-nail-only
-    label: "Base Nail Only"
-    description: |
-      No nail upgrades, no spells, no charms. Pure base nail combat only.
+      - Complete the run without using Vengeful Spirit, Desolate Dive, or Howling Wraiths (or their upgrades).
+      - *Exception*: You are allowed to use Vengeful Spirit to kill the Baulder at Greenpath's entrance.
 
   - slug: no-monarch-wings
     label: "No Monarch Wings"
@@ -131,8 +127,14 @@ glitches_data:
       - "Swim in Air"
       - "Room Duplication"
       - "All sequence breaks"
-    notes: "Recommended for experienced runners only."
 
+  - slug: no-main-menu-storage
+    label: "No Main Menu Storage (NMMS)"
+    description: |
+      banned:
+        - "Main Menu Storage"
+        - "Pre-loaded storage states"
+      
   - slug: nmg
     label: "No Major Glitches (NMG)"
     description: |
@@ -149,31 +151,17 @@ glitches_data:
       - "Swim in Air"
       - "Room Duplication"
       - "Lever skips"
-    notes: "Most popular category for challenge runs."
 
   - slug: glitchless
     label: "Glitchless"
     description: |
-      No glitches of any kind. The game must be played exactly as intended by Team Cherry.
-    banned:
-      - "All glitches"
-      - "All unintended skips"
-      - "Damage boosting through hazards"
-    notes: "Purist category - play the game as designed."
-
-  - slug: no-main-menu-storage
-    label: "No Main Menu Storage (NMMS)"
-    description: |
-      Runs must show the main menu at the start to prove no storage glitch is active. Required for Team Hitless verification.
-    banned:
-      - "Main Menu Storage"
-      - "Pre-loaded storage states"
-    notes: "Standard requirement for all Team Hitless submissions. Main menu MUST be visible at run start."
+      No glitches of any kind.
 
 # =============================================================================
-# RUN CATEGORIES
+# FULL RUNS
+# Require reaching some kind of ending
 # =============================================================================
-categories_data:
+full_runs:
   - slug: any
     label: "Any%"
     description: "Complete the game and achieve any ending."
@@ -185,6 +173,14 @@ categories_data:
   - slug: true-ending
     label: "True Ending"
     description: "Achieve the 'Dream No More' ending by collecting the Void Heart and using the Dream Nail on the Hollow Knight."
+
+  - slug: all-bosses
+    label: "All Bosses"
+    description: "Defeat all bosses in the game."
+    
+  - slug: pantheon-5
+    label: "Pantheon of Hallownest"
+    description: "42 bosses, ends with Absolute Radiance."
 
   - slug: 106-te
     label: "106% TE"
@@ -202,15 +198,12 @@ categories_data:
     label: "Low%"
     description: "Complete the game with minimum percentage (11%)."
 
-  - slug: all-bosses
-    label: "All Bosses"
-    description: "Defeat all bosses in the game."
-
-  - slug: godhome-ending
-    label: "Godhome Ending"
-    description: "Achieve the Godhome ending by defeating Absolute Radiance in the Pantheon of Hallownest."
-
-  - slug: pantheons
+# =============================================================================
+# MINI-CHALLENGES
+# In-game challenges that exist without requiring an ending
+# =============================================================================
+mini_challenges:
+  - slug: pantheons-1-2-3-4
     label: "Pantheons"
     description: "Complete Pantheon boss gauntlets from the Godmaster DLC."
     children:
@@ -226,9 +219,6 @@ categories_data:
       - slug: pantheon-4
         label: "Pantheon of the Knight"
         description: "10 bosses, ends with Pure Vessel."
-      - slug: pantheon-5
-        label: "Pantheon of Hallownest"
-        description: "42 bosses, ends with Absolute Radiance."
 
   - slug: hall-of-gods
     label: "Hall of Gods"
