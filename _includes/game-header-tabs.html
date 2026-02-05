@@ -20,12 +20,17 @@
   <div class="page-width">
     <div class="game-shell">
       <section
-        class="game-hero{% if include.active == 'overview' %} game-hero--active{% endif %}"
+        class="game-hero{% if include.active == 'overview' %} game-hero--active{% endif %}{% if game.is_modded %} game-hero--modded{% endif %}"
         style="
           background-image: url('{{ game.cover | relative_url }}');
           background-position: {{ game.cover_position | default: 'center' }};
         "
       >
+        {% if game.is_modded %}
+          <div class="game-hero__modded-badge">
+            <span class="modded-badge">🔧 MODDED</span>
+          </div>
+        {% endif %}
         <div class="game-hero__overlay">
           <div class="game-hero__content">
             <h1>{{ game.game_name }}</h1>
@@ -55,7 +60,7 @@
 {% else %}
   <div class="page-width">
     <div class="game-shell">
-      <h1>{{ game.game_name }}</h1>
+      <h1>{{ game.game_name }}{% if game.is_modded %} <span class="modded-badge modded-badge--inline">🔧 MODDED</span>{% endif %}</h1>
 
       {% if game.status %}
         <p class="muted">{{ game.status }}</p>
