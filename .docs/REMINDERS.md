@@ -28,12 +28,12 @@ This document consolidates all reminders, future ideas, and planned features for
   - Restructure UI
 - [ ] For Contributions, have these link to the appropriate achievements that the runner has been credited for.
 
-### 2.3  Dashboard & Review System (Phase 3)
-- [ ] Phase 3: On approve, auto-create GitHub run file via Worker `/approve` endpoint
-- [ ] Phase 3: Remove GitHub PR workflow for runs (Supabase becomes sole source of truth)
-- [ ] Phase 3: Wire up Pending Profiles page to use `admin.js` module
-- [ ] Phase 3: Wire up Pending Games page to use `admin.js` module
-- [ ] Phase 3: Notifications (Discord webhook on approve/reject)
+### 2.3  Dashboard & Review System
+- [ ] On approve, auto-create GitHub run file via Worker `/approve` endpoint
+  - Write to pending_games. the Worker would need a /submit-game endpoint.
+- [ ] Remove GitHub PR workflow for runs
+  - Could be enhanced by reading _data/form-index.json
+- [ ] Notifications (Discord webhook on approve/reject)
 
 ### 3. Modded Game Support
 - [ ] Build game submission UI in admin dashboard (replaces Google Form for new games)
