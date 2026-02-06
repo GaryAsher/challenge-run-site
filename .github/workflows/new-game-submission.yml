@@ -31,6 +31,16 @@ on:
         required: false
         default: "Character"
         type: string
+      is_modded:
+        description: "Is this a modded version of another game? (true/false)"
+        required: false
+        default: "false"
+        type: string
+      base_game:
+        description: "Game ID of the base/parent game (required if is_modded is true)"
+        required: false
+        default: ""
+        type: string
       submitter_handle:
         description: "Submitter Discord name"
         required: false
@@ -80,6 +90,8 @@ jobs:
           CHALLENGES: ${{ github.event.client_payload.challenges || inputs.challenges }}
           CHAR_ENABLED: ${{ github.event.client_payload.character_column || inputs.character_column || 'false' }}
           CHAR_LABEL: ${{ github.event.client_payload.character_label || inputs.character_label || 'Character' }}
+          IS_MODDED: ${{ github.event.client_payload.is_modded || inputs.is_modded || 'false' }}
+          BASE_GAME: ${{ github.event.client_payload.base_game || inputs.base_game || '' }}
           SUBMITTER: ${{ github.event.client_payload.submitter_handle || inputs.submitter_handle }}
           CREDIT_REQUESTED: ${{ github.event.client_payload.credit_requested || inputs.credit_requested || 'false' }}
         run: |
@@ -119,6 +131,14 @@ jobs:
           CREDIT_REQUESTED=$(echo "${CREDIT_REQUESTED:-false}" | tr '[:upper:]' '[:lower:]')
           case "${CREDIT_REQUESTED}" in true|false) ;; *) CREDIT_REQUESTED="false" ;; esac
           
+          IS_MODDED=$(echo "${IS_MODDED:-false}" | tr '[:upper:]' '[:lower:]')
+          case "${IS_MODDED}" in true|false) ;; *) IS_MODDED="false" ;; esac
+          
+          if [ "${IS_MODDED}" = "true" ] && [ -z "${BASE_GAME:-}" ]; then
+            echo "::error::BASE_GAME is required when IS_MODDED is true"
+            exit 1
+          fi
+          
           mkdir -p _queue_games
           OUT_FILE="_queue_games/${GAME_ID}.md"
           
@@ -127,7 +147,7 @@ jobs:
           fi
           
           export GAME_NAME GAME_ID FIRST_LETTER FULL_RUN_CATEGORIES CHALLENGES
-          export CHAR_ENABLED CHAR_LABEL SUBMITTER CREDIT_REQUESTED
+          export CHAR_ENABLED CHAR_LABEL IS_MODDED BASE_GAME SUBMITTER CREDIT_REQUESTED
           export DETAILS_IN OUT_FILE
           
           python3 scripts/generate-game-file.py
@@ -136,6 +156,8 @@ jobs:
           echo "game_name=${GAME_NAME}" >> "$GITHUB_OUTPUT"
           echo "first_letter=${FIRST_LETTER}" >> "$GITHUB_OUTPUT"
           echo "submitter=${SUBMITTER}" >> "$GITHUB_OUTPUT"
+          echo "is_modded=${IS_MODDED}" >> "$GITHUB_OUTPUT"
+          echo "base_game=${BASE_GAME}" >> "$GITHUB_OUTPUT"
 
       - name: Create Pull Request
         id: cpr
@@ -153,12 +175,15 @@ jobs:
             **Game ID:** `${{ steps.generate.outputs.game_id }}`
             **File:** `_queue_games/${{ steps.generate.outputs.game_id }}.md`
             **Submitted by:** ${{ steps.generate.outputs.submitter || 'Anonymous' }}
+            **Modded:** ${{ steps.generate.outputs.is_modded == 'true' && '✅ Yes' || 'No' }}
+            ${{ steps.generate.outputs.is_modded == 'true' && format('**Base Game:** `{0}`', steps.generate.outputs.base_game) || '' }}
 
             ---
 
             ### 📋 Reviewer Checklist
 
             - [ ] Verify game info looks correct.
+            ${{ steps.generate.outputs.is_modded == 'true' && format('- [ ] Verify base game `{0}` exists in `_games/`.', steps.generate.outputs.base_game) || '' }}
             - [ ] Edit file and add genre tags.
             - [ ] Configure Mini-Challenge allowed challenges (if Mini-Challenges exist).
             - [ ] Find game image, compress via https://tinypng.com/, then upload it to  
@@ -181,6 +206,8 @@ jobs:
           GAME_NAME: ${{ steps.generate.outputs.game_name }}
           GAME_ID: ${{ steps.generate.outputs.game_id }}
           SUBMITTER: ${{ steps.generate.outputs.submitter }}
+          IS_MODDED: ${{ steps.generate.outputs.is_modded }}
+          BASE_GAME: ${{ steps.generate.outputs.base_game }}
         run: |
           if [ -z "${DISCORD_WEBHOOK:-}" ]; then
             echo "No Discord webhook configured, skipping notification"
@@ -188,6 +215,12 @@ jobs:
           fi
           
           SUBMITTER_TEXT="${SUBMITTER:-Anonymous}"
+          
+          # Build modded field if applicable
+          MODDED_FIELD=""
+          if [ "${IS_MODDED}" = "true" ]; then
+            MODDED_FIELD=",{\"name\": \"Type\", \"value\": \"🔧 Modded (base: \`${BASE_GAME}\`)\", \"inline\": true}"
+          fi
           
           curl -H "Content-Type: application/json" \
             -d "{
@@ -197,7 +230,7 @@ jobs:
                 \"fields\": [
                   {\"name\": \"Game\", \"value\": \"**${GAME_NAME}**\", \"inline\": true},
                   {\"name\": \"Game ID\", \"value\": \"\`${GAME_ID}\`\", \"inline\": true},
-                  {\"name\": \"Submitted by\", \"value\": \"${SUBMITTER_TEXT}\", \"inline\": true},
+                  {\"name\": \"Submitted by\", \"value\": \"${SUBMITTER_TEXT}\", \"inline\": true}${MODDED_FIELD},
                   {\"name\": \"Review PR\", \"value\": \"[PR #${PR_NUMBER}](${PR_URL})\", \"inline\": false}
                 ],
                 \"footer\": {\"text\": \"Merge PR to add game • Close PR to reject\"}
