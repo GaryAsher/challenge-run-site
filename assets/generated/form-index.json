@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-05T19:00:27.550Z",
+  "generated_at": "2026-02-06T04:55:02.768Z",
   "games": [
     {
       "game_id": "celeste",
@@ -89,7 +89,8 @@
       "restrictions": [],
       "character_column": {
         "enabled": false,
-        "label": "Character"
+        "label": "Character",
+        "required": false
       },
       "characters": [],
       "timing_method": "IGT",
@@ -167,7 +168,8 @@
       "restrictions": [],
       "character_column": {
         "enabled": false,
-        "label": "Character"
+        "label": "Character",
+        "required": false
       },
       "characters": [],
       "timing_method": "IGT",
@@ -417,7 +419,8 @@
       ],
       "character_column": {
         "enabled": true,
-        "label": "Weapon / Aspect"
+        "label": "Weapon / Aspect",
+        "required": false
       },
       "characters": [
         {
@@ -538,6 +541,14 @@
             "name": "True Ending"
           },
           {
+            "slug": "all-bosses",
+            "name": "All Bosses"
+          },
+          {
+            "slug": "pantheon-5",
+            "name": "Pantheon of Hallownest"
+          },
+          {
             "slug": "106-te",
             "name": "106% TE"
           },
@@ -552,38 +563,28 @@
           {
             "slug": "low-percent",
             "name": "Low%"
-          },
+          }
+        ],
+        "mini_challenges": [
           {
-            "slug": "all-bosses",
-            "name": "All Bosses"
-          },
-          {
-            "slug": "godhome-ending",
-            "name": "Godhome Ending"
-          },
-          {
-            "slug": "pantheons",
+            "slug": "pantheons-1-2-3-4",
             "name": "Pantheons"
           },
           {
-            "slug": "pantheons/pantheon-1",
+            "slug": "pantheons-1-2-3-4/pantheon-1",
             "name": "Pantheons: Pantheon of the Master"
           },
           {
-            "slug": "pantheons/pantheon-2",
+            "slug": "pantheons-1-2-3-4/pantheon-2",
             "name": "Pantheons: Pantheon of the Artist"
           },
           {
-            "slug": "pantheons/pantheon-3",
+            "slug": "pantheons-1-2-3-4/pantheon-3",
             "name": "Pantheons: Pantheon of the Sage"
           },
           {
-            "slug": "pantheons/pantheon-4",
+            "slug": "pantheons-1-2-3-4/pantheon-4",
             "name": "Pantheons: Pantheon of the Knight"
-          },
-          {
-            "slug": "pantheons/pantheon-5",
-            "name": "Pantheons: Pantheon of Hallownest"
           },
           {
             "slug": "hall-of-gods",
@@ -594,7 +595,6 @@
             "name": "Hall of Gods: Gruz Mother"
           }
         ],
-        "mini_challenges": [],
         "player_made": []
       },
       "categories": [
@@ -611,6 +611,16 @@
         {
           "slug": "true-ending",
           "name": "True Ending",
+          "tier": "full_runs"
+        },
+        {
+          "slug": "all-bosses",
+          "name": "All Bosses",
+          "tier": "full_runs"
+        },
+        {
+          "slug": "pantheon-5",
+          "name": "Pantheon of Hallownest",
           "tier": "full_runs"
         },
         {
@@ -634,54 +644,39 @@
           "tier": "full_runs"
         },
         {
-          "slug": "all-bosses",
-          "name": "All Bosses",
-          "tier": "full_runs"
-        },
-        {
-          "slug": "godhome-ending",
-          "name": "Godhome Ending",
-          "tier": "full_runs"
-        },
-        {
-          "slug": "pantheons",
+          "slug": "pantheons-1-2-3-4",
           "name": "Pantheons",
-          "tier": "full_runs"
+          "tier": "mini_challenges"
         },
         {
-          "slug": "pantheons/pantheon-1",
+          "slug": "pantheons-1-2-3-4/pantheon-1",
           "name": "Pantheons: Pantheon of the Master",
-          "tier": "full_runs"
+          "tier": "mini_challenges"
         },
         {
-          "slug": "pantheons/pantheon-2",
+          "slug": "pantheons-1-2-3-4/pantheon-2",
           "name": "Pantheons: Pantheon of the Artist",
-          "tier": "full_runs"
+          "tier": "mini_challenges"
         },
         {
-          "slug": "pantheons/pantheon-3",
+          "slug": "pantheons-1-2-3-4/pantheon-3",
           "name": "Pantheons: Pantheon of the Sage",
-          "tier": "full_runs"
+          "tier": "mini_challenges"
         },
         {
-          "slug": "pantheons/pantheon-4",
+          "slug": "pantheons-1-2-3-4/pantheon-4",
           "name": "Pantheons: Pantheon of the Knight",
-          "tier": "full_runs"
-        },
-        {
-          "slug": "pantheons/pantheon-5",
-          "name": "Pantheons: Pantheon of Hallownest",
-          "tier": "full_runs"
+          "tier": "mini_challenges"
         },
         {
           "slug": "hall-of-gods",
           "name": "Hall of Gods",
-          "tier": "full_runs"
+          "tier": "mini_challenges"
         },
         {
           "slug": "hall-of-gods/gruz-mother",
           "name": "Hall of Gods: Gruz Mother",
-          "tier": "full_runs"
+          "tier": "mini_challenges"
         }
       ],
       "standard_challenges": [
@@ -712,16 +707,16 @@
           "name": "Unrestricted"
         },
         {
+          "id": "no-main-menu-storage",
+          "name": "No Main Menu Storage (NMMS)"
+        },
+        {
           "id": "nmg",
           "name": "No Major Glitches (NMG)"
         },
         {
           "id": "glitchless",
           "name": "Glitchless"
-        },
-        {
-          "id": "no-main-menu-storage",
-          "name": "No Main Menu Storage (NMMS)"
         }
       ],
       "restrictions": [
@@ -738,17 +733,14 @@
           "name": "No Spells"
         },
         {
-          "id": "base-nail-only",
-          "name": "Base Nail Only"
-        },
-        {
           "id": "no-monarch-wings",
           "name": "No Monarch Wings"
         }
       ],
       "character_column": {
         "enabled": false,
-        "label": "Character"
+        "label": "Character",
+        "required": false
       },
       "characters": [],
       "timing_method": "LRT",
@@ -879,7 +871,8 @@
       ],
       "character_column": {
         "enabled": true,
-        "label": "Gun Type / Build"
+        "label": "Gun Type / Build",
+        "required": false
       },
       "characters": [
         {
@@ -928,7 +921,8 @@
       "restrictions": [],
       "character_column": {
         "enabled": false,
-        "label": "Character"
+        "label": "Character",
+        "required": false
       },
       "characters": [],
       "timing_method": "",
@@ -1006,7 +1000,8 @@
       "restrictions": [],
       "character_column": {
         "enabled": false,
-        "label": "Character"
+        "label": "Character",
+        "required": false
       },
       "characters": [],
       "timing_method": "LRT",
@@ -1082,7 +1077,8 @@
       ],
       "character_column": {
         "enabled": true,
-        "label": "Class"
+        "label": "Class",
+        "required": false
       },
       "characters": [],
       "timing_method": "IGT",
