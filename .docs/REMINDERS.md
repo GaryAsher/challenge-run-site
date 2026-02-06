@@ -2,7 +2,7 @@
 
 This document consolidates all reminders, future ideas, and planned features for CRC.
 
-**Last updated:** 2026/02/05
+**Last updated:** 2026/02/06
 
 ---
 
@@ -28,24 +28,31 @@ This document consolidates all reminders, future ideas, and planned features for
   - Restructure UI
 - [ ] For Contributions, have these link to the appropriate achievements that the runner has been credited for.
 
-### 2. Modded Game Support
-- [ ] Build game submission UI in admin dashboard.
+### 2. Dashboard & Review System (Phase 2-3)
+- [x] Phase 1: ALTER `pending_runs`, Worker dual-writes to Supabase + GitHub
+- [x] Phase 2: Dashboard hub with role-based access (super_admin / admin / verifier)
+- [x] Phase 2: Pending Runs review page with approve / reject / request changes
+- [ ] Phase 3: On approve, auto-create GitHub run file via Worker `/approve` endpoint
+- [ ] Phase 3: Remove GitHub PR workflow for runs (Supabase becomes sole source of truth)
+- [ ] Phase 3: Wire up Pending Profiles page to use `admin.js` module
+- [ ] Phase 3: Wire up Pending Games page to use `admin.js` module
+- [ ] Phase 3: Notifications (Discord webhook on approve/reject)
 
-### 2.5. Multi-Game Runs
-- [ ] Add multi-game run support using the same pattern as modded games:
-  - `is_multi_game: true` flag in game front matter
-  - `related_games: [game-id-1, game-id-2, ...]` to link individual games
-- [ ] Add layout support in `game.html` for `is_multi_game` (mirror the `is_modded` banner logic)
-- [ ] Update `generate-game-pages.js` and `generate-run-category-pages.js` to handle multi-game entries
-- [ ] Update `games/index.html` to display multi-game badge
+### 3. Modded Game Support
+- [x] `generate-game-file.py` supports `is_modded` and `base_game`
+- [x] `game.html` layout shows modded banners and links between base/modded games
+- [x] `hollow-knight-modded.md` exists as working example
+- [ ] Build game submission UI in admin dashboard (replaces Google Form for new games)
 
-### 3. Forms & Submissions
-- [ ] New Game Submission form
-  - Check Discord Webhook by submitting a new game. Has been updated, but not tested.
-- [ ] New Run Submission 
-  - Test variables. Update if needed.
+### 4. Forms & Submissions
+- [x] Character validation is fully data-driven (no hardcoded game IDs)
+- [x] Parent/child categories render as optgroups
+- [x] Fixed character per category (`fixed_character`)
+- [x] RTA timing always available with per-category override
+- [ ] Test Discord Webhook for new game submissions
+- [ ] Test full end-to-end: form → Worker → Supabase → Dashboard → approve
 
-### 3.5. Legal Document Review
+### 4.5. Legal Document Review
 - [ ] Review Terms of Service line-by-line
 - [ ] Review Privacy Policy line-by-line
 - [ ] Add 13+ age requirement (like Speedrun.com)
@@ -60,17 +67,17 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ## Short-Term Priorities
 
-### 4. Glossary Page
+### 5. Glossary Page
 - [ ] Terms to define: Hit, Damage, Death, Hard CC, Soft CC, Hitless vs Damageless, Full Run, Mini-Challenge, etc.
 - [ ] Add content that would work as supporting documents.
   - Ask creator first.
 
-### 5. Support Page
+### 6. Support Page
 - [ ] Add Staff section
 - [ ] Add FAQ content
 - [ ] Add contact links
 
-### 6. Spanish Language Support
+### 7. Spanish Language Support
 - [ ] Create `_data/i18n/es.yml` with translations
 - [ ] Add language toggle to header
 - [ ] Create Spanish versions of key pages or use Liquid variables
@@ -80,28 +87,49 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ## Medium-Term Priorities
 
-### 7. SvelteKit Migration
+### 8. Multi-Game Runs
+
+**What it is:** A multi-game run is a single challenge attempt that spans multiple individual games played in sequence. For example, a "Hitless Hades Marathon" where a runner plays Hades 1 and Hades 2 back-to-back without taking a hit across both games, or a "Soulsborne Deathless" run that chains Dark Souls 1 → 2 → 3 → Elden Ring. The run is tracked as one entry with one video and one combined time, but it references all the individual games involved.
+
+**How it works on CRC:**
+- A multi-game entry is created like any other game file but with special flags:
+  - `is_multi_game: true` — marks it as a multi-game entry (not a single game)
+  - `related_games: [hades, hades-2]` — links to the individual game entries
+- On the Games index page, multi-game entries display a "🎮 MULTI-GAME" badge so they're visually distinct from single games
+- On each individual game's page (e.g., Hades 2), a banner links to any multi-game entries that include it: "This game is part of Hades Marathon — view multi-game runs"
+- On the multi-game page itself, a banner links back to each individual game
+- Categories, tiers, challenges, and the full submission flow work the same as single-game entries
+- The run file references the multi-game entry's `game_id`, not the individual games
+
+**What needs to be built:**
+- [ ] Add `is_multi_game` and `related_games` support to `generate-game-file.py`
+- [ ] Add layout support in `game.html` for `is_multi_game` (mirror the `is_modded` banner logic)
+- [ ] Update `games/index.html` to display multi-game badge
+- [ ] Update `generate-game-pages.js` and `generate-run-category-pages.js` to handle multi-game entries
+- [ ] Consider whether multi-game runs should also appear on individual game leaderboards (probably not — they'd have incomparable times)
+
+### 9. SvelteKit Migration
 **Target: When site has 10+ active games or needs real-time features**
 
 See [Migration Notes](#sveltekit-migration-notes) below for detailed planning.
 
-### 8. Dark/Light Mode Toggle and Accessibility Features
+### 10. Dark/Light Mode Toggle and Accessibility Features
 - [ ] Add light mode CSS variables
 - [ ] Add toggle button to header
 - [ ] Colorblind mode
 - [ ] Store preference in localStorage
 - [ ] Respect `prefers-color-scheme`
 
-### 9. History Tab Refinement
+### 11. History Tab Refinement
 - Needs Runner Profiles with Badges first
 - Focus on: rule changes, discussions, community milestones
 - NOT global submissions from anyone
 
-### 10. News & History Integration
+### 12. News & History Integration
 - Requires News page activity first
 - Combine news posts with game history for unified timeline
 
-### 11. Forum Integration
+### 13. Forum Integration
 Decision needed: GitHub Discussions vs Discord
 
 ---
@@ -216,7 +244,7 @@ Notes for when CRC moves from Jekyll to SvelteKit (or Next.js). These are things
 - Consider `shadcn/ui` for component primitives
 
 ## Pre-Migration Cleanup (Do Before Starting)
-- [ ] Fix hardcoded game logic in `submit-run.js` (make character validation data-driven)
+- [x] Fix hardcoded game logic in `submit-run.js` (character validation is now data-driven)
 - [ ] Remove `assets/style.css` after confirming SCSS pipeline
 - [ ] Remove `games/test-game/` duplicate directory
 - [ ] Remove `_queue_games/constance.md` leftover
