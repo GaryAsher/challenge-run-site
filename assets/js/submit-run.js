@@ -767,28 +767,83 @@
     }
   }
 
+  // Track current tier's categories for metadata lookup
+  let currentTierCategories = [];
+
+  /**
+   * Look up the full metadata for the currently selected category slug.
+   * Searches through groups and standalone categories.
+   */
+  function getSelectedCategoryMeta() {
+    const slug = categorySelect?.value || "";
+    if (!slug) return null;
+
+    for (const cat of currentTierCategories) {
+      if (cat.is_group && Array.isArray(cat.children)) {
+        const child = cat.children.find((c) => c.slug === slug);
+        if (child) return child;
+      } else if (cat.slug === slug) {
+        return cat;
+      }
+    }
+    return null;
+  }
+
   function populateCategories() {
     const game = getGameById(gameSelect?.value);
     const selectedTier = tierSelect?.value || "";
     
-    let cats = [];
+    currentTierCategories = [];
     
     if (game) {
       // Check for new tiered structure
       if (game.category_tiers) {
         const tierCats = game.category_tiers[selectedTier];
         if (tierCats && Array.isArray(tierCats)) {
-          cats = tierCats;
+          currentTierCategories = tierCats;
         }
       } else if (Array.isArray(game.categories)) {
         // Legacy: use flat categories list (treat as full_runs)
         if (selectedTier === "full_runs" || selectedTier === "") {
-          cats = game.categories;
+          currentTierCategories = game.categories;
         }
       }
     }
-    
-    fillSelect(categorySelect, cats, (c) => c.slug, (c) => c.name, true, "Select category...");
+
+    // Build the select with optgroups for parent/child categories
+    if (!categorySelect) return;
+    categorySelect.innerHTML = "";
+
+    const blankOpt = document.createElement("option");
+    blankOpt.value = "";
+    blankOpt.textContent = "Select category...";
+    categorySelect.appendChild(blankOpt);
+
+    for (const cat of currentTierCategories) {
+      if (cat.is_group && Array.isArray(cat.children) && cat.children.length > 0) {
+        // Parent is a non-selectable group label
+        const group = document.createElement("optgroup");
+        group.label = cat.name;
+
+        for (const child of cat.children) {
+          const opt = document.createElement("option");
+          opt.value = child.slug;
+          opt.textContent = child.name;
+          group.appendChild(opt);
+        }
+
+        categorySelect.appendChild(group);
+      } else if (!cat.is_group) {
+        // Standalone selectable category
+        const opt = document.createElement("option");
+        opt.value = cat.slug;
+        opt.textContent = cat.name;
+        categorySelect.appendChild(opt);
+      }
+    }
+
+    // Trigger category change handler to update character/timing state
+    onCategoryChange();
   }
 
   function populateBoxes() {
@@ -804,18 +859,6 @@
 
     if (characterLabelEl) characterLabelEl.textContent = cc && cc.label ? cc.label : "Character";
 
-    // Update timing method labels
-    const runTimeMethodEl = $("runTimeMethod");
-    const runTimeSecondaryEl = $("runTimeSecondary");
-    if (runTimeMethodEl) {
-      const timingMethod = game && game.timing_method ? game.timing_method : "";
-      runTimeMethodEl.textContent = timingMethod ? `(${timingMethod})` : "";
-    }
-    if (runTimeSecondaryEl) {
-      const secondaryMethod = game && game.timing_method_secondary ? game.timing_method_secondary : "";
-      runTimeSecondaryEl.textContent = secondaryMethod ? `Secondary: ${secondaryMethod}` : "";
-    }
-
     standardPicker.setItems(standard);
     restrictionsPicker.setItems(restrictions);
 
@@ -825,30 +868,22 @@
     if (cc && cc.enabled) {
       if (characterSelect) {
         characterSelect.disabled = false;
+        characterSelect.removeAttribute("readonly");
         const section = $("characterSection");
         if (section) section.style.display = "";
-        fillSelect(characterSelect, chars, (c) => c.id, (c) => c.name, true, "Any / Not applicable");
+        fillSelect(characterSelect, chars, (c) => c.id, (c) => c.name, true, "Select...");
       }
 
-      // Update required marker on character section title
+      // Show required marker — enabled always means required
       const charTitleEl = $("character-title");
       if (charTitleEl) {
         const label = cc.label || "Character";
-        charTitleEl.innerHTML = cc.required
-          ? `${label} <span class="required-marker">*</span>`
-          : label;
+        charTitleEl.innerHTML = `${label} <span class="required-marker">*</span>`;
       }
 
-      // Update subtitle to indicate required vs optional
       const charSubEl = $("character-sub");
       if (charSubEl) {
-        if (cc.required && Array.isArray(cc.required_exclude_tiers) && cc.required_exclude_tiers.length > 0) {
-          charSubEl.textContent = "Required for most run types. Optional for some categories.";
-        } else if (cc.required) {
-          charSubEl.textContent = "Required. Select the option used for your run.";
-        } else {
-          charSubEl.textContent = "Optional. Select the option used for your run.";
-        }
+        charSubEl.textContent = "Required. Select the option used for your run.";
       }
 
       // Update characters for additional runners
@@ -864,8 +899,84 @@
       updateCharactersForAdditionalRunners([]);
     }
 
+    // Apply category-specific overrides (fixed_character, timing)
+    onCategoryChange();
+
     if (communityChallengeSelect) communityChallengeSelect.value = "";
     if (glitchSelect) glitchSelect.value = "";
+  }
+
+  /**
+   * Called when category selection changes. Updates:
+   * - Character picker state (fixed_character handling)
+   * - Timing method labels (per-category override)
+   */
+  function onCategoryChange() {
+    const game = getGameById(gameSelect?.value);
+    const catMeta = getSelectedCategoryMeta();
+    const cc = game && game.character_column ? game.character_column : { enabled: false };
+
+    // ── Character: fixed_character handling ──
+    if (cc.enabled && characterSelect) {
+      const section = $("characterSection");
+      const charSubEl = $("character-sub");
+      const charTitleEl = $("character-title");
+      const label = cc.label || "Character";
+
+      if (catMeta && catMeta.fixed_character) {
+        if (typeof catMeta.fixed_character === "string") {
+          // Auto-fill with a specific character slug
+          characterSelect.value = catMeta.fixed_character;
+          characterSelect.disabled = true;
+          if (charSubEl) charSubEl.textContent = `Auto-assigned for this category.`;
+        } else {
+          // fixed_character: true — character is determined by the game
+          characterSelect.value = "";
+          characterSelect.disabled = true;
+          if (section) section.style.display = "none";
+          if (charSubEl) charSubEl.textContent = `Auto-assigned by the game for this category.`;
+        }
+        if (charTitleEl) charTitleEl.innerHTML = label;
+      } else {
+        // Normal: character picker is active and required
+        characterSelect.disabled = false;
+        if (section) section.style.display = "";
+        if (charTitleEl) charTitleEl.innerHTML = `${label} <span class="required-marker">*</span>`;
+        if (charSubEl) charSubEl.textContent = "Required. Select the option used for your run.";
+      }
+    }
+
+    // ── Timing method: per-category override ──
+    const runTimeMethodEl = $("runTimeMethod");
+    const runTimeSecondaryEl = $("runTimeSecondary");
+
+    if (game) {
+      // Category-level timing takes priority over game-level
+      const effectiveTiming = (catMeta && catMeta.timing_method)
+        ? catMeta.timing_method
+        : (game.timing_method || "RTA");
+
+      const rtaAvailable = game.rta_timing !== false;
+
+      if (runTimeMethodEl) {
+        if (effectiveTiming === "RTA") {
+          // RTA only — no secondary
+          runTimeMethodEl.textContent = "(RTA)";
+          if (runTimeSecondaryEl) runTimeSecondaryEl.textContent = "";
+        } else {
+          // Primary is IGT/LRT, show RTA as secondary if available
+          runTimeMethodEl.textContent = `(${effectiveTiming})`;
+          if (runTimeSecondaryEl) {
+            runTimeSecondaryEl.textContent = rtaAvailable ? "Secondary: RTA" : "";
+          }
+        }
+      }
+    } else {
+      if (runTimeMethodEl) runTimeMethodEl.textContent = "";
+      if (runTimeSecondaryEl) runTimeSecondaryEl.textContent = "";
+    }
+
+    repaint();
   }
 
   function buildPayload() {
@@ -879,7 +990,17 @@
     const glitch_id = (glitchSelect?.value || "").trim();
     const restrictions = restrictionsPicker.getSelectedIds();
 
-    const character = characterSelect && !characterSelect.disabled ? (characterSelect.value || "").trim() : "";
+    const character = (() => {
+      if (!characterSelect) return "";
+      const catMeta = getSelectedCategoryMeta();
+      if (catMeta && catMeta.fixed_character === true) {
+        return "auto-assigned";
+      }
+      if (catMeta && typeof catMeta.fixed_character === "string") {
+        return catMeta.fixed_character;
+      }
+      return characterSelect.disabled ? "" : (characterSelect.value || "").trim();
+    })();
 
     const runner_id = ($("runnerId")?.value || "").trim();
     const video_url_raw = ($("videoUrl")?.value || "").trim();
@@ -1046,17 +1167,16 @@
       return { valid: false, message: "Pick at least one Standard Challenge and/or a Community Challenge.", firstError };
     }
 
-    // Check if character is required for this game/category (data-driven)
+    // Character is always required when enabled, unless category has fixed_character
     const game = getGameById(payload.game_id);
     const cc = game && game.character_column ? game.character_column : {};
-    if (cc.required) {
-      // Check if this tier is excluded from the requirement
-      const excludedTiers = Array.isArray(cc.required_exclude_tiers) ? cc.required_exclude_tiers : [];
-      const tierExcluded = excludedTiers.includes(payload.category_tier);
+    if (cc.enabled) {
+      const catMeta = getSelectedCategoryMeta();
+      const isFixed = catMeta && catMeta.fixed_character;
 
-      if (!tierExcluded && !payload.character) {
+      if (!isFixed && !payload.character) {
         const label = cc.label || "Character";
-        showFieldError("characterSelect", `${label} selection is required for this category.`);
+        showFieldError("characterSelect", `${label} selection is required.`);
         if (!firstError) firstError = "characterSelect";
       }
     }
@@ -1120,6 +1240,7 @@
     });
     el.addEventListener("change", () => {
       clearFieldError(id);
+      if (id === "categorySelect") onCategoryChange();
       repaint();
     });
   });
