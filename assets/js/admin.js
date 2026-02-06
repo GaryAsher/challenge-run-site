@@ -446,13 +446,88 @@ async function getPendingProfiles(opts = {}) {
 }
 
 /**
- * Approve a pending profile (uses database RPC)
+ * Get a single pending profile by ID
  */
-async function approveProfile(profileId) {
+async function getProfileById(profileId) {
   const supabase = CRCAuth.getSupabaseClient();
-  if (!supabase || !isAdmin()) return { error: 'Not authorized' };
+  if (!supabase) return null;
 
-  const { data, error } = await supabase.rpc('approve_profile', { pending_id: profileId });
+  const { data, error } = await supabase
+    .from('pending_profiles')
+    .select('*')
+    .eq('id', profileId)
+    .single();
+
+  if (error) {
+    console.error('[Admin] getProfileById error:', error);
+    return null;
+  }
+  return data;
+}
+
+/**
+ * Approve a pending profile.
+ * If Worker URL is configured, calls /approve-profile → creates _runners/ file + updates Supabase.
+ * Falls back to direct Supabase update if no Worker.
+ */
+async function approveProfile(profileId, notes = '') {
+  const supabase = CRCAuth.getSupabaseClient();
+  const user = CRCAuth.getUser();
+  if (!supabase || !user || !isAdmin()) return { error: 'Not authorized' };
+
+  if (_workerUrl) {
+    try {
+      const session = await supabase.auth.getSession();
+      const accessToken = session?.data?.session?.access_token;
+      if (!accessToken) return { error: 'No active session. Please sign in again.' };
+
+      const res = await fetch(`${_workerUrl}/approve-profile`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          profile_id: profileId,
+          token: accessToken,
+          notes: notes || ''
+        })
+      });
+
+      const result = await res.json();
+      if (!res.ok) {
+        console.error('[Admin] Worker /approve-profile error:', result);
+        return { error: result.error || `Worker error (${res.status})` };
+      }
+
+      const { data } = await supabase
+        .from('pending_profiles')
+        .select('*')
+        .eq('id', profileId)
+        .single();
+
+      return {
+        data: data || { id: profileId, status: 'approved' },
+        filename: result.filename,
+        error: null
+      };
+    } catch (err) {
+      console.error('[Admin] Worker /approve-profile fetch error:', err);
+      return { error: 'Failed to connect to approval service: ' + err.message };
+    }
+  }
+
+  // Fallback: direct Supabase update (no GitHub file created)
+  console.warn('[Admin] No Worker URL — approving profile in Supabase only (no GitHub file)');
+  const { data, error } = await supabase
+    .from('pending_profiles')
+    .update({
+      status: 'approved',
+      reviewed_by: user.id,
+      reviewed_at: new Date().toISOString(),
+      reviewer_notes: notes || null
+    })
+    .eq('id', profileId)
+    .select()
+    .single();
+
   if (error) {
     console.error('[Admin] approveProfile error:', error);
     return { error: error.message };
@@ -461,20 +536,54 @@ async function approveProfile(profileId) {
 }
 
 /**
- * Reject a pending profile (uses database RPC)
+ * Reject a pending profile
  */
-async function rejectProfile(profileId, reason = '') {
+async function rejectProfile(profileId, reason, notes = '') {
   const supabase = CRCAuth.getSupabaseClient();
-  if (!supabase || !isAdmin()) return { error: 'Not authorized' };
+  const user = CRCAuth.getUser();
+  if (!supabase || !user || !isAdmin()) return { error: 'Not authorized' };
 
-  const { data, error } = await supabase.rpc('reject_profile', {
-    pending_id: profileId,
-    reason: reason || null
-  });
+  const { data, error } = await supabase
+    .from('pending_profiles')
+    .update({
+      status: 'rejected',
+      reviewed_by: user.id,
+      reviewed_at: new Date().toISOString(),
+      rejection_reason: reason,
+      reviewer_notes: notes || null
+    })
+    .eq('id', profileId)
+    .select()
+    .single();
+
   if (error) {
     console.error('[Admin] rejectProfile error:', error);
     return { error: error.message };
   }
+  return { data, error: null };
+}
+
+/**
+ * Request changes on a pending profile
+ */
+async function requestProfileChanges(profileId, reason) {
+  const supabase = CRCAuth.getSupabaseClient();
+  const user = CRCAuth.getUser();
+  if (!supabase || !user || !isAdmin()) return { error: 'Not authorized' };
+
+  const { data, error } = await supabase
+    .from('pending_profiles')
+    .update({
+      status: 'needs_changes',
+      reviewed_by: user.id,
+      reviewed_at: new Date().toISOString(),
+      reviewer_notes: reason
+    })
+    .eq('id', profileId)
+    .select()
+    .single();
+
+  if (error) return { error: error.message };
   return { data, error: null };
 }
 
@@ -504,13 +613,56 @@ async function getPendingGames(opts = {}) {
 }
 
 /**
- * Approve a pending game
+ * Approve a pending game.
+ * If Worker URL is configured, calls /approve-game → creates _games/ file + generates pages + updates Supabase.
+ * Falls back to direct Supabase update if no Worker.
  */
 async function approveGame(gameId, notes = '') {
   const supabase = CRCAuth.getSupabaseClient();
   const user = CRCAuth.getUser();
   if (!supabase || !user || !isAdmin()) return { error: 'Not authorized' };
 
+  if (_workerUrl) {
+    try {
+      const session = await supabase.auth.getSession();
+      const accessToken = session?.data?.session?.access_token;
+      if (!accessToken) return { error: 'No active session. Please sign in again.' };
+
+      const res = await fetch(`${_workerUrl}/approve-game`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          game_id: gameId,
+          token: accessToken,
+          notes: notes || ''
+        })
+      });
+
+      const result = await res.json();
+      if (!res.ok) {
+        console.error('[Admin] Worker /approve-game error:', result);
+        return { error: result.error || `Worker error (${res.status})` };
+      }
+
+      const { data } = await supabase
+        .from('pending_games')
+        .select('*')
+        .eq('id', gameId)
+        .single();
+
+      return {
+        data: data || { id: gameId, status: 'approved' },
+        filename: result.filename,
+        error: null
+      };
+    } catch (err) {
+      console.error('[Admin] Worker /approve-game fetch error:', err);
+      return { error: 'Failed to connect to approval service: ' + err.message };
+    }
+  }
+
+  // Fallback: direct Supabase update (no GitHub file created)
+  console.warn('[Admin] No Worker URL — approving game in Supabase only (no GitHub file)');
   const { data, error } = await supabase
     .from('pending_games')
     .update({
@@ -555,6 +707,30 @@ async function rejectGame(gameId, reason, notes = '') {
     console.error('[Admin] rejectGame error:', error);
     return { error: error.message };
   }
+  return { data, error: null };
+}
+
+/**
+ * Request changes on a pending game
+ */
+async function requestGameChanges(gameId, reason) {
+  const supabase = CRCAuth.getSupabaseClient();
+  const user = CRCAuth.getUser();
+  if (!supabase || !user || !isAdmin()) return { error: 'Not authorized' };
+
+  const { data, error } = await supabase
+    .from('pending_games')
+    .update({
+      status: 'needs_changes',
+      reviewed_by: user.id,
+      reviewed_at: new Date().toISOString(),
+      reviewer_notes: reason
+    })
+    .eq('id', gameId)
+    .select()
+    .single();
+
+  if (error) return { error: error.message };
   return { data, error: null };
 }
 
@@ -738,11 +914,14 @@ export const CRCAdmin = {
 
   getCounts,
   getPendingProfiles,
+  getProfileById,
   approveProfile,
   rejectProfile,
+  requestProfileChanges,
   getPendingGames,
   approveGame,
   rejectGame,
+  requestGameChanges,
   getGame,
 
   formatDate,
