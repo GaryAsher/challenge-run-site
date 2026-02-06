@@ -1,0 +1,315 @@
+---
+layout: default
+title: "Dashboard"
+---
+
+<div class="page-width">
+  <div class="dashboard-page">
+    <!-- Loading -->
+    <div id="loading-state" class="card">
+      <div class="dash-loading">
+        <div class="spinner"></div>
+        <p class="muted">Checking access...</p>
+      </div>
+    </div>
+
+    <!-- Not authorized -->
+    <div id="not-authorized" class="card" hidden>
+      <h2>🔒 Access Denied</h2>
+      <p class="muted">You need verifier, admin, or super admin privileges to access the dashboard.</p>
+      <p class="muted">If you believe this is an error, contact the site administrator.</p>
+      <a href="/" class="btn btn--primary">Go Home</a>
+    </div>
+
+    <!-- Dashboard content -->
+    <div id="dashboard-content" hidden>
+      <!-- Header -->
+      <div class="dash-header">
+        <div class="dash-header__info">
+          <h1>Dashboard</h1>
+          <p class="muted" id="dash-role-label">Loading...</p>
+        </div>
+        <div class="dash-header__user" id="dash-user-info"></div>
+      </div>
+
+      <!-- Stats cards -->
+      <div class="dash-stats" id="dash-stats">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Navigation grid -->
+      <div class="dash-nav" id="dash-nav">
+        <!-- Populated by JS based on role -->
+      </div>
+
+      <!-- Quick info -->
+      <div class="dash-info card" id="dash-info" hidden>
+        <h3>📋 Your Assigned Games</h3>
+        <p id="dash-assigned-games" class="muted">—</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.dashboard-page { max-width: 960px; margin: 0 auto; }
+.dash-loading { text-align: center; padding: 3rem; }
+
+.dash-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.dash-header h1 { margin: 0; }
+
+.dash-header__user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+.dash-header__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--surface);
+}
+
+/* Stats row */
+.dash-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.dash-stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  text-align: center;
+}
+.dash-stat__value {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--accent, #6366f1);
+  line-height: 1.2;
+}
+.dash-stat__label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.dash-stat--alert .dash-stat__value { color: #f0ad4e; }
+
+/* Nav grid */
+.dash-nav {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.dash-nav-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, transform 0.1s;
+}
+.dash-nav-card:hover {
+  border-color: var(--accent, #6366f1);
+  transform: translateY(-2px);
+}
+.dash-nav-card__icon {
+  font-size: 1.5rem;
+}
+.dash-nav-card__title {
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+.dash-nav-card__desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+.dash-nav-card__badge {
+  display: inline-block;
+  background: #f0ad4e;
+  color: #000;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: 0.5rem;
+}
+
+/* Info card */
+.dash-info { margin-top: 1rem; padding: 1.25rem; }
+.dash-info h3 { margin: 0 0 0.5rem 0; }
+</style>
+
+<script type="module">
+import { CRCAdmin } from '{{ "/assets/js/admin.js" | relative_url }}';
+
+const NAV_SECTIONS = {
+  runs: {
+    icon: '🏃',
+    title: 'Pending Runs',
+    desc: 'Review, approve, or reject submitted runs.',
+    href: '/admin/runs/',
+    countKey: 'pendingRuns'
+  },
+  profiles: {
+    icon: '👥',
+    title: 'Pending Profiles',
+    desc: 'Review runner profile applications.',
+    href: '/admin/profiles/',
+    countKey: 'pendingProfiles'
+  },
+  games: {
+    icon: '🎮',
+    title: 'Pending Games',
+    desc: 'Review new game submissions.',
+    href: '/admin/games/',
+    countKey: 'pendingGames'
+  },
+  users: {
+    icon: '👤',
+    title: 'User Management',
+    desc: 'Manage runners, roles, and permissions.',
+    href: '/admin/users/'
+  },
+  financials: {
+    icon: '💰',
+    title: 'Financials',
+    desc: 'Track site income and expenses.',
+    href: '/admin/financials/'
+  },
+  health: {
+    icon: '💚',
+    title: 'Site Health',
+    desc: 'Performance, storage, and system status.',
+    href: '/admin/health/'
+  },
+  test: {
+    icon: '🔧',
+    title: 'Test Dashboard',
+    desc: 'Debug tools and test views.',
+    href: '/admin/test/'
+  }
+};
+
+(async function() {
+  const loadingEl = document.getElementById('loading-state');
+  const deniedEl = document.getElementById('not-authorized');
+  const contentEl = document.getElementById('dashboard-content');
+
+  function showState(s) {
+    loadingEl.hidden = s !== 'loading';
+    deniedEl.hidden = s !== 'denied';
+    contentEl.hidden = s !== 'ready';
+  }
+
+  // Init admin module (checks auth + loads role)
+  const role = await CRCAdmin.init();
+
+  if (!role) {
+    showState('denied');
+    return;
+  }
+
+  showState('ready');
+
+  // Header
+  const profile = CRCAdmin.getProfile();
+  document.getElementById('dash-role-label').textContent = CRCAdmin.roleLabel(role);
+
+  if (profile) {
+    const userEl = document.getElementById('dash-user-info');
+    userEl.innerHTML = `
+      ${profile.avatar_url ? `<img class="dash-header__avatar" src="${profile.avatar_url}" alt="">` : ''}
+      <span>${profile.display_name || profile.runner_id}</span>
+    `;
+  }
+
+  // Load counts
+  const counts = await CRCAdmin.getCounts();
+
+  // Build stats
+  const statsEl = document.getElementById('dash-stats');
+  const sections = CRCAdmin.getAccessibleSections();
+
+  let statsHTML = '';
+  if (counts.pendingRuns !== undefined) {
+    statsHTML += `
+      <div class="dash-stat ${counts.pendingRuns > 0 ? 'dash-stat--alert' : ''}">
+        <span class="dash-stat__value">${counts.pendingRuns}</span>
+        <span class="dash-stat__label">Pending Runs</span>
+      </div>`;
+  }
+  if (counts.pendingProfiles !== undefined) {
+    statsHTML += `
+      <div class="dash-stat ${counts.pendingProfiles > 0 ? 'dash-stat--alert' : ''}">
+        <span class="dash-stat__value">${counts.pendingProfiles}</span>
+        <span class="dash-stat__label">Pending Profiles</span>
+      </div>`;
+  }
+  if (counts.pendingGames !== undefined) {
+    statsHTML += `
+      <div class="dash-stat ${counts.pendingGames > 0 ? 'dash-stat--alert' : ''}">
+        <span class="dash-stat__value">${counts.pendingGames}</span>
+        <span class="dash-stat__label">Pending Games</span>
+      </div>`;
+  }
+  if (counts.totalRunners !== undefined) {
+    statsHTML += `
+      <div class="dash-stat">
+        <span class="dash-stat__value">${counts.totalRunners}</span>
+        <span class="dash-stat__label">Total Runners</span>
+      </div>`;
+  }
+  statsEl.innerHTML = statsHTML;
+
+  // Build nav grid
+  const navEl = document.getElementById('dash-nav');
+  let navHTML = '';
+
+  for (const key of sections) {
+    const sec = NAV_SECTIONS[key];
+    if (!sec) continue;
+    const count = sec.countKey ? counts[sec.countKey] : null;
+    const badge = count > 0 ? `<span class="dash-nav-card__badge">${count}</span>` : '';
+
+    navHTML += `
+      <a class="dash-nav-card" href="${sec.href}">
+        <span class="dash-nav-card__icon">${sec.icon}</span>
+        <span class="dash-nav-card__title">${sec.title}${badge}</span>
+        <p class="dash-nav-card__desc">${sec.desc}</p>
+      </a>`;
+  }
+  navEl.innerHTML = navHTML;
+
+  // Show assigned games for verifiers
+  if (CRCAdmin.isVerifier()) {
+    const games = CRCAdmin.getAssignedGames();
+    const infoEl = document.getElementById('dash-info');
+    infoEl.hidden = false;
+    document.getElementById('dash-assigned-games').textContent =
+      games.length > 0
+        ? games.map(g => CRCAdmin.formatGameId(g)).join(', ')
+        : 'No games assigned yet. Contact an admin to be assigned to games.';
+  }
+})();
+</script>
