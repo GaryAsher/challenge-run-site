@@ -25,6 +25,10 @@ tabs:
 
 character_column:
   enabled: false
+  label: "Character"
+  required: false
+  # required_exclude_tiers:    # Uncomment to exclude specific tiers from required validation
+  #   - mini_challenges         # e.g., character not required for mini-challenges
 
 # =============================================================================
 # CHALLENGE MODIFIERS (apply to any category)
