@@ -396,6 +396,12 @@ title: "Dashboard - Pending Runs"
 }
 </style>
 
+{% if site.run_submit_endpoint %}
+<script>
+  window.CRC_WORKER_URL = {{ site.run_submit_endpoint | jsonify }};
+</script>
+{% endif %}
+
 <script type="module">
 import { CRCAdmin } from '{{ "/assets/js/admin.js" | relative_url }}';
 
@@ -739,6 +745,11 @@ async function handleApprove(run, btn) {
     btn.disabled = false;
     btn.textContent = '✅ Approve';
     return;
+  }
+
+  // Show success with filename if available
+  if (result.filename) {
+    console.log(`[Runs] Created file: _runs/${run.game_id}/${result.filename}`);
   }
 
   // Update the card in-place
