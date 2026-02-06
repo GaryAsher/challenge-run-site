@@ -179,7 +179,6 @@ timing_method: LRT
 character_column:
   enabled: true
   label: "Gun Type / Build"
-  required: false
 
 characters_data:
   - slug: pistol-standard
