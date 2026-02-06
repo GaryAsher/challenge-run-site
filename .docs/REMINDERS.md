@@ -2,7 +2,7 @@
 
 This document consolidates all reminders, future ideas, and planned features for CRC.
 
-**Last updated:** 2026/02/04
+**Last updated:** 2026/02/05
 
 ---
 
@@ -28,16 +28,38 @@ This document consolidates all reminders, future ideas, and planned features for
   - Restructure UI
 - [ ] For Contributions, have these link to the appropriate achievements that the runner has been credited for.
 
-### 2. Games page
-- [ ] Add A Game for "Multi-Game Runs". These are multiple games done in succession. The Game page that it belongs to will have a link to these below the "Modded Game"
+### 2. Modded Game Support
+- [ ] Allow modded versions of games
+- [ ] Link between modded and main game pages
+- [ ] "Modded" tag for categories
+- [ ] Update game submission form/workflow to support modded fields:
+  - `is_modded: true`
+  - `base_game: <parent-game-id>`
+  - `generate-game-file.py` needs these as inputs
+- [ ] Decide on approach: Add modded fields to Google Form, or build a site-based submission UI
+
+### 2.5. Multi-Game Runs
+- [ ] Add multi-game run support using the same pattern as modded games:
+  - `is_multi_game: true` flag in game front matter
+  - `related_games: [game-id-1, game-id-2, ...]` to link individual games
+  - Badge on Games index page (e.g., "🎮 MULTI-GAME")
+  - Banner on individual game pages linking to the multi-game entry
+  - Banner on multi-game page linking back to each individual game
+- [ ] Add layout support in `game.html` for `is_multi_game` (mirror the `is_modded` banner logic)
+- [ ] Update `generate-game-pages.js` and `generate-run-category-pages.js` to handle multi-game entries
+- [ ] Update `games/index.html` to display multi-game badge
 
 ### 3. Forms & Submissions
 - [ ] New Game Submission form
   - Check Discord Webhook by submitting a new game. Has been updated, but not tested.
 - [ ] New Run Submission 
   - Test variables. Update if needed.
+- [ ] Fix hardcoded character validation in `submit-run.js`:
+  - Line ~570: `if (payload.game_id === "hades-2")` should become data-driven
+  - Add `character_required: true/false` (or per-tier override) to game front matter
+  - JS reads this flag from form-index.json instead of checking game_id
 
-### 3.5 Legal Document Review
+### 3.5. Legal Document Review
 - [ ] Review Terms of Service line-by-line
 - [ ] Review Privacy Policy line-by-line
 - [ ] Add 13+ age requirement (like Speedrun.com)
@@ -72,18 +94,12 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ## Medium-Term Priorities
 
-### 7. SvelteKit Migration 
+### 7. SvelteKit Migration
 **Target: When site has 10+ active games or needs real-time features**
 
-Migration plan:
-- [ ] Set up SvelteKit project with Supabase
-- [ ] Migrate static content (games, runners, runs)
-- [ ] Implement auth with server-side sessions
-- [ ] Build admin dashboard
-- [ ] Add real-time run verification
-- [ ] Deploy to Vercel or similar
+See [Migration Notes](#sveltekit-migration-notes) below for detailed planning.
 
-### 8. Dark/Light Mode Toggle and Accessibilities features
+### 8. Dark/Light Mode Toggle and Accessibility Features
 - [ ] Add light mode CSS variables
 - [ ] Add toggle button to header
 - [ ] Colorblind mode
@@ -113,7 +129,7 @@ Decision needed: GitHub Discussions vs Discord
 - [ ] Run count badges on game cards
 
 ### How to Navigate the Site
-- [ ] Either in form of FAQ or general explaination.
+- [ ] Either in form of FAQ or general explanation.
 
 ### Team Profiles
 - [ ] Team submission process
@@ -138,6 +154,7 @@ Decision needed: GitHub Discussions vs Discord
 - [ ] Audit CSS for unused code
 - [ ] Consider Jekyll plugins or asset pipeline
 - [ ] Consistent variable naming across pages
+- [ ] Remove old monolithic `assets/style.css` after confirming SCSS pipeline works on Cloudflare
 
 ---
 
@@ -149,3 +166,73 @@ Decision needed: GitHub Discussions vs Discord
 - [ ] Google Form setup guide
 
 ---
+
+# SvelteKit Migration Notes
+
+Notes for when CRC moves from Jekyll to SvelteKit (or Next.js). These are things to keep in mind during the transition.
+
+## What Carries Over Directly
+- **Markdown data files** (`_games/*.md`, `_runners/*.md`, `_runs/**/*.md`): YAML front matter works natively with `gray-matter` or `mdsvex`. Keep the same file structure.
+- **`_data/*.yml` files**: Convert to JSON or TypeScript imports. Consider keeping YAML and parsing at build time.
+- **SCSS structure** (`assets/scss/`): Both SvelteKit and Next.js support SCSS. The modular structure (base, components, pages) maps cleanly to component-scoped styles.
+- **Supabase integration**: Auth, profiles, and edge functions are framework-agnostic. The `supabase/` directory moves as-is.
+- **Vanilla JS files** (`assets/js/`): Logic ports directly, though most will become component methods.
+- **Images and static assets**: Move to `static/` directory.
+
+## What Gets Replaced (and Why It's a Win)
+- **123+ generated `games/` pages** → Dynamic routes. A single `routes/games/[game_id]/runs/[tier]/[category]/+page.svelte` replaces all of them.
+- **Generation scripts** (`generate-game-pages.js`, `generate-run-category-pages.js`, `generate-runner-game-pages.js`, `generate-codeowners.js`): Most become unnecessary. Page generation is handled by the framework's routing. CODEOWNERS generation might still be useful.
+- **Liquid templates** in `_includes/` and `_layouts/`: Become Svelte components or React components. The big ones to plan for:
+  - `game-rules.html` (1,288 lines, 710-line inline script) → Break into smaller components
+  - `header.html` (631 lines, 324 lines of inline JS/CSS) → Header component with proper imports
+  - `runner.html` layout (664 lines) → Runner page component
+  - `game-runs.html` layout (810 lines) → Runs page component
+  - `cookie-consent.html`, `report-modal.html` → Standalone components
+- **`form-index.json`** and the script that generates it → Server-side data loading (e.g., `+page.server.ts` load functions) can query game data directly.
+- **`assets/style.css`** (old monolithic file) → Delete. The SCSS pipeline is the source of truth.
+
+## Data Architecture Decisions
+- [ ] **Where does game data live?** Options: Keep as markdown files (parsed at build), move to Supabase, or hybrid (markdown for config, Supabase for runs/profiles).
+- [ ] **Static vs SSR vs hybrid**: Game pages can be statically generated at build time (SSG). Profile pages and admin panels should be server-rendered (SSR). Run submission needs client-side interactivity.
+- [ ] **Auth strategy**: SvelteKit has `+page.server.ts` and `+layout.server.ts` for server-only auth logic. Supabase keys stay server-side. No more exposing the anon key in `_data/supabase-config.yml`.
+- [ ] **Form handling**: SvelteKit form actions replace the current `submit-run.js` fetch-based approach with progressive enhancement (works without JS).
+
+## Migration Order (Suggested)
+1. **Set up SvelteKit project** with Supabase adapter and Cloudflare Pages adapter
+2. **Port static pages first**: Games index, game overview, rules, history, glossary, legal
+3. **Port data-driven pages**: Runs tables, runner profiles (these test the data pipeline)
+4. **Port interactive features**: Submit forms, admin panels, auth flows, search
+5. **Port remaining**: Profile editing, theme system, cookie consent, reporting
+6. **Verify and cut over**: Run both sites in parallel, compare output, switch DNS
+
+## Things That Will Need Rethinking
+- **GitHub Actions workflows**: The game submission pipeline (Google Form → Apps Script → GitHub → PR) still works, but the hydrate step changes since there are no pages to generate. The PR would just add the markdown file.
+- **Inline styles/scripts in templates**: Currently ~838 lines of inline CSS and ~1,550 lines of inline JS across includes/layouts. These must be extracted into proper component files. Don't port them inline.
+- **The `hidden` game/runner pattern** (`_test-game.md`, `_test-runner.md`): In SvelteKit, use environment-based filtering instead of underscore prefixes.
+- **Hardcoded game logic**: `submit-run.js` has Hades-2-specific validation. Fix this *before* migrating — make it data-driven so it ports cleanly.
+- **Cookie consent**: Current implementation is a large inline include. Consider a lightweight Svelte store-based approach.
+
+## Framework-Specific Notes
+
+### If SvelteKit (Recommended)
+- Use `@sveltejs/adapter-cloudflare` for Cloudflare Pages deployment
+- Scoped styles per component replace the global SCSS approach (keep SCSS for shared variables/mixins)
+- Built-in transitions replace any JS animation logic
+- `+page.server.ts` load functions replace the form-index.json caching pattern
+- Consider `shadcn-svelte` or `skeleton` for UI component primitives
+- Svelte stores replace the scattered `localStorage` usage for theme/auth state
+
+### If Next.js
+- Use `@cloudflare/next-on-pages` for Cloudflare deployment (less mature than native Vercel)
+- React Server Components for game/runner pages (no client JS shipped)
+- Client Components for interactive sections (forms, filters, admin)
+- `next/image` for automatic image optimization (replaces manual WebP conversion)
+- Consider `shadcn/ui` for component primitives
+
+## Pre-Migration Cleanup (Do Before Starting)
+- [ ] Fix hardcoded game logic in `submit-run.js` (make character validation data-driven)
+- [ ] Remove `assets/style.css` after confirming SCSS pipeline
+- [ ] Remove `games/test-game/` duplicate directory
+- [ ] Remove `_queue_games/constance.md` leftover
+- [ ] Ensure all games use tiered category structure (no legacy `categories_data`)
+- [ ] Document the Google Form → GitHub pipeline so it can be replicated
