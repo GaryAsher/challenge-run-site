@@ -214,6 +214,9 @@ timing_method: IGT
 character_column:
   enabled: true
   label: "Weapon / Aspect"
+  required: true
+  required_exclude_tiers:
+    - mini_challenges
 
 characters_data:
   - slug: witchs-staff-melinoe-aspect
