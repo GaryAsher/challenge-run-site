@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-05T19:00:27.550Z",
+  "generated_at": "2026-02-06T05:03:38.351Z",
   "games": [
     {
       "game_id": "celeste",
@@ -93,7 +93,8 @@
       },
       "characters": [],
       "timing_method": "IGT",
-      "timing_method_secondary": ""
+      "timing_method_secondary": "",
+      "rta_timing": true
     },
     {
       "game_id": "constance",
@@ -171,7 +172,8 @@
       },
       "characters": [],
       "timing_method": "IGT",
-      "timing_method_secondary": ""
+      "timing_method_secondary": "",
+      "rta_timing": true
     },
     {
       "game_id": "hades-2",
@@ -198,67 +200,85 @@
         "mini_challenges": [
           {
             "slug": "chaos-trials",
-            "name": "Chaos Trials"
-          },
-          {
-            "slug": "chaos-trials/trial-of-origin",
-            "name": "Chaos Trials: Trial of Origin"
-          },
-          {
-            "slug": "chaos-trials/trial-of-salt",
-            "name": "Chaos Trials: Trial of Salt"
-          },
-          {
-            "slug": "chaos-trials/trial-of-humility",
-            "name": "Chaos Trials: Trial of Humility"
-          },
-          {
-            "slug": "chaos-trials/trial-of-vengeance",
-            "name": "Chaos Trials: Trial of Vengeance"
-          },
-          {
-            "slug": "chaos-trials/trial-of-moon",
-            "name": "Chaos Trials: Trial of Moon"
-          },
-          {
-            "slug": "chaos-trials/trial-of-vigor",
-            "name": "Chaos Trials: Trial of Vigor"
-          },
-          {
-            "slug": "chaos-trials/trial-of-flame",
-            "name": "Chaos Trials: Trial of Flame"
-          },
-          {
-            "slug": "chaos-trials/trial-of-gold",
-            "name": "Chaos Trials: Trial of Gold"
-          },
-          {
-            "slug": "chaos-trials/trial-of-fury",
-            "name": "Chaos Trials: Trial of Fury"
-          },
-          {
-            "slug": "chaos-trials/trial-of-precarity",
-            "name": "Chaos Trials: Trial of Precarity"
-          },
-          {
-            "slug": "chaos-trials/trial-of-heartache",
-            "name": "Chaos Trials: Trial of Heartache"
-          },
-          {
-            "slug": "chaos-trials/trial-of-haste",
-            "name": "Chaos Trials: Trial of Haste"
-          },
-          {
-            "slug": "chaos-trials/trial-of-blood",
-            "name": "Chaos Trials: Trial of Blood"
-          },
-          {
-            "slug": "chaos-trials/trial-of-doom",
-            "name": "Chaos Trials: Trial of Doom"
-          },
-          {
-            "slug": "chaos-trials/trial-of-destiny",
-            "name": "Chaos Trials: Trial of Destiny"
+            "name": "Chaos Trials",
+            "is_group": true,
+            "children": [
+              {
+                "slug": "chaos-trials/trial-of-origin",
+                "name": "Trial of Origin",
+                "fixed_character": true
+              },
+              {
+                "slug": "chaos-trials/trial-of-salt",
+                "name": "Trial of Salt",
+                "fixed_character": true
+              },
+              {
+                "slug": "chaos-trials/trial-of-humility",
+                "name": "Trial of Humility",
+                "fixed_character": true
+              },
+              {
+                "slug": "chaos-trials/trial-of-vengeance",
+                "name": "Trial of Vengeance",
+                "fixed_character": true
+              },
+              {
+                "slug": "chaos-trials/trial-of-moon",
+                "name": "Trial of Moon",
+                "fixed_character": true
+              },
+              {
+                "slug": "chaos-trials/trial-of-vigor",
+                "name": "Trial of Vigor",
+                "fixed_character": true
+              },
+              {
+                "slug": "chaos-trials/trial-of-flame",
+                "name": "Trial of Flame",
+                "fixed_character": true
+              },
+              {
+                "slug": "chaos-trials/trial-of-gold",
+                "name": "Trial of Gold",
+                "fixed_character": true
+              },
+              {
+                "slug": "chaos-trials/trial-of-fury",
+                "name": "Trial of Fury",
+                "fixed_character": true
+              },
+              {
+                "slug": "chaos-trials/trial-of-precarity",
+                "name": "Trial of Precarity",
+                "fixed_character": true
+              },
+              {
+                "slug": "chaos-trials/trial-of-heartache",
+                "name": "Trial of Heartache",
+                "fixed_character": true
+              },
+              {
+                "slug": "chaos-trials/trial-of-haste",
+                "name": "Trial of Haste",
+                "fixed_character": true
+              },
+              {
+                "slug": "chaos-trials/trial-of-blood",
+                "name": "Trial of Blood",
+                "fixed_character": true
+              },
+              {
+                "slug": "chaos-trials/trial-of-doom",
+                "name": "Trial of Doom",
+                "fixed_character": true
+              },
+              {
+                "slug": "chaos-trials/trial-of-destiny",
+                "name": "Trial of Destiny",
+                "fixed_character": true
+              }
+            ]
           }
         ],
         "player_made": []
@@ -283,11 +303,6 @@
           "slug": "surface-vor4",
           "name": "Surface VoR4",
           "tier": "full_runs"
-        },
-        {
-          "slug": "chaos-trials",
-          "name": "Chaos Trials",
-          "tier": "mini_challenges"
         },
         {
           "slug": "chaos-trials/trial-of-origin",
@@ -518,7 +533,8 @@
         }
       ],
       "timing_method": "IGT",
-      "timing_method_secondary": ""
+      "timing_method_secondary": "",
+      "rta_timing": true
     },
     {
       "game_id": "hollow-knight",
@@ -538,6 +554,14 @@
             "name": "True Ending"
           },
           {
+            "slug": "all-bosses",
+            "name": "All Bosses"
+          },
+          {
+            "slug": "pantheon-5",
+            "name": "Pantheon of Hallownest"
+          },
+          {
             "slug": "106-te",
             "name": "106% TE"
           },
@@ -552,49 +576,44 @@
           {
             "slug": "low-percent",
             "name": "Low%"
-          },
+          }
+        ],
+        "mini_challenges": [
           {
-            "slug": "all-bosses",
-            "name": "All Bosses"
-          },
-          {
-            "slug": "godhome-ending",
-            "name": "Godhome Ending"
-          },
-          {
-            "slug": "pantheons",
-            "name": "Pantheons"
-          },
-          {
-            "slug": "pantheons/pantheon-1",
-            "name": "Pantheons: Pantheon of the Master"
-          },
-          {
-            "slug": "pantheons/pantheon-2",
-            "name": "Pantheons: Pantheon of the Artist"
-          },
-          {
-            "slug": "pantheons/pantheon-3",
-            "name": "Pantheons: Pantheon of the Sage"
-          },
-          {
-            "slug": "pantheons/pantheon-4",
-            "name": "Pantheons: Pantheon of the Knight"
-          },
-          {
-            "slug": "pantheons/pantheon-5",
-            "name": "Pantheons: Pantheon of Hallownest"
+            "slug": "pantheons-1-2-3-4",
+            "name": "Pantheons",
+            "is_group": true,
+            "children": [
+              {
+                "slug": "pantheons-1-2-3-4/pantheon-1",
+                "name": "Pantheon of the Master"
+              },
+              {
+                "slug": "pantheons-1-2-3-4/pantheon-2",
+                "name": "Pantheon of the Artist"
+              },
+              {
+                "slug": "pantheons-1-2-3-4/pantheon-3",
+                "name": "Pantheon of the Sage"
+              },
+              {
+                "slug": "pantheons-1-2-3-4/pantheon-4",
+                "name": "Pantheon of the Knight"
+              }
+            ]
           },
           {
             "slug": "hall-of-gods",
-            "name": "Hall of Gods"
-          },
-          {
-            "slug": "hall-of-gods/gruz-mother",
-            "name": "Hall of Gods: Gruz Mother"
+            "name": "Hall of Gods",
+            "is_group": true,
+            "children": [
+              {
+                "slug": "hall-of-gods/gruz-mother",
+                "name": "Gruz Mother"
+              }
+            ]
           }
         ],
-        "mini_challenges": [],
         "player_made": []
       },
       "categories": [
@@ -611,6 +630,16 @@
         {
           "slug": "true-ending",
           "name": "True Ending",
+          "tier": "full_runs"
+        },
+        {
+          "slug": "all-bosses",
+          "name": "All Bosses",
+          "tier": "full_runs"
+        },
+        {
+          "slug": "pantheon-5",
+          "name": "Pantheon of Hallownest",
           "tier": "full_runs"
         },
         {
@@ -634,54 +663,29 @@
           "tier": "full_runs"
         },
         {
-          "slug": "all-bosses",
-          "name": "All Bosses",
-          "tier": "full_runs"
-        },
-        {
-          "slug": "godhome-ending",
-          "name": "Godhome Ending",
-          "tier": "full_runs"
-        },
-        {
-          "slug": "pantheons",
-          "name": "Pantheons",
-          "tier": "full_runs"
-        },
-        {
-          "slug": "pantheons/pantheon-1",
+          "slug": "pantheons-1-2-3-4/pantheon-1",
           "name": "Pantheons: Pantheon of the Master",
-          "tier": "full_runs"
+          "tier": "mini_challenges"
         },
         {
-          "slug": "pantheons/pantheon-2",
+          "slug": "pantheons-1-2-3-4/pantheon-2",
           "name": "Pantheons: Pantheon of the Artist",
-          "tier": "full_runs"
+          "tier": "mini_challenges"
         },
         {
-          "slug": "pantheons/pantheon-3",
+          "slug": "pantheons-1-2-3-4/pantheon-3",
           "name": "Pantheons: Pantheon of the Sage",
-          "tier": "full_runs"
+          "tier": "mini_challenges"
         },
         {
-          "slug": "pantheons/pantheon-4",
+          "slug": "pantheons-1-2-3-4/pantheon-4",
           "name": "Pantheons: Pantheon of the Knight",
-          "tier": "full_runs"
-        },
-        {
-          "slug": "pantheons/pantheon-5",
-          "name": "Pantheons: Pantheon of Hallownest",
-          "tier": "full_runs"
-        },
-        {
-          "slug": "hall-of-gods",
-          "name": "Hall of Gods",
-          "tier": "full_runs"
+          "tier": "mini_challenges"
         },
         {
           "slug": "hall-of-gods/gruz-mother",
           "name": "Hall of Gods: Gruz Mother",
-          "tier": "full_runs"
+          "tier": "mini_challenges"
         }
       ],
       "standard_challenges": [
@@ -712,16 +716,16 @@
           "name": "Unrestricted"
         },
         {
+          "id": "no-main-menu-storage",
+          "name": "No Main Menu Storage (NMMS)"
+        },
+        {
           "id": "nmg",
           "name": "No Major Glitches (NMG)"
         },
         {
           "id": "glitchless",
           "name": "Glitchless"
-        },
-        {
-          "id": "no-main-menu-storage",
-          "name": "No Main Menu Storage (NMMS)"
         }
       ],
       "restrictions": [
@@ -738,10 +742,6 @@
           "name": "No Spells"
         },
         {
-          "id": "base-nail-only",
-          "name": "Base Nail Only"
-        },
-        {
           "id": "no-monarch-wings",
           "name": "No Monarch Wings"
         }
@@ -752,7 +752,8 @@
       },
       "characters": [],
       "timing_method": "LRT",
-      "timing_method_secondary": ""
+      "timing_method_secondary": "",
+      "rta_timing": true
     },
     {
       "game_id": "hollow-knight-modded",
@@ -762,37 +763,38 @@
         "mini_challenges": [
           {
             "slug": "gun-mod",
-            "name": "Gun Mod (HKGun / Hollow Point)"
-          },
-          {
-            "slug": "gun-mod/any",
-            "name": "Gun Mod (HKGun / Hollow Point): Any%"
-          },
-          {
-            "slug": "gun-mod/true-ending",
-            "name": "Gun Mod (HKGun / Hollow Point): True Ending"
-          },
-          {
-            "slug": "gun-mod/p5",
-            "name": "Gun Mod (HKGun / Hollow Point): Pantheon 5"
+            "name": "Gun Mod (HKGun / Hollow Point)",
+            "is_group": true,
+            "children": [
+              {
+                "slug": "gun-mod/any",
+                "name": "Any%"
+              },
+              {
+                "slug": "gun-mod/true-ending",
+                "name": "True Ending"
+              },
+              {
+                "slug": "gun-mod/p5",
+                "name": "Pantheon 5"
+              }
+            ]
           },
           {
             "slug": "randomizer",
-            "name": "Randomizer"
-          },
-          {
-            "slug": "randomizer/any",
-            "name": "Randomizer: Any%"
+            "name": "Randomizer",
+            "is_group": true,
+            "children": [
+              {
+                "slug": "randomizer/any",
+                "name": "Any%"
+              }
+            ]
           }
         ],
         "player_made": []
       },
       "categories": [
-        {
-          "slug": "gun-mod",
-          "name": "Gun Mod (HKGun / Hollow Point)",
-          "tier": "mini_challenges"
-        },
         {
           "slug": "gun-mod/any",
           "name": "Gun Mod (HKGun / Hollow Point): Any%",
@@ -806,11 +808,6 @@
         {
           "slug": "gun-mod/p5",
           "name": "Gun Mod (HKGun / Hollow Point): Pantheon 5",
-          "tier": "mini_challenges"
-        },
-        {
-          "slug": "randomizer",
-          "name": "Randomizer",
           "tier": "mini_challenges"
         },
         {
@@ -912,7 +909,8 @@
         }
       ],
       "timing_method": "LRT",
-      "timing_method_secondary": ""
+      "timing_method_secondary": "",
+      "rta_timing": true
     },
     {
       "game_id": "_test-game",
@@ -931,8 +929,9 @@
         "label": "Character"
       },
       "characters": [],
-      "timing_method": "",
-      "timing_method_secondary": ""
+      "timing_method": "RTA",
+      "timing_method_secondary": "",
+      "rta_timing": true
     },
     {
       "game_id": "the-legend-of-zelda-ocarina-of-time",
@@ -1010,7 +1009,8 @@
       },
       "characters": [],
       "timing_method": "LRT",
-      "timing_method_secondary": ""
+      "timing_method_secondary": "",
+      "rta_timing": true
     },
     {
       "game_id": "tiny-rogues",
@@ -1027,11 +1027,13 @@
           },
           {
             "slug": "quest-any",
-            "name": "Quest Any%"
+            "name": "Quest Any%",
+            "fixed_character": true
           },
           {
             "slug": "quest-cinder-16",
-            "name": "Quest Cinder 16"
+            "name": "Quest Cinder 16",
+            "fixed_character": true
           }
         ],
         "mini_challenges": [],
@@ -1086,7 +1088,8 @@
       },
       "characters": [],
       "timing_method": "IGT",
-      "timing_method_secondary": ""
+      "timing_method_secondary": "",
+      "rta_timing": true
     }
   ],
   "challenges": [
