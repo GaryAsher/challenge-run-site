@@ -28,7 +28,7 @@ This document consolidates all reminders, future ideas, and planned features for
   - Restructure UI
 - [ ] For Contributions, have these link to the appropriate achievements that the runner has been credited for.
 
-### 2. Dashboard & Review System (Phase 2-3)
+### 2.3  Dashboard & Review System (Phase 3)
 - [ ] Phase 3: On approve, auto-create GitHub run file via Worker `/approve` endpoint
 - [ ] Phase 3: Remove GitHub PR workflow for runs (Supabase becomes sole source of truth)
 - [ ] Phase 3: Wire up Pending Profiles page to use `admin.js` module
