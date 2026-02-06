@@ -1,35 +1,114 @@
 ---
 layout: default
-title: "Admin - Pending Runs"
+title: "Dashboard - Pending Runs"
 ---
 
 <div class="page-width">
-  <p class="muted mb-3">
-    <a href="/admin/test/">← Back to Admin Dashboard</a>
-  </p>
-
-  <div class="admin-page">
+  <div class="runs-admin">
+    <!-- Loading -->
     <div id="loading-state" class="card">
-      <div class="sign-in-loading">
+      <div class="runs-loading">
         <div class="spinner"></div>
         <p class="muted">Checking access...</p>
       </div>
     </div>
 
+    <!-- Not authorized -->
     <div id="not-authorized" class="card" hidden>
-      <h1>Access Denied</h1>
-      <p class="muted">You don't have permission to view this page.</p>
+      <h2>🔒 Access Denied</h2>
+      <p class="muted">You need verifier or admin privileges to review runs.</p>
       <a href="/" class="btn btn--primary">Go Home</a>
     </div>
 
-    <div id="admin-content" hidden>
-      <h1>🏃 Pending Runs</h1>
-      <p class="muted mb-4">Review and approve submitted runs.</p>
+    <!-- Main content -->
+    <div id="runs-content" hidden>
+      <p class="muted mb-2"><a href="/admin/">← Dashboard</a></p>
 
-      <div id="pending-runs-list" class="admin-list">
-        <div class="admin-empty">
-          <p>No pending runs at this time.</p>
-          <p class="muted">Runs submitted via the form will appear here for approval.</p>
+      <div class="runs-header">
+        <h1>🏃 Pending Runs</h1>
+        <p class="muted" id="runs-role-info"></p>
+      </div>
+
+      <!-- Filters -->
+      <div class="runs-filters card">
+        <div class="runs-filters__row">
+          <div class="runs-filters__tabs" id="status-tabs">
+            <button class="filter-tab active" data-status="pending" type="button">
+              Pending <span class="filter-tab__count" id="count-pending">0</span>
+            </button>
+            <button class="filter-tab" data-status="verified" type="button">Verified</button>
+            <button class="filter-tab" data-status="rejected" type="button">Rejected</button>
+            <button class="filter-tab" data-status="needs_changes" type="button">Needs Changes</button>
+            <button class="filter-tab" data-status="all" type="button">All</button>
+          </div>
+          <div class="runs-filters__controls">
+            <select id="game-filter" class="filter-select">
+              <option value="">All Games</option>
+            </select>
+            <button class="btn btn--sm" id="refresh-btn" type="button" title="Refresh">↻ Refresh</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Runs list -->
+      <div id="runs-list">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Empty state -->
+      <div id="runs-empty" class="runs-empty card" hidden>
+        <p>No runs found matching your filters.</p>
+        <p class="muted">Runs submitted via the site form will appear here for review.</p>
+      </div>
+
+      <!-- Load more -->
+      <div id="load-more-wrap" hidden>
+        <button class="btn btn--secondary btn--full" id="load-more-btn" type="button">Load More</button>
+      </div>
+    </div>
+
+    <!-- Rejection modal -->
+    <div id="reject-modal" class="modal" hidden>
+      <div class="modal__backdrop" data-close></div>
+      <div class="modal__content card">
+        <h3>Reject Run</h3>
+        <p class="muted mb-2" id="reject-modal-info"></p>
+        <div class="form-field">
+          <label for="reject-reason">Reason <span class="required">*</span></label>
+          <select id="reject-reason" class="filter-select">
+            <option value="">Select a reason...</option>
+            <option value="invalid_run">Invalid run — does not meet requirements</option>
+            <option value="wrong_category">Wrong category or tier</option>
+            <option value="video_issue">Video is unavailable, incomplete, or doesn't match</option>
+            <option value="cheating_suspected">Suspected cheating or spliced footage</option>
+            <option value="duplicate">Duplicate submission</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="reject-notes">Notes (optional)</label>
+          <textarea id="reject-notes" rows="3" placeholder="Additional details for the runner..."></textarea>
+        </div>
+        <div class="modal__actions">
+          <button class="btn btn--reject" id="reject-confirm-btn" type="button" disabled>Reject Run</button>
+          <button class="btn btn--secondary" data-close type="button">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Needs changes modal -->
+    <div id="changes-modal" class="modal" hidden>
+      <div class="modal__backdrop" data-close></div>
+      <div class="modal__content card">
+        <h3>Request Changes</h3>
+        <p class="muted mb-2" id="changes-modal-info"></p>
+        <div class="form-field">
+          <label for="changes-notes">What needs to be changed? <span class="required">*</span></label>
+          <textarea id="changes-notes" rows="4" placeholder="Describe what the runner needs to fix..."></textarea>
+        </div>
+        <div class="modal__actions">
+          <button class="btn btn--changes" id="changes-confirm-btn" type="button" disabled>Send Request</button>
+          <button class="btn btn--secondary" data-close type="button">Cancel</button>
         </div>
       </div>
     </div>
@@ -37,132 +116,764 @@ title: "Admin - Pending Runs"
 </div>
 
 <style>
-.admin-page {
-  max-width: 900px;
-  margin: 0 auto;
-}
+.runs-admin { max-width: 960px; margin: 0 auto; }
+.runs-loading { text-align: center; padding: 3rem; }
 
-.admin-list {
+.runs-header { margin-bottom: 1.5rem; }
+.runs-header h1 { margin: 0; }
+
+/* Filters */
+.runs-filters { padding: 1rem; margin-bottom: 1.5rem; }
+.runs-filters__row {
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
-
-.admin-empty {
-  text-align: center;
-  padding: 3rem 2rem;
-  background: var(--surface);
-  border-radius: 12px;
-  color: var(--text-muted);
+.runs-filters__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
 }
-
-.admin-item {
-  background: var(--surface);
-  border-radius: 12px;
-  padding: 1.25rem;
+.filter-tab {
+  background: transparent;
   border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-tab:hover { border-color: var(--fg); color: var(--fg); }
+.filter-tab.active {
+  background: var(--accent, #6366f1);
+  color: white;
+  border-color: var(--accent, #6366f1);
+}
+.filter-tab__count {
+  display: inline-block;
+  background: rgba(255,255,255,0.25);
+  padding: 0 6px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  margin-left: 4px;
+  font-weight: 700;
+}
+.runs-filters__controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.filter-select {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+  color: var(--fg);
 }
 
-.admin-item__header {
+/* Run cards */
+.run-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+.run-card__header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 1rem;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: background 0.1s;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
-
-.admin-item__title {
-  font-weight: 600;
-  font-size: 1.1rem;
+.run-card__header:hover { background: rgba(255,255,255,0.02); }
+.run-card__title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
-
-.admin-item__meta {
+.run-card__game {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+.run-card__runner {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+.run-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   font-size: 0.85rem;
   color: var(--text-muted);
 }
-
-.admin-item__actions {
-  display: flex;
-  gap: 0.5rem;
+.run-card__date {
+  white-space: nowrap;
 }
 
-.admin-item__details {
+/* Expandable details */
+.run-card__body {
+  display: none;
+  border-top: 1px solid var(--border);
+  padding: 1.25rem;
+}
+.run-card.expanded .run-card__body { display: block; }
+
+.run-details {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-  padding: 1rem;
-  background: var(--bg);
-  border-radius: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
 }
-
-.admin-detail {
+.run-detail {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.2rem;
 }
-
-.admin-detail__label {
-  font-size: 0.75rem;
+.run-detail__label {
+  font-size: 0.7rem;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: var(--text-muted);
 }
-
-.admin-detail__value {
+.run-detail__value {
   font-weight: 500;
+  word-break: break-word;
 }
 
+/* Video section */
+.run-video {
+  margin-bottom: 1.25rem;
+}
+.run-video a {
+  color: var(--accent, #6366f1);
+  word-break: break-all;
+}
+.run-video__embed {
+  margin-top: 0.75rem;
+  aspect-ratio: 16/9;
+  max-width: 560px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.run-video__embed iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Action buttons */
+.run-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
 .btn--approve {
   background: #28a745;
   color: white;
+  border: none;
+  padding: 0.5rem 1.25rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
 }
-
-.btn--approve:hover {
-  background: #218838;
-}
+.btn--approve:hover { background: #218838; }
+.btn--approve:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .btn--reject {
   background: transparent;
   border: 1px solid #dc3545;
   color: #dc3545;
+  padding: 0.5rem 1.25rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn--reject:hover { background: #dc3545; color: white; }
+.btn--reject:disabled { opacity: 0.5; }
+
+.btn--changes {
+  background: transparent;
+  border: 1px solid #17a2b8;
+  color: #17a2b8;
+  padding: 0.5rem 1.25rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn--changes:hover { background: #17a2b8; color: white; }
+.btn--changes:disabled { opacity: 0.5; }
+
+.btn--secondary {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  padding: 0.5rem 1.25rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.btn--sm { padding: 0.35rem 0.75rem; font-size: 0.85rem; }
+.btn--full { width: 100%; }
+
+/* Verified/rejected info bar */
+.run-status-bar {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.02);
 }
 
-.btn--reject:hover {
-  background: #dc3545;
-  color: white;
+/* Empty state */
+.runs-empty {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: var(--text-muted);
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal[hidden] { display: none; }
+.modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+}
+.modal__content {
+  position: relative;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow: auto;
+  padding: 1.5rem;
+}
+.modal__content h3 { margin: 0 0 0.75rem 0; }
+.modal__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+.form-field { margin-bottom: 1rem; }
+.form-field label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 0.35rem;
+}
+.form-field textarea, .form-field select {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--fg);
+  font-size: 0.9rem;
+}
+.required { color: #dc3545; }
+
+/* Responsive */
+@media (max-width: 640px) {
+  .runs-filters__row { flex-direction: column; align-items: stretch; }
+  .runs-filters__tabs { overflow-x: auto; flex-wrap: nowrap; }
+  .run-details { grid-template-columns: 1fr 1fr; }
 }
 </style>
 
 <script type="module">
-import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
+import { CRCAdmin } from '{{ "/assets/js/admin.js" | relative_url }}';
 
-const ADMIN_IDS = ['gary-asher'];
+// =============================================================================
+// State
+// =============================================================================
 
-const loadingState = document.getElementById('loading-state');
-const notAuthorized = document.getElementById('not-authorized');
-const adminContent = document.getElementById('admin-content');
-const pendingList = document.getElementById('pending-runs-list');
+let currentStatus = 'pending';
+let currentGameFilter = '';
+let allRuns = [];
+let currentRejectId = null;
+let currentChangesId = null;
+const PAGE_SIZE = 50;
 
-async function init() {
-  await CRCAuth.init();
-  
-  const profile = CRCAuth.getProfile();
-  const metadata = CRCAuth.getProviderMetadata();
-  
-  const isAdmin = profile?.runner_id && ADMIN_IDS.includes(profile.runner_id);
-  const isAdminByUsername = metadata?.providerUsername?.toLowerCase() === 'gary_asher';
-  
-  loadingState.hidden = true;
-  
-  if (!CRCAuth.isSignedIn() || (!isAdmin && !isAdminByUsername)) {
-    notAuthorized.hidden = false;
+// =============================================================================
+// DOM refs
+// =============================================================================
+
+const loadingEl = document.getElementById('loading-state');
+const deniedEl = document.getElementById('not-authorized');
+const contentEl = document.getElementById('runs-content');
+const runsListEl = document.getElementById('runs-list');
+const runsEmptyEl = document.getElementById('runs-empty');
+const statusTabsEl = document.getElementById('status-tabs');
+const gameFilterEl = document.getElementById('game-filter');
+const refreshBtn = document.getElementById('refresh-btn');
+const pendingCountEl = document.getElementById('count-pending');
+
+// Reject modal
+const rejectModal = document.getElementById('reject-modal');
+const rejectReasonEl = document.getElementById('reject-reason');
+const rejectNotesEl = document.getElementById('reject-notes');
+const rejectConfirmBtn = document.getElementById('reject-confirm-btn');
+const rejectInfoEl = document.getElementById('reject-modal-info');
+
+// Changes modal
+const changesModal = document.getElementById('changes-modal');
+const changesNotesEl = document.getElementById('changes-notes');
+const changesConfirmBtn = document.getElementById('changes-confirm-btn');
+const changesInfoEl = document.getElementById('changes-modal-info');
+
+// =============================================================================
+// Init
+// =============================================================================
+
+(async function() {
+  const role = await CRCAdmin.init();
+
+  if (!role) {
+    showState('denied');
     return;
   }
-  
-  adminContent.hidden = false;
-  
-  // TODO: Load pending runs from Supabase when table exists
-  // For now, show placeholder
+
+  showState('ready');
+
+  // Show role info
+  const roleInfo = document.getElementById('runs-role-info');
+  if (CRCAdmin.isVerifier()) {
+    const games = CRCAdmin.getAssignedGames();
+    roleInfo.textContent = games.length > 0
+      ? `Showing runs for: ${games.map(g => CRCAdmin.formatGameId(g)).join(', ')}`
+      : 'No games assigned. Contact an admin to be assigned.';
+  } else {
+    roleInfo.textContent = `${CRCAdmin.roleLabel(role)} — viewing all games`;
+  }
+
+  // Load runs
+  await loadRuns();
+
+  // Populate game filter from loaded data
+  populateGameFilter();
+
+  // Event listeners
+  setupEventListeners();
+})();
+
+// =============================================================================
+// State management
+// =============================================================================
+
+function showState(s) {
+  loadingEl.hidden = s !== 'loading';
+  deniedEl.hidden = s !== 'denied';
+  contentEl.hidden = s !== 'ready';
 }
 
-init();
+// =============================================================================
+// Load runs
+// =============================================================================
+
+async function loadRuns() {
+  runsListEl.innerHTML = '<div class="runs-loading"><div class="spinner"></div><p class="muted">Loading runs...</p></div>';
+  runsEmptyEl.hidden = true;
+
+  const opts = { status: currentStatus, limit: PAGE_SIZE };
+  if (currentGameFilter) opts.gameId = currentGameFilter;
+
+  const result = await CRCAdmin.getPendingRuns(opts);
+
+  if (result.error) {
+    runsListEl.innerHTML = `<div class="card"><p class="muted">Error loading runs: ${result.error}</p></div>`;
+    return;
+  }
+
+  allRuns = result.data;
+
+  // Update pending count
+  if (currentStatus === 'pending') {
+    pendingCountEl.textContent = result.count;
+  } else {
+    // Fetch pending count separately for the tab badge
+    const pending = await CRCAdmin.getPendingRuns({ status: 'pending' });
+    pendingCountEl.textContent = pending.count;
+  }
+
+  renderRuns();
+}
+
+function renderRuns() {
+  if (allRuns.length === 0) {
+    runsListEl.innerHTML = '';
+    runsEmptyEl.hidden = false;
+    return;
+  }
+
+  runsEmptyEl.hidden = true;
+  runsListEl.innerHTML = allRuns.map(run => renderRunCard(run)).join('');
+}
+
+// =============================================================================
+// Render a run card
+// =============================================================================
+
+function renderRunCard(run) {
+  const isPending = run.status === 'pending';
+  const isNeedsChanges = run.status === 'needs_changes';
+  const canAct = isPending || isNeedsChanges;
+  const embedUrl = CRCAdmin.getVideoEmbed(run.video_url);
+
+  // Build details
+  const details = [];
+  details.push({ label: 'Category', value: run.category ? run.category.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : '—' });
+  details.push({ label: 'Tier', value: run.category_tier ? run.category_tier.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : '—' });
+  details.push({ label: 'Time', value: CRCAdmin.formatTime(run.time_primary) });
+  details.push({ label: 'Date Completed', value: CRCAdmin.formatDate(run.run_date) });
+
+  if (run.character) details.push({ label: 'Character', value: run.character === 'auto-assigned' ? '(Auto-assigned)' : run.character.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) });
+  if (run.glitch_id) details.push({ label: 'Glitch Category', value: run.glitch_id.toUpperCase() });
+
+  const stdChallenges = CRCAdmin.formatArray(run.standard_challenges);
+  if (stdChallenges !== '—') details.push({ label: 'Standard Challenges', value: stdChallenges });
+  if (run.community_challenge) details.push({ label: 'Community Challenge', value: run.community_challenge.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) });
+
+  const restrictions = CRCAdmin.formatArray(run.restrictions);
+  if (restrictions !== '—') details.push({ label: 'Restrictions', value: restrictions });
+
+  if (run.additional_runners && run.additional_runners.length > 0) {
+    const runners = run.additional_runners.map(r => r.runner_id).join(', ');
+    details.push({ label: 'Additional Runners', value: runners });
+  }
+
+  details.push({ label: 'Submitted', value: CRCAdmin.formatTimestamp(run.submitted_at) });
+  if (run.submission_id) details.push({ label: 'Submission ID', value: run.submission_id });
+
+  const detailsHTML = details.map(d =>
+    `<div class="run-detail">
+      <span class="run-detail__label">${d.label}</span>
+      <span class="run-detail__value">${d.value}</span>
+    </div>`
+  ).join('');
+
+  // Video section
+  let videoHTML = '';
+  if (run.video_url) {
+    videoHTML = `
+      <div class="run-video">
+        <a href="${run.video_url}" target="_blank" rel="noopener">${run.video_url}</a>
+        ${embedUrl ? `
+          <div class="run-video__embed">
+            <iframe src="${embedUrl}" allowfullscreen loading="lazy"></iframe>
+          </div>` : ''}
+      </div>`;
+  }
+
+  // Actions (only for pending/needs_changes)
+  let actionsHTML = '';
+  if (canAct) {
+    actionsHTML = `
+      <div class="run-actions">
+        <button class="btn--approve" data-action="approve" data-id="${run.id}" type="button">✅ Approve</button>
+        <button class="btn--changes" data-action="changes" data-id="${run.id}" type="button">✏️ Request Changes</button>
+        <button class="btn--reject" data-action="reject" data-id="${run.id}" type="button">❌ Reject</button>
+      </div>`;
+  }
+
+  // Status bar for non-pending runs
+  let statusBarHTML = '';
+  if (!isPending) {
+    let statusInfo = `Status: ${run.status}`;
+    if (run.verified_at) statusInfo += ` on ${CRCAdmin.formatDate(run.verified_at)}`;
+    if (run.rejection_reason) statusInfo += ` — Reason: ${run.rejection_reason}`;
+    if (run.verifier_notes) statusInfo += ` — Notes: ${run.verifier_notes}`;
+    statusBarHTML = `<div class="run-status-bar">${statusInfo}</div>`;
+  }
+
+  return `
+    <div class="run-card" data-run-id="${run.id}">
+      <div class="run-card__header" data-toggle="${run.id}">
+        <div>
+          <div class="run-card__title-row">
+            <span class="run-card__game">${CRCAdmin.formatGameId(run.game_id)}</span>
+            ${CRCAdmin.statusBadge(run.status)}
+          </div>
+          <span class="run-card__runner">by ${run.runner_id}</span>
+        </div>
+        <div class="run-card__meta">
+          <span class="run-card__date">${CRCAdmin.formatDate(run.submitted_at)}</span>
+        </div>
+      </div>
+      <div class="run-card__body">
+        <div class="run-details">${detailsHTML}</div>
+        ${videoHTML}
+        ${actionsHTML}
+        ${statusBarHTML}
+      </div>
+    </div>`;
+}
+
+// =============================================================================
+// Game filter dropdown
+// =============================================================================
+
+function populateGameFilter() {
+  const gameIds = [...new Set(allRuns.map(r => r.game_id).filter(Boolean))].sort();
+  let options = '<option value="">All Games</option>';
+  for (const gid of gameIds) {
+    options += `<option value="${gid}">${CRCAdmin.formatGameId(gid)}</option>`;
+  }
+  gameFilterEl.innerHTML = options;
+  gameFilterEl.value = currentGameFilter;
+}
+
+// =============================================================================
+// Event listeners
+// =============================================================================
+
+function setupEventListeners() {
+  // Status tabs
+  statusTabsEl.addEventListener('click', (e) => {
+    const tab = e.target.closest('.filter-tab');
+    if (!tab) return;
+
+    statusTabsEl.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+
+    currentStatus = tab.dataset.status;
+    loadRuns();
+  });
+
+  // Game filter
+  gameFilterEl.addEventListener('change', () => {
+    currentGameFilter = gameFilterEl.value;
+    loadRuns();
+  });
+
+  // Refresh
+  refreshBtn.addEventListener('click', () => loadRuns());
+
+  // Card toggle (expand/collapse)
+  runsListEl.addEventListener('click', (e) => {
+    const toggle = e.target.closest('[data-toggle]');
+    if (toggle) {
+      const card = toggle.closest('.run-card');
+      card.classList.toggle('expanded');
+      return;
+    }
+
+    // Action buttons
+    const actionBtn = e.target.closest('[data-action]');
+    if (!actionBtn) return;
+
+    const action = actionBtn.dataset.action;
+    const runId = actionBtn.dataset.id;
+    const run = allRuns.find(r => r.id === runId);
+    if (!run) return;
+
+    if (action === 'approve') handleApprove(run, actionBtn);
+    if (action === 'reject') openRejectModal(run);
+    if (action === 'changes') openChangesModal(run);
+  });
+
+  // Modal close buttons
+  document.querySelectorAll('[data-close]').forEach(el => {
+    el.addEventListener('click', () => {
+      rejectModal.hidden = true;
+      changesModal.hidden = true;
+    });
+  });
+
+  // Reject modal: enable confirm when reason selected
+  rejectReasonEl.addEventListener('change', () => {
+    rejectConfirmBtn.disabled = !rejectReasonEl.value;
+  });
+
+  // Reject confirm
+  rejectConfirmBtn.addEventListener('click', handleRejectConfirm);
+
+  // Changes modal: enable confirm when notes entered
+  changesNotesEl.addEventListener('input', () => {
+    changesConfirmBtn.disabled = !changesNotesEl.value.trim();
+  });
+
+  // Changes confirm
+  changesConfirmBtn.addEventListener('click', handleChangesConfirm);
+
+  // Escape to close modals
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      rejectModal.hidden = true;
+      changesModal.hidden = true;
+    }
+  });
+}
+
+// =============================================================================
+// Actions
+// =============================================================================
+
+async function handleApprove(run, btn) {
+  if (!confirm(`Approve this run?\n\n${CRCAdmin.formatGameId(run.game_id)} by ${run.runner_id}\nCategory: ${run.category}`)) {
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Approving...';
+
+  const result = await CRCAdmin.approveRun(run.id);
+
+  if (result.error) {
+    alert('Error approving run: ' + result.error);
+    btn.disabled = false;
+    btn.textContent = '✅ Approve';
+    return;
+  }
+
+  // Update the card in-place
+  const card = document.querySelector(`.run-card[data-run-id="${run.id}"]`);
+  if (card) {
+    // Update the run in our local array
+    const idx = allRuns.findIndex(r => r.id === run.id);
+    if (idx >= 0) allRuns[idx] = result.data;
+
+    // Re-render just this card
+    card.outerHTML = renderRunCard(result.data);
+  }
+
+  // If we're on the pending tab, remove it after a brief flash
+  if (currentStatus === 'pending') {
+    setTimeout(() => {
+      const updatedCard = document.querySelector(`.run-card[data-run-id="${run.id}"]`);
+      if (updatedCard) {
+        updatedCard.style.transition = 'opacity 0.3s';
+        updatedCard.style.opacity = '0';
+        setTimeout(() => {
+          updatedCard.remove();
+          allRuns = allRuns.filter(r => r.id !== run.id);
+          if (allRuns.length === 0) runsEmptyEl.hidden = false;
+          // Decrement pending count
+          const count = parseInt(pendingCountEl.textContent) || 0;
+          if (count > 0) pendingCountEl.textContent = count - 1;
+        }, 300);
+      }
+    }, 800);
+  }
+}
+
+function openRejectModal(run) {
+  currentRejectId = run.id;
+  rejectInfoEl.textContent = `${CRCAdmin.formatGameId(run.game_id)} by ${run.runner_id}`;
+  rejectReasonEl.value = '';
+  rejectNotesEl.value = '';
+  rejectConfirmBtn.disabled = true;
+  rejectModal.hidden = false;
+}
+
+async function handleRejectConfirm() {
+  if (!currentRejectId || !rejectReasonEl.value) return;
+
+  rejectConfirmBtn.disabled = true;
+  rejectConfirmBtn.textContent = 'Rejecting...';
+
+  const reason = rejectReasonEl.value;
+  const notes = rejectNotesEl.value.trim();
+
+  const result = await CRCAdmin.rejectRun(currentRejectId, reason, notes);
+
+  if (result.error) {
+    alert('Error rejecting run: ' + result.error);
+    rejectConfirmBtn.disabled = false;
+    rejectConfirmBtn.textContent = 'Reject Run';
+    return;
+  }
+
+  rejectModal.hidden = true;
+
+  // Update card
+  const idx = allRuns.findIndex(r => r.id === currentRejectId);
+  if (idx >= 0) allRuns[idx] = result.data;
+
+  if (currentStatus === 'pending') {
+    const card = document.querySelector(`.run-card[data-run-id="${currentRejectId}"]`);
+    if (card) {
+      card.style.transition = 'opacity 0.3s';
+      card.style.opacity = '0';
+      setTimeout(() => {
+        card.remove();
+        allRuns = allRuns.filter(r => r.id !== currentRejectId);
+        if (allRuns.length === 0) runsEmptyEl.hidden = false;
+        const count = parseInt(pendingCountEl.textContent) || 0;
+        if (count > 0) pendingCountEl.textContent = count - 1;
+      }, 300);
+    }
+  } else {
+    const card = document.querySelector(`.run-card[data-run-id="${currentRejectId}"]`);
+    if (card) card.outerHTML = renderRunCard(result.data);
+  }
+
+  rejectConfirmBtn.textContent = 'Reject Run';
+  currentRejectId = null;
+}
+
+function openChangesModal(run) {
+  currentChangesId = run.id;
+  changesInfoEl.textContent = `${CRCAdmin.formatGameId(run.game_id)} by ${run.runner_id}`;
+  changesNotesEl.value = '';
+  changesConfirmBtn.disabled = true;
+  changesModal.hidden = false;
+}
+
+async function handleChangesConfirm() {
+  if (!currentChangesId || !changesNotesEl.value.trim()) return;
+
+  changesConfirmBtn.disabled = true;
+  changesConfirmBtn.textContent = 'Sending...';
+
+  const result = await CRCAdmin.requestChanges(currentChangesId, changesNotesEl.value.trim());
+
+  if (result.error) {
+    alert('Error: ' + result.error);
+    changesConfirmBtn.disabled = false;
+    changesConfirmBtn.textContent = 'Send Request';
+    return;
+  }
+
+  changesModal.hidden = true;
+
+  const idx = allRuns.findIndex(r => r.id === currentChangesId);
+  if (idx >= 0) allRuns[idx] = result.data;
+
+  if (currentStatus === 'pending') {
+    const card = document.querySelector(`.run-card[data-run-id="${currentChangesId}"]`);
+    if (card) {
+      card.style.transition = 'opacity 0.3s';
+      card.style.opacity = '0';
+      setTimeout(() => {
+        card.remove();
+        allRuns = allRuns.filter(r => r.id !== currentChangesId);
+        if (allRuns.length === 0) runsEmptyEl.hidden = false;
+        const count = parseInt(pendingCountEl.textContent) || 0;
+        if (count > 0) pendingCountEl.textContent = count - 1;
+      }, 300);
+    }
+  } else {
+    const card = document.querySelector(`.run-card[data-run-id="${currentChangesId}"]`);
+    if (card) card.outerHTML = renderRunCard(result.data);
+  }
+
+  changesConfirmBtn.textContent = 'Send Request';
+  currentChangesId = null;
+}
 </script>
