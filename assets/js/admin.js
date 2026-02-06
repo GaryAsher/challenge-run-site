@@ -28,6 +28,7 @@ let _assignedGames = [];   // game_id[] for verifiers
 let _profile = null;       // runner_profiles row
 let _modRecord = null;     // moderators row (if exists)
 let _initialized = false;
+let _workerUrl = null;     // Cloudflare Worker URL for /approve endpoint
 
 // =============================================================================
 // Initialization
@@ -40,6 +41,9 @@ let _initialized = false;
  */
 async function init() {
   if (_initialized) return _role;
+
+  // Pick up Worker URL from page context (set by turnstile.html or admin pages)
+  _workerUrl = window.CRC_RUN_SUBMIT_ENDPOINT || window.CRC_WORKER_URL || null;
 
   // Ensure auth is ready
   await CRCAuth.init();
@@ -245,6 +249,52 @@ async function approveRun(runId, notes = '') {
   const user = CRCAuth.getUser();
   if (!supabase || !user) return { error: 'Not connected' };
 
+  // If Worker URL is configured, call /approve → creates GitHub file + updates Supabase
+  if (_workerUrl) {
+    try {
+      const session = await supabase.auth.getSession();
+      const accessToken = session?.data?.session?.access_token;
+      if (!accessToken) {
+        return { error: 'No active session. Please sign in again.' };
+      }
+
+      const res = await fetch(`${_workerUrl}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          run_id: runId,
+          token: accessToken,
+          notes: notes || ''
+        })
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        console.error('[Admin] Worker /approve error:', result);
+        return { error: result.error || `Worker error (${res.status})` };
+      }
+
+      // Worker succeeded — fetch the updated row for the UI
+      const { data } = await supabase
+        .from('pending_runs')
+        .select('*')
+        .eq('id', runId)
+        .single();
+
+      return {
+        data: data || { id: runId, status: 'verified' },
+        filename: result.filename,
+        error: null
+      };
+    } catch (err) {
+      console.error('[Admin] Worker /approve fetch error:', err);
+      return { error: 'Failed to connect to approval service: ' + err.message };
+    }
+  }
+
+  // Fallback: direct Supabase update (no GitHub file created)
+  console.warn('[Admin] No Worker URL — approving in Supabase only (no GitHub file)');
   const { data, error } = await supabase
     .from('pending_runs')
     .update({
@@ -263,6 +313,13 @@ async function approveRun(runId, notes = '') {
   }
 
   return { data, error: null };
+}
+
+/**
+ * Set the Worker URL programmatically
+ */
+function setWorkerUrl(url) {
+  _workerUrl = url;
 }
 
 /**
@@ -671,6 +728,7 @@ export const CRCAdmin = {
   hasAccess,
   canManageGame,
   getAccessibleSections,
+  setWorkerUrl,
 
   getPendingRuns,
   getRun,
