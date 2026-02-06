@@ -56,6 +56,9 @@ defaults:
     values:
       layout: team
 
+# Cloudflare
+run_submit_endpoint: "https://crc-run-submissions.YOUR-SUBDOMAIN.workers.dev"
+
 exclude:
   - _queue_runs
   - _queue_games
