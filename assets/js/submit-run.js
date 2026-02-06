@@ -829,6 +829,28 @@
         if (section) section.style.display = "";
         fillSelect(characterSelect, chars, (c) => c.id, (c) => c.name, true, "Any / Not applicable");
       }
+
+      // Update required marker on character section title
+      const charTitleEl = $("character-title");
+      if (charTitleEl) {
+        const label = cc.label || "Character";
+        charTitleEl.innerHTML = cc.required
+          ? `${label} <span class="required-marker">*</span>`
+          : label;
+      }
+
+      // Update subtitle to indicate required vs optional
+      const charSubEl = $("character-sub");
+      if (charSubEl) {
+        if (cc.required && Array.isArray(cc.required_exclude_tiers) && cc.required_exclude_tiers.length > 0) {
+          charSubEl.textContent = "Required for most run types. Optional for some categories.";
+        } else if (cc.required) {
+          charSubEl.textContent = "Required. Select the option used for your run.";
+        } else {
+          charSubEl.textContent = "Optional. Select the option used for your run.";
+        }
+      }
+
       // Update characters for additional runners
       updateCharactersForAdditionalRunners(chars);
     } else {
@@ -1024,11 +1046,17 @@
       return { valid: false, message: "Pick at least one Standard Challenge and/or a Community Challenge.", firstError };
     }
 
-    // Check if character is required for this game/category
-    // Hades 2 requires character selection except for Chaos Trials (mini_challenges tier)
-    if (payload.game_id === "hades-2" && payload.category_tier !== "mini_challenges") {
-      if (!payload.character) {
-        showFieldError("characterSelect", "Weapon / Aspect selection is required for this category.");
+    // Check if character is required for this game/category (data-driven)
+    const game = getGameById(payload.game_id);
+    const cc = game && game.character_column ? game.character_column : {};
+    if (cc.required) {
+      // Check if this tier is excluded from the requirement
+      const excludedTiers = Array.isArray(cc.required_exclude_tiers) ? cc.required_exclude_tiers : [];
+      const tierExcluded = excludedTiers.includes(payload.category_tier);
+
+      if (!tierExcluded && !payload.character) {
+        const label = cc.label || "Character";
+        showFieldError("characterSelect", `${label} selection is required for this category.`);
         if (!firstError) firstError = "characterSelect";
       }
     }
