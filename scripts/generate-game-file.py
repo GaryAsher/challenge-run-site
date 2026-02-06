@@ -395,7 +395,10 @@ def main() -> None:
     timing_method = "RTA"
     if "IGT" in timing_primary.upper():
         timing_method = "IGT"
+    elif "LRT" in timing_primary.upper():
+        timing_method = "LRT"
     lines.append(f"timing_method: {timing_method}")
+    lines.append("rta_timing: true")
     
     # -------------------------------------------------------------------------
     # CHARACTER OPTIONS
@@ -404,7 +407,6 @@ def main() -> None:
     lines.append("character_column:")
     lines.append(f"  enabled: {'true' if char_enabled else 'false'}")
     lines.append(f"  label: {yaml_quote(char_label)}")
-    lines.append("  required: false")
     lines.append("")
     
     if char_enabled and character_options:
