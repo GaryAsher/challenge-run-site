@@ -29,9 +29,6 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] For Contributions, have these link to the appropriate achievements that the runner has been credited for.
 
 ### 2. Dashboard & Review System (Phase 2-3)
-- [x] Phase 1: ALTER `pending_runs`, Worker dual-writes to Supabase + GitHub
-- [x] Phase 2: Dashboard hub with role-based access (super_admin / admin / verifier)
-- [x] Phase 2: Pending Runs review page with approve / reject / request changes
 - [ ] Phase 3: On approve, auto-create GitHub run file via Worker `/approve` endpoint
 - [ ] Phase 3: Remove GitHub PR workflow for runs (Supabase becomes sole source of truth)
 - [ ] Phase 3: Wire up Pending Profiles page to use `admin.js` module
@@ -39,16 +36,9 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Phase 3: Notifications (Discord webhook on approve/reject)
 
 ### 3. Modded Game Support
-- [x] `generate-game-file.py` supports `is_modded` and `base_game`
-- [x] `game.html` layout shows modded banners and links between base/modded games
-- [x] `hollow-knight-modded.md` exists as working example
 - [ ] Build game submission UI in admin dashboard (replaces Google Form for new games)
 
 ### 4. Forms & Submissions
-- [x] Character validation is fully data-driven (no hardcoded game IDs)
-- [x] Parent/child categories render as optgroups
-- [x] Fixed character per category (`fixed_character`)
-- [x] RTA timing always available with per-category override
 - [ ] Test Discord Webhook for new game submissions
 - [ ] Test full end-to-end: form → Worker → Supabase → Dashboard → approve
 
