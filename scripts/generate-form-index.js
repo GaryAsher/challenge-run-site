@@ -15,7 +15,7 @@
  *   - standard_challenges: [{id,name}]
  *   - glitches: [{id,name}] (empty if glitches_relevant: false)
  *   - restrictions: [{id,name}]
- *   - character_column: {enabled,label}
+ *   - character_column: {enabled,label,required,required_exclude_tiers?}
  *   - characters: [{id,name}]
  */
 
@@ -287,12 +287,20 @@ function normalizeStringList(list) {
 
 function normalizeCharacterColumn(game) {
   if (game.character_column && typeof game.character_column === "object") {
-    return {
+    const col = {
       enabled: Boolean(game.character_column.enabled),
-      label: String(game.character_column.label || "Character").trim()
+      label: String(game.character_column.label || "Character").trim(),
+      required: Boolean(game.character_column.required),
     };
+
+    // Include tier exclusions for required validation
+    if (Array.isArray(game.character_column.required_exclude_tiers) && game.character_column.required_exclude_tiers.length > 0) {
+      col.required_exclude_tiers = game.character_column.required_exclude_tiers.map(t => String(t).trim());
+    }
+
+    return col;
   }
-  return { enabled: false, label: "Character" };
+  return { enabled: false, label: "Character", required: false };
 }
 
 // community_challenges has been deprecated - now part of restrictions_data
