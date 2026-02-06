@@ -388,6 +388,39 @@ async function getPendingProfiles(opts = {}) {
   return { data: data || [], count: count || 0, error: null };
 }
 
+/**
+ * Approve a pending profile (uses database RPC)
+ */
+async function approveProfile(profileId) {
+  const supabase = CRCAuth.getSupabaseClient();
+  if (!supabase || !isAdmin()) return { error: 'Not authorized' };
+
+  const { data, error } = await supabase.rpc('approve_profile', { pending_id: profileId });
+  if (error) {
+    console.error('[Admin] approveProfile error:', error);
+    return { error: error.message };
+  }
+  return { data, error: null };
+}
+
+/**
+ * Reject a pending profile (uses database RPC)
+ */
+async function rejectProfile(profileId, reason = '') {
+  const supabase = CRCAuth.getSupabaseClient();
+  if (!supabase || !isAdmin()) return { error: 'Not authorized' };
+
+  const { data, error } = await supabase.rpc('reject_profile', {
+    pending_id: profileId,
+    reason: reason || null
+  });
+  if (error) {
+    console.error('[Admin] rejectProfile error:', error);
+    return { error: error.message };
+  }
+  return { data, error: null };
+}
+
 // =============================================================================
 // Pending Games (admin only)
 // =============================================================================
@@ -411,6 +444,81 @@ async function getPendingGames(opts = {}) {
   const { data, count, error } = await query;
   if (error) return { data: [], count: 0, error: error.message };
   return { data: data || [], count: count || 0, error: null };
+}
+
+/**
+ * Approve a pending game
+ */
+async function approveGame(gameId, notes = '') {
+  const supabase = CRCAuth.getSupabaseClient();
+  const user = CRCAuth.getUser();
+  if (!supabase || !user || !isAdmin()) return { error: 'Not authorized' };
+
+  const { data, error } = await supabase
+    .from('pending_games')
+    .update({
+      status: 'approved',
+      reviewed_by: user.id,
+      reviewed_at: new Date().toISOString(),
+      reviewer_notes: notes || null
+    })
+    .eq('id', gameId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('[Admin] approveGame error:', error);
+    return { error: error.message };
+  }
+  return { data, error: null };
+}
+
+/**
+ * Reject a pending game
+ */
+async function rejectGame(gameId, reason, notes = '') {
+  const supabase = CRCAuth.getSupabaseClient();
+  const user = CRCAuth.getUser();
+  if (!supabase || !user || !isAdmin()) return { error: 'Not authorized' };
+
+  const { data, error } = await supabase
+    .from('pending_games')
+    .update({
+      status: 'rejected',
+      reviewed_by: user.id,
+      reviewed_at: new Date().toISOString(),
+      rejection_reason: reason,
+      reviewer_notes: notes || null
+    })
+    .eq('id', gameId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('[Admin] rejectGame error:', error);
+    return { error: error.message };
+  }
+  return { data, error: null };
+}
+
+/**
+ * Get a single pending game by ID
+ */
+async function getGame(gameId) {
+  const supabase = CRCAuth.getSupabaseClient();
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from('pending_games')
+    .select('*')
+    .eq('id', gameId)
+    .single();
+
+  if (error) {
+    console.error('[Admin] getGame error:', error);
+    return null;
+  }
+  return data;
 }
 
 // =============================================================================
@@ -572,7 +680,12 @@ export const CRCAdmin = {
 
   getCounts,
   getPendingProfiles,
+  approveProfile,
+  rejectProfile,
   getPendingGames,
+  approveGame,
+  rejectGame,
+  getGame,
 
   formatDate,
   formatTimestamp,
