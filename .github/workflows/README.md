@@ -80,29 +80,39 @@ promote-game.yml
 ### Run Submission Flow
 
 ```
-Google Form
+Submission Form
     │
     ▼
-Apps Script ─────► Creates file in _queue_runs/
+Cloudflare Worker ─────► Supabase (pending_runs)
     │
-    ▼ (Daily cron)
-promote-runs.yml
+    ▼ (Admin reviews in Dashboard)
+/admin/runs/ ─────► Approve / Reject / Request Changes
+    │
+    ▼ (On approve)
+Worker /approve ─────► GitHub API
     │
     ▼
-_runs/{game}/{run}.md
+_runs/{game}/{run}.md committed to main
 ```
 
 ## Reviewer/Moderator Workflow
 
-**For game submissions:**
-1. Check that CI passes (green checkmark) ✅
-2. Review the game details look correct
-3. Merge the PR → Game is automatically promoted
-
 **For run submissions:**
-1. Runs are auto-validated by CI when queued
-2. `promote-runs.yml` runs daily to move approved runs
-3. Moderators can manually trigger if needed
+1. Go to `/admin/runs/` on the dashboard
+2. Review the run details, video, and category
+3. Approve, Reject, or Request Changes
+
+**For profile submissions:**
+1. Go to `/admin/profiles/` on the dashboard
+2. Review the display name, runner ID, bio, and socials
+3. Approve, Reject, or Request Changes
+
+**For game submissions:**
+1. Go to `/admin/games/` on the dashboard
+2. Review the game details, categories, and challenge types
+3. Approve, Reject, or Request Changes
+
+All approval actions trigger Worker endpoints that create the corresponding files in the GitHub repository via the GitHub API.
 
 ## Script Dependencies
 
