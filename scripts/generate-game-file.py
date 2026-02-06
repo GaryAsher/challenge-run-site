@@ -11,6 +11,8 @@ This script reads from ENVIRONMENT VARIABLES (set by GitHub Actions):
   - CHALLENGES (required, comma-separated challenge types)
   - CHAR_ENABLED (optional, "true"/"false")
   - CHAR_LABEL (optional, e.g., "Weapon / Aspect")
+  - IS_MODDED (optional, "true"/"false" - marks this as a modded version of another game)
+  - BASE_GAME (optional, game_id of the parent game, required when IS_MODDED is true)
   - SUBMITTER (optional, Discord handle)
   - CREDIT_REQUESTED (optional, "true"/"false")
   - DETAILS_IN (optional, JSON string with additional fields)
@@ -21,7 +23,7 @@ Usage:
   python3 scripts/generate-game-file.py
 
 Section Order (matches website navigation):
-  1. Header (layout, game_id, status, reviewers)
+  1. Header (layout, game_id, status, reviewers, modded info)
   2. Game Info (name, aliases, genres, platforms)
   3. Tabs
   4. General Rules
@@ -160,6 +162,8 @@ def main() -> None:
     challenges_raw = os.environ.get("CHALLENGES", "").strip()
     char_enabled = as_bool(os.environ.get("CHAR_ENABLED", "false"))
     char_label = os.environ.get("CHAR_LABEL", "Character").strip()
+    is_modded = as_bool(os.environ.get("IS_MODDED", "false"))
+    base_game = os.environ.get("BASE_GAME", "").strip()
     submitter = os.environ.get("SUBMITTER", "").strip()
     credit_requested = as_bool(os.environ.get("CREDIT_REQUESTED", "false"))
     details_raw = os.environ.get("DETAILS_IN", "{}").strip()
@@ -179,6 +183,9 @@ def main() -> None:
         sys.exit(1)
     if not out_file:
         print("ERROR: OUT_FILE is required", file=sys.stderr)
+        sys.exit(1)
+    if is_modded and not base_game:
+        print("ERROR: BASE_GAME is required when IS_MODDED is true", file=sys.stderr)
         sys.exit(1)
 
     # Parse details JSON
@@ -224,6 +231,13 @@ def main() -> None:
     lines.append(f"game_id: {yaml_quote(game_id)}")
     lines.append('status: "Pending Review"')
     lines.append("reviewers: []")
+    
+    # Modded game info (if applicable)
+    if is_modded:
+        lines.append("")
+        lines.extend(section_header("MODDED GAME INFO"))
+        lines.append("is_modded: true")
+        lines.append(f"base_game: {yaml_quote(base_game)}")
     
     # -------------------------------------------------------------------------
     # GAME INFO
@@ -390,6 +404,7 @@ def main() -> None:
     lines.append("character_column:")
     lines.append(f"  enabled: {'true' if char_enabled else 'false'}")
     lines.append(f"  label: {yaml_quote(char_label)}")
+    lines.append("  required: false")
     lines.append("")
     
     if char_enabled and character_options:
