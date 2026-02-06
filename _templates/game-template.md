@@ -14,6 +14,13 @@ cover: /assets/img/games/FIRST_LETTER/GAME_ID_HERE.jpg
 cover_position: center
 
 timing_method: "RTA"
+rta_timing: true              # RTA is always available by default. Set false to disable.
+# Per-category timing overrides: add timing_method to individual categories
+# Example:
+#   full_runs:
+#     - slug: all-aspects
+#       label: "All Aspects"
+#       timing_method: RTA    # overrides game default for this category only
 
 tabs:
   overview: true
@@ -26,9 +33,16 @@ tabs:
 character_column:
   enabled: false
   label: "Character"
-  required: false
-  # required_exclude_tiers:    # Uncomment to exclude specific tiers from required validation
-  #   - mini_challenges         # e.g., character not required for mini-challenges
+  # When enabled: true, character selection is always required on the submit form.
+  # Use fixed_character on individual categories to mark auto-assigned characters.
+  # Example:
+  #   full_runs:
+  #     - slug: quest-any
+  #       label: "Quest Any%"
+  #       fixed_character: true           # auto-assigned, picker hidden
+  #     - slug: quest-specific
+  #       label: "Quest Specific"
+  #       fixed_character: "warrior"      # auto-fills with this slug, read-only
 
 # =============================================================================
 # CHALLENGE MODIFIERS (apply to any category)
