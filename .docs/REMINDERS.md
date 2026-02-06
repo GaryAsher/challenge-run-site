@@ -29,19 +29,12 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] For Contributions, have these link to the appropriate achievements that the runner has been credited for.
 
 ### 2. Modded Game Support
-- [ ] Update game submission form/workflow to support modded fields:
-  - `is_modded: true`
-  - `base_game: <parent-game-id>`
-  - `generate-game-file.py` needs these as inputs
-- [ ] Decide on approach: Add modded fields to Google Form, or build a site-based submission UI
+- [ ] Build game submission UI in admin dashboard.
 
 ### 2.5. Multi-Game Runs
 - [ ] Add multi-game run support using the same pattern as modded games:
   - `is_multi_game: true` flag in game front matter
   - `related_games: [game-id-1, game-id-2, ...]` to link individual games
-  - Badge on Games index page (e.g., "🎮 MULTI-GAME")
-  - Banner on individual game pages linking to the multi-game entry
-  - Banner on multi-game page linking back to each individual game
 - [ ] Add layout support in `game.html` for `is_multi_game` (mirror the `is_modded` banner logic)
 - [ ] Update `generate-game-pages.js` and `generate-run-category-pages.js` to handle multi-game entries
 - [ ] Update `games/index.html` to display multi-game badge
@@ -51,10 +44,6 @@ This document consolidates all reminders, future ideas, and planned features for
   - Check Discord Webhook by submitting a new game. Has been updated, but not tested.
 - [ ] New Run Submission 
   - Test variables. Update if needed.
-- [ ] Fix hardcoded character validation in `submit-run.js`:
-  - Line ~570: `if (payload.game_id === "hades-2")` should become data-driven
-  - Add `character_required: true/false` (or per-tier override) to game front matter
-  - JS reads this flag from form-index.json instead of checking game_id
 
 ### 3.5. Legal Document Review
 - [ ] Review Terms of Service line-by-line
