@@ -29,9 +29,6 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] For Contributions, have these link to the appropriate achievements that the runner has been credited for.
 
 ### 2. Modded Game Support
-- [ ] Allow modded versions of games
-- [ ] Link between modded and main game pages
-- [ ] "Modded" tag for categories
 - [ ] Update game submission form/workflow to support modded fields:
   - `is_modded: true`
   - `base_game: <parent-game-id>`
