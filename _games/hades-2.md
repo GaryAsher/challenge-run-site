@@ -160,34 +160,49 @@ mini_challenges:
     children:
       - slug: trial-of-origin
         label: "Trial of Origin"
+        fixed_character: true
       - slug: trial-of-salt
         label: "Trial of Salt"
+        fixed_character: true
       - slug: trial-of-humility
         label: "Trial of Humility"
+        fixed_character: true
       - slug: trial-of-vengeance
         label: "Trial of Vengeance"
+        fixed_character: true
       - slug: trial-of-moon
         label: "Trial of Moon"
+        fixed_character: true
       - slug: trial-of-vigor
         label: "Trial of Vigor"
+        fixed_character: true
       - slug: trial-of-flame
         label: "Trial of Flame"
+        fixed_character: true
       - slug: trial-of-gold
         label: "Trial of Gold"
+        fixed_character: true
       - slug: trial-of-fury
         label: "Trial of Fury"
+        fixed_character: true
       - slug: trial-of-precarity
         label: "Trial of Precarity"
+        fixed_character: true
       - slug: trial-of-heartache
         label: "Trial of Heartache"
+        fixed_character: true
       - slug: trial-of-haste
         label: "Trial of Haste"
+        fixed_character: true
       - slug: trial-of-blood
         label: "Trial of Blood"
+        fixed_character: true
       - slug: trial-of-doom
         label: "Trial of Doom"
+        fixed_character: true
       - slug: trial-of-destiny
         label: "Trial of Destiny"
+        fixed_character: true
 
 # =============================================================================
 # PLAYER-MADE CHALLENGES
@@ -214,9 +229,6 @@ timing_method: IGT
 character_column:
   enabled: true
   label: "Weapon / Aspect"
-  required: true
-  required_exclude_tiers:
-    - mini_challenges
 
 characters_data:
   - slug: witchs-staff-melinoe-aspect
