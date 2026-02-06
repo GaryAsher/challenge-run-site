@@ -28,11 +28,11 @@ This document consolidates all reminders, future ideas, and planned features for
   - Restructure UI
 - [ ] For Contributions, have these link to the appropriate achievements that the runner has been credited for.
 
-### 2.3  Dashboard & Review System
+### 2  Dashboard & Review System
 - [ ] On approve, auto-create GitHub run file via Worker `/approve` endpoint
-  - Write to pending_games. the Worker would need a /submit-game endpoint.
+  - Write to pending_games. the Worker would need a /submit-game endpoint
 - [ ] Remove GitHub PR workflow for runs
-  - Could be enhanced by reading _data/form-index.json
+  - Active games count could be enhanced by reading _data/form-index.json
 - [ ] Notifications (Discord webhook on approve/reject)
 
 ### 3. Modded Game Support
