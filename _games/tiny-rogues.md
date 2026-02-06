@@ -112,11 +112,13 @@ full_runs:
     label: "Quest Any%"
     description: |
       Beat a Quest with any amount of Cinder.
+    fixed_character: true
     
   - slug: quest-cinder-16
     label: "Quest Cinder 16"
     description: |
       Beat a Quest with all 16 Cinder modifiers active.
+    fixed_character: true
 
 # =============================================================================
 # MINI-CHALLENGES
@@ -142,7 +144,6 @@ timing_method: IGT
 character_column:
   enabled: true
   label: "Class"
-  required: false
 
 characters_data: []
 
