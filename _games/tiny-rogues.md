@@ -142,6 +142,7 @@ timing_method: IGT
 character_column:
   enabled: true
   label: "Class"
+  required: false
 
 characters_data: []
 
