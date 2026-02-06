@@ -15,8 +15,10 @@
  *   - standard_challenges: [{id,name}]
  *   - glitches: [{id,name}] (empty if glitches_relevant: false)
  *   - restrictions: [{id,name}]
- *   - character_column: {enabled,label,required,required_exclude_tiers?}
+ *   - character_column: {enabled,label}
  *   - characters: [{id,name}]
+ *   - timing_method: primary timing method (IGT, LRT, RTA)
+ *   - rta_timing: whether RTA is available (default true)
  */
 
 const fs = require("fs");
@@ -86,34 +88,62 @@ function loadGlobalChallenges() {
 
 /**
  * Normalize categories from a single tier array.
- * Returns array of {slug, name} with children flattened.
+ * Returns array of category objects. Parents with children get is_group: true
+ * and a children array; the parent itself is NOT selectable.
+ * Categories may include fixed_character and timing_method overrides.
  */
 function normalizeTierCategories(tierArray) {
   if (!Array.isArray(tierArray)) return [];
 
   const out = [];
 
-  function walk(node, parentSlug = "", parentLabel = "") {
-    const slug = String(node?.slug || node?.category_slug || "").trim();
-    if (!slug) return;
-
-    const label = String(node?.label || node?.name || node?.title || slug).trim();
-
-    const fullSlug = parentSlug ? `${parentSlug}/${slug}` : slug;
-    const fullLabel = parentLabel ? `${parentLabel}: ${label}` : label;
-
-    out.push({ slug: fullSlug, name: fullLabel });
-
-    if (Array.isArray(node.children)) {
-      for (const child of node.children) {
-        walk(child, fullSlug, fullLabel);
-      }
-    }
-  }
-
   for (const item of tierArray) {
     if (!item) continue;
-    walk(item);
+
+    const slug = String(item?.slug || item?.category_slug || "").trim();
+    if (!slug) continue;
+
+    const label = String(item?.label || item?.name || item?.title || slug).trim();
+
+    const entry = { slug, name: label };
+
+    // Per-category timing override
+    if (item.timing_method) {
+      entry.timing_method = String(item.timing_method).trim();
+    }
+
+    // Fixed/forced character for this category
+    if (item.fixed_character !== undefined && item.fixed_character !== null && item.fixed_character !== false) {
+      entry.fixed_character = item.fixed_character === true ? true : String(item.fixed_character).trim();
+    }
+
+    if (Array.isArray(item.children) && item.children.length > 0) {
+      // Parent group — not selectable, contains children
+      entry.is_group = true;
+      entry.children = [];
+
+      for (const child of item.children) {
+        const childSlug = String(child?.slug || "").trim();
+        if (!childSlug) continue;
+
+        const childLabel = String(child?.label || child?.name || childSlug).trim();
+        const childEntry = { slug: `${slug}/${childSlug}`, name: childLabel };
+
+        if (child.timing_method) {
+          childEntry.timing_method = String(child.timing_method).trim();
+        }
+        if (child.fixed_character !== undefined && child.fixed_character !== null && child.fixed_character !== false) {
+          childEntry.fixed_character = child.fixed_character === true ? true : String(child.fixed_character).trim();
+        }
+
+        entry.children.push(childEntry);
+      }
+
+      out.push(entry);
+    } else {
+      // Standalone category — directly selectable
+      out.push(entry);
+    }
   }
 
   return out;
@@ -231,9 +261,18 @@ function flattenCategoryTiers(tiers) {
 
   function addFromTier(tierName, tierCategories) {
     for (const cat of tierCategories) {
-      if (seen.has(cat.slug)) continue;
-      seen.add(cat.slug);
-      out.push({ slug: cat.slug, name: cat.name, tier: tierName });
+      if (cat.is_group && Array.isArray(cat.children)) {
+        // Flatten group children into the list
+        for (const child of cat.children) {
+          if (seen.has(child.slug)) continue;
+          seen.add(child.slug);
+          out.push({ slug: child.slug, name: `${cat.name}: ${child.name}`, tier: tierName });
+        }
+      } else {
+        if (seen.has(cat.slug)) continue;
+        seen.add(cat.slug);
+        out.push({ slug: cat.slug, name: cat.name, tier: tierName });
+      }
     }
   }
 
@@ -287,20 +326,12 @@ function normalizeStringList(list) {
 
 function normalizeCharacterColumn(game) {
   if (game.character_column && typeof game.character_column === "object") {
-    const col = {
+    return {
       enabled: Boolean(game.character_column.enabled),
-      label: String(game.character_column.label || "Character").trim(),
-      required: Boolean(game.character_column.required),
+      label: String(game.character_column.label || "Character").trim()
     };
-
-    // Include tier exclusions for required validation
-    if (Array.isArray(game.character_column.required_exclude_tiers) && game.character_column.required_exclude_tiers.length > 0) {
-      col.required_exclude_tiers = game.character_column.required_exclude_tiers.map(t => String(t).trim());
-    }
-
-    return col;
   }
-  return { enabled: false, label: "Character", required: false };
+  return { enabled: false, label: "Character" };
 }
 
 // community_challenges has been deprecated - now part of restrictions_data
@@ -350,8 +381,9 @@ function main() {
     const characters = normalizeSlugList(data.characters_data);
     
     // Timing methods (IGT, RTA, LRT, etc.)
-    const timing_method = String(data.timing_method || "").trim();
+    const timing_method = String(data.timing_method || "RTA").trim();
     const timing_method_secondary = String(data.timing_method_secondary || "").trim();
+    const rta_timing = data.rta_timing !== false; // default true
 
     games.push({
       game_id,
@@ -364,7 +396,8 @@ function main() {
       character_column,
       characters,
       timing_method,
-      timing_method_secondary
+      timing_method_secondary,
+      rta_timing
     });
   }
 
