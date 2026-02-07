@@ -626,8 +626,8 @@ async function loadLiveData() {
     
     const nameEl = document.getElementById('runner-display-name');
     if (nameEl && data.display_name) {
-      let html = data.display_name;
-      if (data.pronouns) html += ` <span class="runner-pronouns">(${data.pronouns})</span>`;
+      let html = escapeHtml(data.display_name);
+      if (data.pronouns) html += ` <span class="runner-pronouns">(${escapeHtml(data.pronouns)})</span>`;
       nameEl.innerHTML = html;
     }
     
