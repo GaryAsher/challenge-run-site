@@ -416,6 +416,29 @@ let currentRejectId = null;
 let currentChangesId = null;
 const PAGE_SIZE = 50;
 
+// SECURITY (Item 1): HTML entity encoder to prevent XSS via innerHTML
+function esc(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// SECURITY (Item 9): Validate URL starts with https://
+function safeUrl(url) {
+  if (!url || typeof url !== 'string') return '';
+  try {
+    const u = new URL(url);
+    if (u.protocol !== 'https:') return '';
+    return url;
+  } catch {
+    return '';
+  }
+}
+
 // =============================================================================
 // DOM refs
 // =============================================================================
@@ -502,7 +525,7 @@ async function loadRuns() {
   const result = await CRCAdmin.getPendingRuns(opts);
 
   if (result.error) {
-    runsListEl.innerHTML = `<div class="card"><p class="muted">Error loading runs: ${result.error}</p></div>`;
+    runsListEl.innerHTML = `<div class="card"><p class="muted">Error loading runs: ${esc(result.error)}</p></div>`;
     return;
   }
 
@@ -568,22 +591,27 @@ function renderRunCard(run) {
 
   const detailsHTML = details.map(d =>
     `<div class="run-detail">
-      <span class="run-detail__label">${d.label}</span>
-      <span class="run-detail__value">${d.value}</span>
+      <span class="run-detail__label">${esc(d.label)}</span>
+      <span class="run-detail__value">${esc(d.value)}</span>
     </div>`
   ).join('');
 
-  // Video section
+  // Video section (Item 9: validate URL before rendering)
   let videoHTML = '';
   if (run.video_url) {
-    videoHTML = `
-      <div class="run-video">
-        <a href="${run.video_url}" target="_blank" rel="noopener">${run.video_url}</a>
-        ${embedUrl ? `
-          <div class="run-video__embed">
-            <iframe src="${embedUrl}" allowfullscreen loading="lazy"></iframe>
-          </div>` : ''}
-      </div>`;
+    const safeVideoUrl = safeUrl(run.video_url);
+    if (safeVideoUrl) {
+      videoHTML = `
+        <div class="run-video">
+          <a href="${esc(safeVideoUrl)}" target="_blank" rel="noopener">${esc(run.video_url)}</a>
+          ${embedUrl ? `
+            <div class="run-video__embed">
+              <iframe src="${esc(embedUrl)}" allowfullscreen loading="lazy"></iframe>
+            </div>` : ''}
+        </div>`;
+    } else {
+      videoHTML = `<div class="run-video"><span class="muted">Invalid video URL</span></div>`;
+    }
   }
 
   // Actions (only for pending/needs_changes)
@@ -591,34 +619,34 @@ function renderRunCard(run) {
   if (canAct) {
     actionsHTML = `
       <div class="run-actions">
-        <button class="btn--approve" data-action="approve" data-id="${run.id}" type="button">✅ Approve</button>
-        <button class="btn--changes" data-action="changes" data-id="${run.id}" type="button">✏️ Request Changes</button>
-        <button class="btn--reject" data-action="reject" data-id="${run.id}" type="button">❌ Reject</button>
+        <button class="btn--approve" data-action="approve" data-id="${esc(run.id)}" type="button">✅ Approve</button>
+        <button class="btn--changes" data-action="changes" data-id="${esc(run.id)}" type="button">✏️ Request Changes</button>
+        <button class="btn--reject" data-action="reject" data-id="${esc(run.id)}" type="button">❌ Reject</button>
       </div>`;
   }
 
   // Status bar for non-pending runs
   let statusBarHTML = '';
   if (!isPending) {
-    let statusInfo = `Status: ${run.status}`;
-    if (run.verified_at) statusInfo += ` on ${CRCAdmin.formatDate(run.verified_at)}`;
-    if (run.rejection_reason) statusInfo += ` — Reason: ${run.rejection_reason}`;
-    if (run.verifier_notes) statusInfo += ` — Notes: ${run.verifier_notes}`;
+    let statusInfo = `Status: ${esc(run.status)}`;
+    if (run.verified_at) statusInfo += ` on ${esc(CRCAdmin.formatDate(run.verified_at))}`;
+    if (run.rejection_reason) statusInfo += ` — Reason: ${esc(run.rejection_reason)}`;
+    if (run.verifier_notes) statusInfo += ` — Notes: ${esc(run.verifier_notes)}`;
     statusBarHTML = `<div class="run-status-bar">${statusInfo}</div>`;
   }
 
   return `
-    <div class="run-card" data-run-id="${run.id}">
-      <div class="run-card__header" data-toggle="${run.id}">
+    <div class="run-card" data-run-id="${esc(run.id)}">
+      <div class="run-card__header" data-toggle="${esc(run.id)}">
         <div>
           <div class="run-card__title-row">
-            <span class="run-card__game">${CRCAdmin.formatGameId(run.game_id)}</span>
+            <span class="run-card__game">${esc(CRCAdmin.formatGameId(run.game_id))}</span>
             ${CRCAdmin.statusBadge(run.status)}
           </div>
-          <span class="run-card__runner">by ${run.runner_id}</span>
+          <span class="run-card__runner">by ${esc(run.runner_id)}</span>
         </div>
         <div class="run-card__meta">
-          <span class="run-card__date">${CRCAdmin.formatDate(run.submitted_at)}</span>
+          <span class="run-card__date">${esc(CRCAdmin.formatDate(run.submitted_at))}</span>
         </div>
       </div>
       <div class="run-card__body">
@@ -638,7 +666,7 @@ function populateGameFilter() {
   const gameIds = [...new Set(allRuns.map(r => r.game_id).filter(Boolean))].sort();
   let options = '<option value="">All Games</option>';
   for (const gid of gameIds) {
-    options += `<option value="${gid}">${CRCAdmin.formatGameId(gid)}</option>`;
+    options += `<option value="${esc(gid)}">${esc(CRCAdmin.formatGameId(gid))}</option>`;
   }
   gameFilterEl.innerHTML = options;
   gameFilterEl.value = currentGameFilter;
