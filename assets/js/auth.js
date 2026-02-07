@@ -44,7 +44,9 @@ function loadSupabaseClient() {
     }
     
     const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.3/dist/umd/supabase.min.js';
+    script.integrity = 'sha384-aRAaCbKYByQpx0fjPuC0PQ9P9moWMEsHXP9tyzP7tbyD5fPK6oTp+THsxdWiq02L';
+    script.crossOrigin = 'anonymous';
     script.async = true;
     script.onload = () => {
       // Small delay to ensure the library is fully initialized
