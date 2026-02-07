@@ -26,3 +26,4 @@ assets/js/*.min.js
 
 # Lighthouse
 .lighthouseci/
+supabase/.temp/
