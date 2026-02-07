@@ -33,15 +33,19 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const GITHUB_TOKEN = Deno.env.get("GITHUB_TOKEN");
 const GITHUB_REPO = Deno.env.get("GITHUB_REPO") || "GaryAsher/challenge-run-site";
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
 interface ProfileUpdatePayload {
   runner_id: string;
 }
 
 serve(async (req: Request) => {
-  // CORS headers
+  // SECURITY (Item 3): Restrict CORS to site origin only
+  const allowedOrigin = Deno.env.get("ALLOWED_ORIGIN") || "https://www.challengerun.net";
   const headers = {
-    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Origin": allowedOrigin,
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   };
 
@@ -51,6 +55,32 @@ serve(async (req: Request) => {
   }
 
   try {
+    // SECURITY (Item 3): Verify the caller has a valid Supabase JWT
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Missing or invalid authorization header" }),
+        { status: 401, headers: { ...headers, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Verify the JWT by calling Supabase auth
+    if (SUPABASE_URL) {
+      const token = authHeader.replace("Bearer ", "");
+      const verifyRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+        headers: {
+          "apikey": SUPABASE_SERVICE_ROLE_KEY || SUPABASE_ANON_KEY || "",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+      if (!verifyRes.ok) {
+        return new Response(
+          JSON.stringify({ error: "Invalid or expired token" }),
+          { status: 401, headers: { ...headers, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
     const payload: ProfileUpdatePayload = await req.json();
     const { runner_id } = payload;
 
@@ -91,9 +121,10 @@ serve(async (req: Request) => {
 
     if (!githubResponse.ok) {
       const errorText = await githubResponse.text();
+      // SECURITY (Item 15): Log details server-side only
       console.error("GitHub API error:", errorText);
       return new Response(
-        JSON.stringify({ error: "Failed to trigger sync", details: errorText }),
+        JSON.stringify({ error: "Failed to trigger sync" }),
         { status: 500, headers: { ...headers, "Content-Type": "application/json" } }
       );
     }
