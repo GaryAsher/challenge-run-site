@@ -428,9 +428,7 @@
 <script type="module">
 import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
 
-// Role definitions
-const SUPER_ADMIN_IDS = ['gary-asher'];  // Super Admins (you)
-const ADMIN_IDS = ['gary-asher'];         // Regular Admins
+// SECURITY (Item 4): No hardcoded admin IDs. All role checks use the database.
 
 async function initHeaderAuth() {
   try {
@@ -514,28 +512,25 @@ async function initHeaderAuth() {
 }
 
 async function getUserRole() {
-  const profile = CRCAuth.getProfile();
-  const metadata = CRCAuth.getProviderMetadata();
   const supabase = CRCAuth.getSupabaseClient?.();
   const user = CRCAuth.getUser();
   
-  // Check Super Admin
-  const runnerId = profile?.runner_id?.toLowerCase() || '';
-  const username = metadata?.providerUsername?.toLowerCase() || '';
-  
-  if (SUPER_ADMIN_IDS.includes(runnerId) || SUPER_ADMIN_IDS.some(id => username === id || username === id.replace(/-/g, '_'))) {
-    return 'super_admin';
-  }
-  
-  // Check Admin from database
+  // SECURITY (Item 4): All role checks come from the database
   if (supabase && user) {
-    const { data } = await supabase.from('runner_profiles').select('is_admin, role, verified_games').eq('user_id', user.id).single();
-    if (data?.is_admin) return 'admin';
-    if (data?.role === 'verifier' && data?.verified_games?.length > 0) return 'verifier';
+    try {
+      const { data } = await supabase.from('runner_profiles').select('is_admin, role, verified_games').eq('user_id', user.id).single();
+      if (data?.is_admin) return 'super_admin';
+      if (data?.role === 'admin') return 'admin';
+      if (data?.role === 'verifier' && data?.verified_games?.length > 0) return 'verifier';
+
+      // Also check moderators table
+      const { data: mod } = await supabase.from('moderators').select('can_manage_moderators, assigned_games').eq('user_id', user.id).maybeSingle();
+      if (mod?.can_manage_moderators) return 'admin';
+      if (mod && mod.assigned_games?.length > 0) return 'verifier';
+    } catch (err) {
+      console.error('[Header] Role check error:', err);
+    }
   }
-  
-  // Check if in ADMIN_IDS
-  if (ADMIN_IDS.includes(runnerId)) return 'admin';
   
   return 'none';
 }
@@ -581,13 +576,15 @@ async function loadVerifierGames(gameIds) {
     return;
   }
   
-  // Generate links for each assigned game
-  list.innerHTML = gameIds.map(gameId => `
-    <a href="/admin/runs/?game=${gameId}" class="admin-panel__item">
+  // Generate links for each assigned game (Item 1: escape gameId)
+  list.innerHTML = gameIds.map(gameId => {
+    const safe = gameId.replace(/[^a-z0-9-]/gi, '');
+    return `
+    <a href="/admin/runs/?game=${encodeURIComponent(safe)}" class="admin-panel__item">
       <span class="admin-panel__icon">🎮</span>
-      <span class="admin-panel__text">${gameId}</span>
-    </a>
-  `).join('');
+      <span class="admin-panel__text">${safe}</span>
+    </a>`;
+  }).join('');
 }
 
 async function loadUserSubmissions(el) {
