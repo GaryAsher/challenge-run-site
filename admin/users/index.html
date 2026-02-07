@@ -354,7 +354,6 @@ title: "User Data"
 <script type="module">
 import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
 
-const SUPER_ADMIN_IDS = ['gary-asher'];
 let supabase = null;
 let allUsers = [];
 let currentPage = 1;
@@ -363,6 +362,17 @@ const pageSize = 20;
 const authCheck = document.getElementById('auth-check');
 const notAuthorized = document.getElementById('not-authorized');
 const adminContent = document.getElementById('admin-content');
+
+// SECURITY (Item 1): HTML entity encoder to prevent XSS
+function esc(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 async function loadUsers() {
   if (!supabase) return;
@@ -383,7 +393,7 @@ async function loadUsers() {
     
     document.getElementById('user-count').textContent = allUsers.length + ' users';
   } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="7" class="muted">Error: ${e.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" class="muted">Error: ${esc(e.message)}</td></tr>`;
   }
 }
 
@@ -421,13 +431,13 @@ function renderUsers(filter = 'all', query = '') {
   
   tbody.innerHTML = pageUsers.map(user => `
     <tr>
-      <td><a href="/runners/${user.runner_id}/">${user.runner_id}</a></td>
-      <td>${user.display_name || '-'}</td>
-      <td class="email-cell">${user.email || 'N/A'}</td>
-      <td>${user.provider || '-'}</td>
-      <td><span class="role-badge ${user.role || 'user'}">${user.role || 'user'}</span></td>
-      <td>${user.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}</td>
-      <td><button class="btn btn--small" onclick="viewUser('${user.user_id}')">View</button></td>
+      <td><a href="/runners/${esc(user.runner_id)}/">${esc(user.runner_id)}</a></td>
+      <td>${esc(user.display_name || '-')}</td>
+      <td class="email-cell">${esc(user.email || 'N/A')}</td>
+      <td>${esc(user.provider || '-')}</td>
+      <td><span class="role-badge ${esc(user.role || 'user')}">${esc(user.role || 'user')}</span></td>
+      <td>${user.created_at ? esc(new Date(user.created_at).toLocaleDateString()) : '-'}</td>
+      <td><button class="btn btn--small" data-view-user="${esc(user.user_id)}">View</button></td>
     </tr>
   `).join('');
   
@@ -437,25 +447,29 @@ function renderUsers(filter = 'all', query = '') {
   document.getElementById('next-page').disabled = end >= users.length;
 }
 
-window.viewUser = async function(userId) {
+// SECURITY (Item 1): Use event delegation instead of inline onclick
+document.getElementById('user-table-body')?.addEventListener('click', function(e) {
+  const btn = e.target.closest('[data-view-user]');
+  if (!btn) return;
+  const userId = btn.dataset.viewUser;
   const user = allUsers.find(u => u.user_id === userId);
   if (!user) return;
   
   const body = document.getElementById('user-modal-body');
   body.innerHTML = `
-    <div class="detail-row"><span class="detail-label">User ID</span><span class="detail-value">${user.user_id}</span></div>
-    <div class="detail-row"><span class="detail-label">Runner ID</span><span class="detail-value">${user.runner_id}</span></div>
-    <div class="detail-row"><span class="detail-label">Display Name</span><span class="detail-value">${user.display_name || '-'}</span></div>
-    <div class="detail-row"><span class="detail-label">Email</span><span class="detail-value">${user.email || 'Not available'}</span></div>
-    <div class="detail-row"><span class="detail-label">Provider</span><span class="detail-value">${user.provider || '-'}</span></div>
-    <div class="detail-row"><span class="detail-label">Role</span><span class="detail-value">${user.role || 'user'}</span></div>
+    <div class="detail-row"><span class="detail-label">User ID</span><span class="detail-value">${esc(user.user_id)}</span></div>
+    <div class="detail-row"><span class="detail-label">Runner ID</span><span class="detail-value">${esc(user.runner_id)}</span></div>
+    <div class="detail-row"><span class="detail-label">Display Name</span><span class="detail-value">${esc(user.display_name || '-')}</span></div>
+    <div class="detail-row"><span class="detail-label">Email</span><span class="detail-value">${esc(user.email || 'Not available')}</span></div>
+    <div class="detail-row"><span class="detail-label">Provider</span><span class="detail-value">${esc(user.provider || '-')}</span></div>
+    <div class="detail-row"><span class="detail-label">Role</span><span class="detail-value">${esc(user.role || 'user')}</span></div>
     <div class="detail-row"><span class="detail-label">Is Admin</span><span class="detail-value">${user.is_admin ? 'Yes' : 'No'}</span></div>
-    <div class="detail-row"><span class="detail-label">Created</span><span class="detail-value">${user.created_at ? new Date(user.created_at).toLocaleString() : '-'}</span></div>
-    <div class="detail-row"><span class="detail-label">Bio</span><span class="detail-value">${user.bio || '-'}</span></div>
+    <div class="detail-row"><span class="detail-label">Created</span><span class="detail-value">${user.created_at ? esc(new Date(user.created_at).toLocaleString()) : '-'}</span></div>
+    <div class="detail-row"><span class="detail-label">Bio</span><span class="detail-value">${esc(user.bio || '-')}</span></div>
   `;
   
   document.getElementById('user-modal').hidden = false;
-};
+});
 
 // Close modal
 document.getElementById('user-modal-close')?.addEventListener('click', () => {
@@ -515,19 +529,30 @@ function downloadFile(content, filename, type) {
 (async function() {
   await CRCAuth.init();
   
-  const profile = CRCAuth.getProfile();
-  const metadata = CRCAuth.getProviderMetadata();
-  const runnerId = profile?.runner_id?.toLowerCase() || '';
-  const username = metadata?.providerUsername?.toLowerCase() || '';
-  
-  const isSuperAdmin = SUPER_ADMIN_IDS.includes(runnerId) || 
-                       SUPER_ADMIN_IDS.some(id => username === id || username === id.replace(/-/g, '_'));
-  
   authCheck.hidden = true;
   
-  if (CRCAuth.isSignedIn() && isSuperAdmin) {
+  if (!CRCAuth.isSignedIn()) {
+    notAuthorized.hidden = false;
+    return;
+  }
+
+  // SECURITY (Item 4): Check super admin from database, not hardcoded IDs
+  const supabaseClient = CRCAuth.getSupabaseClient?.();
+  const user = CRCAuth.getUser();
+  let isSuperAdmin = false;
+  
+  if (supabaseClient && user) {
+    const { data } = await supabaseClient
+      .from('runner_profiles')
+      .select('is_admin')
+      .eq('user_id', user.id)
+      .single();
+    isSuperAdmin = data?.is_admin === true;
+  }
+
+  if (isSuperAdmin) {
     adminContent.hidden = false;
-    supabase = CRCAuth.getSupabaseClient?.();
+    supabase = supabaseClient;
     loadUsers();
   } else {
     notAuthorized.hidden = false;
