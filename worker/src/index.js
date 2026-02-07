@@ -10,7 +10,9 @@
  *
  * Secrets (set via wrangler secret put):
  *   SUPABASE_URL, SUPABASE_SERVICE_KEY, GITHUB_TOKEN, GITHUB_REPO,
- *   TURNSTILE_SECRET, DISCORD_WEBHOOK_URL (optional), VERIFY_API_KEY (optional)
+ *   TURNSTILE_SECRET, VERIFY_API_KEY (optional)
+ *   DISCORD_WEBHOOK_RUNS (optional), DISCORD_WEBHOOK_GAMES (optional),
+ *   DISCORD_WEBHOOK_PROFILES (optional)
  */
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -257,11 +259,22 @@ async function githubCreateFile(env, filePath, content, commitMessage) {
 // DISCORD WEBHOOK
 // ═══════════════════════════════════════════════════════════════════════════════
 
-async function sendDiscordNotification(env, embed) {
-  if (!env.DISCORD_WEBHOOK_URL) return;
+/** Pick the right Discord webhook URL for the notification type */
+function getWebhookUrl(env, channel) {
+  switch (channel) {
+    case 'runs':     return env.DISCORD_WEBHOOK_RUNS;
+    case 'games':    return env.DISCORD_WEBHOOK_GAMES;
+    case 'profiles': return env.DISCORD_WEBHOOK_PROFILES;
+    default:         return env.DISCORD_WEBHOOK_RUNS || env.DISCORD_WEBHOOK_PROFILES || env.DISCORD_WEBHOOK_GAMES;
+  }
+}
+
+async function sendDiscordNotification(env, channel, embed) {
+  const webhookUrl = getWebhookUrl(env, channel);
+  if (!webhookUrl) return;
 
   try {
-    await fetch(env.DISCORD_WEBHOOK_URL, {
+    await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -702,7 +715,7 @@ async function handleRunSubmission(body, env, request) {
   }
 
   // Discord notification for new submission
-  await sendDiscordNotification(env, {
+  await sendDiscordNotification(env, 'runs', {
     title: '📥 New Run Submitted',
     color: 0xf0ad4e,
     fields: [
@@ -803,7 +816,7 @@ async function handleGameSubmission(body, env, request) {
   }
 
   // Discord notification
-  await sendDiscordNotification(env, {
+  await sendDiscordNotification(env, 'games', {
     title: '🎮 New Game Submitted',
     color: 0x5865f2,
     fields: [
@@ -879,7 +892,7 @@ async function handleApproveRun(body, env, request) {
     });
 
   // Discord notification
-  await sendDiscordNotification(env, {
+  await sendDiscordNotification(env, 'runs', {
     title: '✅ Run Approved',
     color: 0x28a745,
     fields: [
@@ -959,7 +972,7 @@ async function handleApproveProfile(body, env, request) {
     });
 
   // Discord notification
-  await sendDiscordNotification(env, {
+  await sendDiscordNotification(env, 'profiles', {
     title: '👤 Profile Approved',
     color: 0x28a745,
     fields: [
@@ -1027,7 +1040,7 @@ async function handleApproveGame(body, env, request) {
     });
 
   // Discord notification
-  await sendDiscordNotification(env, {
+  await sendDiscordNotification(env, 'games', {
     title: '🎮 Game Approved',
     color: 0x28a745,
     fields: [
@@ -1070,7 +1083,11 @@ async function handleNotify(body, env, request) {
   if (reason) fields.push({ name: 'Reason', value: reason, inline: false });
   if (notes) fields.push({ name: 'Notes', value: notes, inline: false });
 
-  await sendDiscordNotification(env, {
+  // Route to the right channel based on entity type
+  const channelMap = { run: 'runs', profile: 'profiles', game: 'games' };
+  const channel = channelMap[entity_type] || 'runs';
+
+  await sendDiscordNotification(env, channel, {
     title: `${icons[action] || '📢'} ${(action || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}: ${entity_name || entity_id || 'Unknown'}`,
     color: colors[action] || 0x6c757d,
     fields,
