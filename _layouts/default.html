@@ -5,13 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <!-- Content Security Policy -->
+  <!--
+    SECURITY NOTES:
+    - Item 2: 'unsafe-inline' for scripts is required for theme init and Turnstile callbacks.
+      TODO: Migrate inline scripts to external .js files or implement CSP nonces to remove 'unsafe-inline'.
+    - Item 16: Worker domain added to connect-src.
+    - Item 17: Add SRI hashes to cdn.jsdelivr.net scripts when updating dependencies.
+  -->
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
     script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://*.supabase.co https://challenges.cloudflare.com;
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
     font-src 'self' https://fonts.gstatic.com;
     img-src 'self' data: https: blob:;
-    connect-src 'self' https://*.supabase.co wss://*.supabase.co https://cdn.discordapp.com https://static-cdn.jtvnw.net;
+    connect-src 'self' https://*.supabase.co wss://*.supabase.co https://cdn.discordapp.com https://static-cdn.jtvnw.net https://*.workers.dev;
     frame-src https://challenges.cloudflare.com https://www.youtube.com https://youtube.com https://player.twitch.tv;
     frame-ancestors 'none';
     base-uri 'self';
