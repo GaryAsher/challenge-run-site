@@ -108,14 +108,9 @@ async function init() {
       return _role;
     }
 
-    // Fallback: check by username for bootstrap case
-    const metadata = CRCAuth.getProviderMetadata();
-    const username = metadata?.providerUsername?.toLowerCase() || '';
-    if (['gary_asher', 'gary-asher'].includes(username)) {
-      _role = 'super_admin';
-      _initialized = true;
-      return _role;
-    }
+    // SECURITY (Item 4): Removed hardcoded username fallback.
+    // Admin access must come from the database (is_admin flag or moderators table).
+    // If you need to bootstrap a new admin, set is_admin=true directly in Supabase.
 
   } catch (err) {
     console.error('[Admin] Init error:', err);
@@ -323,35 +318,6 @@ function setWorkerUrl(url) {
 }
 
 /**
- * Send a Discord notification via Worker (fire-and-forget)
- */
-async function sendNotification(action, entityType, entityName, entityId, reason, notes) {
-  if (!_workerUrl) return;
-  const supabase = CRCAuth.getSupabaseClient();
-  if (!supabase) return;
-
-  try {
-    const session = await supabase.auth.getSession();
-    const accessToken = session?.data?.session?.access_token;
-    if (!accessToken) return;
-
-    fetch(`${_workerUrl}/notify`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        token: accessToken,
-        action,
-        entity_type: entityType,
-        entity_name: entityName,
-        entity_id: entityId,
-        reason: reason || undefined,
-        notes: notes || undefined
-      })
-    }).catch(() => {}); // fire and forget
-  } catch { /* ignore */ }
-}
-
-/**
  * Reject a run
  */
 async function rejectRun(runId, reason, notes = '') {
@@ -377,10 +343,6 @@ async function rejectRun(runId, reason, notes = '') {
     return { error: error.message };
   }
 
-  // Send Discord notification
-  sendNotification('rejected', 'run',
-    `${data.game_id} by ${data.runner_id}`, runId, reason, notes);
-
   return { data, error: null };
 }
 
@@ -405,10 +367,6 @@ async function requestChanges(runId, reason) {
     .single();
 
   if (error) return { error: error.message };
-
-  sendNotification('needs_changes', 'run',
-    `${data.game_id} by ${data.runner_id}`, runId, null, reason);
-
   return { data, error: null };
 }
 
@@ -597,10 +555,6 @@ async function rejectProfile(profileId, reason, notes = '') {
     console.error('[Admin] rejectProfile error:', error);
     return { error: error.message };
   }
-
-  sendNotification('rejected', 'profile',
-    data.display_name || data.runner_id || profileId, profileId, reason, notes);
-
   return { data, error: null };
 }
 
@@ -625,10 +579,6 @@ async function requestProfileChanges(profileId, reason) {
     .single();
 
   if (error) return { error: error.message };
-
-  sendNotification('needs_changes', 'profile',
-    data.display_name || data.runner_id || profileId, profileId, null, reason);
-
   return { data, error: null };
 }
 
@@ -752,10 +702,6 @@ async function rejectGame(gameId, reason, notes = '') {
     console.error('[Admin] rejectGame error:', error);
     return { error: error.message };
   }
-
-  sendNotification('rejected', 'game',
-    data.game_name || data.game_id || gameId, gameId, reason, notes);
-
   return { data, error: null };
 }
 
@@ -780,10 +726,6 @@ async function requestGameChanges(gameId, reason) {
     .single();
 
   if (error) return { error: error.message };
-
-  sendNotification('needs_changes', 'game',
-    data.game_name || data.game_id || gameId, gameId, null, reason);
-
   return { data, error: null };
 }
 
@@ -958,7 +900,6 @@ export const CRCAdmin = {
   canManageGame,
   getAccessibleSections,
   setWorkerUrl,
-  sendNotification,
 
   getPendingRuns,
   getRun,
