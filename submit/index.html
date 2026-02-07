@@ -3,185 +3,713 @@ layout: default
 title: Submit a Game
 ---
 
+{% if site.run_submit_endpoint %}
+<script>
+  window.CRC_WORKER_URL = {{ site.run_submit_endpoint | jsonify }};
+</script>
+{% endif %}
+
 <div class="page-width submit-game-page">
   <h1>Submit a Game</h1>
-  <p class="muted mb-4">Request a new game to be added to the Challenge Run Community database.</p>
+  <p class="muted mb-4">Request a new game to be tracked on CRC. Our team will review your submission.</p>
 
-  <div class="card">
-    <h2 class="mb-2">Game Submission Request</h2>
-    <p class="muted mb-4">Fill out our form to request a new game. Our team will review your submission and add the game if it meets our criteria.</p>
-
-    <div class="submit-info">
-      <h3>What We're Looking For</h3>
-      <ul class="mb-4">
-        <li>Games with an active challenge run community</li>
-        <li>Clear definitions for challenge types (hitless, damageless, etc.)</li>
-        <li>Established run categories</li>
-        <li>At least a few documented runs</li>
-      </ul>
-
-      <a href="ADD GAME REQUEST FORM HERE" target="_blank" rel="noopener" class="btn btn--primary btn--large">
-        Open Game Request Form ↗
-      </a>
-      
-      <p class="muted mt-4">
-        <small>The form will open in a new tab. You'll need a Google account to submit.</small>
-      </p>
+  <!-- Auth gate -->
+  <div id="auth-gate" class="card">
+    <div class="auth-loading">
+      <div class="spinner"></div>
+      <p class="muted">Checking sign-in status...</p>
     </div>
+  </div>
 
-    <div class="card card--compact mt-6" style="background: var(--panel);">
-      <h3>Information We'll Need</h3>
-      <div class="submit-requirements">
-        <div class="requirement-group">
-          <h4>Game Info</h4>
-          <ul>
-            <li>Game name and aliases</li>
-            <li>Available platforms</li>
-            <li>Genre/tags</li>
-          </ul>
+  <div id="auth-required" class="card" hidden>
+    <h2>Sign In Required</h2>
+    <p class="muted mb-2">You need to be signed in to submit a game.</p>
+    <a href="/sign-in/?redirect=/submit/" class="btn btn--primary">Sign In</a>
+  </div>
+
+  <!-- Main form -->
+  <div id="game-form-wrap" hidden>
+    <form id="gameSubmitForm" class="card" novalidate>
+
+      <!-- GAME INFO -->
+      <fieldset class="sg-section">
+        <legend class="sg-section__title">Game Info</legend>
+
+        <div class="sg-field">
+          <label for="gameName" class="sg-label">Game Name <span class="req">*</span></label>
+          <input id="gameName" type="text" class="sg-input" placeholder="e.g. Hollow Knight" required />
+          <p class="sg-hint">The official name of the game.</p>
+          <p class="sg-error" id="gameName-error" hidden></p>
         </div>
-        <div class="requirement-group">
-          <h4>Challenge Details</h4>
-          <ul>
-            <li>Challenge types tracked</li>
-            <li>Run categories</li>
-            <li>Timing method (IGT/RTA)</li>
-          </ul>
+
+        <div class="sg-field">
+          <label for="gameId" class="sg-label">Game ID</label>
+          <input id="gameId" type="text" class="sg-input sg-input--mono" placeholder="auto-generated" pattern="[a-z0-9\-]+" />
+          <p class="sg-hint">URL-safe slug. Auto-generated from name — edit only if needed.</p>
+          <p class="sg-error" id="gameId-error" hidden></p>
         </div>
-        <div class="requirement-group">
-          <h4>Community</h4>
-          <ul>
-            <li>Discord server (if any)</li>
-            <li>Existing resources/guides</li>
-            <li>Estimated community size</li>
-          </ul>
+
+        <div class="sg-field">
+          <label for="gameAliases" class="sg-label">Aliases</label>
+          <input id="gameAliases" type="text" class="sg-input" placeholder="HK, Hollow Knight: Voidheart Edition" />
+          <p class="sg-hint">Comma-separated alternate names.</p>
         </div>
+
+        <div class="sg-field">
+          <label class="sg-label">Genres</label>
+          <div class="sg-chip-grid" id="genreGrid">
+            {% for genre in site.data.genres %}
+            <label class="sg-chip-toggle">
+              <input type="checkbox" name="genres" value="{{ genre[0] }}" />
+              <span>{{ genre[1].label }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="sg-field">
+          <label class="sg-label">Platforms</label>
+          <div class="sg-filter-bar">
+            <button type="button" class="sg-filter-btn active" data-platform-filter="all">All</button>
+            <button type="button" class="sg-filter-btn" data-platform-filter="console">Console</button>
+            <button type="button" class="sg-filter-btn" data-platform-filter="handheld">Handheld</button>
+            <button type="button" class="sg-filter-btn" data-platform-filter="pc">PC</button>
+            <button type="button" class="sg-filter-btn" data-platform-filter="mobile">Mobile</button>
+          </div>
+          <div class="sg-chip-grid" id="platformGrid">
+            {% for p in site.data.platforms %}
+            {% assign pid = p[0] %}
+            {% assign plabel = p[1].label %}
+            {% if pid contains "pc-" %}{% assign pcat = "pc" %}
+            {% elsif pid == "ios" or pid == "android" %}{% assign pcat = "mobile" %}
+            {% elsif pid contains "game-boy" or pid contains "-ds" or pid contains "3ds" or pid contains "psp" or pid contains "vita" or pid contains "lynx" or pid contains "game-gear" or pid contains "steam-deck" or pid contains "neo-geo-pocket" or pid contains "neo-geo-x" or pid contains "wonderswan" or pid contains "turboexpress" or pid contains "n-gage" or pid contains "nomad" or pid contains "rog-xbox" %}{% assign pcat = "handheld" %}
+            {% else %}{% assign pcat = "console" %}
+            {% endif %}
+            <label class="sg-chip-toggle" data-platform-cat="{{ pcat }}">
+              <input type="checkbox" name="platforms" value="{{ pid }}" />
+              <span>{{ plabel }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- CATEGORIES -->
+      <fieldset class="sg-section">
+        <legend class="sg-section__title">Run Categories</legend>
+
+        <div class="sg-field">
+          <label class="sg-label">Full Run Categories <span class="req">*</span></label>
+          <p class="sg-hint mb-1">Categories that require completing the game (e.g. Any%, All Bosses). Add at least one.</p>
+          <div id="fullRunsList" class="sg-dynamic-list"></div>
+          <button type="button" class="sg-add-btn" id="addFullRun">+ Add Category</button>
+          <p class="sg-error" id="fullRuns-error" hidden></p>
+        </div>
+
+        <div class="sg-field">
+          <label class="sg-label">Mini-Challenges</label>
+          <p class="sg-hint mb-1">In-game challenges that don't require an ending (e.g. Boss Rush). Optional.</p>
+          <div id="miniChallengesList" class="sg-dynamic-list"></div>
+          <button type="button" class="sg-add-btn" id="addMiniChallenge">+ Add Mini-Challenge</button>
+        </div>
+      </fieldset>
+
+      <!-- CHALLENGE TYPES -->
+      <fieldset class="sg-section">
+        <legend class="sg-section__title">Challenge Types</legend>
+        <p class="sg-hint mb-2">Select which challenge modifiers apply to this game.</p>
+        <div class="sg-chip-grid" id="challengeGrid">
+          {% for c in site.data.challenges %}
+          <label class="sg-chip-toggle">
+            <input type="checkbox" name="challenges" value="{{ c[0] }}" />
+            <span>{{ c[1].label }}</span>
+          </label>
+          {% endfor %}
+        </div>
+        <div class="sg-field mt-2">
+          <label for="customChallenges" class="sg-label">Custom Challenges</label>
+          <input id="customChallenges" type="text" class="sg-input" placeholder="e.g. Pacifist, No Shield" />
+          <p class="sg-hint">Comma-separated game-specific challenge types not in the list above.</p>
+        </div>
+      </fieldset>
+
+      <!-- GLITCH & TIMING -->
+      <fieldset class="sg-section">
+        <legend class="sg-section__title">Glitch Rules & Timing</legend>
+
+        <div class="sg-field">
+          <label class="sg-label">Glitch Categories</label>
+          <p class="sg-hint mb-1">Which glitch rule sets apply to this game?</p>
+          <div class="sg-chip-grid">
+            <label class="sg-chip-toggle">
+              <input type="checkbox" name="glitches" value="unrestricted" checked />
+              <span>Unrestricted</span>
+            </label>
+            <label class="sg-chip-toggle">
+              <input type="checkbox" name="glitches" value="nmg" />
+              <span>No Major Glitches</span>
+            </label>
+            <label class="sg-chip-toggle">
+              <input type="checkbox" name="glitches" value="glitchless" />
+              <span>Glitchless</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="sg-field">
+          <label for="timingMethod" class="sg-label">Primary Timing Method</label>
+          <select id="timingMethod" class="sg-select">
+            <option value="RTA">RTA (Real Time Attack)</option>
+            <option value="IGT">IGT (In-Game Time)</option>
+            <option value="LRT">LRT (Load-Removed Time)</option>
+          </select>
+        </div>
+      </fieldset>
+
+      <!-- CHARACTER -->
+      <fieldset class="sg-section">
+        <legend class="sg-section__title">Character / Weapon Selection</legend>
+
+        <div class="sg-field">
+          <label class="sg-toggle-row">
+            <input type="checkbox" id="charEnabled" />
+            <span>This game has character/weapon selection relevant to runs</span>
+          </label>
+        </div>
+
+        <div id="charOptions" hidden>
+          <div class="sg-field">
+            <label for="charLabel" class="sg-label">Column Label</label>
+            <input id="charLabel" type="text" class="sg-input" value="Character" placeholder="Character / Weapon / Aspect" />
+            <p class="sg-hint">What to call the selection (e.g. "Character", "Weapon / Aspect").</p>
+          </div>
+          <div class="sg-field">
+            <label for="charList" class="sg-label">Options</label>
+            <textarea id="charList" class="sg-textarea" rows="4" placeholder="One per line:&#10;Warrior&#10;Mage&#10;Rogue"></textarea>
+            <p class="sg-hint">One character/weapon per line.</p>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- MODDED -->
+      <fieldset class="sg-section">
+        <legend class="sg-section__title">Modded Game</legend>
+
+        <div class="sg-field">
+          <label class="sg-toggle-row">
+            <input type="checkbox" id="isModded" />
+            <span>This is a modded version of an existing game</span>
+          </label>
+        </div>
+
+        <div id="moddedOptions" hidden>
+          <div class="sg-field">
+            <label for="baseGame" class="sg-label">Base Game ID <span class="req">*</span></label>
+            <select id="baseGame" class="sg-select">
+              <option value="">Select the base game...</option>
+              {% for game in site.games %}
+              {% unless game.is_modded %}
+              <option value="{{ game.game_id }}">{{ game.game_name }}</option>
+              {% endunless %}
+              {% endfor %}
+            </select>
+            <p class="sg-hint">Which game is this a mod of?</p>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- RULES & DESCRIPTION -->
+      <fieldset class="sg-section">
+        <legend class="sg-section__title">Rules & Description</legend>
+
+        <div class="sg-field">
+          <label for="generalRules" class="sg-label">General Rules</label>
+          <textarea id="generalRules" class="sg-textarea" rows="5" placeholder="- Video Required: All submissions must include video proof.&#10;- No Cheats/Mods: ..."></textarea>
+          <p class="sg-hint">Game-specific rules. Leave blank to use site defaults.</p>
+        </div>
+
+        <div class="sg-field">
+          <label for="gameDescription" class="sg-label">Description</label>
+          <textarea id="gameDescription" class="sg-textarea" rows="3" placeholder="Brief description of the game and its challenge run scene."></textarea>
+        </div>
+      </fieldset>
+
+      <!-- SUBMITTER INFO -->
+      <fieldset class="sg-section">
+        <legend class="sg-section__title">Your Info</legend>
+        <div class="sg-field">
+          <label for="submitterHandle" class="sg-label">Your Name / Handle</label>
+          <input id="submitterHandle" type="text" class="sg-input" placeholder="e.g. Gary Asher" />
+          <p class="sg-hint">So we can credit you if this game gets added.</p>
+        </div>
+      </fieldset>
+
+      <!-- CAPTCHA -->
+      {% include turnstile.html %}
+
+      <!-- SUBMIT -->
+      <div class="sg-submit-area">
+        <p id="submitMsg" class="sg-msg" hidden></p>
+        <button type="submit" class="btn btn--primary btn--large" id="btnSubmitGame">
+          <span class="btn__text">Submit Game for Review</span>
+          <span class="btn__loading" hidden>
+            <span class="spinner spinner--sm"></span> Submitting...
+          </span>
+        </button>
       </div>
-    </div>
+    </form>
 
-    <div class="card card--compact mt-4">
-      <h3>Review Process</h3>
-      <p class="muted">Game requests are typically reviewed within [PLACEHOLDER_TEXT]. We'll reach out if we need more information. Once approved, your game will be added to the database and you can start submitting runs!</p>
+    <!-- What happens next -->
+    <div class="card mt-4">
+      <h3 style="margin-top:0">What Happens Next?</h3>
+      <p class="muted">Our team will review your submission and may reach out for clarifications. Once approved, the game page goes live and runners can start submitting runs. You'll see updates on the status in your dashboard.</p>
     </div>
   </div>
 </div>
 
 <style>
-/* Submit Game Page Styles */
-.submit-game-page h1 {
-  margin-bottom: 0.5rem;
-}
+.submit-game-page h1 { margin-bottom: 0.5rem; }
 
-.submit-game-page .card {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--panel);
-  padding: 1.5rem;
+/* Sections */
+.sg-section {
+  border: none;
+  padding: 0;
+  margin: 0 0 2rem 0;
 }
-
-.submit-game-page .card h2 {
-  color: var(--accent);
-  font-size: 1.25rem;
-  margin: 0 0 0.5rem 0;
-  padding-bottom: 0.75rem;
+.sg-section__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent, #6366f1);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--border);
 }
 
-.submit-game-page .card h3 {
+/* Fields */
+.sg-field { margin-bottom: 1.25rem; }
+.sg-label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.35rem;
+}
+.sg-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0.25rem 0 0 0;
+}
+.req { color: #dc3545; }
+
+.sg-input, .sg-select, .sg-textarea {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
   color: var(--fg);
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin: 1.5rem 0 0.75rem 0;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+.sg-input:focus, .sg-select:focus, .sg-textarea:focus {
+  outline: none;
+  border-color: var(--accent, #6366f1);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+.sg-input--mono { font-family: monospace; }
+.sg-textarea { resize: vertical; }
+
+.sg-error {
+  font-size: 0.8rem;
+  color: #dc3545;
+  margin: 0.25rem 0 0 0;
+}
+.has-error { border-color: #dc3545 !important; }
+
+/* Chip grid (genre/platform/challenge selection) */
+.sg-chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.sg-chip-toggle {
+  display: inline-flex;
+  cursor: pointer;
+}
+.sg-chip-toggle input { display: none; }
+.sg-chip-toggle span {
+  display: inline-block;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  background: var(--bg);
+  transition: all 0.12s;
+  user-select: none;
+}
+.sg-chip-toggle:hover span {
+  border-color: var(--fg);
+  color: var(--fg);
+}
+.sg-chip-toggle input:checked + span {
+  background: var(--accent, #6366f1);
+  color: white;
+  border-color: var(--accent, #6366f1);
 }
 
-.submit-game-page .card h4 {
-  color: var(--accent);
-  font-size: 0.95rem;
-  font-weight: 600;
-  margin: 0 0 0.5rem 0;
+/* Platform filter bar */
+.sg-filter-bar {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+.sg-filter-btn {
+  padding: 0.3rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.sg-filter-btn:hover { border-color: var(--fg); color: var(--fg); }
+.sg-filter-btn.active {
+  background: var(--accent, #6366f1);
+  color: white;
+  border-color: var(--accent, #6366f1);
 }
 
-.submit-game-page .card p {
-  margin: 0.5rem 0;
+/* Dynamic list (categories) */
+.sg-dynamic-list { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.5rem; }
+.sg-dynamic-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.sg-dynamic-row input {
+  flex: 1;
+  padding: 0.5rem 0.65rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--fg);
+  font-size: 0.85rem;
+}
+.sg-dynamic-row input:focus {
+  outline: none;
+  border-color: var(--accent, #6366f1);
+}
+.sg-remove-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  font-size: 0.9rem;
+}
+.sg-remove-btn:hover { border-color: #dc3545; color: #dc3545; }
+.sg-add-btn {
+  display: inline-block;
+  padding: 0.4rem 0.75rem;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.sg-add-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Toggle row */
+.sg-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.sg-toggle-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent, #6366f1);
 }
 
-.submit-game-page .card > p.muted {
+/* Submit area */
+.sg-submit-area {
+  text-align: center;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  margin-top: 1rem;
+}
+.sg-msg {
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
   margin-bottom: 1rem;
 }
+.sg-msg--error { background: rgba(220, 53, 69, 0.1); color: #dc3545; border: 1px solid rgba(220, 53, 69, 0.2); }
+.sg-msg--success { background: rgba(40, 167, 69, 0.1); color: #28a745; border: 1px solid rgba(40, 167, 69, 0.2); }
 
-.btn--large {
-  padding: 1rem 2rem;
-  font-size: 1.1rem;
-}
+.btn--large { padding: 0.85rem 2rem; font-size: 1rem; }
 
-.submit-info {
-  text-align: center;
-  padding: 1.5rem 0;
-  background: var(--surface-2);
-  border-radius: var(--radius-md);
-  margin: 1rem 0;
-}
+/* Auth loading */
+.auth-loading { text-align: center; padding: 2rem; }
 
-.submit-info h3 {
-  margin-top: 0;
-}
-
-.submit-info ul {
-  text-align: left;
-  display: inline-block;
-  margin-bottom: 1.5rem;
-}
-
-.submit-info li {
-  margin-bottom: 0.35rem;
-}
-
-.submit-requirements {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  padding: 1rem;
-}
-
-.requirement-group {
-  background: var(--surface-2);
-  padding: 1rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-}
-
-.requirement-group h4 {
-  margin: 0 0 0.75rem 0;
-  color: var(--accent);
-  font-size: 0.95rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.requirement-group ul {
-  margin: 0;
-  padding-left: 1.25rem;
-  font-size: 0.9rem;
-  color: var(--text-muted);
-}
-
-.requirement-group li {
-  margin-bottom: 0.35rem;
-}
-
-/* Card within card styling */
-.submit-game-page .card .card {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-}
-
-.submit-game-page .card .card h3 {
-  margin-top: 0;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.submit-game-page .card .card p {
-  margin: 0.75rem 0 0 0;
+/* Responsive */
+@media (max-width: 640px) {
+  .sg-chip-grid { gap: 0.25rem; }
+  .sg-chip-toggle span { font-size: 0.75rem; padding: 0.25rem 0.5rem; }
 }
 </style>
+
+<script type="module">
+import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
+
+const $ = id => document.getElementById(id);
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Auth check
+// ═════════════════════════════════════════════════════════════════════════════
+
+(async () => {
+  await CRCAuth.init();
+
+  if (!CRCAuth.isSignedIn()) {
+    $('auth-gate').hidden = true;
+    $('auth-required').hidden = false;
+    return;
+  }
+
+  $('auth-gate').hidden = true;
+  $('game-form-wrap').hidden = false;
+
+  // Pre-fill submitter handle
+  const meta = CRCAuth.getProviderMetadata();
+  if (meta?.displayName) {
+    $('submitterHandle').value = meta.displayName;
+  }
+
+  initForm();
+})();
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Form Logic
+// ═════════════════════════════════════════════════════════════════════════════
+
+function initForm() {
+  // Auto-generate game ID from name
+  const nameEl = $('gameName');
+  const idEl = $('gameId');
+  let idManuallyEdited = false;
+
+  nameEl.addEventListener('input', () => {
+    if (!idManuallyEdited) {
+      idEl.value = slugify(nameEl.value);
+    }
+  });
+  idEl.addEventListener('input', () => {
+    idManuallyEdited = idEl.value !== slugify(nameEl.value);
+  });
+
+  // Platform filter
+  document.querySelectorAll('[data-platform-filter]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-platform-filter]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const filter = btn.dataset.platformFilter;
+      document.querySelectorAll('#platformGrid .sg-chip-toggle').forEach(chip => {
+        chip.style.display = (filter === 'all' || chip.dataset.platformCat === filter) ? '' : 'none';
+      });
+    });
+  });
+
+  // Character toggle
+  $('charEnabled').addEventListener('change', () => {
+    $('charOptions').hidden = !$('charEnabled').checked;
+  });
+
+  // Modded toggle
+  $('isModded').addEventListener('change', () => {
+    $('moddedOptions').hidden = !$('isModded').checked;
+  });
+
+  // Dynamic list: Full runs
+  setupDynamicList('fullRunsList', 'addFullRun', 'Category name (e.g. Any%)');
+
+  // Dynamic list: Mini-challenges
+  setupDynamicList('miniChallengesList', 'addMiniChallenge', 'Challenge name (e.g. Boss Rush)');
+
+  // Form submit
+  $('gameSubmitForm').addEventListener('submit', handleSubmit);
+}
+
+function slugify(s) {
+  return (s || '').toLowerCase()
+    .replace(/['']/g, '')
+    .replace(/%/g, '-percent')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-{2,}/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Dynamic List Helper
+// ═════════════════════════════════════════════════════════════════════════════
+
+function setupDynamicList(listId, addBtnId, placeholder) {
+  const list = $(listId);
+  const addBtn = $(addBtnId);
+
+  function addRow(value = '') {
+    const row = document.createElement('div');
+    row.className = 'sg-dynamic-row';
+    row.innerHTML = `
+      <input type="text" value="${value}" placeholder="${placeholder}" />
+      <button type="button" class="sg-remove-btn" title="Remove">✕</button>
+    `;
+    row.querySelector('.sg-remove-btn').addEventListener('click', () => row.remove());
+    list.appendChild(row);
+    row.querySelector('input').focus();
+  }
+
+  addBtn.addEventListener('click', () => addRow());
+
+  // Start with one empty row for full runs
+  if (listId === 'fullRunsList') addRow();
+}
+
+function getListValues(listId) {
+  return Array.from(document.querySelectorAll(`#${listId} input`))
+    .map(el => el.value.trim())
+    .filter(Boolean);
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Submit
+// ═════════════════════════════════════════════════════════════════════════════
+
+function setMsg(text, type) {
+  const el = $('submitMsg');
+  el.textContent = text;
+  el.className = `sg-msg sg-msg--${type}`;
+  el.hidden = false;
+}
+
+async function handleSubmit(e) {
+  e.preventDefault();
+
+  // Clear errors
+  document.querySelectorAll('.sg-error').forEach(el => { el.hidden = true; });
+  document.querySelectorAll('.has-error').forEach(el => el.classList.remove('has-error'));
+  $('submitMsg').hidden = true;
+
+  // Validate
+  const gameName = $('gameName').value.trim();
+  if (!gameName) {
+    $('gameName').classList.add('has-error');
+    $('gameName-error').textContent = 'Game name is required.';
+    $('gameName-error').hidden = false;
+    $('gameName').focus();
+    return;
+  }
+
+  const fullRuns = getListValues('fullRunsList');
+  if (fullRuns.length === 0) {
+    $('fullRuns-error').textContent = 'At least one full run category is required.';
+    $('fullRuns-error').hidden = false;
+    return;
+  }
+
+  const gameId = $('gameId').value.trim() || slugify(gameName);
+  if (!gameId) {
+    $('gameId').classList.add('has-error');
+    $('gameId-error').textContent = 'Could not generate a valid game ID.';
+    $('gameId-error').hidden = false;
+    return;
+  }
+
+  if ($('isModded').checked && !$('baseGame').value) {
+    setMsg('Please select the base game for this mod.', 'error');
+    return;
+  }
+
+  // Collect form data
+  const getChecked = name =>
+    Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(el => el.value);
+
+  const customChallenges = ($('customChallenges').value || '')
+    .split(',').map(s => s.trim()).filter(Boolean);
+
+  const characters = ($('charList')?.value || '')
+    .split('\n').map(s => s.trim()).filter(Boolean);
+
+  const payload = {
+    game_name: gameName,
+    game_id: gameId,
+    aliases: ($('gameAliases').value || '').split(',').map(s => s.trim()).filter(Boolean),
+    genres: getChecked('genres'),
+    platforms: getChecked('platforms'),
+    timing_method: $('timingMethod').value,
+    full_run_categories: fullRuns,
+    mini_challenges: getListValues('miniChallengesList'),
+    challenges: [...getChecked('challenges'), ...customChallenges],
+    glitches: getChecked('glitches'),
+    restrictions: [],
+    character_enabled: $('charEnabled').checked,
+    character_label: $('charLabel')?.value?.trim() || 'Character',
+    characters,
+    is_modded: $('isModded').checked,
+    base_game: $('isModded').checked ? $('baseGame').value : null,
+    general_rules: $('generalRules').value.trim() || null,
+    description: $('gameDescription').value.trim() || null,
+    submitter_handle: $('submitterHandle').value.trim() || null,
+    submitter_user_id: CRCAuth.getUser()?.id || null,
+    turnstile_token: document.querySelector('[name="cf-turnstile-response"]')?.value || '',
+  };
+
+  // Submit
+  const endpoint = window.CRC_WORKER_URL;
+  if (!endpoint) {
+    setMsg('No submission endpoint configured. Please contact an admin.', 'error');
+    return;
+  }
+
+  const btn = $('btnSubmitGame');
+  btn.disabled = true;
+  btn.querySelector('.btn__text').hidden = true;
+  btn.querySelector('.btn__loading').hidden = false;
+
+  try {
+    const res = await fetch(`${endpoint}/submit-game`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      throw new Error(result.error || `Server error (${res.status})`);
+    }
+
+    setMsg('✓ Game submitted for review! You can track its status from the admin dashboard.', 'success');
+    $('gameSubmitForm').reset();
+    $('submitMsg').scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  } catch (err) {
+    setMsg(err.message || 'Submission failed. Please try again.', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.querySelector('.btn__text').hidden = false;
+    btn.querySelector('.btn__loading').hidden = true;
+  }
+}
+</script>
