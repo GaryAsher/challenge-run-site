@@ -80,35 +80,43 @@ async function init() {
       _initialized = true;
 
       // Also load moderator record if exists (for display)
-      const { data: mod } = await supabase
-        .from('moderators')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      _modRecord = mod;
+      try {
+        const { data: mod } = await supabase
+          .from('moderators')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        _modRecord = mod;
+      } catch (e) {
+        console.warn('[Admin] moderators table query failed (non-critical):', e.message);
+      }
 
       return _role;
     }
 
     // Check moderators table
-    const { data: mod } = await supabase
-      .from('moderators')
-      .select('*')
-      .eq('user_id', user.id)
-      .maybeSingle();
+    try {
+      const { data: mod } = await supabase
+        .from('moderators')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-    _modRecord = mod;
+      _modRecord = mod;
 
-    if (mod) {
-      if (mod.can_manage_moderators) {
-        _role = 'admin';
-        _assignedGames = [];
-      } else {
-        _role = 'verifier';
-        _assignedGames = mod.assigned_games || [];
+      if (mod) {
+        if (mod.can_manage_moderators) {
+          _role = 'admin';
+          _assignedGames = [];
+        } else {
+          _role = 'verifier';
+          _assignedGames = mod.assigned_games || [];
+        }
+        _initialized = true;
+        return _role;
       }
-      _initialized = true;
-      return _role;
+    } catch (e) {
+      console.warn('[Admin] moderators table query failed:', e.message);
     }
 
     // SECURITY (Item 4): Removed hardcoded username fallback.
@@ -196,14 +204,14 @@ function getAccessibleSections() {
     sections.push('runs');
   }
 
-  // Admins: runs, games, profiles
+  // Admins: profiles, games, runs
   if (role === 'admin') {
-    sections.push('runs', 'games', 'profiles');
+    sections.push('profiles', 'games', 'runs');
   }
 
   // Super admins: everything
   if (role === 'super_admin') {
-    sections.push('runs', 'games', 'profiles', 'users', 'financials', 'health', 'debug');
+    sections.push('profiles', 'games', 'runs', 'users', 'financials', 'health', 'debug');
   }
 
   return sections;
