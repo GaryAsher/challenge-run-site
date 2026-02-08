@@ -7,9 +7,6 @@ This document consolidates all reminders, future ideas, and planned features for
 ---
 
 ## Revisit
-### Admin Profile
-- [ ] Site Health:
-  - Performance Report needs to be revamped.
 ### Global
 - [ ] Icons for Admins, Super Admins, Verifiers. These would be attached to their profile.
 - [ ] Add default profile picture and default banner.
@@ -30,6 +27,17 @@ This document consolidates all reminders, future ideas, and planned features for
 ### 2  Dashboard & Review System
 - [ ] Remove GitHub PR workflow for runs
   - Active games count could be enhanced by reading _data/form-index.json
+  - Need to pick Frontend framework first
+- [ ] Site Health - API Performance:
+  - Click Slow Quety Details to see what happened
+  - Hisotrical Slow Queries to have a chart that shows data based on if 12h, 24h, 3d, etc was selected.
+    - Toggle to show/hide warnings. Critical is always shown.
+    - 5 rows per table
+    - tab pages to see others
+    - option to export table to csv
+- [ ] Dashboard
+  - Make title under Dashboard say the relevant role, instead of just Super Admin.
+  - Is User Management tab needed? (since we have supabase)
 
 ### 3. Modded Game Support
 - [ ] Build game submission UI in admin dashboard (replaces Google Form for new games)
@@ -53,27 +61,32 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ## Short-Term Priorities
 
-### 5. Glossary Page
-- [ ] Terms to define: Hit, Damage, Death, Hard CC, Soft CC, Hitless vs Damageless, Full Run, Mini-Challenge, etc.
-- [ ] Add content that would work as supporting documents.
-  - Ask creator first.
+### 5. SvelteKit Migration
+**Target: When site has 10+ active games or needs real-time features**
 
-### 6. Support Page
-- [ ] Add Staff section
-- [ ] Add FAQ content
-- [ ] Add contact links
+See [Migration Notes](#sveltekit-migration-notes) below for detailed planning.
 
-### 7. Spanish Language Support
+### 6. Spanish Language Support
 - [ ] Create `_data/i18n/es.yml` with translations
 - [ ] Add language toggle to header
 - [ ] Create Spanish versions of key pages or use Liquid variables
 - [ ] Request community translation help early
 
+### 7. Support Page
+- [ ] Add Staff section
+- [ ] Add FAQ content
+- [ ] Add contact links
+
+### 8. Glossary Page
+- [ ] Terms to define: Hit, Damage, Death, Hard CC, Soft CC, Hitless vs Damageless, Full Run, Mini-Challenge, etc.
+- [ ] Add content that would work as supporting documents.
+  - Ask creator first.
+
 ---
 
 ## Medium-Term Priorities
 
-### 8. Multi-Game Runs
+### 9. Multi-Game Runs
 
 **What it is:** A multi-game run is a single challenge attempt that spans multiple individual games played in sequence. For example, a "Hitless Hades Marathon" where a runner plays Hades 1 and Hades 2 back-to-back without taking a hit across both games, or a "Soulsborne Deathless" run that chains Dark Souls 1 → 2 → 3 → Elden Ring. The run is tracked as one entry with one video and one combined time, but it references all the individual games involved.
 
@@ -94,11 +107,6 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Update `generate-game-pages.js` and `generate-run-category-pages.js` to handle multi-game entries
 - [ ] Consider whether multi-game runs should also appear on individual game leaderboards (probably not — they'd have incomparable times)
 
-### 9. SvelteKit Migration
-**Target: When site has 10+ active games or needs real-time features**
-
-See [Migration Notes](#sveltekit-migration-notes) below for detailed planning.
-
 ### 10. Dark/Light Mode Toggle and Accessibility Features
 - [ ] Add light mode CSS variables
 - [ ] Add toggle button to header
@@ -111,12 +119,12 @@ See [Migration Notes](#sveltekit-migration-notes) below for detailed planning.
 - Focus on: rule changes, discussions, community milestones
 - NOT global submissions from anyone
 
-### 12. News & History Integration
+### 12. Forum Integration
+Decision needed: GitHub Discussions vs Discord
+
+### 13. News & History Integration
 - Requires News page activity first
 - Combine news posts with game history for unified timeline
-
-### 13. Forum Integration
-Decision needed: GitHub Discussions vs Discord
 
 ---
 
