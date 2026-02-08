@@ -85,6 +85,9 @@ title: "Debug & Diagnostics"
             <div class="role-card__badge" id="badge-user"></div>
           </div>
         </div>
+        
+        <!-- Active debug message -->
+        <div id="debug-active-msg" class="debug-active-msg" hidden></div>
       </div>
       
       <!-- Permissions Matrix -->
@@ -339,6 +342,35 @@ title: "Debug & Diagnostics"
   font-weight: 600;
 }
 
+/* Debug Active Message */
+.debug-active-msg {
+  margin-top: 1.25rem;
+}
+.debug-active-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: rgba(245, 158, 11, 0.08);
+  border: 2px solid #f59e0b;
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+.debug-active-icon { font-size: 1.5rem; flex-shrink: 0; margin-top: 2px; }
+.debug-return-btn {
+  margin-left: auto;
+  white-space: nowrap;
+  align-self: center;
+  background: #f59e0b;
+  color: #000;
+  border: none;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.debug-return-btn:hover { background: #d97706; }
+
 /* Tabs */
 .debug-tabs {
   display: flex;
@@ -575,6 +607,32 @@ function renderRoleState() {
     bannerRole.textContent = labels[debugRole] || debugRole;
   }
 
+  // Active state message box
+  const msgBox = document.getElementById('debug-active-msg');
+  if (isDebug) {
+    const labels = { admin: 'Admin', verifier: 'Verifier', user: 'User' };
+    msgBox.hidden = false;
+    msgBox.innerHTML = `
+      <div class="debug-active-inner">
+        <span class="debug-active-icon">🔍</span>
+        <div>
+          <strong>Now viewing as ${labels[debugRole] || debugRole}</strong>
+          <p class="muted" style="margin:0.25rem 0 0;font-size:0.85rem;">
+            Navigate to other admin pages (Runs, Profiles, etc.) to see what this role sees.
+            All submissions are disabled in debug mode.
+          </p>
+        </div>
+        <button type="button" class="btn btn--small debug-return-btn" id="debug-return-btn">↩ Return to Super Admin</button>
+      </div>`;
+    document.getElementById('debug-return-btn')?.addEventListener('click', () => {
+      CRCAdmin.setDebugRole(null);
+      renderRoleState();
+    });
+  } else {
+    msgBox.hidden = true;
+    msgBox.innerHTML = '';
+  }
+
   // Role cards
   document.querySelectorAll('.role-card').forEach(card => {
     const role = card.dataset.role;
@@ -582,12 +640,16 @@ function renderRoleState() {
     card.classList.toggle('active', isActive);
   });
 
-  // Session info
-  document.getElementById('session-actual-role').textContent = CRCAdmin.roleLabel(actualRole);
-  document.getElementById('session-effective-role').textContent = CRCAdmin.roleLabel(effectiveRole);
+  // Session info — fix operator precedence and null handling
+  const profile = CRCAdmin.getProfile();
+  const user = CRCAuth.getUser();
+  const userId = user?.id ? (user.id.slice(0, 8) + '...') : '—';
+
+  document.getElementById('session-actual-role').textContent = actualRole ? CRCAdmin.roleLabel(actualRole) : '—';
+  document.getElementById('session-effective-role').textContent = effectiveRole ? CRCAdmin.roleLabel(effectiveRole) : '—';
   document.getElementById('session-debug-mode').textContent = isDebug ? `On → ${debugRole}` : 'Off';
-  document.getElementById('session-runner-id').textContent = CRCAdmin.getProfile()?.runner_id || '—';
-  document.getElementById('session-user-id').textContent = CRCAuth.getUser()?.id?.slice(0, 8) + '...' || '—';
+  document.getElementById('session-runner-id').textContent = profile?.runner_id || '—';
+  document.getElementById('session-user-id').textContent = userId;
 }
 
 // =========================================================================
