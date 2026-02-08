@@ -21,9 +21,7 @@ This document consolidates all reminders, future ideas, and planned features for
 ## Immediate Priorities
 
 ### 1. Runner Profiles
-- [ ] Fix Structure of Bio
-- [ ] Completed Runs:
-  - Restructure UI
+- [ ] Review new profile: Banner, Member Since, Team Badges, Highlights, Fun Stats, Activity Tab, Player-Made Challenges
 
 ### 2  Dashboard & Review System
 - [ ] Remove GitHub PR workflow for runs
