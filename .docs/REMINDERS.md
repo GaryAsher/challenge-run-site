@@ -2,7 +2,7 @@
 
 This document consolidates all reminders, future ideas, and planned features for CRC.
 
-**Last updated:** 2026/02/06
+**Last updated:** 2026/02/08
 
 ---
 
