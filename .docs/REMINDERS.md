@@ -8,8 +8,6 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ## Revisit
 ### Admin Profile
-- [ ] Dashboard:
-  - Debug View needs to be revamped.
 - [ ] Site Health:
   - Performance Report needs to be revamped.
 ### Global
