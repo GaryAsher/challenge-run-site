@@ -459,8 +459,37 @@ layout: default
 </style>
 
 <script>
-// Lazy load backgrounds
-(function(){var e=document.querySelectorAll("[data-bg]");if("IntersectionObserver"in window){var o=new IntersectionObserver(function(e){e.forEach(function(e){if(e.isIntersecting){var t=e.target;t.style.backgroundImage="url('"+t.dataset.bg+"')";t.removeAttribute("data-bg");o.unobserve(t)}})},{rootMargin:"100px"});e.forEach(function(e){o.observe(e)})}else{e.forEach(function(e){e.style.backgroundImage="url('"+e.dataset.bg+"')"})}})();
+// Lazy load backgrounds (with fallback on broken images)
+(function(){
+  var fallback = '{{ "/assets/img/site/default-runner.png" | relative_url }}';
+  var els = document.querySelectorAll('[data-bg]');
+  function loadBg(el) {
+    var url = el.dataset.bg;
+    var img = new Image();
+    img.onload = function() {
+      el.style.backgroundImage = "url('" + url + "')";
+      el.removeAttribute('data-bg');
+    };
+    img.onerror = function() {
+      // Only apply fallback to avatar elements, not game covers
+      if (el.classList.contains('runner-avatar')) {
+        el.style.backgroundImage = "url('" + fallback + "')";
+      }
+      el.removeAttribute('data-bg');
+    };
+    img.src = url;
+  }
+  if ('IntersectionObserver' in window) {
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) { loadBg(entry.target); obs.unobserve(entry.target); }
+      });
+    }, { rootMargin: '100px' });
+    els.forEach(function(el) { obs.observe(el); });
+  } else {
+    els.forEach(loadBg);
+  }
+})();
 
 // Tab switching
 (function(){var t=Array.from(document.querySelectorAll(".runner-tabs .tab")),p=Array.from(document.querySelectorAll(".tab-panel[data-panel]"));function s(n){for(var e of t)e.classList.toggle("active",e.dataset.tab===n);for(var a of p)a.classList.toggle("active",a.dataset.panel===n)}t.forEach(function(e){e.addEventListener("click",function(){s(e.dataset.tab)})})})();
@@ -644,7 +673,12 @@ async function loadLiveData() {
     }
     
     const avatarEl = document.getElementById('runner-avatar');
-    if (avatarEl && data.avatar_url) avatarEl.style.backgroundImage = `url('${data.avatar_url}')`;
+    if (avatarEl && data.avatar_url) {
+      const img = new Image();
+      img.onload = () => { avatarEl.style.backgroundImage = `url('${data.avatar_url}')`; };
+      img.onerror = () => { avatarEl.style.backgroundImage = `url('{{ "/assets/img/site/default-runner.png" | relative_url }}')`; };
+      img.src = data.avatar_url;
+    }
     
     const bioSec = document.getElementById('runner-bio-section');
     const bioEl = document.getElementById('runner-bio');
