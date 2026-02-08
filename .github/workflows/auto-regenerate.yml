@@ -16,7 +16,6 @@ concurrency:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   regenerate:
@@ -84,61 +83,22 @@ jobs:
             echo "has_changes=false" >> $GITHUB_OUTPUT
           fi
 
-      # FIXED BRANCH NAME = One PR that gets updated, not multiple PRs
-      - name: Create or Update Pull Request
+      - name: Commit and push directly
         if: steps.changes.outputs.has_changes == 'true'
-        uses: peter-evans/create-pull-request@v6
-        id: cpr
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore: Regenerate pages [auto]"
-          # FIXED branch name - this is the key change!
-          # New runs will UPDATE this branch/PR instead of creating new ones
-          branch: auto/regenerate-pages
-          delete-branch: true
-          title: "🔄 Auto-regenerate pages"
-          body: |
-            ## Automated Page Regeneration
-
-            This PR was automatically created because source files changed that require page regeneration.
-
-            **Latest trigger:** ${{ github.event.head_commit.message }}
-            **Commit:** ${{ github.sha }}
-
-            ### What's included
-            - Game pages regenerated from `_games/*.md`
-            - Run category pages updated
-            - Form index rebuilt
-            - CODEOWNERS updated
-
-            ---
-            ℹ️ **Batching:** Multiple rapid commits are batched into this single PR.
-            
-            *This PR can be auto-merged if all checks pass.*
-          labels: |
-            automated
-            regenerate
-          # Update existing PR if the branch already exists
-          update-operation: update
-
-      - name: Enable Auto-Merge
-        if: steps.changes.outputs.has_changes == 'true' && steps.cpr.outputs.pull-request-number
         run: |
-          # Only try to enable auto-merge if PR was created/updated
-          gh pr merge ${{ steps.cpr.outputs.pull-request-number }} --auto --squash || true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: Auto-regenerate pages [skip ci]"
+          git push
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Summary
         run: |
           echo "## Auto-Regenerate Summary" >> $GITHUB_STEP_SUMMARY
           if [[ "${{ steps.changes.outputs.has_changes }}" == "true" ]]; then
-            echo "✅ Created/Updated PR #${{ steps.cpr.outputs.pull-request-number }}" >> $GITHUB_STEP_SUMMARY
-            echo "🔗 ${{ steps.cpr.outputs.pull-request-url }}" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "Auto-merge enabled - PR will merge when checks pass." >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**Tip:** Multiple rapid commits batch into the same PR." >> $GITHUB_STEP_SUMMARY
+            echo "✅ Changes committed directly to main" >> $GITHUB_STEP_SUMMARY
           else
             echo "✅ No changes needed" >> $GITHUB_STEP_SUMMARY
           fi
