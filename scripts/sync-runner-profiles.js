@@ -155,6 +155,18 @@ function profileToFrontMatter(profile) {
     lines.push(`avatar: /assets/img/runners/${firstLetter}/${profile.runner_id}.png`);
   }
   
+  // Banner
+  if (profile.banner_url) {
+    lines.push(`banner: ${profile.banner_url}`);
+  }
+  
+  // Joined date (from Supabase created_at)
+  if (profile.created_at) {
+    const d = new Date(profile.created_at);
+    const dateStr = d.toISOString().split('T')[0]; // YYYY-MM-DD
+    lines.push(`joined_date: "${dateStr}"`);
+  }
+  
   // Optional fields
   if (profile.pronouns) {
     lines.push(`pronouns: ${profile.pronouns}`);
