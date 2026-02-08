@@ -107,188 +107,161 @@ title: "Dashboard - Pending Profiles"
 <style>
 .profiles-admin { max-width: 960px; margin: 0 auto; }
 .profiles-loading { text-align: center; padding: 3rem; }
-
 .profiles-header { margin-bottom: 1.5rem; }
 .profiles-header h1 { margin: 0; }
 
 /* Filters */
 .profiles-filters { padding: 1rem; margin-bottom: 1.5rem; }
-.profiles-filters__row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-.profiles-filters__tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-}
-.filter-tab {
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 0.4rem 0.75rem;
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: all 0.15s;
-}
+.profiles-filters__row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; }
+.profiles-filters__tabs { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+.filter-tab { background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.75rem; font-size: 0.85rem; color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
 .filter-tab:hover { border-color: var(--fg); color: var(--fg); }
-.filter-tab.active {
-  background: var(--accent, #6366f1);
-  color: white;
-  border-color: var(--accent, #6366f1);
-}
-.filter-tab__count {
-  display: inline-block;
-  background: rgba(255,255,255,0.25);
-  padding: 0 6px;
-  border-radius: 10px;
-  font-size: 0.75rem;
-  margin-left: 4px;
-  font-weight: 700;
-}
-.profiles-filters__controls {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
+.filter-tab.active { background: var(--accent, #6366f1); color: white; border-color: var(--accent, #6366f1); }
+.filter-tab__count { display: inline-block; background: rgba(255,255,255,0.25); padding: 0 6px; border-radius: 10px; font-size: 0.75rem; margin-left: 4px; font-weight: 700; }
+.profiles-filters__controls { display: flex; gap: 0.5rem; align-items: center; }
 
-/* Profile cards */
-.profile-card {
+/* =============================================
+   Profile Preview Cards
+   Styled to match the runner profile page
+   ============================================= */
+.profile-preview-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
-  margin-bottom: 1rem;
-  overflow: hidden;
-}
-.profile-card__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.25rem;
-  cursor: pointer;
-  transition: background 0.1s;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-.profile-card__header:hover { background: rgba(255,255,255,0.02); }
-.profile-card__user {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-.profile-card__avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  object-fit: cover;
-  background: var(--bg);
-}
-.profile-card__name { font-weight: 700; font-size: 1.05rem; }
-.profile-card__id { font-size: 0.85rem; color: var(--text-muted); }
-.profile-card__meta {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}
-
-/* Expandable details */
-.profile-card__body {
-  display: none;
-  border-top: 1px solid var(--border);
-  padding: 1.25rem;
-}
-.profile-card.expanded .profile-card__body { display: block; }
-
-.profile-details {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1rem;
   margin-bottom: 1.25rem;
+  overflow: hidden;
+  transition: border-color 0.15s;
 }
-.profile-detail {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-.profile-detail__label {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
-}
-.profile-detail__value {
-  font-weight: 500;
-  word-break: break-word;
-}
+.profile-preview-card:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); }
 
-.profile-bio {
-  padding: 0.75rem;
+/* Banner + Avatar area */
+.pp-banner {
+  height: 80px;
+  background: linear-gradient(135deg, var(--accent, #6366f1), #1a1a2e);
+  position: relative;
+}
+.pp-header {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  padding: 0 1.25rem;
+  margin-top: -32px;
+  position: relative;
+  z-index: 1;
+}
+.pp-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 3px solid var(--surface);
+  background: var(--bg);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.pp-identity {
+  padding-bottom: 0.5rem;
+  min-width: 0;
+}
+.pp-name {
+  font-weight: 700;
+  font-size: 1.15rem;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.pp-pronouns { font-size: 0.8rem; color: var(--text-muted); font-weight: 400; }
+.pp-runner-id { font-size: 0.85rem; color: var(--text-muted); font-family: monospace; }
+.pp-status-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.pp-status-badge--pending { background: #f59e0b; color: #000; }
+.pp-status-badge--approved { background: #10b981; color: #fff; }
+.pp-status-badge--rejected { background: #ef4444; color: #fff; }
+.pp-status-badge--needs_changes { background: #3b82f6; color: #fff; }
+
+/* Body */
+.pp-body { padding: 1rem 1.25rem 1.25rem; }
+
+/* Bio */
+.pp-bio {
+  padding: 0.75rem 1rem;
   background: var(--bg);
   border-radius: 8px;
   font-size: 0.9rem;
-  margin-bottom: 1.25rem;
+  line-height: 1.5;
   white-space: pre-line;
+  margin-bottom: 1rem;
+  max-height: 120px;
+  overflow-y: auto;
 }
 
-.profile-socials {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  margin-bottom: 1.25rem;
+/* Details grid */
+.pp-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
 }
-.profile-social-tag {
+.pp-detail__label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+.pp-detail__value { font-weight: 500; font-size: 0.9rem; word-break: break-word; }
+
+/* Socials */
+.pp-socials {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.pp-social-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
   font-size: 0.8rem;
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 3px 10px;
+  border-radius: 20px;
+  padding: 4px 12px;
+  text-decoration: none;
+  color: var(--accent, #6366f1);
+  transition: border-color 0.15s;
 }
-.profile-social-tag a { color: var(--accent, #6366f1); text-decoration: none; }
-.profile-social-tag a:hover { text-decoration: underline; }
+.pp-social-pill:hover { border-color: var(--accent); }
+.pp-social-pill__icon { font-size: 0.9rem; }
 
-/* Action buttons */
-.profile-actions {
+/* Accent preview */
+.pp-accent-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+.pp-accent-swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Actions */
+.pp-actions {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
   padding-top: 1rem;
   border-top: 1px solid var(--border);
 }
-.btn--approve {
-  background: #28a745; color: white; border: none;
-  padding: 0.5rem 1.25rem; border-radius: 6px; font-weight: 600; cursor: pointer;
-}
-.btn--approve:hover { background: #218838; }
-.btn--approve:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.btn--reject {
-  background: transparent; border: 1px solid #dc3545; color: #dc3545;
-  padding: 0.5rem 1.25rem; border-radius: 6px; font-weight: 600; cursor: pointer;
-}
-.btn--reject:hover { background: #dc3545; color: white; }
-.btn--reject:disabled { opacity: 0.5; }
-
-.btn--changes {
-  background: transparent; border: 1px solid #17a2b8; color: #17a2b8;
-  padding: 0.5rem 1.25rem; border-radius: 6px; font-weight: 600; cursor: pointer;
-}
-.btn--changes:hover { background: #17a2b8; color: white; }
-.btn--changes:disabled { opacity: 0.5; }
-
-.btn--secondary {
-  background: var(--surface); border: 1px solid var(--border); color: var(--fg);
-  padding: 0.5rem 1.25rem; border-radius: 6px; cursor: pointer;
-}
-.btn--sm { padding: 0.35rem 0.75rem; font-size: 0.85rem; }
-
-/* Status bar */
-.profile-status-bar {
+/* Status bar (for non-pending) */
+.pp-status-bar {
   padding: 0.75rem 1rem;
   border-top: 1px solid var(--border);
   font-size: 0.85rem;
@@ -296,12 +269,21 @@ title: "Dashboard - Pending Profiles"
   background: rgba(255,255,255,0.02);
 }
 
+/* Action buttons */
+.btn--approve { background: #28a745; color: white; border: none; padding: 0.5rem 1.25rem; border-radius: 6px; font-weight: 600; cursor: pointer; }
+.btn--approve:hover { background: #218838; }
+.btn--approve:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn--reject { background: transparent; border: 1px solid #dc3545; color: #dc3545; padding: 0.5rem 1.25rem; border-radius: 6px; font-weight: 600; cursor: pointer; }
+.btn--reject:hover { background: #dc3545; color: white; }
+.btn--reject:disabled { opacity: 0.5; }
+.btn--changes { background: transparent; border: 1px solid #17a2b8; color: #17a2b8; padding: 0.5rem 1.25rem; border-radius: 6px; font-weight: 600; cursor: pointer; }
+.btn--changes:hover { background: #17a2b8; color: white; }
+.btn--changes:disabled { opacity: 0.5; }
+.btn--secondary { background: var(--surface); border: 1px solid var(--border); color: var(--fg); padding: 0.5rem 1.25rem; border-radius: 6px; cursor: pointer; }
+.btn--sm { padding: 0.35rem 0.75rem; font-size: 0.85rem; }
+
 /* Empty state */
-.profiles-empty {
-  text-align: center;
-  padding: 3rem 2rem;
-  color: var(--text-muted);
-}
+.profiles-empty { text-align: center; padding: 3rem 2rem; color: var(--text-muted); }
 
 /* Modal */
 .modal { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; }
@@ -312,21 +294,16 @@ title: "Dashboard - Pending Profiles"
 .modal__actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
 .form-field { margin-bottom: 1rem; }
 .form-field label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.35rem; }
-.form-field textarea, .form-field select {
-  width: 100%; padding: 0.5rem 0.6rem;
-  background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
-  color: var(--fg); font-size: 0.9rem;
-}
-.filter-select {
-  background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
-  padding: 0.4rem 0.6rem; font-size: 0.85rem; color: var(--fg);
-}
+.form-field textarea, .form-field select { width: 100%; padding: 0.5rem 0.6rem; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--fg); font-size: 0.9rem; }
+.filter-select { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.85rem; color: var(--fg); }
 .required { color: #dc3545; }
 
 @media (max-width: 640px) {
   .profiles-filters__row { flex-direction: column; align-items: stretch; }
   .profiles-filters__tabs { overflow-x: auto; flex-wrap: nowrap; }
-  .profile-details { grid-template-columns: 1fr 1fr; }
+  .pp-details { grid-template-columns: 1fr 1fr; }
+  .pp-header { gap: 0.75rem; }
+  .pp-avatar { width: 56px; height: 56px; }
 }
 </style>
 
@@ -348,6 +325,12 @@ let allProfiles = [];
 let currentRejectId = null;
 let currentChangesId = null;
 
+// Social platform icons & labels
+const SOCIAL_ICONS = {
+  twitch: '📺', youtube: '▶️', discord: '💬', twitter: '🐦',
+  bluesky: '🦋', instagram: '📷', speedruncom: '⏱️', steam: '🎮'
+};
+
 // =============================================================================
 // DOM refs
 // =============================================================================
@@ -361,14 +344,12 @@ const statusTabsEl = document.getElementById('status-tabs');
 const refreshBtn = document.getElementById('refresh-btn');
 const pendingCountEl = document.getElementById('count-pending');
 
-// Reject modal
 const rejectModal = document.getElementById('reject-modal');
 const rejectReasonEl = document.getElementById('reject-reason');
 const rejectNotesEl = document.getElementById('reject-notes');
 const rejectConfirmBtn = document.getElementById('reject-confirm-btn');
 const rejectInfoEl = document.getElementById('reject-modal-info');
 
-// Changes modal
 const changesModal = document.getElementById('changes-modal');
 const changesNotesEl = document.getElementById('changes-notes');
 const changesConfirmBtn = document.getElementById('changes-confirm-btn');
@@ -387,7 +368,6 @@ const changesInfoEl = document.getElementById('changes-modal-info');
   }
 
   showState('ready');
-
   document.getElementById('profiles-role-info').textContent =
     `${CRCAdmin.roleLabel(role)} — reviewing all profiles`;
 
@@ -450,7 +430,7 @@ function renderProfiles() {
 }
 
 // =============================================================================
-// Render a profile card
+// Render a profile card — styled like the runner profile page
 // =============================================================================
 
 function renderProfileCard(p) {
@@ -458,39 +438,49 @@ function renderProfileCard(p) {
   const isNeedsChanges = p.status === 'needs_changes';
   const canAct = isPending || isNeedsChanges;
 
-  // Details grid
-  const details = [];
-  details.push({ label: 'Runner ID', value: `@${esc(p.requested_runner_id)}` });
-  if (p.pronouns) details.push({ label: 'Pronouns', value: esc(p.pronouns) });
-  if (p.location) details.push({ label: 'Location', value: esc(p.location) });
-  if (p.games?.length) details.push({ label: 'Games', value: esc(p.games.join(', ')) });
-  details.push({ label: 'Submitted', value: CRCAdmin.formatTimestamp(p.submitted_at || p.created_at) });
+  // Accent color for banner gradient
+  const accent = p.accent_color || 'var(--accent, #6366f1)';
 
-  const detailsHTML = details.map(d =>
-    `<div class="profile-detail">
-      <span class="profile-detail__label">${d.label}</span>
-      <span class="profile-detail__value">${d.value}</span>
-    </div>`
-  ).join('');
+  // Status badge
+  const badgeClass = `pp-status-badge--${p.status}`;
+  const badgeLabel = (p.status || 'unknown').replace(/_/g, ' ');
+
+  // Avatar with robust fallback
+  const avatarSrc = p.avatar_url || '/assets/img/site/default-runner.png';
+
+  // Build socials pills
+  const socials = p.socials && typeof p.socials === 'object' ? Object.entries(p.socials) : [];
+  const filledSocials = socials.filter(([, v]) => v);
+  let socialsHTML = '';
+  if (filledSocials.length > 0) {
+    socialsHTML = `<div class="pp-socials">${filledSocials.map(([platform, url]) => {
+      const icon = SOCIAL_ICONS[platform] || '🔗';
+      const label = platform.charAt(0).toUpperCase() + platform.slice(1);
+      return `<a class="pp-social-pill" href="${esc(url)}" target="_blank" rel="noopener"><span class="pp-social-pill__icon">${icon}</span>${label}</a>`;
+    }).join('')}</div>`;
+  }
+
+  // Details
+  let detailsHTML = '<div class="pp-details">';
+  if (p.location) detailsHTML += `<div><div class="pp-detail__label">Location</div><div class="pp-detail__value">${esc(p.location)}</div></div>`;
+  if (p.status_message) detailsHTML += `<div><div class="pp-detail__label">Status</div><div class="pp-detail__value">${esc(p.status_message)}</div></div>`;
+  detailsHTML += `<div><div class="pp-detail__label">Submitted</div><div class="pp-detail__value">${CRCAdmin.formatTimestamp(p.submitted_at || p.created_at)}</div></div>`;
+  if (p.games?.length) detailsHTML += `<div><div class="pp-detail__label">Games</div><div class="pp-detail__value">${esc(p.games.join(', '))}</div></div>`;
+  detailsHTML += '</div>';
 
   // Bio
-  const bioHTML = p.bio ? `<div class="profile-bio">${esc(p.bio)}</div>` : '';
+  const bioHTML = p.bio ? `<div class="pp-bio">${esc(p.bio)}</div>` : '';
 
-  // Socials
-  const socials = p.socials && typeof p.socials === 'object' ? Object.entries(p.socials) : [];
-  const socialsHTML = socials.filter(([, v]) => v).length > 0
-    ? `<div class="profile-socials">
-        ${socials.filter(([, v]) => v).map(([k, v]) =>
-          `<span class="profile-social-tag"><a href="${esc(v)}" target="_blank" rel="noopener">${esc(k)}</a></span>`
-        ).join('')}
-      </div>`
+  // Accent color preview
+  const accentHTML = p.accent_color
+    ? `<div class="pp-accent-preview"><span class="pp-accent-swatch" style="background:${esc(p.accent_color)}"></span><span class="muted">${esc(p.accent_color)}</span></div>`
     : '';
 
   // Actions
   let actionsHTML = '';
   if (canAct) {
     actionsHTML = `
-      <div class="profile-actions">
+      <div class="pp-actions">
         <button class="btn--approve" data-action="approve" data-id="${p.id}" type="button">✅ Approve</button>
         <button class="btn--changes" data-action="changes" data-id="${p.id}" type="button">✏️ Request Changes</button>
         <button class="btn--reject" data-action="reject" data-id="${p.id}" type="button">❌ Reject</button>
@@ -500,35 +490,36 @@ function renderProfileCard(p) {
   // Status bar for non-pending
   let statusBarHTML = '';
   if (!isPending) {
-    let statusInfo = `Status: ${p.status}`;
-    if (p.reviewed_at) statusInfo += ` on ${CRCAdmin.formatDate(p.reviewed_at)}`;
-    if (p.rejection_reason) statusInfo += ` — Reason: ${p.rejection_reason}`;
-    if (p.reviewer_notes) statusInfo += ` — Notes: ${p.reviewer_notes}`;
-    statusBarHTML = `<div class="profile-status-bar">${statusInfo}</div>`;
+    let info = `Status: ${p.status}`;
+    if (p.reviewed_at) info += ` on ${CRCAdmin.formatDate(p.reviewed_at)}`;
+    if (p.rejection_reason) info += ` — Reason: ${p.rejection_reason}`;
+    if (p.reviewer_notes) info += ` — Notes: ${p.reviewer_notes}`;
+    statusBarHTML = `<div class="pp-status-bar">${info}</div>`;
   }
 
   return `
-    <div class="profile-card" data-profile-id="${p.id}">
-      <div class="profile-card__header" data-toggle="${p.id}">
-        <div class="profile-card__user">
-          <img class="profile-card__avatar" src="${esc(p.avatar_url || '/assets/img/site/default-runner.png')}" alt="" onerror="this.src='/assets/img/site/default-runner.png'" />
-          <div>
-            <div class="profile-card__name">${esc(p.display_name)}</div>
-            <div class="profile-card__id">@${esc(p.requested_runner_id)}</div>
+    <div class="profile-preview-card" data-profile-id="${p.id}">
+      <div class="pp-banner" style="background: linear-gradient(135deg, ${accent}, #1a1a2e);"></div>
+      <div class="pp-header">
+        <img class="pp-avatar" src="${esc(avatarSrc)}" alt="" loading="lazy"
+             onerror="this.onerror=null; this.src='/assets/img/site/default-runner.png';" crossorigin="anonymous" />
+        <div class="pp-identity">
+          <div class="pp-name">
+            ${esc(p.display_name)}
+            ${p.pronouns ? `<span class="pp-pronouns">${esc(p.pronouns)}</span>` : ''}
+            <span class="pp-status-badge ${badgeClass}">${badgeLabel}</span>
           </div>
-        </div>
-        <div class="profile-card__meta">
-          ${CRCAdmin.statusBadge(p.status)}
-          <span>${CRCAdmin.formatDate(p.submitted_at || p.created_at)}</span>
+          <div class="pp-runner-id">@${esc(p.requested_runner_id)}</div>
         </div>
       </div>
-      <div class="profile-card__body">
-        <div class="profile-details">${detailsHTML}</div>
+      <div class="pp-body">
         ${bioHTML}
+        ${detailsHTML}
         ${socialsHTML}
+        ${accentHTML}
         ${actionsHTML}
-        ${statusBarHTML}
       </div>
+      ${statusBarHTML}
     </div>`;
 }
 
@@ -537,7 +528,6 @@ function renderProfileCard(p) {
 // =============================================================================
 
 function setupEventListeners() {
-  // Status tabs
   statusTabsEl.addEventListener('click', (e) => {
     const tab = e.target.closest('.filter-tab');
     if (!tab) return;
@@ -547,17 +537,10 @@ function setupEventListeners() {
     loadProfiles();
   });
 
-  // Refresh
   refreshBtn.addEventListener('click', () => loadProfiles());
 
-  // Card toggle + action buttons
+  // Action buttons
   profilesListEl.addEventListener('click', (e) => {
-    const toggle = e.target.closest('[data-toggle]');
-    if (toggle) {
-      toggle.closest('.profile-card').classList.toggle('expanded');
-      return;
-    }
-
     const actionBtn = e.target.closest('[data-action]');
     if (!actionBtn) return;
 
@@ -571,7 +554,7 @@ function setupEventListeners() {
     if (action === 'changes') openChangesModal(profile);
   });
 
-  // Modal close buttons
+  // Modal close
   document.querySelectorAll('[data-close]').forEach(el => {
     el.addEventListener('click', () => {
       rejectModal.hidden = true;
@@ -620,7 +603,7 @@ async function handleApprove(profile, btn) {
     console.log(`[Profiles] Created file: _runners/${result.filename}`);
   }
 
-  const card = document.querySelector(`.profile-card[data-profile-id="${profile.id}"]`);
+  const card = document.querySelector(`.profile-preview-card[data-profile-id="${profile.id}"]`);
   if (card) {
     const idx = allProfiles.findIndex(p => p.id === profile.id);
     if (idx >= 0) allProfiles[idx] = result.data;
@@ -629,7 +612,7 @@ async function handleApprove(profile, btn) {
 
   if (currentStatus === 'pending') {
     setTimeout(() => {
-      const updatedCard = document.querySelector(`.profile-card[data-profile-id="${profile.id}"]`);
+      const updatedCard = document.querySelector(`.profile-preview-card[data-profile-id="${profile.id}"]`);
       if (updatedCard) {
         updatedCard.style.transition = 'opacity 0.3s';
         updatedCard.style.opacity = '0';
@@ -674,9 +657,9 @@ async function handleRejectConfirm() {
   if (idx >= 0) allProfiles[idx] = result.data;
 
   if (currentStatus === 'pending') {
-    fadeOutAndRemove(`.profile-card[data-profile-id="${currentRejectId}"]`, currentRejectId);
+    fadeOutAndRemove(`.profile-preview-card[data-profile-id="${currentRejectId}"]`, currentRejectId);
   } else {
-    const card = document.querySelector(`.profile-card[data-profile-id="${currentRejectId}"]`);
+    const card = document.querySelector(`.profile-preview-card[data-profile-id="${currentRejectId}"]`);
     if (card) card.outerHTML = renderProfileCard(result.data);
   }
 
@@ -712,9 +695,9 @@ async function handleChangesConfirm() {
   if (idx >= 0) allProfiles[idx] = result.data;
 
   if (currentStatus === 'pending') {
-    fadeOutAndRemove(`.profile-card[data-profile-id="${currentChangesId}"]`, currentChangesId);
+    fadeOutAndRemove(`.profile-preview-card[data-profile-id="${currentChangesId}"]`, currentChangesId);
   } else {
-    const card = document.querySelector(`.profile-card[data-profile-id="${currentChangesId}"]`);
+    const card = document.querySelector(`.profile-preview-card[data-profile-id="${currentChangesId}"]`);
     if (card) card.outerHTML = renderProfileCard(result.data);
   }
 
