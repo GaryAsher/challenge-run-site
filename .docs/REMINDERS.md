@@ -11,6 +11,11 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Icons for Admins, Super Admins, Verifiers. These would be attached to their profile.
 - [ ] Add default profile picture and default banner.
 
+### 2  Dashboard & Review System
+- [ ] Remove GitHub PR workflow for runs
+  - Active games count could be enhanced by reading _data/form-index.json
+  - Need to pick Frontend framework first
+
 ---
 
 # Priority Roadmap
@@ -19,15 +24,21 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ### 1. Runner Profiles
 - [ ] Review functionality for: 
-  - Member Since
   - Team Badges
   - Highlights
   - Player-Made Challenges
+- [ ] https://www.challengerun.net/profile/settings/
+  - Allow users to see their cookie settings and adjust them.
+- [ ] https://www.challengerun.net/profile/edit/
+  - Personal Goals
+    - For Game box, allow search across database for all games. start search after 3 characters are typed.
+    - For Status, if "In Progress" is selected, do not show Date Completed or just grey it out.
+    - Personal Goals not showing on user profile after they are made?
+  - [ ] Run Statistics
+    - Remove Run History block that is below "Fun statistics"
+  - [ ] Move Activity tab to the end.
 
 ### 2  Dashboard & Review System
-- [ ] Remove GitHub PR workflow for runs
-  - Active games count could be enhanced by reading _data/form-index.json
-  - Need to pick Frontend framework first
 - [ ] Site Health - API Performance:
   - Click Slow Quety Details to see what happened
   - Hisotrical Slow Queries to have a chart that shows data based on if 12h, 24h, 3d, etc was selected.
