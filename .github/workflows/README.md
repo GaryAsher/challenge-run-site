@@ -4,7 +4,7 @@ This folder contains automated workflows for the Challenge Run site.
 
 ## Workflow Overview
 
-### Core CI (One Check to Rule Them All)
+### Core CI
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
@@ -12,155 +12,94 @@ This folder contains automated workflows for the Challenge Run site.
 
 The CI workflow is the only check reviewers/moderators need to watch. If it passes, the submission is valid.
 
-### Submission Processing
+### Page Generation
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| `auto-regenerate.yml` | Push to main (when game/run files change) | Auto-runs `npm run generate` and commits updated pages |
+| `check-form-index.yml` | Push to main | Validates form-index.json is current |
+
+### Submission & Sync
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
 | `new-game-submission.yml` | `repository_dispatch` from Google Forms | Creates game files in `_queue_games/` from form submissions |
+| `hydrate-new-game-pr.yml` | PR with new game files | Generates game pages for new game PRs |
+| `sync-runner-profiles.yml` | Scheduled / manual | Syncs runner profiles between Supabase and GitHub |
 
-### Promotion (Queue → Live)
-
-| Workflow | Trigger | Purpose |
-|----------|---------|---------|
-| `promote-game.yml` | PR merged to `_queue_games/` | Moves approved games from queue to live, generates pages |
-| `promote-runs.yml` | Daily cron (midnight UTC) or manual | Batch-promotes approved runs from `_queue_runs/` to `_runs/` |
-
-### Quality Checks
+### Quality & Monitoring
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
 | `lighthouse.yml` | Push to main | Runs Lighthouse accessibility/performance tests |
-| `generate-run-categories.yml` | Manual only | Regenerates run category pages (rarely needed) |
+| `process-report.yml` | Issue/form submission | Processes community reports |
 
-### Utilities
+## Submission Flows
 
-| Workflow | Trigger | Purpose |
-|----------|---------|---------|
-| `create-package-lock.yml` | Manual only | Updates `package-lock.json` |
-
-## What CI Validates
-
-The CI workflow runs these checks in order:
-
-1. **YAML Syntax** - Ensures all YAML files are valid
-2. **Banned Terms** - Blocks spam, slurs, and malicious content (see `_data/banned-terms.yml`)
-3. **Schema Validation** - Validates game/runner/run file structure
-4. **Run Validation** - Validates queued runs in `_queue_runs/`
-5. **Duplicate Detection** - Warns if a game already exists (for new game PRs)
-6. **Generated Pages Check** - Verifies run category pages are current
-
-If any check fails, the PR cannot be merged. This gives reviewers/moderators confidence that passing CI means the submission is valid.
-
-## Flow Diagrams
-
-### Game Submission Flow
+### Run Submission (Current)
 
 ```
-Google Form
+Site form (challengerun.net)
     │
     ▼
-Apps Script ─────► repository_dispatch
+Cloudflare Worker POST /
     │
     ▼
-new-game-submission.yml
+Supabase pending_runs table
     │
-    ▼
-_queue_games/{game}.md ─────► PR created
+    ▼ (Admin reviews at /admin/runs/)
+Worker POST /approve
     │
-    ▼ (CI validates)
-ci.yml ─────► All checks pass
-    │
-    ▼ (Reviewer merges PR)
-promote-game.yml
-    │
-    ├──► _games/{game}.md
-    └──► games/{game}/* (pages)
+    ├──► Supabase status → verified
+    └──► GitHub API → _runs/{game}/{run}.md
 ```
 
-### Run Submission Flow
+### Game Submission (Current)
 
 ```
-Submission Form
+Site form (/submit/)
     │
     ▼
-Cloudflare Worker ─────► Supabase (pending_runs)
-    │
-    ▼ (Admin reviews in Dashboard)
-/admin/runs/ ─────► Approve / Reject / Request Changes
-    │
-    ▼ (On approve)
-Worker /approve ─────► GitHub API
+Cloudflare Worker POST /submit-game
     │
     ▼
-_runs/{game}/{run}.md committed to main
+Supabase pending_games table
+    │
+    ▼ (Admin reviews at /admin/games/)
+Worker POST /approve-game
+    │
+    ├──► Supabase status → approved
+    └──► GitHub API → _games/{game}.md
+```
+
+### Profile Submission
+
+```
+User signs in → creates profile in Supabase
+    │
+    ▼ (Admin reviews at /admin/profiles/)
+Worker POST /approve-profile
+    │
+    ├──► Supabase status → approved
+    └──► GitHub API → _runners/{runner-id}.md
 ```
 
 ## Reviewer/Moderator Workflow
 
-**For run submissions:**
-1. Go to `/admin/runs/` on the dashboard
-2. Review the run details, video, and category
-3. Approve, Reject, or Request Changes
+All reviews happen in the admin dashboard:
 
-**For profile submissions:**
-1. Go to `/admin/profiles/` on the dashboard
-2. Review the display name, runner ID, bio, and socials
-3. Approve, Reject, or Request Changes
+- **Runs:** `/admin/runs/` — Review video, category, and runner info
+- **Profiles:** `/admin/profiles/` — Review display name, bio, and socials
+- **Games:** `/admin/games/` — Review game details, categories, and challenge types
 
-**For game submissions:**
-1. Go to `/admin/games/` on the dashboard
-2. Review the game details, categories, and challenge types
-3. Approve, Reject, or Request Changes
+Approve, Reject, or Request Changes. All actions trigger Discord notifications.
 
-All approval actions trigger Worker endpoints that create the corresponding files in the GitHub repository via the GitHub API.
+## Local Testing
 
-## Script Dependencies
-
-Workflows call scripts from `/scripts/`:
-
-| Script | Purpose |
-|--------|---------|
-| `check-yaml-syntax.js` | YAML syntax validation |
-| `check-banned-terms.js` | Content moderation |
-| `validate-schema.js` | Schema validation |
-| `validate-runs.js` | Run file validation |
-| `generate-codeowners.js` | CODEOWNERS generation |
-| `generate-game-pages.js` | Game page scaffolding |
-| `generate-run-category-pages.js` | Category page generation |
-| `promote-runs.js` | Moves approved runs to live |
-
-## Banned Terms Configuration
-
-Edit `_data/banned-terms.yml` to manage blocked content:
-
-```yaml
-slurs:
-  - "blocked-term"
-
-spam:
-  - "buy now"
-  - "click here"
-
-malicious:
-  - "<script>"
-  - "javascript:"
-
-exceptions:
-  - "glitch"  # Allow gaming terms that might false positive
-```
-
-## Debugging
-
-Check the "Actions" tab on GitHub to see workflow runs. Each run shows:
-- Trigger event
-- Job steps and their output
-- Success/failure status
-
-For local testing:
 ```bash
 npm run validate          # Run all validation (schema + runs + banned terms)
 npm run validate:schema   # Schema only
 npm run validate:runs     # Queue runs only
 npm run validate:terms    # Banned terms only
-npm run check:all         # Check generated files
+npm run check:all         # Check generated files are current
 ```
