@@ -1,14 +1,5 @@
 # Cloudflare Web Analytics Token
-# 
-# This token is used to conditionally load Cloudflare Web Analytics
-# only after the user has consented to analytics cookies.
-#
-# To get your token:
-# 1. Cloudflare Dashboard → Analytics & Logs → Web Analytics
-# 2. Switch to "JS Snippet" / Manual Setup  
-# 3. Copy the token from the snippet
-#
-# IMPORTANT: Disable "Automatic Setup" in Cloudflare so the beacon
-# isn't injected server-side (bypassing cookie consent).
+# Get from: Cloudflare Dashboard > Web Analytics > JS Snippet
+# Set to manual setup so the beacon is not auto-injected
 
 token: <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "ea7eb9e5e41b48289e9e35224f750fb7"}'></script><!-- End Cloudflare Web Analytics -->
