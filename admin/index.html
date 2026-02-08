@@ -164,13 +164,6 @@ title: "Dashboard"
 import { CRCAdmin } from '{{ "/assets/js/admin.js" | relative_url }}';
 
 const NAV_SECTIONS = {
-  runs: {
-    icon: '🏃',
-    title: 'Pending Runs',
-    desc: 'Review, approve, or reject submitted runs.',
-    href: '/admin/runs/',
-    countKey: 'pendingRuns'
-  },
   profiles: {
     icon: '👥',
     title: 'Pending Profiles',
@@ -184,6 +177,13 @@ const NAV_SECTIONS = {
     desc: 'Review new game submissions.',
     href: '/admin/games/',
     countKey: 'pendingGames'
+  },
+  runs: {
+    icon: '🏃',
+    title: 'Pending Runs',
+    desc: 'Review, approve, or reject submitted runs.',
+    href: '/admin/runs/',
+    countKey: 'pendingRuns'
   },
   users: {
     icon: '👤',
@@ -252,13 +252,6 @@ const NAV_SECTIONS = {
   const sections = CRCAdmin.getAccessibleSections();
 
   let statsHTML = '';
-  if (counts.pendingRuns !== undefined) {
-    statsHTML += `
-      <div class="dash-stat ${counts.pendingRuns > 0 ? 'dash-stat--alert' : ''}">
-        <span class="dash-stat__value">${counts.pendingRuns}</span>
-        <span class="dash-stat__label">Pending Runs</span>
-      </div>`;
-  }
   if (counts.pendingProfiles !== undefined) {
     statsHTML += `
       <div class="dash-stat ${counts.pendingProfiles > 0 ? 'dash-stat--alert' : ''}">
@@ -271,6 +264,13 @@ const NAV_SECTIONS = {
       <div class="dash-stat ${counts.pendingGames > 0 ? 'dash-stat--alert' : ''}">
         <span class="dash-stat__value">${counts.pendingGames}</span>
         <span class="dash-stat__label">Pending Games</span>
+      </div>`;
+  }
+  if (counts.pendingRuns !== undefined) {
+    statsHTML += `
+      <div class="dash-stat ${counts.pendingRuns > 0 ? 'dash-stat--alert' : ''}">
+        <span class="dash-stat__value">${counts.pendingRuns}</span>
+        <span class="dash-stat__label">Pending Runs</span>
       </div>`;
   }
   if (counts.totalRunners !== undefined) {
