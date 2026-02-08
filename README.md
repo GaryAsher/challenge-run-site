@@ -2,14 +2,27 @@
 
 A community-driven website for tracking and celebrating challenge runs across games.
 
+**Live site:** [challengerun.net](https://www.challengerun.net)
+
 ## Quick Links
 
 | Resource | Description |
 |----------|-------------|
-| [Submit a Run](../../issues/new?template=run-submission.yml) | Submit a challenge run for any game |
-| [Submit New Game](../../issues/new?template=new-game-submission.yml) | Submit a new game to CRC |
-| [Request Game Changes](../../issues/new?template=game-change-request.yml) | Request changes to an existing game |
+| [Submit a Run](https://www.challengerun.net/submit/) | Submit a challenge run for any active game |
+| [Submit a Game](https://www.challengerun.net/submit/) | Request a new game to be tracked on CRC |
 | [Documentation](.docs/) | Full documentation |
+
+## Architecture
+
+CRC runs on three services:
+
+| Service | Role |
+|---------|------|
+| **Cloudflare** | DNS, CDN, security headers, Turnstile CAPTCHA, Worker API |
+| **GitHub Pages** | Static site hosting (Jekyll) |
+| **Supabase** | Authentication (Discord/Twitch OAuth), database, Row Level Security |
+
+Submissions flow through the site form → Cloudflare Worker → Supabase. Admins review in the dashboard at `/admin/`. On approval, the Worker creates files in this repo via the GitHub API.
 
 ## For Developers
 
@@ -26,41 +39,42 @@ bundle install
 ### Common Commands
 
 ```bash
-# Validate everything
+# Validate everything (schema, runs, banned terms)
 npm run validate
 
-# Generate pages
+# Generate pages (game pages, run categories, runner game pages)
 npm run generate
+
+# Regenerate + commit + push
+npm run regen
 
 # Run Jekyll locally
 bundle exec jekyll serve
 
-# Build for production
-npm run build
+# Check generated pages are current (CI uses this)
+npm run check:all
 ```
-
-### Workflow Order
-
-When processing content, follow this order:
-
-1. **Validate** - `npm run validate` - Ensures schema is correct
-2. **Generate** - `npm run generate` - Creates game/run pages
-3. **Promote** - `npm run promote:runs` - Moves approved runs to live
 
 ### Project Structure
 
 ```
-_games/           # Game definitions (Jekyll collection)
-_runners/         # Runner profiles (Jekyll collection)
-_runs/            # Approved runs (Jekyll collection)
-_queue_games/     # Pending game submissions
-_queue_runs/      # Pending run submissions
-scripts/          # Node.js automation scripts
-.github/workflows # GitHub Actions automation
-.docs/            # Documentation
+_games/             # Game definitions (Jekyll collection)
+_runners/           # Runner profiles (Jekyll collection)
+_runs/              # Approved run records (Jekyll collection)
+_achievements/      # Community achievement completions
+_data/              # Shared data (challenges, platforms, genres)
+_includes/          # Reusable HTML components
+_layouts/           # Page templates
+admin/              # Admin dashboard pages
+assets/             # CSS, JS, images
+scripts/            # Node.js automation scripts
+worker/             # Cloudflare Worker (submission + approval API)
+supabase/           # Supabase Edge Functions
+.github/workflows/  # GitHub Actions (CI, page generation)
+.docs/              # Documentation
 ```
 
-See [.docs/REPOSITORY-STRUCTURE.md](.docs/REPOSITORY-STRUCTURE.md) for full details.
+See [.docs/STRUCTURE.md](.docs/STRUCTURE.md) for full details.
 
 ## License
 
