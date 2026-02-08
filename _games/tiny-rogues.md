@@ -163,6 +163,7 @@ community_achievements: []
 # =============================================================================
 credits:
   - name: "Gary_Asher"
+    runner_id: gary-asher
     role: "Category and rule definitions"
 ---
 
