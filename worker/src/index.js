@@ -620,6 +620,20 @@ function buildGameFileContent(game) {
   // Player-made
   lines.push('player_made: []');
 
+  // Credits
+  lines.push('');
+  lines.push('# Credits');
+  if (game.submitter_handle || game.submitter_runner_id) {
+    lines.push('credits:');
+    lines.push(`  - name: ${yamlQuote(game.submitter_handle || game.submitter_runner_id)}`);
+    if (game.submitter_runner_id) {
+      lines.push(`    runner_id: ${yamlQuote(game.submitter_runner_id)}`);
+    }
+    lines.push('    role: "Game submission"');
+  } else {
+    lines.push('credits: []');
+  }
+
   lines.push('---');
   lines.push('');
   lines.push(gd.description || `${game.game_name} challenge runs.`);
@@ -1014,6 +1028,16 @@ async function handleApproveGame(body, env, request) {
     return jsonResponse({ error: 'Game not found' }, 404, env, request);
   }
   const game = gameResult.data[0];
+
+  // Look up submitter's runner_id for credits
+  if (game.submitter_user_id) {
+    const profileResult = await supabaseQuery(env,
+      `runner_profiles?user_id=eq.${encodeURIComponent(game.submitter_user_id)}&select=runner_id`,
+      { method: 'GET' });
+    if (profileResult.ok && profileResult.data?.length) {
+      game.submitter_runner_id = profileResult.data[0].runner_id;
+    }
+  }
 
   // Build the game file
   const filename = `${game.game_id}.md`;
