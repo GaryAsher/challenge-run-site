@@ -30,6 +30,9 @@ let _modRecord = null;     // moderators row (if exists)
 let _initialized = false;
 let _workerUrl = null;     // Cloudflare Worker URL for /approve endpoint
 
+// Debug View: allows super admins to simulate other roles
+const DEBUG_VIEW_KEY = 'crc-debug-view-role';
+
 // =============================================================================
 // Initialization
 // =============================================================================
@@ -134,6 +137,37 @@ function isAdmin() { return _role === 'super_admin' || _role === 'admin'; }
 function isVerifier() { return _role === 'verifier'; }
 function hasAccess() { return !!_role; }
 
+// =============================================================================
+// Debug View — Role Simulation (super admin only)
+// =============================================================================
+
+function getDebugRole() {
+  if (_role !== 'super_admin') return null;
+  return sessionStorage.getItem(DEBUG_VIEW_KEY) || null;
+}
+
+function setDebugRole(role) {
+  if (_role !== 'super_admin') return;
+  if (role) {
+    sessionStorage.setItem(DEBUG_VIEW_KEY, role);
+  } else {
+    sessionStorage.removeItem(DEBUG_VIEW_KEY);
+  }
+}
+
+function isDebugMode() {
+  return _role === 'super_admin' && !!sessionStorage.getItem(DEBUG_VIEW_KEY);
+}
+
+/**
+ * Returns the effective role — debug override if active, else actual role.
+ * Use this for UI rendering; use _role for actual permission enforcement.
+ */
+function getEffectiveRole() {
+  const debug = getDebugRole();
+  return debug || _role;
+}
+
 /**
  * Check if user can manage a specific game
  */
@@ -151,23 +185,25 @@ function canManageGame(gameId) {
  * Get sections this role can access
  */
 function getAccessibleSections() {
-  if (!_role) return [];
+  // Use effective role so debug view shows correct nav
+  const role = getEffectiveRole();
+  if (!role) return [];
 
   const sections = [];
 
   // Verifiers: only runs for their games
-  if (_role === 'verifier') {
+  if (role === 'verifier') {
     sections.push('runs');
   }
 
   // Admins: runs, games, profiles
-  if (_role === 'admin') {
+  if (role === 'admin') {
     sections.push('runs', 'games', 'profiles');
   }
 
   // Super admins: everything
-  if (_role === 'super_admin') {
-    sections.push('runs', 'games', 'profiles', 'users', 'financials', 'health', 'test');
+  if (role === 'super_admin') {
+    sections.push('runs', 'games', 'profiles', 'users', 'financials', 'health', 'debug');
   }
 
   return sections;
@@ -900,6 +936,12 @@ export const CRCAdmin = {
   canManageGame,
   getAccessibleSections,
   setWorkerUrl,
+
+  // Debug view
+  getDebugRole,
+  setDebugRole,
+  isDebugMode,
+  getEffectiveRole,
 
   getPendingRuns,
   getRun,
