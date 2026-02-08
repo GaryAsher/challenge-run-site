@@ -1,10 +1,12 @@
+<!-- Debug View Banner (Discord-style — above entire header when simulating a role) -->
+<div class="debug-view-header-banner" id="header-debug-banner" hidden>
+  <span class="debug-view-header-banner__icon">👁️</span>
+  <span class="debug-view-header-banner__text">Now viewing as: <strong id="header-debug-role">User</strong></span>
+  <span class="debug-view-header-banner__hint">This is how the site appears to this role. Forms and actions are disabled.</span>
+  <button type="button" class="debug-view-header-banner__exit" id="header-exit-debug">↩ Return to Super Admin</button>
+</div>
+
 <header class="site-header">
-  <!-- Debug View Banner (shows when viewing as different role) -->
-  <div class="debug-view-header-banner" id="header-debug-banner" hidden>
-    <span class="debug-view-header-banner__icon">👁️</span>
-    <span class="debug-view-header-banner__text">Viewing as: <strong id="header-debug-role">User</strong></span>
-    <button type="button" class="btn btn--small" id="header-exit-debug">Exit</button>
-  </div>
   
   <!-- Brand/Logo -->
   <a class="brand" href="{{ '/' | relative_url }}" id="brand-link" title="Go to Home">CRC</a>
@@ -130,7 +132,7 @@
         <div class="admin-panel__section-title" id="admin-section-title">Admin</div>
         
         <!-- Dashboard (Admin/Super Admin only) -->
-        <a href="/admin/test/" class="admin-panel__item" id="admin-dashboard-link">
+        <a href="/admin/" class="admin-panel__item" id="admin-dashboard-link">
           <span class="admin-panel__icon">📊</span>
           <span class="admin-panel__text">Dashboard</span>
         </a>
@@ -393,19 +395,20 @@
 
 // Debug view header banner
 (function() {
-  var debugRole = sessionStorage.getItem('crc_debug_role');
+  var debugRole = sessionStorage.getItem('crc-debug-view-role');
   var banner = document.getElementById('header-debug-banner');
   var roleText = document.getElementById('header-debug-role');
   var exitBtn = document.getElementById('header-exit-debug');
   
   if (debugRole && banner && roleText) {
+    var labels = { admin: '🛡️ Admin', verifier: '✅ Verifier', user: '👤 User' };
     banner.hidden = false;
-    roleText.textContent = debugRole.charAt(0).toUpperCase() + debugRole.slice(1);
+    roleText.textContent = labels[debugRole] || debugRole.charAt(0).toUpperCase() + debugRole.slice(1);
   }
   
   exitBtn?.addEventListener('click', function() {
-    sessionStorage.removeItem('crc_debug_role');
-    window.location.reload();
+    sessionStorage.removeItem('crc-debug-view-role');
+    window.location.href = '/admin/debug/';
   });
 })();
 
@@ -491,15 +494,24 @@ async function initHeaderAuth() {
     }
     
     if (role !== 'none') {
-      // Show admin button in header (next to logo)
+      // Check if debug view is active (super admin simulating another role)
+      const debugRole = sessionStorage.getItem('crc-debug-view-role');
+      const effectiveRole = debugRole || role;
+      
+      // Show admin button in header (next to logo) — hide if simulating 'user'
       const headerAdminBtn = document.getElementById('header-admin-btn');
       const adminIndicator = document.getElementById('nav-user-admin-indicator');
       
-      if (headerAdminBtn) headerAdminBtn.hidden = false;
-      if (adminIndicator) adminIndicator.hidden = false;
-      
-      setupAdminPanel(role, profile);
-      loadAdminCounts();
+      if (effectiveRole === 'user') {
+        // User role = no admin access at all
+        if (headerAdminBtn) headerAdminBtn.hidden = true;
+        if (adminIndicator) adminIndicator.hidden = true;
+      } else {
+        if (headerAdminBtn) headerAdminBtn.hidden = false;
+        if (adminIndicator) adminIndicator.hidden = false;
+        setupAdminPanel(effectiveRole, profile);
+        loadAdminCounts();
+      }
     }
     
     if (signoutBtn) {
