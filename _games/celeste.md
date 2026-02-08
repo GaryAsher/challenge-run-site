@@ -170,9 +170,11 @@ community_achievements: []
 # =============================================================================
 credits:
   - name: "personname1"
+    runner_id: person-name-1
     role: "ex: Category definitions"
     url: "website or something here"
   - name: "personname2"
+    runner_id: person-name-2
     role: "ex: Rule clarifications"
 ---
 
