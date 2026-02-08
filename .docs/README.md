@@ -1,6 +1,6 @@
 # Documentation
 
-Quick reference for working with Challenge Run Central.
+Quick reference for working with Challenge Run Community.
 
 ## Quick Links
 
@@ -8,16 +8,19 @@ Quick reference for working with Challenge Run Central.
 |--------------|----------|
 | Understand the folder structure | [STRUCTURE.md](STRUCTURE.md) |
 | Add or edit content | [CONTRIBUTING.md](CONTRIBUTING.md) |
+| See the system architecture | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | See future plans / TODOs | [REMINDERS.md](REMINDERS.md) |
-
-## For Developers
-
-The technical specs (ID formats, naming conventions) are in [STRUCTURE.md](STRUCTURE.md).
+| See security controls | [SECURITY-IMPLEMENTED.md](SECURITY-IMPLEMENTED.md) |
 
 ## File Index
 
 | File | Purpose |
 |------|---------|
-| `STRUCTURE.md` | Repository layout, naming rules, ID formats |
+| `ARCHITECTURE.md` | System architecture, services, and data flow |
 | `CONTRIBUTING.md` | How to add games, runs, and other content |
-| `REMINDERS.md` | Future features and TODOs |
+| `ACHIEVEMENTS-DESIGN.md` | Community achievements system design |
+| `REMINDERS.md` | Roadmap, future features, and TODOs |
+| `SCRIPTS.md` | Script usage and documentation |
+| `SECURITY-IMPLEMENTED.md` | Security controls and audit status |
+| `STRUCTURE.md` | Repository layout, naming rules, ID formats |
+| `STYLE-GUIDE.md` | CSS/SCSS conventions and design tokens |
