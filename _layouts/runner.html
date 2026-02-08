@@ -3,6 +3,8 @@ layout: default
 ---
 
 {% assign avatar = page.avatar | default: "/assets/img/site/default-runner.png" %}
+{% assign banner = page.banner | default: "/assets/img/site/default-banner.jpg" %}
+{% assign accent = page.accent_color | default: "var(--accent)" %}
 
 {% comment %} Pre-process all runs data for this runner {% endcomment %}
 {% assign cleaned = "" | split: "" %}
@@ -11,6 +13,55 @@ layout: default
 {% assign all_runner_runs = cleaned | where: "runner_id", rid | sort: "date_completed" | reverse %}
 {% assign games_with_runs = "" | split: "" %}
 {% for r in all_runner_runs %}{% unless games_with_runs contains r.game_id %}{% assign games_with_runs = games_with_runs | push: r.game_id %}{% endunless %}{% endfor %}
+
+{% comment %} Team affiliations {% endcomment %}
+{% assign runner_teams = "" | split: "" %}
+{% for team in site.teams %}
+  {% if team.hidden %}{% continue %}{% endif %}
+  {% for m in team.members %}
+    {% if m.runner_id == page.runner_id %}
+      {% assign runner_teams = runner_teams | push: team %}
+      {% break %}
+    {% endif %}
+  {% endfor %}
+{% endfor %}
+
+{% comment %} Genre frequency (top 3) {% endcomment %}
+{% assign all_genres = "" | split: "" %}
+{% for gid in games_with_runs %}
+  {% assign g = site.games | where: "game_id", gid | first %}
+  {% if g.genres %}
+    {% for genre in g.genres %}
+      {% assign all_genres = all_genres | push: genre %}
+    {% endfor %}
+  {% endif %}
+{% endfor %}
+{% assign unique_genres = all_genres | uniq %}
+
+{% comment %} Most played game {% endcomment %}
+{% assign most_played_id = "" %}
+{% assign most_played_count = 0 %}
+{% for gid in games_with_runs %}
+  {% assign game_runs = all_runner_runs | where: "game_id", gid %}
+  {% if game_runs.size > most_played_count %}
+    {% assign most_played_count = game_runs.size %}
+    {% assign most_played_id = gid %}
+  {% endif %}
+{% endfor %}
+{% assign most_played_game = site.games | where: "game_id", most_played_id | first %}
+
+{% comment %} Player-made challenges (across all games) {% endcomment %}
+{% assign player_made_challenges = "" | split: "" %}
+{% for g in site.games %}
+  {% if g.player_made %}
+    {% for pm in g.player_made %}
+      {% if pm.created_by == page.runner_id %}
+        {% assign pm_with_game = pm | default: pm %}
+        {% assign player_made_challenges = player_made_challenges | push: pm %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endfor %}
 
 {% comment %} Calculate full runs vs mini-challenge runs {% endcomment %}
 {% assign full_run_count = 0 %}
@@ -71,6 +122,12 @@ layout: default
     <span>✨ Showing your latest profile data</span>
   </div>
 
+  <!-- Profile Banner -->
+  <div class="runner-banner" id="runner-banner">
+    <div class="runner-banner__img" data-bg="{{ banner | relative_url }}" style="{% if page.accent_color %}background-color: {{ page.accent_color }};{% endif %}"></div>
+    <div class="runner-banner__fade"></div>
+  </div>
+
   <section class="runner-top">
     <div class="runner-left">
       <div class="runner-avatar" id="runner-avatar" data-bg="{{ avatar | relative_url }}" aria-label="{{ page.runner_name }} profile picture"></div>
@@ -78,6 +135,19 @@ layout: default
         <h1 id="runner-display-name">{{ page.runner_name }}{% if page.pronouns %} <span class="runner-pronouns">({{ page.pronouns }})</span>{% endif %}</h1>
         {% if page.location %}<p class="runner-location muted" id="runner-location">📍 {{ page.location }}</p>{% else %}<p class="runner-location muted" id="runner-location" hidden></p>{% endif %}
         {% if page.status %}<p class="muted runner-status" id="runner-status">{{ page.status }}</p>{% else %}<p class="muted runner-status" id="runner-status" hidden></p>{% endif %}
+        <div class="runner-meta-line">
+          {% if page.joined_date %}<span class="runner-joined" id="runner-joined">🗓️ Member since {{ page.joined_date | date: "%b %Y" }}</span>{% else %}<span class="runner-joined" id="runner-joined" hidden></span>{% endif %}
+          {% if runner_teams.size > 0 %}
+            <span class="runner-team-badges">
+              {% for team in runner_teams %}
+                <a href="{{ team.url | relative_url }}" class="runner-team-badge" title="{{ team.name }}">
+                  {% if team.logo %}<img src="{{ team.logo | relative_url }}" alt="" class="runner-team-badge__logo" />{% endif %}
+                  <span>{{ team.name }}</span>
+                </a>
+              {% endfor %}
+            </span>
+          {% endif %}
+        </div>
       </div>
     </div>
 
@@ -105,7 +175,28 @@ layout: default
 
   {% if page.bio and page.bio != "" %}<section class="runner-bio card" id="runner-bio-section"><h2>About</h2><p id="runner-bio">{{ page.bio }}</p></section>{% else %}<section class="runner-bio card" id="runner-bio-section" hidden><h2>About</h2><p id="runner-bio"></p></section>{% endif %}
 
-  <nav class="runner-tabs game-tabs"><button class="tab active" data-tab="runs" type="button">Run Statistics</button><button class="tab" data-tab="achievements" type="button">Achievements</button><button class="tab" data-tab="contributions" type="button">Contributions</button></nav>
+  <!-- Pinned Runs / Highlight Reel -->
+  {% if page.featured_runs and page.featured_runs.size > 0 %}
+  <section class="runner-highlights">
+    <h2>📌 Highlights</h2>
+    <div class="highlights-grid">
+      {% for fr in page.featured_runs %}
+        {% assign fr_game = site.games | where: "game_id", fr.game_id | first %}
+        {% assign fr_cover = fr_game.cover | default: fr_game.avatar | default: "/assets/img/site/default-game.png" %}
+        <div class="highlight-card">
+          <div class="highlight-card__bg" data-bg="{{ fr_cover | relative_url }}"></div>
+          <div class="highlight-card__overlay">
+            <div class="highlight-card__game">{{ fr_game.game_name | default: fr.game_id }}</div>
+            <div class="highlight-card__category">{{ fr.category }}</div>
+            {% if fr.achievement %}<div class="highlight-card__note">{{ fr.achievement }}</div>{% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <nav class="runner-tabs game-tabs"><button class="tab active" data-tab="runs" type="button">Run Statistics</button><button class="tab" data-tab="achievements" type="button">Achievements</button><button class="tab" data-tab="activity" type="button">Activity</button><button class="tab" data-tab="contributions" type="button">Contributions</button></nav>
 
   <!-- RUNS PANEL -->
   <section class="tab-panel active" data-panel="runs">
@@ -129,6 +220,38 @@ layout: default
         <span class="runner-stat__label">Total</span>
       </div>
     </div>
+
+    <!-- Fun Stats Row -->
+    {% if all_runner_runs.size > 0 %}
+    <div class="runner-fun-stats">
+      {% if most_played_game %}
+      <div class="fun-stat">
+        <span class="fun-stat__icon">🎮</span>
+        <div class="fun-stat__content">
+          <span class="fun-stat__label">Most Played</span>
+          <a href="{{ most_played_game.url | relative_url }}" class="fun-stat__value">{{ most_played_game.game_name }}</a>
+          <span class="fun-stat__detail">{{ most_played_count }} run{% if most_played_count != 1 %}s{% endif %}</span>
+        </div>
+      </div>
+      {% endif %}
+      <div class="fun-stat">
+        <span class="fun-stat__icon">🏆</span>
+        <div class="fun-stat__content">
+          <span class="fun-stat__label">Games Completed</span>
+          <span class="fun-stat__value">{{ games_with_runs.size }}</span>
+        </div>
+      </div>
+      {% if unique_genres.size > 0 %}
+      <div class="fun-stat">
+        <span class="fun-stat__icon">🏷️</span>
+        <div class="fun-stat__content">
+          <span class="fun-stat__label">Top Genres</span>
+          <span class="fun-stat__value fun-stat__genres">{% assign genre_count = 0 %}{% for genre in unique_genres %}{% if genre_count < 3 %}<span class="genre-pill">{{ genre | replace: "-", " " | capitalize }}</span>{% assign genre_count = genre_count | plus: 1 %}{% endif %}{% endfor %}</span>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
 
     {% if all_runner_runs and all_runner_runs.size > 0 %}
       
@@ -317,6 +440,65 @@ layout: default
     
   </section>
 
+  <!-- ACTIVITY TIMELINE PANEL -->
+  <section class="tab-panel" data-panel="activity">
+    <div class="card">
+      <h2>📅 Activity Timeline</h2>
+      <p class="muted mb-3">Recent challenge run activity.</p>
+    </div>
+    
+    {% comment %} Build timeline from runs + achievements {% endcomment %}
+    {% assign timeline_items = "" | split: "" %}
+    {% for r in all_runner_runs %}
+      {% assign t_item = r.date_completed | append: "|||run|||" | append: r.game_id | append: "|||" | append: r.category | append: "|||" | append: r.time_primary | default: r.time %}
+      {% assign timeline_items = timeline_items | push: t_item %}
+    {% endfor %}
+    {% assign runner_completions_for_timeline = "" | split: "" %}
+    {% for ac in site.achievements %}
+      {% if ac.runner_id == page.runner_id and ac.status == 'approved' %}
+        {% assign t_item = ac.date_completed | append: "|||achievement|||" | append: ac.game_id | append: "|||" | append: ac.achievement_slug | append: "|||" %}
+        {% assign timeline_items = timeline_items | push: t_item %}
+      {% endif %}
+    {% endfor %}
+    {% assign timeline_items = timeline_items | sort | reverse %}
+    
+    {% if timeline_items.size > 0 %}
+    <div class="activity-timeline">
+      {% for item in timeline_items limit: 20 %}
+        {% assign parts = item | split: "|||" %}
+        {% assign t_date = parts[0] %}
+        {% assign t_type = parts[1] %}
+        {% assign t_game_id = parts[2] %}
+        {% assign t_detail = parts[3] %}
+        {% assign t_extra = parts[4] %}
+        {% assign t_game = site.games | where: "game_id", t_game_id | first %}
+        
+        <div class="timeline-item">
+          <div class="timeline-item__dot {% if t_type == 'achievement' %}timeline-item__dot--achievement{% endif %}"></div>
+          <div class="timeline-item__content">
+            <div class="timeline-item__header">
+              {% if t_type == "run" %}
+                <span class="timeline-item__icon">🏃</span>
+                <span>Completed <strong>{{ t_detail }}</strong> in <a href="{{ t_game.url | relative_url }}">{{ t_game.game_name | default: t_game_id }}</a></span>
+                {% if t_extra and t_extra != "" %}<span class="timeline-item__time">{{ t_extra }}</span>{% endif %}
+              {% elsif t_type == "achievement" %}
+                <span class="timeline-item__icon">🏅</span>
+                <span>Earned achievement <strong>{{ t_detail | replace: "-", " " | capitalize }}</strong> in <a href="{{ t_game.url | relative_url }}">{{ t_game.game_name | default: t_game_id }}</a></span>
+              {% endif %}
+            </div>
+            <span class="timeline-item__date">{{ t_date | date: "%b %d, %Y" }}</span>
+          </div>
+        </div>
+      {% endfor %}
+      {% if timeline_items.size > 20 %}
+        <p class="muted" style="text-align:center;padding:1rem 0;">Showing 20 of {{ timeline_items.size }} events</p>
+      {% endif %}
+    </div>
+    {% else %}
+      <div class="empty-state"><span class="empty-icon">📅</span><p>No activity recorded yet.</p></div>
+    {% endif %}
+  </section>
+
   <!-- CONTRIBUTIONS PANEL -->
   <section class="tab-panel" data-panel="contributions">
     <div class="card"><h2>🛠️ Community Contributions</h2><p class="muted mb-3">Tools, guides, and resources.</p>
@@ -332,11 +514,100 @@ layout: default
       {% assign verified_runs = "" | split: "" %}{% for r in site.runs %}{% if r.verified_by == page.runner_id or r.verified_by == page.runner_name %}{% assign verified_runs = verified_runs | push: r %}{% endif %}{% endfor %}
       {% if verified_runs.size > 0 %}<p>Verified <strong>{{ verified_runs.size }}</strong> run{% if verified_runs.size != 1 %}s{% endif %}</p>{% else %}<p class="muted">No verifications yet.</p>{% endif %}
     </div>
+    <div class="card mt-3"><h3>🎨 Player-Made Challenges</h3>
+      <p class="muted mb-3">Custom challenge rulesets designed by this runner.</p>
+      {% if player_made_challenges.size > 0 %}
+        <div class="player-made-list">
+          {% for pm in player_made_challenges %}
+            {% assign pm_game = site.games | where: "game_id", pm.game_id | first %}
+            <div class="player-made-item">
+              <div class="player-made-item__icon">{{ pm.icon | default: '🎨' }}</div>
+              <div class="player-made-item__content">
+                <h4>{{ pm.label | default: pm.slug }}</h4>
+                {% if pm.description %}<p class="muted">{{ pm.description }}</p>{% endif %}
+                <div class="player-made-item__meta">
+                  {% if pm_game %}<a href="{{ pm_game.url | relative_url }}" class="player-made-item__game">{{ pm_game.game_name }}</a>{% endif %}
+                  {% if pm.date_added %}<span class="muted">• Added {{ pm.date_added | date: "%b %Y" }}</span>{% endif %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="muted">No player-made challenges yet.</p>
+      {% endif %}
+    </div>
   </section>
 </div>
 
 <style>
 .live-data-notice{background:rgba(var(--accent-rgb,59,195,110),.1);border:1px solid var(--accent);color:var(--accent);padding:.5rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem;font-size:.85rem}.live-data-notice[hidden]{display:none}
+/* Runner Profile Banner */
+.runner-banner{position:relative;height:180px;margin:-1rem -1rem 0 -1rem;border-radius:var(--radius-lg) var(--radius-lg) 0 0;overflow:hidden}
+.runner-banner__img{position:absolute;inset:0;background-size:cover;background-position:center}
+.runner-banner__fade{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,var(--bg) 100%)}
+
+/* Avatar overlap on banner */
+.runner-top{margin-top:-40px;position:relative;z-index:1}
+.runner-avatar{border:3px solid var(--bg);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+
+/* Meta line (joined + teams) */
+.runner-meta-line{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-top:.35rem}
+.runner-joined{font-size:.8rem;color:var(--text-muted)}
+.runner-team-badges{display:flex;gap:.5rem;flex-wrap:wrap}
+.runner-team-badge{display:inline-flex;align-items:center;gap:.35rem;padding:.2rem .6rem;background:var(--surface);border:1px solid var(--border);border-radius:20px;font-size:.75rem;color:var(--fg);text-decoration:none;transition:border-color .15s ease}
+.runner-team-badge:hover{border-color:var(--accent);color:var(--accent)}
+.runner-team-badge__logo{width:16px;height:16px;border-radius:50%;object-fit:cover}
+
+/* Highlights / Pinned Runs */
+.runner-highlights{margin-bottom:1.5rem}
+.runner-highlights h2{font-size:1.1rem;margin:0 0 .75rem 0}
+.highlights-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.75rem}
+.highlight-card{position:relative;aspect-ratio:16/9;border-radius:var(--radius-sm);overflow:hidden;border:2px solid var(--accent)}
+.highlight-card__bg{position:absolute;inset:0;background-size:cover;background-position:center}
+.highlight-card__overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.9) 0%,rgba(0,0,0,.3) 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:.75rem}
+.highlight-card__game{font-size:.75rem;color:rgba(255,255,255,.7)}
+.highlight-card__category{font-weight:700;font-size:.95rem;color:#fff}
+.highlight-card__note{font-size:.75rem;color:var(--accent);margin-top:.15rem;font-style:italic}
+
+/* Fun Stats Row */
+.runner-fun-stats{display:flex;gap:1rem;margin-bottom:1.25rem;flex-wrap:wrap}
+.fun-stat{display:flex;align-items:flex-start;gap:.75rem;flex:1;min-width:180px;padding:.85rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.fun-stat__icon{font-size:1.25rem;margin-top:.1rem}
+.fun-stat__content{display:flex;flex-direction:column;gap:.1rem;min-width:0}
+.fun-stat__label{font-size:.7rem;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted)}
+.fun-stat__value{font-weight:700;font-size:.95rem;color:var(--fg);text-decoration:none}
+a.fun-stat__value:hover{color:var(--accent)}
+.fun-stat__detail{font-size:.75rem;color:var(--text-muted)}
+.fun-stat__genres{display:flex;gap:.35rem;flex-wrap:wrap}
+.genre-pill{display:inline-block;padding:.15rem .5rem;background:rgba(var(--accent-rgb),.1);color:var(--accent);border-radius:12px;font-size:.7rem;font-weight:600}
+
+/* Activity Timeline */
+.activity-timeline{position:relative;padding-left:2rem}
+.activity-timeline::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:2px;background:var(--border)}
+.timeline-item{position:relative;padding-bottom:1.25rem}
+.timeline-item:last-child{padding-bottom:0}
+.timeline-item__dot{position:absolute;left:-2rem;top:.35rem;width:16px;height:16px;border-radius:50%;background:var(--surface);border:2px solid var(--border);z-index:1}
+.timeline-item__dot--achievement{border-color:var(--accent);background:var(--accent)}
+.timeline-item__content{padding:.5rem .75rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.timeline-item__header{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;font-size:.9rem}
+.timeline-item__header a{color:var(--accent);text-decoration:none}
+.timeline-item__header a:hover{text-decoration:underline}
+.timeline-item__icon{flex-shrink:0}
+.timeline-item__time{font-family:var(--font-mono,monospace);font-size:.8rem;color:var(--accent);font-weight:600;margin-left:auto}
+.timeline-item__date{display:block;font-size:.75rem;color:var(--text-muted);margin-top:.25rem}
+
+/* Player-Made Challenges */
+.player-made-list{display:flex;flex-direction:column;gap:.75rem}
+.player-made-item{display:flex;align-items:flex-start;gap:1rem;padding:1rem;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.player-made-item__icon{font-size:1.5rem}
+.player-made-item__content{flex:1;min-width:0}
+.player-made-item__content h4{margin:0 0 .25rem 0;font-size:1rem}
+.player-made-item__content p{margin:0;font-size:.85rem}
+.player-made-item__meta{display:flex;align-items:center;gap:.5rem;margin-top:.5rem;font-size:.8rem}
+.player-made-item__game{color:var(--accent);text-decoration:none}
+.player-made-item__game:hover{text-decoration:underline}
+
 .runner-pronouns{font-size:.8em;font-weight:400;color:var(--text-muted)}.runner-location{margin:.25rem 0 0 0;font-size:.9rem}.runner-bio{margin-bottom:1.5rem}.runner-bio h2{margin:0 0 .5rem 0;font-size:1.1rem}.runner-bio p{margin:0;line-height:1.6;white-space:pre-wrap}
 .social-icon{width:16px;height:16px;flex-shrink:0}.runner-link--twitch:hover{color:#9146ff;border-color:#9146ff}.runner-link--youtube:hover{color:#ff0000;border-color:#ff0000}.runner-link--discord:hover{color:#5865f2;border-color:#5865f2}.runner-link--steam:hover{color:#00adee;border-color:#00adee}.runner-link--twitter:hover{color:#1da1f2;border-color:#1da1f2}.runner-link--bluesky:hover{color:#0085ff;border-color:#0085ff}.runner-link--speedrun:hover{color:#ffd700;border-color:#ffd700}
 
@@ -445,9 +716,13 @@ layout: default
 .empty-icon{display:block;font-size:3rem;margin-bottom:1rem;opacity:.5}
 .mt-3{margin-top:1rem}.mb-3{margin-bottom:1rem}
 @media(max-width:600px){
+  .runner-banner{height:120px;margin:-1rem -1rem 0 -1rem}
   .runner-stats-card{flex-wrap:wrap;justify-content:center}
   .runner-stat{padding:0 .75rem;min-width:70px}
   .runner-stat--total{margin-left:0;border-left:none;border-top:1px solid var(--border);padding-top:.75rem;margin-top:.5rem;width:100%;flex-direction:row;justify-content:center;gap:.5rem}
+  .runner-fun-stats{flex-direction:column}
+  .fun-stat{min-width:auto}
+  .highlights-grid{grid-template-columns:1fr 1fr}
   .runner-games-grid{grid-template-columns:1fr}
   .credits-grid{grid-template-columns:repeat(2,1fr)}
   .runs-detail-header{flex-direction:column;align-items:flex-start}
@@ -455,6 +730,10 @@ layout: default
   .run-row__time{min-width:auto}
   .run-row__actions{width:100%}
   .run-row__actions .btn{width:100%;text-align:center}
+  .activity-timeline{padding-left:1.5rem}
+  .timeline-item__dot{left:-1.5rem}
+  .timeline-item__header{font-size:.85rem}
+  .runner-meta-line{gap:.5rem}
 }
 </style>
 
@@ -471,9 +750,10 @@ layout: default
       el.removeAttribute('data-bg');
     };
     img.onerror = function() {
-      // Only apply fallback to avatar elements, not game covers
       if (el.classList.contains('runner-avatar')) {
         el.style.backgroundImage = "url('" + fallback + "')";
+      } else if (el.classList.contains('runner-banner__img')) {
+        el.style.backgroundImage = "none";
       }
       el.removeAttribute('data-bg');
     };
@@ -673,11 +953,30 @@ async function loadLiveData() {
     }
     
     const avatarEl = document.getElementById('runner-avatar');
+    const avatarEl = document.getElementById('runner-avatar');
     if (avatarEl && data.avatar_url) {
       const img = new Image();
       img.onload = () => { avatarEl.style.backgroundImage = `url('${data.avatar_url}')`; };
       img.onerror = () => { avatarEl.style.backgroundImage = `url('{{ "/assets/img/site/default-runner.png" | relative_url }}')`; };
       img.src = data.avatar_url;
+    }
+
+    // Live banner
+    const bannerEl = document.querySelector('.runner-banner__img');
+    if (bannerEl && data.banner_url) {
+      const bImg = new Image();
+      bImg.onload = () => { bannerEl.style.backgroundImage = `url('${data.banner_url}')`; };
+      bImg.onerror = () => {}; // Keep existing/accent color
+      bImg.src = data.banner_url;
+    }
+
+    // Live joined date
+    const joinedEl = document.getElementById('runner-joined');
+    if (joinedEl && data.created_at) {
+      const d = new Date(data.created_at);
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      joinedEl.textContent = `🗓️ Member since ${months[d.getMonth()]} ${d.getFullYear()}`;
+      joinedEl.hidden = false;
     }
     
     const bioSec = document.getElementById('runner-bio-section');
