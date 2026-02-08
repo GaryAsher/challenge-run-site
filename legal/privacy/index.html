@@ -6,13 +6,14 @@ title: "Privacy Policy"
 <div class="page-width">
   <div class="legal-page">
     <h1>Privacy Policy</h1>
-    <p class="legal-updated">Last updated: January 30, 2026</p>
+    <p class="legal-updated">Last updated: February 8, 2026</p>
     
     <div class="legal-toc card">
       <h2>Contents</h2>
       <ol>
         <li><a href="#introduction">Introduction</a></li>
         <li><a href="#data-collected">Information We Collect</a></li>
+        <li><a href="#legal-basis">Legal Basis for Processing</a></li>
         <li><a href="#how-we-use">How We Use Your Information</a></li>
         <li><a href="#data-sharing">Information Sharing</a></li>
         <li><a href="#cookies">Cookies & Tracking</a></li>
@@ -20,7 +21,9 @@ title: "Privacy Policy"
         <li><a href="#your-rights">Your Rights</a></li>
         <li><a href="#children">Children's Privacy</a></li>
         <li><a href="#security">Data Security</a></li>
+        <li><a href="#data-breach">Data Breach Notification</a></li>
         <li><a href="#international">International Transfers</a></li>
+        <li><a href="#do-not-track">Do Not Track</a></li>
         <li><a href="#changes">Changes to This Policy</a></li>
         <li><a href="#contact">Contact Us</a></li>
       </ol>
@@ -32,7 +35,7 @@ title: "Privacy Policy"
         Welcome to Challenge Run Community ("CRC", "we", "us", or "our"). This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website <strong>challengerun.net</strong> (the "Website") and use our services.
       </p>
       <p>
-        By using the Website, you agree to the collection and use of information in accordance with this Privacy Policy. If you do not agree with our policies, please do not use the Website.
+        CRC is operated from Tennessee, United States. By using the Website, you agree to the collection and use of information in accordance with this Privacy Policy. If you do not agree with our policies, please do not use the Website.
       </p>
     </section>
     
@@ -42,9 +45,10 @@ title: "Privacy Policy"
       <h3>2.1 Information You Provide</h3>
       <p>We collect information you voluntarily provide when you:</p>
       <ul>
-        <li><strong>Create an account:</strong> Display name, runner ID, bio, social media links</li>
-        <li><strong>Sign in with OAuth:</strong> Information from Discord or Twitch (username, avatar, email)</li>
-        <li><strong>Submit runs:</strong> Game, category, time, video links, challenge details</li>
+        <li><strong>Create an account:</strong> Display name, runner ID, bio, social media links, location (optional), pronouns (optional)</li>
+        <li><strong>Sign in with OAuth:</strong> Information from Discord or Twitch (username, avatar, email address)</li>
+        <li><strong>Submit runs:</strong> Game, category, completion time, video links, platform, challenge details</li>
+        <li><strong>Customize your profile:</strong> Avatar image, banner image, accent color, status message</li>
         <li><strong>Contact support:</strong> Your message content and contact information</li>
       </ul>
       
@@ -52,9 +56,9 @@ title: "Privacy Policy"
       <p>When you access the Website, we may automatically collect:</p>
       <ul>
         <li><strong>Device information:</strong> Browser type, operating system, device type</li>
-        <li><strong>Usage data:</strong> Pages visited, time spent, referring URLs</li>
-        <li><strong>IP address:</strong> For security and analytics purposes</li>
-        <li><strong>Cookies:</strong> Small data files stored on your device (see Section 5)</li>
+        <li><strong>Usage data:</strong> Pages visited, time spent, referring URLs (collected via Cloudflare Web Analytics only with your consent)</li>
+        <li><strong>IP address:</strong> Processed by Cloudflare for security purposes (DDoS protection, bot detection). We do not store raw IP addresses in our own database.</li>
+        <li><strong>Cookies and local storage:</strong> Small data files stored on your device (see <a href="#cookies">Section 6</a> and our <a href="/legal/cookies/">Cookie Policy</a>)</li>
       </ul>
       
       <h3>2.3 Information from Third Parties</h3>
@@ -62,14 +66,60 @@ title: "Privacy Policy"
       <ul>
         <li>Your username and display name</li>
         <li>Your profile avatar/image</li>
-        <li>Your email address (if you consent)</li>
+        <li>Your email address (if you consent to share it with the OAuth provider)</li>
         <li>Your unique provider ID</li>
       </ul>
-      <p>We do not receive your password or access to post on your behalf.</p>
+      <p>We do not receive your password or gain the ability to post on your behalf.</p>
+    </section>
+    
+    <section id="legal-basis">
+      <h2>3. Legal Basis for Processing (GDPR)</h2>
+      <p>If you are located in the European Economic Area (EEA), United Kingdom, or Switzerland, we process your personal data under the following legal bases:</p>
+      
+      <table class="legal-table">
+        <thead>
+          <tr>
+            <th>Processing Activity</th>
+            <th>Legal Basis</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Account creation and authentication</td>
+            <td><strong>Contract performance</strong> — necessary to provide the service you requested</td>
+          </tr>
+          <tr>
+            <td>Displaying your public profile and runs</td>
+            <td><strong>Contract performance</strong> — core functionality of the service you signed up for</td>
+          </tr>
+          <tr>
+            <td>Essential cookies (authentication, preferences)</td>
+            <td><strong>Legitimate interest</strong> — strictly necessary to provide the service</td>
+          </tr>
+          <tr>
+            <td>Analytics (Cloudflare Web Analytics)</td>
+            <td><strong>Consent</strong> — only activated after you accept analytics cookies</td>
+          </tr>
+          <tr>
+            <td>Security and fraud prevention</td>
+            <td><strong>Legitimate interest</strong> — protecting the Website and its users</td>
+          </tr>
+          <tr>
+            <td>Responding to support requests</td>
+            <td><strong>Legitimate interest</strong> — fulfilling your request for assistance</td>
+          </tr>
+          <tr>
+            <td>Legal compliance</td>
+            <td><strong>Legal obligation</strong> — where required by applicable law</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <p>Where we rely on legitimate interest, we have assessed that our interests do not override your rights and freedoms. You have the right to object to processing based on legitimate interest at any time.</p>
     </section>
     
     <section id="how-we-use">
-      <h2>3. How We Use Your Information</h2>
+      <h2>4. How We Use Your Information</h2>
       <p>We use the information we collect to:</p>
       <ul>
         <li>Provide, maintain, and improve the Website</li>
@@ -77,184 +127,207 @@ title: "Privacy Policy"
         <li>Display your runner profile and submitted runs</li>
         <li>Verify and moderate submissions</li>
         <li>Respond to support requests</li>
-        <li>Send important updates about the service (if you opt in)</li>
+        <li>Send important updates about the service (only if you opt in)</li>
         <li>Detect and prevent fraud, abuse, or security issues</li>
+        <li>Understand usage patterns to improve the Website (with your consent)</li>
         <li>Comply with legal obligations</li>
       </ul>
-      <p><strong>We do not sell your personal information to third parties.</strong></p>
+      <p><strong>We do not sell your personal information to third parties. We do not use your data for advertising or profiling.</strong></p>
     </section>
     
     <section id="data-sharing">
-      <h2>4. Information Sharing</h2>
+      <h2>5. Information Sharing</h2>
       
-      <h3>4.1 Public Information</h3>
-      <p>The following information is publicly visible on the Website:</p>
+      <h3>5.1 Public Information</h3>
+      <p>The following information is publicly visible on the Website by design:</p>
       <ul>
-        <li>Your runner profile (display name, bio, social links, avatar)</li>
+        <li>Your runner profile (display name, bio, social links, avatar, banner, location if provided)</li>
         <li>Your submitted runs and achievements</li>
-        <li>Comments and forum posts</li>
+        <li>Your contributions and community credits</li>
+      </ul>
+      <p>You control what optional information appears on your profile (location, bio, social links). You can edit or remove this information at any time.</p>
+      
+      <h3>5.2 Service Providers</h3>
+      <p>We share data with trusted third parties who help us operate the Website:</p>
+      <ul>
+        <li><strong>Supabase (Supabase Inc.)</strong> — Database hosting and OAuth authentication. Data stored in the United States. <a href="https://supabase.com/privacy" target="_blank" rel="noopener">Privacy Policy</a></li>
+        <li><strong>Cloudflare (Cloudflare, Inc.)</strong> — Website hosting, CDN, DDoS protection, and analytics. Data processed globally across Cloudflare's network. <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">Privacy Policy</a></li>
+        <li><strong>GitHub (Microsoft)</strong> — Source code hosting and automated workflows. <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">Privacy Policy</a></li>
+      </ul>
+      <p>These providers process data on our behalf under data processing agreements and are contractually obligated to protect your information.</p>
+      
+      <h3>5.3 Legal Requirements</h3>
+      <p>We may disclose your information if required by law or if we believe in good faith that disclosure is necessary to:</p>
+      <ul>
+        <li>Comply with a legal obligation, subpoena, or court order</li>
+        <li>Protect our rights, privacy, safety, or property, or that of our users</li>
+        <li>Prevent fraud or other illegal activity</li>
       </ul>
       
-      <h3>4.2 Service Providers</h3>
-      <p>We may share data with trusted third parties who help us operate the Website:</p>
-      <ul>
-        <li><strong>Supabase:</strong> Database and authentication</li>
-        <li><strong>Cloudflare:</strong> Hosting, security, and CDN</li>
-        <li><strong>GitHub:</strong> Code hosting and workflows</li>
-      </ul>
-      <p>These providers are bound by contractual obligations to keep your information confidential.</p>
-      
-      <h3>4.3 Legal Requirements</h3>
-      <p>We may disclose your information if required by law or if we believe disclosure is necessary to:</p>
-      <ul>
-        <li>Comply with legal process</li>
-        <li>Protect our rights, privacy, safety, or property</li>
-        <li>Prevent fraud or illegal activity</li>
-      </ul>
+      <h3>5.4 Business Transfers</h3>
+      <p>If CRC is involved in a merger, acquisition, or sale of assets, your personal data may be transferred as part of that transaction. We would notify you before your data becomes subject to a different privacy policy.</p>
     </section>
     
     <section id="cookies">
-      <h2>5. Cookies & Tracking Technologies</h2>
-      
-      <h3>5.1 What Are Cookies?</h3>
-      <p>Cookies are small text files stored on your device. We use cookies to:</p>
-      <ul>
-        <li>Keep you signed in</li>
-        <li>Remember your preferences (e.g., theme settings)</li>
-        <li>Understand how you use the Website</li>
-      </ul>
-      
-      <h3>5.2 Types of Cookies We Use</h3>
-      <table class="legal-table">
-        <tr>
-          <th>Type</th>
-          <th>Purpose</th>
-          <th>Duration</th>
-        </tr>
-        <tr>
-          <td>Essential</td>
-          <td>Authentication and security</td>
-          <td>Session / 7 days</td>
-        </tr>
-        <tr>
-          <td>Preferences</td>
-          <td>Theme and display settings</td>
-          <td>1 year</td>
-        </tr>
-        <tr>
-          <td>Analytics</td>
-          <td>Usage statistics (anonymized)</td>
-          <td>1 year</td>
-        </tr>
-      </table>
-      
-      <h3>5.3 Managing Cookies</h3>
+      <h2>6. Cookies & Tracking Technologies</h2>
       <p>
-        You can control cookies through your browser settings. Blocking cookies may affect Website functionality (e.g., staying signed in).
+        We use cookies and similar technologies (localStorage) to operate the Website and, with your consent, to understand usage patterns. For a detailed list of the cookies we use, their purposes, and how to control them, please see our <a href="/legal/cookies/">Cookie Policy</a>.
       </p>
+      <p>
+        You can manage your cookie preferences at any time by clicking <a href="#" id="privacy-cookie-settings">Cookie Settings</a> in the footer of any page.
+      </p>
+      <p>In summary:</p>
+      <ul>
+        <li><strong>Essential cookies</strong> — required for authentication and preferences (always active)</li>
+        <li><strong>Analytics</strong> — Cloudflare Web Analytics, a privacy-focused service that does not use persistent cookies or track individuals across sites (consent required)</li>
+      </ul>
     </section>
     
     <section id="data-retention">
-      <h2>6. Data Retention</h2>
+      <h2>7. Data Retention</h2>
       <p>We retain your information for as long as:</p>
       <ul>
         <li>Your account is active</li>
         <li>Needed to provide services to you</li>
-        <li>Required by law</li>
+        <li>Required to comply with legal obligations</li>
       </ul>
       <p>
-        If you delete your account, we will delete or anonymize your personal data within 30 days, except where we need to retain it for legal reasons. Run submissions may be anonymized rather than deleted to preserve leaderboard integrity.
+        If you delete your account, we will delete or anonymize your personal data within <strong>30 days</strong>, except where we are required to retain it for legal or regulatory reasons. Run submissions may be <strong>anonymized</strong> (rather than deleted) to preserve the integrity of community leaderboards and historical records. Anonymized data cannot be traced back to you.
+      </p>
+      <p>
+        Analytics data collected by Cloudflare is aggregated and anonymized and does not contain personally identifiable information.
       </p>
     </section>
     
     <section id="your-rights">
-      <h2>7. Your Rights</h2>
-      <p>Depending on your location, you may have the right to:</p>
+      <h2>8. Your Rights</h2>
       
-      <h3>7.1 For All Users</h3>
+      <h3>8.1 For All Users</h3>
+      <p>Regardless of your location, you have the right to:</p>
       <ul>
         <li><strong>Access:</strong> Request a copy of your personal data</li>
-        <li><strong>Correction:</strong> Update inaccurate information</li>
-        <li><strong>Deletion:</strong> Request deletion of your account and data</li>
-        <li><strong>Portability:</strong> Receive your data in a portable format</li>
+        <li><strong>Correction:</strong> Update inaccurate or incomplete information</li>
+        <li><strong>Deletion:</strong> Request deletion of your account and personal data</li>
+        <li><strong>Portability:</strong> Receive your data in a commonly used, machine-readable format</li>
+        <li><strong>Withdraw consent:</strong> Where processing is based on consent, withdraw that consent at any time (e.g., cookie preferences)</li>
       </ul>
       
-      <h3>7.2 For EU/EEA Residents (GDPR)</h3>
-      <p>Under the General Data Protection Regulation, you also have the right to:</p>
+      <h3>8.2 For EU/EEA/UK Residents (GDPR)</h3>
+      <p>Under the General Data Protection Regulation, you additionally have the right to:</p>
       <ul>
-        <li>Restrict processing of your data</li>
-        <li>Object to processing based on legitimate interests</li>
-        <li>Withdraw consent at any time</li>
-        <li>Lodge a complaint with a supervisory authority</li>
+        <li><strong>Restrict processing:</strong> Request that we limit how we process your data</li>
+        <li><strong>Object to processing:</strong> Object to processing based on legitimate interests</li>
+        <li><strong>Lodge a complaint:</strong> File a complaint with your local data protection authority (supervisory authority)</li>
       </ul>
+      <p>We will respond to GDPR-related requests within 30 days. There is no fee for exercising these rights.</p>
       
-      <h3>7.3 For California Residents (CCPA)</h3>
-      <p>Under the California Consumer Privacy Act, you have the right to:</p>
+      <h3>8.3 For California Residents (CCPA/CPRA)</h3>
+      <p>Under the California Consumer Privacy Act and California Privacy Rights Act, you have the right to:</p>
       <ul>
-        <li>Know what personal information is collected</li>
-        <li>Know if your data is sold or disclosed</li>
-        <li>Opt out of the sale of personal information</li>
-        <li>Non-discrimination for exercising your rights</li>
+        <li><strong>Know:</strong> Request what personal information we collect, use, and disclose</li>
+        <li><strong>Delete:</strong> Request deletion of your personal information</li>
+        <li><strong>Opt-out:</strong> Opt out of the sale or sharing of personal information</li>
+        <li><strong>Non-discrimination:</strong> Exercise your rights without receiving discriminatory treatment</li>
+        <li><strong>Correct:</strong> Request correction of inaccurate personal information</li>
       </ul>
-      <p><strong>Note:</strong> We do not sell personal information.</p>
+      <p><strong>We do not sell or share personal information</strong> as defined by the CCPA/CPRA. We do not use sensitive personal information for purposes beyond what is necessary to provide the service.</p>
       
-      <h3>7.4 Exercising Your Rights</h3>
+      <h3>8.4 Exercising Your Rights</h3>
       <p>
-        To exercise any of these rights, please contact us at <a href="mailto:privacy@challengerun.net">privacy@challengerun.net</a>. We will respond within 30 days.
+        To exercise any of these rights, please contact us at <a href="mailto:privacy@challengerun.net">privacy@challengerun.net</a>. We will verify your identity before processing your request and respond within 30 days.
       </p>
     </section>
     
     <section id="children">
-      <h2>8. Children's Privacy</h2>
+      <h2>9. Children's Privacy</h2>
       <p>
-        The Website is not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13. If you are a parent or guardian and believe your child has provided us with personal information, please contact us, and we will delete such information.
+        The Website is not intended for children under <strong>13 years of age</strong> (or under 16 in jurisdictions where GDPR sets a higher age of consent). We do not knowingly collect personal information from children under these ages.
       </p>
       <p>
-        Users between 13-18 should have parental consent before creating an account.
+        If you are a parent or guardian and believe your child has provided us with personal information, please contact us at <a href="mailto:privacy@challengerun.net">privacy@challengerun.net</a>, and we will promptly delete such information.
+      </p>
+      <p>
+        Users between 13 and 18 years of age (or the age of majority in their jurisdiction) should have parental or guardian consent before creating an account.
       </p>
     </section>
     
     <section id="security">
-      <h2>9. Data Security</h2>
-      <p>We implement appropriate security measures including:</p>
+      <h2>10. Data Security</h2>
+      <p>We implement appropriate technical and organizational security measures to protect your personal data, including:</p>
       <ul>
-        <li>Encryption of data in transit (HTTPS)</li>
-        <li>Secure authentication via OAuth providers</li>
-        <li>Regular security updates</li>
-        <li>Access controls for sensitive data</li>
+        <li>Encryption of all data in transit (HTTPS/TLS)</li>
+        <li>Secure authentication via OAuth providers (no passwords stored by CRC)</li>
+        <li>Row-level security policies in our database (Supabase RLS)</li>
+        <li>DDoS protection and Web Application Firewall (Cloudflare)</li>
+        <li>Access controls restricting who can access user data</li>
+        <li>Regular security reviews</li>
       </ul>
       <p>
-        However, no method of transmission over the internet is 100% secure. We cannot guarantee absolute security.
+        However, no method of transmission over the internet or method of electronic storage is 100% secure. While we strive to use commercially reasonable means to protect your personal data, we cannot guarantee its absolute security.
+      </p>
+    </section>
+    
+    <section id="data-breach">
+      <h2>11. Data Breach Notification</h2>
+      <p>
+        In the event of a personal data breach that is likely to result in a risk to your rights and freedoms, we will:
+      </p>
+      <ul>
+        <li>Notify the relevant supervisory authority within <strong>72 hours</strong> of becoming aware of the breach (as required by GDPR)</li>
+        <li>Notify affected users <strong>without undue delay</strong> if the breach is likely to result in a high risk to their rights and freedoms</li>
+        <li>Document the breach, its effects, and the remedial actions taken</li>
+      </ul>
+      <p>
+        Notifications will describe the nature of the breach, the likely consequences, and the measures taken or proposed to address it.
       </p>
     </section>
     
     <section id="international">
-      <h2>10. International Data Transfers</h2>
+      <h2>12. International Data Transfers</h2>
       <p>
-        Your information may be transferred to and processed in countries other than your own. Our service providers (Supabase, Cloudflare) may process data in the United States and other locations.
+        CRC is operated from the United States. Your information may be transferred to and processed in countries other than your own, including the United States and other locations where our service providers operate.
       </p>
       <p>
-        By using the Website, you consent to the transfer of your information to these countries, which may have different data protection laws.
+        Our service providers (Supabase, Cloudflare, GitHub) may process data in the United States and at data centers globally. Where data is transferred outside the EEA/UK, our providers rely on appropriate safeguards such as Standard Contractual Clauses (SCCs) approved by the European Commission.
+      </p>
+      <p>
+        By using the Website, you acknowledge that your information may be transferred to countries that may have different data protection laws than your country of residence.
+      </p>
+    </section>
+    
+    <section id="do-not-track">
+      <h2>13. Do Not Track Signals</h2>
+      <p>
+        Some web browsers transmit "Do Not Track" (DNT) signals to websites. There is currently no universally accepted standard for how websites should respond to DNT signals.
+      </p>
+      <p>
+        Our Website does not currently alter its behavior in response to DNT signals. However, our analytics service (Cloudflare Web Analytics) is already privacy-focused: it does not track individual users across sites, does not use persistent cookies, and does not collect personally identifiable information. Additionally, analytics are only loaded after you give consent via our cookie banner.
+      </p>
+      <p>
+        If you wish to prevent all analytics data collection, you can reject analytics cookies using our <a href="#" id="privacy-dnt-cookie-settings">Cookie Settings</a>.
       </p>
     </section>
     
     <section id="changes">
-      <h2>11. Changes to This Policy</h2>
+      <h2>14. Changes to This Policy</h2>
       <p>
-        We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.
+        We may update this Privacy Policy from time to time. We will notify you of changes by updating the "Last updated" date at the top of this page.
       </p>
       <p>
-        For significant changes, we may also notify you via email or a prominent notice on the Website.
+        For significant changes (such as new categories of data collection or new third-party services), we will provide a prominent notice on the Website. If we materially change how we use personal data already collected, we will seek your consent where required by applicable law.
       </p>
     </section>
     
     <section id="contact">
-      <h2>12. Contact Us</h2>
-      <p>If you have questions about this Privacy Policy, please contact us:</p>
+      <h2>15. Contact Us</h2>
+      <p>If you have questions or concerns about this Privacy Policy, or wish to exercise your rights, please contact us:</p>
       <ul>
         <li>Email: <a href="mailto:privacy@challengerun.net">privacy@challengerun.net</a></li>
         <li>Support: <a href="/support/">Support Page</a></li>
       </ul>
+      <p>
+        If you are in the EU/EEA and are not satisfied with our response, you have the right to lodge a complaint with your local supervisory authority.
+      </p>
     </section>
   </div>
 </div>
@@ -270,7 +343,18 @@ title: "Privacy Policy"
 .legal-page h3 { margin-top: 1.5rem; margin-bottom: 0.75rem; font-size: 1.1rem; }
 .legal-page ul { margin: 0.75rem 0; padding-left: 1.5rem; }
 .legal-page li { margin: 0.5rem 0; }
-.legal-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+.legal-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
 .legal-table th, .legal-table td { padding: 0.75rem; text-align: left; border: 1px solid var(--border); }
-.legal-table th { background: var(--surface); }
+.legal-table th { background: var(--surface); font-weight: 600; }
 </style>
+
+<script>
+document.getElementById('privacy-cookie-settings')?.addEventListener('click', function(e) {
+  e.preventDefault();
+  if (window.CRCCookieConsent) window.CRCCookieConsent.showSettings();
+});
+document.getElementById('privacy-dnt-cookie-settings')?.addEventListener('click', function(e) {
+  e.preventDefault();
+  if (window.CRCCookieConsent) window.CRCCookieConsent.showSettings();
+});
+</script>

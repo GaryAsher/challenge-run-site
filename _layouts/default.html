@@ -58,6 +58,11 @@
   
   <!-- Preload critical assets -->
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  
+  <!-- Cloudflare Analytics token (loaded conditionally by cookie consent) -->
+  {% if site.data.cloudflare_analytics.token and site.data.cloudflare_analytics.token != "YOUR_CLOUDFLARE_WEB_ANALYTICS_TOKEN_HERE" %}
+  <meta name="cf-analytics-token" content="{{ site.data.cloudflare_analytics.token }}">
+  {% endif %}
 </head>
 {% include role-preview.html %}
 <body>
@@ -68,6 +73,7 @@
   </main>
   
   {% include footer.html %}
+  {% include cookie-consent.html %}
   
   <!-- Back to Top Button -->
   <button class="back-to-top" id="backToTop" hidden aria-label="Back to top">↑</button>

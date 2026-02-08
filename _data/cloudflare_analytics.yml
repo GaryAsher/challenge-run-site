@@ -1,0 +1,5 @@
+# Cloudflare Web Analytics Token
+# Get from: Cloudflare Dashboard > Web Analytics > JS Snippet
+# Set to manual setup so the beacon is not auto-injected
+
+token: "ea7eb9e5e41b48289e9e35224f750fb7"
