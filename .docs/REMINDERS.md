@@ -86,8 +86,14 @@ See [Migration Notes](#sveltekit-migration-notes) below for detailed planning.
 
 ## Medium-Term Priorities
 
-### 9. Multi-Game Runs
+### 9. Dark/Light Mode Toggle and Accessibility Features
+- [ ] Add light mode CSS variables
+- [ ] Add toggle button to header
+- [ ] Colorblind mode
+- [ ] Store preference in localStorage
+- [ ] Respect `prefers-color-scheme`
 
+### 10. Multi-Game Runs
 **What it is:** A multi-game run is a single challenge attempt that spans multiple individual games played in sequence. For example, a "Hitless Hades Marathon" where a runner plays Hades 1 and Hades 2 back-to-back without taking a hit across both games, or a "Soulsborne Deathless" run that chains Dark Souls 1 → 2 → 3 → Elden Ring. The run is tracked as one entry with one video and one combined time, but it references all the individual games involved.
 
 **How it works on CRC:**
@@ -106,13 +112,6 @@ See [Migration Notes](#sveltekit-migration-notes) below for detailed planning.
 - [ ] Update `games/index.html` to display multi-game badge
 - [ ] Update `generate-game-pages.js` and `generate-run-category-pages.js` to handle multi-game entries
 - [ ] Consider whether multi-game runs should also appear on individual game leaderboards (probably not — they'd have incomparable times)
-
-### 10. Dark/Light Mode Toggle and Accessibility Features
-- [ ] Add light mode CSS variables
-- [ ] Add toggle button to header
-- [ ] Colorblind mode
-- [ ] Store preference in localStorage
-- [ ] Respect `prefers-color-scheme`
 
 ### 11. History Tab Refinement
 - Needs Runner Profiles with Badges first
@@ -238,9 +237,6 @@ Notes for when CRC moves from Jekyll to SvelteKit (or Next.js). These are things
 - Consider `shadcn/ui` for component primitives
 
 ## Pre-Migration Cleanup (Do Before Starting)
-- [x] Fix hardcoded game logic in `submit-run.js` (character validation is now data-driven)
 - [ ] Remove `assets/style.css` after confirming SCSS pipeline
-- [ ] Remove `games/test-game/` duplicate directory
-- [ ] Remove `_queue_games/constance.md` leftover
 - [ ] Ensure all games use tiered category structure (no legacy `categories_data`)
 - [ ] Document the Google Form → GitHub pipeline so it can be replicated
