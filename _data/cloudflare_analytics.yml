@@ -2,4 +2,4 @@
 # Get from: Cloudflare Dashboard > Web Analytics > JS Snippet
 # Set to manual setup so the beacon is not auto-injected
 
-token: <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "ea7eb9e5e41b48289e9e35224f750fb7"}'></script><!-- End Cloudflare Web Analytics -->
+token: "<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "ea7eb9e5e41b48289e9e35224f750fb7"}'></script><!-- End Cloudflare Web Analytics -->"
