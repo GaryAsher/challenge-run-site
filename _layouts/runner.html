@@ -196,7 +196,7 @@ layout: default
   </section>
   {% endif %}
 
-  <nav class="runner-tabs game-tabs"><button class="tab active" data-tab="runs" type="button">Run Statistics</button><button class="tab" data-tab="achievements" type="button">Achievements</button><button class="tab" data-tab="activity" type="button">Activity</button><button class="tab" data-tab="contributions" type="button">Contributions</button></nav>
+  <nav class="runner-tabs game-tabs"><button class="tab active" data-tab="runs" type="button">Run Statistics</button><button class="tab" data-tab="achievements" type="button">Achievements</button><button class="tab" data-tab="contributions" type="button">Contributions</button><button class="tab" data-tab="activity" type="button">Activity</button></nav>
 
   <!-- RUNS PANEL -->
   <section class="tab-panel active" data-panel="runs">
@@ -257,10 +257,6 @@ layout: default
       
       <!-- Games Grid View (default, hidden when ?game= is set) -->
       <div id="runs-games-view">
-        <div class="card">
-          <h2>Run History</h2>
-          <p class="muted">{{ all_runner_runs.size }} run{% if all_runner_runs.size != 1 %}s{% endif %} across {{ games_with_runs.size }} game{% if games_with_runs.size != 1 %}s{% endif %}</p>
-        </div>
         <div class="runner-games-grid">
           {% for game_id in games_with_runs %}
             {% assign g = site.games | where: "game_id", game_id | first %}
@@ -440,6 +436,46 @@ layout: default
     
   </section>
 
+  <!-- CONTRIBUTIONS PANEL -->
+  <section class="tab-panel" data-panel="contributions">
+    <div class="card"><h2>🛠️ Community Contributions</h2><p class="muted mb-3">Tools, guides, and resources.</p>
+      {% if page.contributions and page.contributions.size > 0 %}
+        <div class="contributions-list" id="contributions-list">{% for c in page.contributions %}<div class="contribution-item"><div class="contribution-icon">{{ c.icon | default: '📄' }}</div><div class="contribution-info"><h4>{{ c.title }}</h4><p class="muted">{{ c.description }}</p>{% if c.url %}<a href="{{ c.url }}" target="_blank" class="contribution-link">View →</a>{% endif %}</div><span class="contribution-type">{{ c.type | default: 'Resource' }}</span></div>{% endfor %}</div>
+      {% else %}<div class="empty-state" id="contributions-empty"><span class="empty-icon">🛠️</span><p>No contributions listed yet.</p></div>{% endif %}
+    </div>
+    <div class="card mt-3"><h3>📋 Game Page Credits</h3><p class="muted mb-3">Games where this runner is credited:</p>
+      {% assign credited_games = "" | split: "" %}{% assign credited_roles = "" | split: "" %}{% for g in site.games %}{% assign is_credited = false %}{% assign credit_role = "Contributor" %}{% if g.credits %}{% for c in g.credits %}{% if c.runner_id == page.runner_id %}{% assign is_credited = true %}{% assign credit_role = c.role | default: "Contributor" %}{% break %}{% endif %}{% endfor %}{% endif %}{% if g.maintainers contains page.runner_id %}{% assign is_credited = true %}{% assign credit_role = "Maintainer" %}{% endif %}{% if is_credited %}{% assign credited_games = credited_games | push: g %}{% assign credited_roles = credited_roles | push: credit_role %}{% endif %}{% endfor %}
+      {% if credited_games.size > 0 %}<div class="credits-grid">{% for cg in credited_games %}<a href="{{ cg.url | relative_url }}" class="credit-game-card"><div class="credit-game-card__bg" data-bg="{{ cg.cover | relative_url }}"></div><div class="credit-game-card__overlay"><span class="credit-game-card__name">{{ cg.game_name }}</span><span class="credit-game-card__role">{{ credited_roles[forloop.index0] }}</span></div></a>{% endfor %}</div>{% else %}<p class="muted">No credits found.</p>{% endif %}
+    </div>
+    <div class="card mt-3"><h3>✅ Run Verifications</h3>
+      {% assign verified_runs = "" | split: "" %}{% for r in site.runs %}{% if r.verified_by == page.runner_id or r.verified_by == page.runner_name %}{% assign verified_runs = verified_runs | push: r %}{% endif %}{% endfor %}
+      {% if verified_runs.size > 0 %}<p>Verified <strong>{{ verified_runs.size }}</strong> run{% if verified_runs.size != 1 %}s{% endif %}</p>{% else %}<p class="muted">No verifications yet.</p>{% endif %}
+    </div>
+    <div class="card mt-3"><h3>🎨 Player-Made Challenges</h3>
+      <p class="muted mb-3">Custom challenge rulesets designed by this runner.</p>
+      {% if player_made_challenges.size > 0 %}
+        <div class="player-made-list">
+          {% for pm in player_made_challenges %}
+            {% assign pm_game = site.games | where: "game_id", pm.game_id | first %}
+            <div class="player-made-item">
+              <div class="player-made-item__icon">{{ pm.icon | default: '🎨' }}</div>
+              <div class="player-made-item__content">
+                <h4>{{ pm.label | default: pm.slug }}</h4>
+                {% if pm.description %}<p class="muted">{{ pm.description }}</p>{% endif %}
+                <div class="player-made-item__meta">
+                  {% if pm_game %}<a href="{{ pm_game.url | relative_url }}" class="player-made-item__game">{{ pm_game.game_name }}</a>{% endif %}
+                  {% if pm.date_added %}<span class="muted">• Added {{ pm.date_added | date: "%b %Y" }}</span>{% endif %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="muted">No player-made challenges yet.</p>
+      {% endif %}
+    </div>
+  </section>
+
   <!-- ACTIVITY TIMELINE PANEL -->
   <section class="tab-panel" data-panel="activity">
     <div class="card">
@@ -497,46 +533,6 @@ layout: default
     {% else %}
       <div class="empty-state"><span class="empty-icon">📅</span><p>No activity recorded yet.</p></div>
     {% endif %}
-  </section>
-
-  <!-- CONTRIBUTIONS PANEL -->
-  <section class="tab-panel" data-panel="contributions">
-    <div class="card"><h2>🛠️ Community Contributions</h2><p class="muted mb-3">Tools, guides, and resources.</p>
-      {% if page.contributions and page.contributions.size > 0 %}
-        <div class="contributions-list" id="contributions-list">{% for c in page.contributions %}<div class="contribution-item"><div class="contribution-icon">{{ c.icon | default: '📄' }}</div><div class="contribution-info"><h4>{{ c.title }}</h4><p class="muted">{{ c.description }}</p>{% if c.url %}<a href="{{ c.url }}" target="_blank" class="contribution-link">View →</a>{% endif %}</div><span class="contribution-type">{{ c.type | default: 'Resource' }}</span></div>{% endfor %}</div>
-      {% else %}<div class="empty-state" id="contributions-empty"><span class="empty-icon">🛠️</span><p>No contributions listed yet.</p></div>{% endif %}
-    </div>
-    <div class="card mt-3"><h3>📋 Game Page Credits</h3><p class="muted mb-3">Games where this runner is credited:</p>
-      {% assign credited_games = "" | split: "" %}{% assign credited_roles = "" | split: "" %}{% for g in site.games %}{% assign is_credited = false %}{% assign credit_role = "Contributor" %}{% if g.credits %}{% for c in g.credits %}{% if c.runner_id == page.runner_id %}{% assign is_credited = true %}{% assign credit_role = c.role | default: "Contributor" %}{% break %}{% endif %}{% endfor %}{% endif %}{% if g.maintainers contains page.runner_id %}{% assign is_credited = true %}{% assign credit_role = "Maintainer" %}{% endif %}{% if is_credited %}{% assign credited_games = credited_games | push: g %}{% assign credited_roles = credited_roles | push: credit_role %}{% endif %}{% endfor %}
-      {% if credited_games.size > 0 %}<div class="credits-grid">{% for cg in credited_games %}<a href="{{ cg.url | relative_url }}" class="credit-game-card"><div class="credit-game-card__bg" data-bg="{{ cg.cover | relative_url }}"></div><div class="credit-game-card__overlay"><span class="credit-game-card__name">{{ cg.game_name }}</span><span class="credit-game-card__role">{{ credited_roles[forloop.index0] }}</span></div></a>{% endfor %}</div>{% else %}<p class="muted">No credits found.</p>{% endif %}
-    </div>
-    <div class="card mt-3"><h3>✅ Run Verifications</h3>
-      {% assign verified_runs = "" | split: "" %}{% for r in site.runs %}{% if r.verified_by == page.runner_id or r.verified_by == page.runner_name %}{% assign verified_runs = verified_runs | push: r %}{% endif %}{% endfor %}
-      {% if verified_runs.size > 0 %}<p>Verified <strong>{{ verified_runs.size }}</strong> run{% if verified_runs.size != 1 %}s{% endif %}</p>{% else %}<p class="muted">No verifications yet.</p>{% endif %}
-    </div>
-    <div class="card mt-3"><h3>🎨 Player-Made Challenges</h3>
-      <p class="muted mb-3">Custom challenge rulesets designed by this runner.</p>
-      {% if player_made_challenges.size > 0 %}
-        <div class="player-made-list">
-          {% for pm in player_made_challenges %}
-            {% assign pm_game = site.games | where: "game_id", pm.game_id | first %}
-            <div class="player-made-item">
-              <div class="player-made-item__icon">{{ pm.icon | default: '🎨' }}</div>
-              <div class="player-made-item__content">
-                <h4>{{ pm.label | default: pm.slug }}</h4>
-                {% if pm.description %}<p class="muted">{{ pm.description }}</p>{% endif %}
-                <div class="player-made-item__meta">
-                  {% if pm_game %}<a href="{{ pm_game.url | relative_url }}" class="player-made-item__game">{{ pm_game.game_name }}</a>{% endif %}
-                  {% if pm.date_added %}<span class="muted">• Added {{ pm.date_added | date: "%b %Y" }}</span>{% endif %}
-                </div>
-              </div>
-            </div>
-          {% endfor %}
-        </div>
-      {% else %}
-        <p class="muted">No player-made challenges yet.</p>
-      {% endif %}
-    </div>
   </section>
 </div>
 
