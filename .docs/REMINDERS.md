@@ -11,10 +11,14 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Icons for Admins, Super Admins, Verifiers. These would be attached to their profile.
 - [ ] Add default profile picture and default banner.
 
-### 2  Dashboard & Review System
+### Dashboard & Review System
 - [ ] Remove GitHub PR workflow for runs
   - Need to pick Frontend framework first
   - Active games count could be enhanced by reading _data/form-index.json
+
+### Modded Game Support
+- [ ] Build game submission UI in admin dashboard (replaces Google Form for new games)
+  - Need to pick Frontend framework first
 
 ---
 
@@ -31,14 +35,11 @@ This document consolidates all reminders, future ideas, and planned features for
   - Personal Goals
     - Personal Goals not showing on user profile after they are made?
 
-### 2. Modded Game Support
-- [ ] Build game submission UI in admin dashboard (replaces Google Form for new games)
-
-### 3. Forms & Submissions
+### 2. Forms & Submissions
 - [ ] Test Discord Webhook for new game submissions
 - [ ] Test full end-to-end: form → Worker → Supabase → Dashboard → approve
 
-### 4. Legal Document Review
+### 3. Legal Document Review
 - [ ] Review Terms of Service line-by-line
 - [ ] Review Privacy Policy line-by-line
 - [ ] Add 13+ age requirement (like Speedrun.com)
