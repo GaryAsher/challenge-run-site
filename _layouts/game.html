@@ -33,7 +33,7 @@ layout: default
         {% endif %}
       {% endif %}
       
-      {% comment %} Check if this game has modded versions {% endcomment %}
+      <!-- Check if this game has modded versions -->
       {% assign modded_versions = "" | split: "" %}
       {% for g in site.games %}
         {% if g.base_game == page.game_id and g.is_modded %}
@@ -88,7 +88,7 @@ layout: default
                 {{ page.general_rules | markdownify }}
               </div>
             {% elsif site.data.default-rules.general_rules %}
-              {% comment %} Fall back to global default-rules {% endcomment %}
+              <!-- Fall back to global default-rules -->
               <p class="muted mb-3">Core rules that apply to all runs:</p>
               <div class="md">
                 {{ site.data.default-rules.general_rules | markdownify }}
@@ -117,7 +117,7 @@ layout: default
           <h2 class="mb-2">🏆 Community Achievements</h2>
           <p class="muted mb-3">Community-defined challenges tracked for this game.</p>
           
-          {% comment %} Get all achievement completions for this game {% endcomment %}
+          <!-- Get all achievement completions for this game -->
           {% assign game_completions = "" | split: "" %}
           {% for ac in site.achievements %}
             {% if ac.game_id == page.game_id %}
@@ -127,7 +127,7 @@ layout: default
           
           <div class="community-achievements-game">
             {% for ach in page.community_achievements %}
-              {% comment %} Count completions for this specific achievement {% endcomment %}
+              <!-- Count completions for this specific achievement -->
               {% assign ach_completions = "" | split: "" %}
               {% assign ach_in_progress = "" | split: "" %}
               {% for comp in game_completions %}
@@ -181,7 +181,7 @@ layout: default
                     <div class="achievement-game-runners">
                       <h4>Runner Progress</h4>
                       <div class="achievement-runners-list">
-                        {% comment %} Show completed runners first, sorted by date {% endcomment %}
+                        <!-- Show completed runners first, sorted by date -->
                         {% assign sorted_completions = ach_completions | sort: "date_completed" %}
                         {% for comp in sorted_completions %}
                           {% assign runner = site.runners | where: "runner_id", comp.runner_id | first %}
@@ -208,7 +208,7 @@ layout: default
                           </div>
                         {% endfor %}
                         
-                        {% comment %} Show in-progress runners {% endcomment %}
+                        <!-- Show in-progress runners -->
                         {% assign sorted_progress = ach_in_progress | sort: "current_progress" | reverse %}
                         {% for comp in sorted_progress %}
                           {% assign runner = site.runners | where: "runner_id", comp.runner_id | first %}
