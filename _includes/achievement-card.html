@@ -1,24 +1,16 @@
-<!--
-  Achievement Card Component
-  
-  Usage:
-    {% include achievement-card.html 
-       achievement=achievement 
-       game=game 
-       completions=completions 
-       show_game=true 
-       show_completions=true 
-       runner_progress=progress
-    %}
-  
-  Parameters:
-    - achievement: The achievement object (from community_achievements)
-    - game: The game object (optional, for linking)
-    - completions: Array of completion objects for this achievement
-    - show_game: Whether to show game name (default: false)
-    - show_completions: Whether to show completion count/list (default: true)
-    - runner_progress: Progress object for current runner {current: X, total: Y}
--->
+<!-- Achievement Card Component
+     
+     Usage: include achievement-card.html
+       achievement=achievement game=game completions=completions
+       show_game=true show_completions=true runner_progress=progress
+
+     Parameters:
+       - achievement: The achievement object (from community_achievements)
+       - game: The game object (optional, for linking)
+       - completions: Array of completion objects for this achievement
+       - show_game: Whether to show game name (default: false)
+       - show_completions: Whether to show completion count/list (default: true)
+       - runner_progress: Progress object for current runner {current: X, total: Y} -->
 
 {% assign ach = include.achievement %}
 {% assign g = include.game %}
