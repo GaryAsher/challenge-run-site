@@ -1,0 +1,113 @@
+---
+layout: default
+title: "Runs in Queue"
+---
+
+<div class="page-width">
+  <p class="muted mb-3">
+    <a href="{{ '/admin/' | relative_url }}">← Dashboard</a>
+  </p>
+
+  <div class="runs-queue-page">
+    <!-- Loading -->
+    <div id="loading-state" class="card">
+      <div class="rq-loading">
+        <div class="spinner"></div>
+        <p class="muted">Checking access...</p>
+      </div>
+    </div>
+
+    <!-- Not authorized -->
+    <div id="not-authorized" class="card" hidden>
+      <h2>🔒 Access Denied</h2>
+      <p class="muted">You need verifier, admin, or super admin privileges to view the runs queue.</p>
+      <a href="/" class="btn btn--primary">Go Home</a>
+    </div>
+
+    <!-- Content -->
+    <div id="content" hidden>
+      <h1>✅ Runs in Queue</h1>
+      <p class="muted mb-4">Submitted runs awaiting verification, grouped by game.</p>
+
+      <div class="card">
+        <div class="rq-wip">
+          <span class="rq-wip__icon">🚧</span>
+          <div class="rq-wip__content">
+            <h2>Verification System — In Progress</h2>
+            <p class="muted">A dedicated run verification workflow is being built. This page will show runs awaiting verification, sorted by game, with tools to approve, reject, and leave feedback.</p>
+            <p class="muted mt-2">In the meantime, you can review pending runs from the existing admin panel:</p>
+            <a href="{{ '/admin/runs/' | relative_url }}" class="btn btn--primary mt-3">Go to Pending Runs →</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-3">
+        <h3 class="mb-2">What's Coming</h3>
+        <ul class="rq-roadmap">
+          <li>
+            <span class="rq-roadmap__status rq-roadmap__status--planned">Planned</span>
+            <span>Per-game verification queues with badge counts</span>
+          </li>
+          <li>
+            <span class="rq-roadmap__status rq-roadmap__status--planned">Planned</span>
+            <span>Inline video review with timestamp notes</span>
+          </li>
+          <li>
+            <span class="rq-roadmap__status rq-roadmap__status--planned">Planned</span>
+            <span>Verifier feedback messages to runners</span>
+          </li>
+          <li>
+            <span class="rq-roadmap__status rq-roadmap__status--planned">Planned</span>
+            <span>Bulk approve/reject actions</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.runs-queue-page { max-width: 720px; margin: 0 auto; }
+.rq-loading { text-align: center; padding: 3rem; }
+
+.rq-wip { display: flex; align-items: flex-start; gap: 1.25rem; padding: 0.5rem; }
+.rq-wip__icon { font-size: 2.5rem; line-height: 1; }
+.rq-wip__content h2 { margin: 0 0 0.5rem 0; font-size: 1.15rem; }
+.rq-wip__content p { margin: 0; }
+
+.rq-roadmap { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.75rem; }
+.rq-roadmap li { display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; }
+.rq-roadmap__status {
+  display: inline-block; font-size: 0.65rem; font-weight: 700;
+  padding: 2px 8px; border-radius: 4px;
+  text-transform: uppercase; letter-spacing: 0.4px;
+  flex-shrink: 0;
+}
+.rq-roadmap__status--planned { background: rgba(99, 102, 241, 0.2); color: #818cf8; }
+.rq-roadmap__status--progress { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+.rq-roadmap__status--done { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+
+@media (max-width: 600px) {
+  .rq-wip { flex-direction: column; }
+}
+</style>
+
+<script type="module">
+import { CRCAdmin } from '{{ "/assets/js/admin.js" | relative_url }}';
+
+(async function() {
+  const loadingEl = document.getElementById('loading-state');
+  const deniedEl = document.getElementById('not-authorized');
+  const contentEl = document.getElementById('content');
+
+  function showState(s) {
+    loadingEl.hidden = s !== 'loading';
+    deniedEl.hidden = s !== 'denied';
+    contentEl.hidden = s !== 'ready';
+  }
+
+  const role = await CRCAdmin.init();
+  if (!role) { showState('denied'); return; }
+  showState('ready');
+})();
+</script>
