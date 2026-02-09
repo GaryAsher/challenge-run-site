@@ -6,7 +6,7 @@ layout: default
 {% assign banner = page.banner | default: "/assets/img/site/default-banner.jpg" %}
 {% assign accent = page.accent_color | default: "var(--accent)" %}
 
-{% comment %} Pre-process all runs data for this runner {% endcomment %}
+<!-- Pre-process all runs data for this runner -->
 {% assign cleaned = "" | split: "" %}
 {% for r in site.runs %}{% if r and r.runner_id %}{% assign cleaned = cleaned | push: r %}{% endif %}{% endfor %}
 {% assign rid = page.runner_id | default: "" | strip | downcase %}
@@ -14,7 +14,7 @@ layout: default
 {% assign games_with_runs = "" | split: "" %}
 {% for r in all_runner_runs %}{% unless games_with_runs contains r.game_id %}{% assign games_with_runs = games_with_runs | push: r.game_id %}{% endunless %}{% endfor %}
 
-{% comment %} Team affiliations {% endcomment %}
+<!-- Team affiliations -->
 {% assign runner_teams = "" | split: "" %}
 {% for team in site.teams %}
   {% if team.hidden %}{% continue %}{% endif %}
@@ -26,7 +26,7 @@ layout: default
   {% endfor %}
 {% endfor %}
 
-{% comment %} Genre frequency (top 3) {% endcomment %}
+<!-- Genre frequency (top 3) -->
 {% assign all_genres = "" | split: "" %}
 {% for gid in games_with_runs %}
   {% assign g = site.games | where: "game_id", gid | first %}
@@ -38,7 +38,7 @@ layout: default
 {% endfor %}
 {% assign unique_genres = all_genres | uniq %}
 
-{% comment %} Most played game {% endcomment %}
+<!-- Most played game -->
 {% assign most_played_id = "" %}
 {% assign most_played_count = 0 %}
 {% for gid in games_with_runs %}
@@ -50,7 +50,7 @@ layout: default
 {% endfor %}
 {% assign most_played_game = site.games | where: "game_id", most_played_id | first %}
 
-{% comment %} Player-made challenges (across all games) {% endcomment %}
+<!-- Player-made challenges (across all games) -->
 {% assign player_made_challenges = "" | split: "" %}
 {% for g in site.games %}
   {% if g.player_made %}
@@ -63,7 +63,7 @@ layout: default
   {% endif %}
 {% endfor %}
 
-{% comment %} Calculate full runs vs mini-challenge runs {% endcomment %}
+<!-- Calculate full runs vs mini-challenge runs -->
 {% assign full_run_count = 0 %}
 {% assign mini_run_count = 0 %}
 {% for r in all_runner_runs %}
@@ -71,7 +71,7 @@ layout: default
   {% assign is_full_run = false %}
   {% assign is_mini_run = false %}
   
-  {% comment %} Check if category_slug matches a full_run {% endcomment %}
+  <!-- Check if category_slug matches a full_run -->
   {% if game.full_runs %}
     {% for fr in game.full_runs %}
       {% if fr.slug == r.category_slug %}
@@ -81,7 +81,7 @@ layout: default
     {% endfor %}
   {% endif %}
   
-  {% comment %} Check if category_slug matches a mini_challenge (including nested children) {% endcomment %}
+  <!-- Check if category_slug matches a mini_challenge (including nested children) -->
   {% unless is_full_run %}
     {% if game.mini_challenges %}
       {% for mc in game.mini_challenges %}
@@ -107,7 +107,7 @@ layout: default
   {% elsif is_mini_run %}
     {% assign mini_run_count = mini_run_count | plus: 1 %}
   {% else %}
-    {% comment %} Default to full run if category type unknown {% endcomment %}
+    <!-- Default to full run if category type unknown -->
     {% assign full_run_count = full_run_count | plus: 1 %}
   {% endif %}
 {% endfor %}
@@ -331,7 +331,7 @@ layout: default
   <!-- ACHIEVEMENTS PANEL -->
   <section class="tab-panel" data-panel="achievements">
     
-    {% comment %} Get this runner's community achievement completions {% endcomment %}
+    <!-- Get this runner's community achievement completions -->
     {% assign runner_completions = "" | split: "" %}
     {% for ac in site.achievements %}
       {% if ac.runner_id == page.runner_id and ac.status == 'approved' %}
@@ -483,7 +483,7 @@ layout: default
       <p class="muted mb-3">Recent challenge run activity.</p>
     </div>
     
-    {% comment %} Build timeline from runs + achievements {% endcomment %}
+    <!-- Build timeline from runs + achievements -->
     {% assign timeline_items = "" | split: "" %}
     {% for r in all_runner_runs %}
       {% assign t_item = r.date_completed | append: "|||run|||" | append: r.game_id | append: "|||" | append: r.category | append: "|||" | append: r.time_primary | default: r.time %}
