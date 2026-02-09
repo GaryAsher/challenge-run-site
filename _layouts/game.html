@@ -271,6 +271,166 @@ layout: default
         {% endif %}
       </div>
 
+      <!-- =========================================================
+           6. Suggest an Update
+           ========================================================= -->
+      <div class="card card--compact mt-4" id="suggest-update-section">
+        <h2 class="mb-2">📝 Suggest an Update</h2>
+        <p class="muted mb-3">Notice something incorrect or missing on this page? Let us know and we'll get it fixed.</p>
+        
+        <!-- Not signed in state -->
+        <div id="suggest-not-signed-in">
+          <p class="muted"><a href="{{ '/sign-in/' | relative_url }}">Sign in</a> to suggest an update to this page.</p>
+        </div>
+        
+        <!-- Signed in form -->
+        <div id="suggest-form-wrap" hidden>
+          <form id="suggest-update-form" class="suggest-update-form">
+            <div class="suggest-update-form__field">
+              <label class="form-label" for="suggest-section">What area needs updating?</label>
+              <select id="suggest-section" class="form-input" required>
+                <option value="">Select a section...</option>
+                <option value="game-description">Game Description</option>
+                <option value="full-runs">Full Runs / Categories</option>
+                <option value="mini-challenges">Mini Challenges</option>
+                <option value="rules">Rules or Definitions</option>
+                <option value="achievements">Achievements</option>
+                <option value="credits">Credits</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            
+            <div class="suggest-update-form__field">
+              <label class="form-label" for="suggest-type">What kind of change?</label>
+              <select id="suggest-type" class="form-input" required>
+                <option value="">Select type...</option>
+                <option value="incorrect">Something is incorrect</option>
+                <option value="missing">Something is missing</option>
+                <option value="outdated">Information is outdated</option>
+                <option value="typo">Typo or formatting issue</option>
+                <option value="suggestion">General suggestion</option>
+              </select>
+            </div>
+            
+            <div class="suggest-update-form__field">
+              <label class="form-label" for="suggest-details">Describe the issue *</label>
+              <textarea id="suggest-details" class="form-input" rows="4" maxlength="1000" required placeholder="Be as specific as possible. For example: 'The Hitless category incorrectly states you cannot take environmental damage, but the community consensus is...'"></textarea>
+              <p class="form-help"><span id="suggest-count">0</span>/1000</p>
+            </div>
+            
+            <div id="suggest-message" class="suggest-message" hidden></div>
+            
+            <button type="submit" class="btn btn--primary" id="suggest-submit-btn">
+              <span class="btn__text">Submit Suggestion</span>
+              <span class="btn__loading" hidden>
+                <span class="spinner spinner--small"></span>
+                Submitting...
+              </span>
+            </button>
+          </form>
+          
+          <!-- Success state -->
+          <div id="suggest-success" hidden>
+            <div class="suggest-success-msg">
+              <span>✅</span>
+              <div>
+                <strong>Thanks for your suggestion!</strong>
+                <p class="muted">A moderator will review it shortly.</p>
+              </div>
+            </div>
+            <button type="button" class="btn btn--small mt-3" onclick="document.getElementById('suggest-success').hidden=true;document.getElementById('suggest-update-form').hidden=false;document.getElementById('suggest-update-form').reset();">
+              Submit Another
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <style>
+      .suggest-update-form { display: flex; flex-direction: column; gap: 1rem; }
+      .suggest-update-form__field { display: flex; flex-direction: column; gap: 0.25rem; }
+      .suggest-update-form .form-label { font-size: 0.85rem; font-weight: 600; }
+      .suggest-update-form .form-input { font-size: 0.9rem; padding: 0.5rem 0.75rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--fg); font-family: inherit; }
+      .suggest-update-form .form-input:focus { outline: none; border-color: var(--accent); }
+      .suggest-update-form textarea { resize: vertical; min-height: 80px; }
+      .suggest-message { padding: 0.6rem 0.75rem; border-radius: 6px; font-size: 0.85rem; }
+      .suggest-message--error { background: rgba(231, 76, 60, 0.15); color: #e74c3c; border: 1px solid rgba(231, 76, 60, 0.3); }
+      .suggest-message--success { background: rgba(46, 204, 113, 0.15); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.3); }
+      .suggest-success-msg { display: flex; align-items: flex-start; gap: 0.75rem; padding: 1rem; background: rgba(46, 204, 113, 0.1); border: 1px solid rgba(46, 204, 113, 0.25); border-radius: var(--radius-sm); }
+      .suggest-success-msg span:first-child { font-size: 1.5rem; }
+      .suggest-success-msg p { margin: 0.25rem 0 0 0; font-size: 0.85rem; }
+      </style>
+      
+      <script type="module">
+      import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
+      
+      const GAME_ID = {{ page.game_id | jsonify }};
+      const GAME_NAME = {{ page.game_name | jsonify }};
+      
+      (async function() {
+        await CRCAuth.init();
+        
+        if (!CRCAuth.isSignedIn()) return;
+        
+        // Show form, hide sign-in prompt
+        document.getElementById('suggest-not-signed-in').hidden = true;
+        document.getElementById('suggest-form-wrap').hidden = false;
+        
+        // Character count
+        const details = document.getElementById('suggest-details');
+        const count = document.getElementById('suggest-count');
+        details.addEventListener('input', () => { count.textContent = details.value.length; });
+        
+        // Form submission
+        document.getElementById('suggest-update-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          
+          const btn = document.getElementById('suggest-submit-btn');
+          const btnText = btn.querySelector('.btn__text');
+          const btnLoading = btn.querySelector('.btn__loading');
+          const msgEl = document.getElementById('suggest-message');
+          
+          msgEl.hidden = true;
+          btn.disabled = true;
+          btnText.hidden = true;
+          btnLoading.hidden = false;
+          
+          try {
+            const supabase = CRCAuth.getSupabaseClient();
+            const user = CRCAuth.getUser();
+            const profile = CRCAuth.getProfile();
+            
+            if (!supabase || !user) throw new Error('Not signed in');
+            
+            const { error } = await supabase.from('game_update_requests').insert({
+              game_id: GAME_ID,
+              game_name: GAME_NAME,
+              user_id: user.id,
+              runner_id: profile?.runner_id || null,
+              section: document.getElementById('suggest-section').value,
+              update_type: document.getElementById('suggest-type').value,
+              details: details.value.trim(),
+              status: 'pending',
+              page_url: window.location.pathname
+            });
+            
+            if (error) throw error;
+            
+            document.getElementById('suggest-update-form').hidden = true;
+            document.getElementById('suggest-success').hidden = false;
+            
+          } catch (err) {
+            msgEl.textContent = err.message || 'Failed to submit. Please try again.';
+            msgEl.className = 'suggest-message suggest-message--error';
+            msgEl.hidden = false;
+          } finally {
+            btn.disabled = false;
+            btnText.hidden = false;
+            btnLoading.hidden = true;
+          }
+        });
+      })();
+      </script>
+
     </section>
 
   </div>
