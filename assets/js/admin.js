@@ -142,6 +142,8 @@ function getModRecord() { return _modRecord; }
 
 function isSuperAdmin() { return _role === 'super_admin'; }
 function isAdmin() { return _role === 'super_admin' || _role === 'admin'; }
+
+function getSupabase() { return CRCAuth.getSupabaseClient?.() || null; }
 function isVerifier() { return _role === 'verifier'; }
 function hasAccess() { return !!_role; }
 
@@ -199,19 +201,19 @@ function getAccessibleSections() {
 
   const sections = [];
 
-  // Verifiers: only runs for their games
+  // Verifiers: runs + game updates for their games
   if (role === 'verifier') {
-    sections.push('runs');
+    sections.push('game-updates', 'runs');
   }
 
-  // Admins: profiles, games, runs
+  // Admins: profiles, games, runs, game-updates
   if (role === 'admin') {
-    sections.push('profiles', 'games', 'runs');
+    sections.push('profiles', 'games', 'runs', 'game-updates');
   }
 
   // Super admins: everything
   if (role === 'super_admin') {
-    sections.push('profiles', 'games', 'runs', 'health', 'financials', 'debug');
+    sections.push('health', 'financials', 'debug', 'profiles', 'games', 'runs', 'game-updates');
   }
 
   return sections;
@@ -933,6 +935,7 @@ function roleLabel(role) {
 export const CRCAdmin = {
   init,
   getRole,
+  getSupabase,
   getAssignedGames,
   getProfile,
   getModRecord,
