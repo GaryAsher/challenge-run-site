@@ -464,9 +464,7 @@
       <div class="accordion-content">
         <div class="accordion">
           {% for ch in game.challenges_data %}
-            {% comment %}
-              If the game's challenge has no description, fall back to global _data/challenges.yml
-            {% endcomment %}
+            <!-- If the game's challenge has no description, fall back to global _data/challenges.yml -->
             {% assign ch_desc = ch.description %}
             {% if ch_desc == nil or ch_desc == "" or ch_desc == blank %}
               {% assign global_challenge = site.data.challenges[ch.slug] %}
