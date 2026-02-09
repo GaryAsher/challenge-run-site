@@ -31,14 +31,14 @@ This document consolidates all reminders, future ideas, and planned features for
   - Personal Goals
     - Personal Goals not showing on user profile after they are made?
 
-### 3. Modded Game Support
+### 2. Modded Game Support
 - [ ] Build game submission UI in admin dashboard (replaces Google Form for new games)
 
-### 4. Forms & Submissions
+### 3. Forms & Submissions
 - [ ] Test Discord Webhook for new game submissions
 - [ ] Test full end-to-end: form → Worker → Supabase → Dashboard → approve
 
-### 4.5. Legal Document Review
+### 4. Legal Document Review
 - [ ] Review Terms of Service line-by-line
 - [ ] Review Privacy Policy line-by-line
 - [ ] Add 13+ age requirement (like Speedrun.com)
