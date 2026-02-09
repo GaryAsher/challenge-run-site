@@ -35,6 +35,16 @@ This document consolidates all reminders, future ideas, and planned features for
   - Personal Goals
     - Personal Goals not showing on user profile after they are made?
 
+### 1.5 Admin Panel
+- [ ] Can dashboard be above Super Admin? Admins still should not be able to see Super Admin things.
+- [ ] Super Admin Order:
+ - Site Health
+ - Financials
+ - Debug
+- Have Super Admin's Dashboard follow the order:
+ - Same as Admin dashboard, except:
+   - Below Admin section is Site Health > Financials > Debug
+
 ### 2. Forms & Submissions
 - [ ] Test Discord Webhook for new game submissions
 - [ ] Test full end-to-end: form → Worker → Supabase → Dashboard → approve
