@@ -112,7 +112,13 @@
     </div>
     <nav class="admin-panel__nav">
       
-      <!-- Super Admin Only Section (at top) -->
+      <!-- Dashboard (all roles) -->
+      <a href="/admin/" class="admin-panel__item admin-panel__item--dashboard" id="admin-dashboard-link">
+        <span class="admin-panel__icon">📊</span>
+        <span class="admin-panel__text">Dashboard</span>
+      </a>
+      
+      <!-- Super Admin Section -->
       <div id="super-admin-section" hidden>
         <hr class="admin-panel__divider">
         <div class="admin-panel__section-title">Super Admin</div>
@@ -124,20 +130,16 @@
           <span class="admin-panel__icon">💰</span>
           <span class="admin-panel__text">Financials</span>
         </a>
+        <a href="/admin/debug/" class="admin-panel__item">
+          <span class="admin-panel__icon">🔧</span>
+          <span class="admin-panel__text">Debug Tools</span>
+        </a>
       </div>
       
       <!-- Admin Section -->
-      <div id="admin-section">
-        <hr class="admin-panel__divider" id="admin-divider-1">
+      <div id="admin-section" hidden>
+        <hr class="admin-panel__divider">
         <div class="admin-panel__section-title" id="admin-section-title">Admin</div>
-        
-        <!-- Dashboard (Admin/Super Admin only) -->
-        <a href="/admin/" class="admin-panel__item" id="admin-dashboard-link">
-          <span class="admin-panel__icon">📊</span>
-          <span class="admin-panel__text">Dashboard</span>
-        </a>
-        
-        <!-- Moderation Queue (order: Profiles -> Games -> Runs) -->
         <a href="/admin/profiles/" class="admin-panel__item" id="admin-profiles-link">
           <span class="admin-panel__icon">👥</span>
           <span class="admin-panel__text">Pending Profiles</span>
@@ -153,26 +155,33 @@
           <span class="admin-panel__text">Pending Runs</span>
           <span class="admin-panel__badge" id="admin-runs-badge" hidden>0</span>
         </a>
-        
-        <hr class="admin-panel__divider" id="admin-divider-2">
-        
-        <!-- Support & Reports (Admin only) -->
-        <a href="/admin/users/" class="admin-panel__item" id="admin-reports-link">
-          <span class="admin-panel__icon">⚠️</span>
-          <span class="admin-panel__text">User Reports</span>
-          <span class="admin-panel__badge" id="admin-reports-badge" hidden>0</span>
-        </a>
+        <hr class="admin-panel__divider">
         <a href="/admin/support/" class="admin-panel__item" id="admin-support-link">
           <span class="admin-panel__icon">🎫</span>
           <span class="admin-panel__text">Support Tickets</span>
           <span class="admin-panel__badge" id="admin-support-badge" hidden>0</span>
         </a>
+        <a href="/admin/users/" class="admin-panel__item" id="admin-reports-link">
+          <span class="admin-panel__icon">⚠️</span>
+          <span class="admin-panel__text">User Reports</span>
+          <span class="admin-panel__badge" id="admin-reports-badge" hidden>0</span>
+        </a>
       </div>
       
-      <!-- Verifier Only Section (shows assigned games) -->
+      <!-- Verifier Section (verifiers, or admins with verified games) -->
       <div id="verifier-section" hidden>
         <hr class="admin-panel__divider">
         <div class="admin-panel__section-title">Verifier</div>
+        <a href="/admin/game-updates/" class="admin-panel__item" id="admin-game-updates-link">
+          <span class="admin-panel__icon">📝</span>
+          <span class="admin-panel__text">Game Updates</span>
+          <span class="admin-panel__badge" id="admin-game-updates-badge" hidden>0</span>
+        </a>
+        <a href="/admin/runs-queue/" class="admin-panel__item" id="admin-runs-queue-link">
+          <span class="admin-panel__icon">✅</span>
+          <span class="admin-panel__text">Runs in Queue</span>
+          <span class="admin-panel__badge" id="admin-runs-queue-badge" hidden>0</span>
+        </a>
         <div id="verifier-games-list">
           <!-- Populated by JS based on assigned games -->
         </div>
@@ -279,6 +288,7 @@
 .admin-panel__item:hover { background: rgba(var(--accent-rgb), 0.15); border-left-color: var(--accent); }
 .admin-panel__item--home { color: var(--text-muted); }
 .admin-panel__item--home:hover { color: var(--fg); }
+.admin-panel__item--dashboard { font-weight: 600; }
 
 .admin-panel__icon { font-size: 1.1rem; width: 24px; text-align: center; }
 .admin-panel__text { flex: 1; }
@@ -554,30 +564,38 @@ function setupAdminPanel(role, profile) {
   const adminSection = document.getElementById('admin-section');
   const verifierSection = document.getElementById('verifier-section');
   
-  // Hide elements based on role
+  // Get verified games from profile (admins/super admins may also verify games)
+  const verifiedGames = profile?.verified_games || [];
+  
   if (role === 'super_admin') {
     roleBadge.textContent = 'Super Admin';
     roleBadge.style.background = '#9b59b6';
     panelTitle.textContent = 'Administration';
     superAdminSection.hidden = false;
     adminSection.hidden = false;
+    // Show verifier section if they have verified games
+    if (verifiedGames.length > 0) {
+      verifierSection.hidden = false;
+      loadVerifierGames(verifiedGames);
+    }
   } else if (role === 'admin') {
     roleBadge.textContent = 'Admin';
     panelTitle.textContent = 'Moderation';
     superAdminSection.hidden = true;
     adminSection.hidden = false;
+    // Show verifier section if they also have verified games
+    if (verifiedGames.length > 0) {
+      verifierSection.hidden = false;
+      loadVerifierGames(verifiedGames);
+    }
   } else if (role === 'verifier') {
     roleBadge.textContent = 'Verifier';
     roleBadge.style.background = '#3498db';
     panelTitle.textContent = 'Verification';
-    
-    // Hide super admin and admin sections
     superAdminSection.hidden = true;
     adminSection.hidden = true;
-    
-    // Show verifier section with their games
     verifierSection.hidden = false;
-    loadVerifierGames(profile?.verified_games || []);
+    loadVerifierGames(verifiedGames);
   }
 }
 
@@ -627,6 +645,16 @@ async function loadAdminCounts() {
       if (badge) { badge.hidden = false; badge.textContent = profiles; }
       total += profiles;
     }
+    
+    // Game update requests count
+    try {
+      const { count: updates } = await supabase.from('game_update_requests').select('*', { count: 'exact', head: true }).eq('status', 'pending');
+      if (updates > 0) {
+        const badge = document.getElementById('admin-game-updates-badge');
+        if (badge) { badge.hidden = false; badge.textContent = updates; }
+        total += updates;
+      }
+    } catch (e) { /* table may not exist yet */ }
     
     if (total > 0) {
       // Update header admin button badge
