@@ -1,4 +1,4 @@
-{% comment %}
+<!--
   Achievement Card Component
   
   Usage:
@@ -18,7 +18,7 @@
     - show_game: Whether to show game name (default: false)
     - show_completions: Whether to show completion count/list (default: true)
     - runner_progress: Progress object for current runner {current: X, total: Y}
-{% endcomment %}
+-->
 
 {% assign ach = include.achievement %}
 {% assign g = include.game %}
@@ -27,7 +27,7 @@
 {% assign show_completions = include.show_completions | default: true %}
 {% assign progress = include.runner_progress %}
 
-{% comment %} Difficulty colors {% endcomment %}
+<!-- Difficulty colors -->
 {% case ach.difficulty %}
   {% when 'easy' %}
     {% assign diff_class = 'difficulty--easy' %}
@@ -46,7 +46,7 @@
     {% assign diff_label = '' %}
 {% endcase %}
 
-{% comment %} Count approved completions {% endcomment %}
+<!-- Count approved completions -->
 {% assign approved_comps = "" | split: "" %}
 {% for c in comps %}
   {% if c.status == 'approved' %}
@@ -55,7 +55,7 @@
 {% endfor %}
 {% assign comp_count = approved_comps.size %}
 
-{% comment %} Find first completion {% endcomment %}
+<!-- Find first completion -->
 {% assign first_completion = approved_comps | sort: 'date_completed' | first %}
 
 <div class="achievement-card {% if comp_count > 0 %}achievement-card--completed{% endif %}">
