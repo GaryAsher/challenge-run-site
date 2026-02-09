@@ -29,7 +29,6 @@ concurrency:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   sync:
@@ -89,60 +88,23 @@ jobs:
             echo "No changes to runner profiles"
           fi
 
-      - name: Create Pull Request
+      - name: Commit and push directly
         if: steps.changes.outputs.has_changes == 'true'
-        uses: peter-evans/create-pull-request@v6
-        id: cpr
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore: Sync runner profiles from database [auto]"
-          branch: auto/sync-runner-profiles
-          delete-branch: true
-          title: "🔄 Sync runner profiles"
-          body: |
-            ## Automated Runner Profile Sync
-
-            This PR syncs runner profile changes from the Supabase database to Jekyll markdown files.
-
-            **Trigger:** ${{ github.event_name }}
-            ${{ github.event.inputs.runner_id && format('**Runner:** {0}', github.event.inputs.runner_id) || '' }}
-            ${{ github.event.client_payload.runner_id && format('**Runner:** {0}', github.event.client_payload.runner_id) || '' }}
-
-            ### What's synced
-            - Display name
-            - Bio
-            - Status message
-            - Social links
-            - Avatar URL
-            - Theme accent color
-            - Achievements
-            - Contributions
-
-            ### What's preserved
-            - Admin flags (`is_admin`, `can_view_test_content`)
-            - Manual overrides
-
-            ---
-            *This PR can be auto-merged if all checks pass.*
-          labels: |
-            automated
-            runner-sync
-          # Update existing PR if the branch already exists
-          update-operation: update
-
-      - name: Enable Auto-Merge
-        if: steps.changes.outputs.has_changes == 'true' && steps.cpr.outputs.pull-request-number
         run: |
-          gh pr merge ${{ steps.cpr.outputs.pull-request-number }} --auto --squash || true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A _runners/
+          git commit -m "chore: Sync runner profiles from database [skip ci]"
+          git push
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Summary
         run: |
           echo "## Runner Profile Sync Summary" >> $GITHUB_STEP_SUMMARY
           if [[ "${{ steps.changes.outputs.has_changes }}" == "true" ]]; then
-            echo "✅ Created/Updated PR #${{ steps.cpr.outputs.pull-request-number }}" >> $GITHUB_STEP_SUMMARY
-            echo "🔗 ${{ steps.cpr.outputs.pull-request-url }}" >> $GITHUB_STEP_SUMMARY
+            echo "✅ Changes committed directly to main" >> $GITHUB_STEP_SUMMARY
+            echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           else
             echo "✅ No changes needed - profiles are in sync" >> $GITHUB_STEP_SUMMARY
           fi
