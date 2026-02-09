@@ -276,25 +276,68 @@ title: "Site Health"
       </div>
       
       <!-- Slow Query Details -->
+      <!-- Slow Query Details (expandable) -->
       <div class="api-slow-queries mt-3" id="slow-queries-section" hidden>
-        <h3>🐢 Slow Query Details</h3>
-        <div class="slow-queries-list" id="slow-queries-list">
-          <!-- Populated by JS -->
+        <div class="slow-queries-header">
+          <h3>🐢 Slow Query Details</h3>
+          <button type="button" class="btn btn--small btn--outline" id="toggle-slow-details">
+            <span id="slow-details-toggle-text">Show Details</span>
+          </button>
+        </div>
+        <p class="muted mb-2" id="slow-queries-summary"></p>
+        <div id="slow-queries-details" hidden>
+          <div class="slow-queries-list" id="slow-queries-list">
+            <!-- Populated by JS -->
+          </div>
         </div>
       </div>
       
       <!-- Historical Slow Queries -->
       <div class="api-history mt-3">
         <h3>📊 Historical Slow Queries</h3>
-        <p class="muted mb-2">Export slow queries (>200ms) from the past time period:</p>
-        <div class="history-export-btns">
-          <button type="button" class="btn btn--small" onclick="confirmExport(12)">12 hours</button>
-          <button type="button" class="btn btn--small" onclick="confirmExport(24)">24 hours</button>
-          <button type="button" class="btn btn--small" onclick="confirmExport(72)">3 days</button>
-          <button type="button" class="btn btn--small" onclick="confirmExport(168)">7 days</button>
-          <button type="button" class="btn btn--small" onclick="confirmExport(336)">2 weeks</button>
-          <button type="button" class="btn btn--small" onclick="confirmExport(672)">4 weeks</button>
+        <p class="muted mb-2">View and export slow queries (>200ms) from the past time period.</p>
+        
+        <!-- Time period selector -->
+        <div class="history-period-tabs" id="history-period-tabs">
+          <button type="button" class="history-tab" data-hours="12">12h</button>
+          <button type="button" class="history-tab active" data-hours="24">24h</button>
+          <button type="button" class="history-tab" data-hours="72">3d</button>
+          <button type="button" class="history-tab" data-hours="168">7d</button>
+          <button type="button" class="history-tab" data-hours="336">2w</button>
+          <button type="button" class="history-tab" data-hours="672">4w</button>
         </div>
+        
+        <!-- Chart -->
+        <div class="history-chart" id="history-chart">
+          <div class="history-chart__empty muted">No data yet</div>
+        </div>
+        
+        <!-- Filters + Export -->
+        <div class="history-controls">
+          <label class="history-toggle">
+            <input type="checkbox" id="show-warnings" checked />
+            <span>Show warnings (200–500ms)</span>
+          </label>
+          <button type="button" class="btn btn--small" id="export-history-csv">📤 Export CSV</button>
+        </div>
+        
+        <!-- Paginated table -->
+        <div class="history-table-wrap" id="history-table-wrap">
+          <table class="history-table" id="history-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Query</th>
+                <th>Latency</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="history-table-body">
+            </tbody>
+          </table>
+          <div class="history-pagination" id="history-pagination"></div>
+        </div>
+        
         <div class="history-summary mt-2" id="history-summary">
           <!-- Populated by JS -->
         </div>
@@ -775,9 +818,16 @@ title: "Site Health"
   border-top: 1px solid var(--border);
 }
 
-.api-slow-queries h3 {
+.slow-queries-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.slow-queries-header h3 {
   font-size: 0.95rem;
-  margin-bottom: 0.75rem;
+  margin: 0;
 }
 
 .slow-queries-list {
@@ -846,10 +896,172 @@ title: "Site Health"
   margin-bottom: 0.5rem;
 }
 
-.history-export-btns {
+.history-period-tabs {
   display: flex;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  width: fit-content;
+}
+
+.history-tab {
+  background: none;
+  border: none;
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.history-tab:hover {
+  color: var(--fg);
+}
+
+.history-tab.active {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.history-chart {
+  height: 100px;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 0.5rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+}
+
+.history-chart__empty {
+  width: 100%;
+  text-align: center;
+  padding: 2rem;
+  font-size: 0.85rem;
+}
+
+.history-chart__bar {
+  flex: 1;
+  min-width: 3px;
+  max-width: 12px;
+  border-radius: 2px 2px 0 0;
+  transition: height 0.3s ease;
+}
+
+.history-chart__bar--warning {
+  background: #f59e0b;
+}
+
+.history-chart__bar--critical {
+  background: #ef4444;
+}
+
+.history-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
   flex-wrap: wrap;
   gap: 0.5rem;
+}
+
+.history-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.history-toggle input[type="checkbox"] {
+  accent-color: var(--accent);
+}
+
+.history-table-wrap {
+  overflow-x: auto;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.history-table th {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg);
+  border-bottom: 2px solid var(--border);
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+}
+
+.history-table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.history-table tr:hover td {
+  background: var(--surface);
+}
+
+.history-table .status-critical {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.history-table .status-warning {
+  color: #f59e0b;
+}
+
+.history-table .latency-cell {
+  font-family: monospace;
+  font-weight: 600;
+}
+
+.history-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.75rem;
+}
+
+.history-pagination button {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: var(--fg);
+}
+
+.history-pagination button:hover {
+  border-color: var(--accent);
+}
+
+.history-pagination button.active {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+
+.history-pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .history-summary {
@@ -1058,22 +1270,38 @@ function getSlowQueries(hours = 24) {
   }
 }
 
-// Confirm before exporting
-function confirmExport(hours) {
-  const label = hours < 24 ? `${hours} hours` : hours < 168 ? `${Math.round(hours/24)} days` : `${Math.round(hours/168)} weeks`;
-  if (confirm(`Export slow queries from the last ${label} as CSV?`)) {
-    exportSlowQueriesCSV(hours);
-  }
-}
+// =========================================
+// Historical Slow Queries UI
+// =========================================
+let historyCurrentHours = 24;
+let historyCurrentPage = 1;
+const ROWS_PER_PAGE = 5;
 
-// Export slow queries as CSV
-function exportSlowQueriesCSV(hours) {
-  const queries = getSlowQueries(hours);
+// Period tab switching
+document.getElementById('history-period-tabs')?.addEventListener('click', (e) => {
+  const btn = e.target.closest('.history-tab');
+  if (!btn) return;
+  document.querySelectorAll('.history-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  historyCurrentHours = parseInt(btn.dataset.hours);
+  historyCurrentPage = 1;
+  renderHistoryView();
+});
+
+// Warnings toggle
+document.getElementById('show-warnings')?.addEventListener('change', () => {
+  historyCurrentPage = 1;
+  renderHistoryView();
+});
+
+// Export CSV
+document.getElementById('export-history-csv')?.addEventListener('click', () => {
+  const showWarnings = document.getElementById('show-warnings')?.checked ?? true;
+  const queries = getFilteredHistory(historyCurrentHours, showWarnings);
   if (queries.length === 0) {
-    alert('No slow queries found in the selected time range.');
+    alert('No slow queries found for the selected time range and filters.');
     return;
   }
-  
   const csv = [
     'Timestamp,Query Name,Latency (ms),Status',
     ...queries.map(q => {
@@ -1082,14 +1310,121 @@ function exportSlowQueriesCSV(hours) {
       return `"${date}","${q.name}",${q.latency},"${status}"`;
     })
   ].join('\n');
-  
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `slow-queries-${hours}h-${new Date().toISOString().slice(0,10)}.csv`;
+  a.download = `slow-queries-${historyCurrentHours}h-${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
   URL.revokeObjectURL(url);
+});
+
+// Slow query details toggle
+document.getElementById('toggle-slow-details')?.addEventListener('click', () => {
+  const details = document.getElementById('slow-queries-details');
+  const toggleText = document.getElementById('slow-details-toggle-text');
+  if (!details) return;
+  details.hidden = !details.hidden;
+  toggleText.textContent = details.hidden ? 'Show Details' : 'Hide Details';
+});
+
+function getFilteredHistory(hours, showWarnings) {
+  const all = getSlowQueries(hours);
+  if (showWarnings) return all;
+  return all.filter(q => q.latency > 500); // critical only
+}
+
+function renderHistoryView() {
+  const showWarnings = document.getElementById('show-warnings')?.checked ?? true;
+  const queries = getFilteredHistory(historyCurrentHours, showWarnings);
+  
+  renderHistoryChart(queries);
+  renderHistoryTable(queries);
+  updateHistorySummary();
+}
+
+function renderHistoryChart(queries) {
+  const chart = document.getElementById('history-chart');
+  if (!chart) return;
+  
+  if (queries.length === 0) {
+    chart.innerHTML = '<div class="history-chart__empty muted">No slow queries in this period</div>';
+    return;
+  }
+  
+  const maxLatency = Math.max(...queries.map(q => q.latency), 100);
+  const chartHeight = 80;
+  
+  // Show up to 50 bars
+  const display = queries.length > 50 
+    ? queries.filter((_, i) => i % Math.ceil(queries.length / 50) === 0)
+    : queries;
+  
+  chart.innerHTML = display.map(q => {
+    const height = Math.max((q.latency / maxLatency) * chartHeight, 4);
+    const cls = q.latency > 500 ? 'history-chart__bar--critical' : 'history-chart__bar--warning';
+    return `<div class="history-chart__bar ${cls}" style="height:${height}px" title="${q.name}: ${q.latency}ms\n${new Date(q.timestamp).toLocaleString()}"></div>`;
+  }).join('');
+}
+
+function renderHistoryTable(queries) {
+  const tbody = document.getElementById('history-table-body');
+  const pagination = document.getElementById('history-pagination');
+  if (!tbody) return;
+  
+  if (queries.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center;padding:1.5rem">No queries to display</td></tr>';
+    if (pagination) pagination.innerHTML = '';
+    return;
+  }
+  
+  const sorted = [...queries].sort((a, b) => b.timestamp - a.timestamp);
+  const totalPages = Math.ceil(sorted.length / ROWS_PER_PAGE);
+  if (historyCurrentPage > totalPages) historyCurrentPage = totalPages;
+  
+  const start = (historyCurrentPage - 1) * ROWS_PER_PAGE;
+  const pageItems = sorted.slice(start, start + ROWS_PER_PAGE);
+  
+  tbody.innerHTML = pageItems.map(q => {
+    const time = new Date(q.timestamp).toLocaleString();
+    const isCritical = q.latency > 500;
+    const statusClass = isCritical ? 'status-critical' : 'status-warning';
+    const statusIcon = isCritical ? '🔴 Critical' : '🟡 Warning';
+    return `<tr>
+      <td>${time}</td>
+      <td>${q.name || 'Unknown'}</td>
+      <td class="latency-cell">${q.latency}ms</td>
+      <td class="${statusClass}">${statusIcon}</td>
+    </tr>`;
+  }).join('');
+  
+  if (pagination && totalPages > 1) {
+    let html = `<button ${historyCurrentPage <= 1 ? 'disabled' : ''} data-page="${historyCurrentPage - 1}">\u2039</button>`;
+    
+    const maxVisible = 5;
+    let rangeStart = Math.max(1, historyCurrentPage - Math.floor(maxVisible / 2));
+    let rangeEnd = Math.min(totalPages, rangeStart + maxVisible - 1);
+    if (rangeEnd - rangeStart < maxVisible - 1) rangeStart = Math.max(1, rangeEnd - maxVisible + 1);
+    
+    for (let p = rangeStart; p <= rangeEnd; p++) {
+      html += `<button class="${p === historyCurrentPage ? 'active' : ''}" data-page="${p}">${p}</button>`;
+    }
+    
+    html += `<button ${historyCurrentPage >= totalPages ? 'disabled' : ''} data-page="${historyCurrentPage + 1}">\u203a</button>`;
+    html += `<span class="muted" style="font-size:0.75rem;margin-left:0.5rem">${sorted.length} total</span>`;
+    
+    pagination.innerHTML = html;
+    pagination.querySelectorAll('button[data-page]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        historyCurrentPage = parseInt(btn.dataset.page);
+        const showWarnings = document.getElementById('show-warnings')?.checked ?? true;
+        const queries = getFilteredHistory(historyCurrentHours, showWarnings);
+        renderHistoryTable(queries);
+      });
+    });
+  } else if (pagination) {
+    pagination.innerHTML = queries.length > 0 ? `<span class="muted" style="font-size:0.75rem">${sorted.length} total</span>` : '';
+  }
 }
 
 function updateApiPerfChart() {
@@ -1265,6 +1600,12 @@ function updateHistorySummary() {
       <p><strong>Last 7 days:</strong> 🟡 ${yellow7d} warnings, 🔴 ${red7d} critical</p>
     `;
   }
+  
+  // Also render chart and table for current period
+  const showWarnings = document.getElementById('show-warnings')?.checked ?? true;
+  const queries = getFilteredHistory(historyCurrentHours, showWarnings);
+  renderHistoryChart(queries);
+  renderHistoryTable(queries);
 }
 
 async function loadResources() {
@@ -1397,9 +1738,16 @@ function updatePerformanceReport() {
   // Show slow query details
   if (slowQueriesSection && slowQueriesList) {
     const allSlowQueries = [...redQueries, ...yellowQueries];
+    const summaryEl = document.getElementById('slow-queries-summary');
     
     if (allSlowQueries.length > 0) {
       slowQueriesSection.hidden = false;
+      
+      // Summary line
+      if (summaryEl) {
+        summaryEl.textContent = `${redQueries.length} critical (>500ms) and ${yellowQueries.length} warnings (>200ms) detected in this session.`;
+      }
+      
       slowQueriesList.innerHTML = allSlowQueries.map(q => {
         const isRed = q.latency > 500;
         const statusIcon = isRed ? '🔴' : '🟡';
