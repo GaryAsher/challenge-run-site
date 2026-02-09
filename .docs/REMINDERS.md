@@ -31,9 +31,6 @@ This document consolidates all reminders, future ideas, and planned features for
   - Team Badges
   - Highlights
   - Player-Made Challenges
-- [ ] https://www.challengerun.net/profile/edit/
-  - Personal Goals
-    - Personal Goals not showing on user profile after they are made?
 
 ### 1.5 Admin Panel
 - [ ] Can dashboard be above Super Admin? Admins still should not be able to see Super Admin things.
@@ -41,9 +38,6 @@ This document consolidates all reminders, future ideas, and planned features for
  - Site Health
  - Financials
  - Debug
-- Have Super Admin's Dashboard follow the order:
- - Same as Admin dashboard, except:
-   - Below Admin section is Site Health > Financials > Debug
 
 ### 2. Forms & Submissions
 - [ ] Test Discord Webhook for new game submissions
