@@ -905,6 +905,11 @@ import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
 
 const PAGE_RUNNER_ID = '{{ page.runner_id }}';
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 async function loadLiveData() {
   try {
     await CRCAuth.init();
@@ -949,7 +954,6 @@ async function loadLiveData() {
     }
     
     const avatarEl = document.getElementById('runner-avatar');
-    const avatarEl = document.getElementById('runner-avatar');
     if (avatarEl && data.avatar_url) {
       const img = new Image();
       img.onload = () => { avatarEl.style.backgroundImage = `url('${data.avatar_url}')`; };
@@ -980,6 +984,70 @@ async function loadLiveData() {
     if (bioSec && bioEl) {
       if (data.bio) { bioEl.textContent = data.bio; bioSec.hidden = false; }
       else bioSec.hidden = true;
+    }
+    
+    // Live personal goals
+    const goalsList = document.getElementById('personal-goals-list');
+    const goalsEmpty = document.getElementById('personal-goals-empty');
+    if (data.personal_goals && data.personal_goals.length > 0) {
+      let goalsHTML = '';
+      for (const goal of data.personal_goals) {
+        const icon = escapeHtml(goal.icon || '🎯');
+        const title = escapeHtml(goal.title || '');
+        const desc = escapeHtml(goal.description || '');
+        const game = goal.game ? escapeHtml(goal.game) : '';
+        const completed = goal.completed === true || goal.completed === 'true';
+        const current = parseInt(goal.current) || 0;
+        const total = parseInt(goal.total) || 0;
+        
+        let statusHTML = completed
+          ? '<span class="goal-status goal-status--completed">✓ Completed</span>'
+          : '<span class="goal-status goal-status--progress">In Progress</span>';
+        
+        let progressHTML = '';
+        if (total > 0) {
+          const pct = Math.min(100, Math.round((current / total) * 100));
+          progressHTML = `
+            <div class="personal-goal-item__progress">
+              <div class="progress-bar">
+                <div class="progress-bar__fill" style="width: ${pct}%"></div>
+              </div>
+              <span class="progress-bar__text">${current} / ${total}</span>
+            </div>`;
+        }
+        
+        let dateHTML = '';
+        if (goal.date_completed) {
+          dateHTML = `<span class="muted personal-goal-item__date">Completed: ${escapeHtml(goal.date_completed)}</span>`;
+        }
+        
+        goalsHTML += `
+          <div class="personal-goal-item">
+            <div class="personal-goal-item__icon">${icon}</div>
+            <div class="personal-goal-item__content">
+              <div class="personal-goal-item__header">
+                <h4>${title}</h4>
+                ${statusHTML}
+              </div>
+              ${desc ? `<p class="muted">${desc}</p>` : ''}
+              ${game ? `<span class="personal-goal-item__game">${game}</span>` : ''}
+              ${progressHTML}
+              ${dateHTML}
+            </div>
+          </div>`;
+      }
+      
+      if (goalsList) {
+        goalsList.innerHTML = goalsHTML;
+      } else if (goalsEmpty) {
+        // Replace the empty state with the goals list
+        const newList = document.createElement('div');
+        newList.className = 'personal-goals-list';
+        newList.id = 'personal-goals-list';
+        newList.innerHTML = goalsHTML;
+        goalsEmpty.replaceWith(newList);
+      }
+      if (goalsEmpty && goalsEmpty.parentNode) goalsEmpty.hidden = true;
     }
     
     console.log('[Runner] Live data loaded');
