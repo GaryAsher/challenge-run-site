@@ -165,7 +165,7 @@ layout: default
 {% assign all_runs = site.runs | where: "game_id", page.game_id %}
 {% assign runs = "" | split: "" %}
 
-{% comment %} Filter runs by tier {% endcomment %}
+<!-- Filter runs by tier -->
 {% for r in all_runs %}
   {% assign r_tier = r.category_tier | default: "full_runs" %}
   {% assign match_tier = false %}
@@ -183,7 +183,7 @@ layout: default
   {% endif %}
 {% endfor %}
 
-{% comment %} Further filter by category if on category page {% endcomment %}
+<!-- Further filter by category if on category page -->
 {% if page_type == "category" and active_cat_slug != "" %}
   {% assign prefix_check = active_cat_slug | append: "/" %}
   {% assign filtered = "" | split: "" %}
@@ -279,7 +279,7 @@ layout: default
            TIER PICKER PAGE (runs/index.html) - Auto-redirect to first category
            ========================================================= -->
       {% if page_type == "tier_picker" %}
-        {% comment %} Determine the first tier and first category to redirect to {% endcomment %}
+        <!-- Determine the first tier and first category to redirect to -->
         {% assign redirect_tier = "" %}
         {% assign redirect_category = "" %}
         
@@ -543,7 +543,7 @@ layout: default
                 </thead>
                 <tbody id="runs-body">
                   {% for r in runs %}
-                    {% comment %} Build challenge labels {% endcomment %}
+                    <!-- Build challenge labels -->
                     {% assign challenge_labels = "" | split: "" %}
                     {% assign challenge_ids = "" | split: "" %}
                     {% assign all_aliases = "" | split: "" %}
@@ -589,17 +589,15 @@ layout: default
                     
                     {% assign runner_label = r.runner | default: r.runner_id | default: "—" | replace: "_", " " %}
 
-                    {% comment %} 
-                      Process restrictions - handle multiple formats:
-                      1. Old format: restriction_ids has slugs, restrictions has labels
-                      2. New format: restrictions has slugs directly (no restriction_ids)
-                      3. Mixed: could have labels in restrictions that need lookup
-                    {% endcomment %}
+                    <!-- Process restrictions - handle multiple formats:
+                         1. Old: restriction_ids has slugs, restrictions has labels
+                         2. New: restrictions has slugs directly
+                         3. Mixed: labels in restrictions that need lookup -->
                     {% assign r_texts = "" | split: "" %}
                     {% assign r_ids = "" | split: "" %}
                     {% assign r_labels = "" | split: "" %}
                     
-                    {% comment %} First, get raw values from restriction_ids if available {% endcomment %}
+                    <!-- First, get raw values from restriction_ids if available -->
                     {% if r.restriction_ids and r.restriction_ids != empty %}
                       {% if r.restriction_ids.first %}
                         {% assign r_ids = r.restriction_ids %}
@@ -608,7 +606,7 @@ layout: default
                       {% endif %}
                     {% endif %}
                     
-                    {% comment %} Get raw values from restrictions {% endcomment %}
+                    <!-- Get raw values from restrictions -->
                     {% if r.restrictions and r.restrictions != empty %}
                       {% if r.restrictions.first %}
                         {% assign r_texts = r.restrictions %}
@@ -617,7 +615,7 @@ layout: default
                       {% endif %}
                     {% endif %}
                     
-                    {% comment %} Clean up arrays {% endcomment %}
+                    <!-- Clean up arrays -->
                     {% assign r_clean = "" | split: "" %}
                     {% assign r_id_clean = "" | split: "" %}
                     {% for rr in r_texts %}
@@ -631,10 +629,8 @@ layout: default
                     {% assign r_texts = r_clean | uniq %}
                     {% assign r_ids = r_id_clean | uniq %}
                     
-                    {% comment %} 
-                      If no restriction_ids but we have restrictions, check if they're slugs
-                      by matching against game.restrictions_data 
-                    {% endcomment %}
+                    <!-- If no restriction_ids but we have restrictions, check if they're slugs
+                         by matching against game.restrictions_data -->
                     {% if r_ids.size == 0 and r_texts.size > 0 %}
                       {% assign r_ids = "" | split: "" %}
                       {% assign r_labels = "" | split: "" %}
@@ -643,13 +639,13 @@ layout: default
                         {% assign found_label = rt %}
                         {% for res in game.restrictions_data %}
                           {% if res.slug == rt %}
-                            {% comment %} restrictions contains a slug {% endcomment %}
+                            <!-- restrictions contains a slug -->
                             {% assign r_ids = r_ids | push: rt %}
                             {% assign found_label = res.label %}
                             {% assign found_slug = true %}
                             {% break %}
                           {% elsif res.label == rt %}
-                            {% comment %} restrictions contains a label, get the slug {% endcomment %}
+                            <!-- restrictions contains a label, get the slug -->
                             {% assign r_ids = r_ids | push: res.slug %}
                             {% assign found_label = rt %}
                             {% assign found_slug = true %}
@@ -657,7 +653,7 @@ layout: default
                           {% endif %}
                         {% endfor %}
                         {% unless found_slug %}
-                          {% comment %} Not found in game data, use as-is {% endcomment %}
+                          <!-- Not found in game data, use as-is -->
                           {% assign r_ids = r_ids | push: rt %}
                         {% endunless %}
                         {% assign r_labels = r_labels | push: found_label %}
