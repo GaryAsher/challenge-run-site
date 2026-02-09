@@ -13,8 +13,8 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ### 2  Dashboard & Review System
 - [ ] Remove GitHub PR workflow for runs
-  - Active games count could be enhanced by reading _data/form-index.json
   - Need to pick Frontend framework first
+  - Active games count could be enhanced by reading _data/form-index.json
 
 ---
 
@@ -27,28 +27,9 @@ This document consolidates all reminders, future ideas, and planned features for
   - Team Badges
   - Highlights
   - Player-Made Challenges
-- [ ] https://www.challengerun.net/profile/settings/
-  - Allow users to see their cookie settings and adjust them.
 - [ ] https://www.challengerun.net/profile/edit/
   - Personal Goals
-    - For Game box, allow search across database for all games. start search after 3 characters are typed.
-    - For Status, if "In Progress" is selected, do not show Date Completed or just grey it out.
     - Personal Goals not showing on user profile after they are made?
-  - [ ] Run Statistics
-    - Remove Run History block that is below "Fun statistics"
-  - [ ] Move Activity tab to the end.
-
-### 2  Dashboard & Review System
-- [ ] Site Health - API Performance:
-  - Click Slow Quety Details to see what happened
-  - Hisotrical Slow Queries to have a chart that shows data based on if 12h, 24h, 3d, etc was selected.
-    - Toggle to show/hide warnings. Critical is always shown.
-    - 5 rows per table
-    - tab pages to see others
-    - option to export table to csv
-- [ ] Dashboard
-  - Make title under Dashboard say the relevant role, instead of just Super Admin.
-  - Is User Management tab needed? (since we have supabase)
 
 ### 3. Modded Game Support
 - [ ] Build game submission UI in admin dashboard (replaces Google Form for new games)
