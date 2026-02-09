@@ -276,7 +276,10 @@ title: "Edit Profile"
               <div class="form-row">
                 <div class="form-group form-group--flex">
                   <label class="form-label">Game (optional)</label>
-                  <input type="text" class="form-input goal-game" maxlength="100" placeholder="e.g., Hades II" />
+                  <div class="goal-game-wrap" style="position:relative">
+                    <input type="text" class="form-input goal-game" maxlength="100" placeholder="Start typing a game name..." autocomplete="off" />
+                    <div class="goal-game-results" hidden></div>
+                  </div>
                 </div>
                 <div class="form-group">
                   <label class="form-label">Status</label>
@@ -296,7 +299,7 @@ title: "Edit Profile"
                   <label class="form-label">Progress (total)</label>
                   <input type="number" class="form-input goal-total" min="0" placeholder="100" />
                 </div>
-                <div class="form-group form-group--flex">
+                <div class="form-group form-group--flex goal-date-group">
                   <label class="form-label">Date Completed</label>
                   <input type="date" class="form-input goal-date" />
                 </div>
@@ -407,6 +410,49 @@ title: "Edit Profile"
           font-size: 1.25rem;
         }
         
+        .goal-date-group.is-disabled {
+          opacity: 0.4;
+          pointer-events: none;
+        }
+        
+        .goal-game-results {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          z-index: 50;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-top: none;
+          border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+          max-height: 180px;
+          overflow-y: auto;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .goal-game-result {
+          padding: 0.5rem 0.75rem;
+          cursor: pointer;
+          font-size: 0.9rem;
+          border-bottom: 1px solid var(--border);
+        }
+        
+        .goal-game-result:last-child {
+          border-bottom: none;
+        }
+        
+        .goal-game-result:hover,
+        .goal-game-result.is-active {
+          background: var(--accent);
+          color: var(--bg);
+        }
+        
+        .goal-game-result__id {
+          font-size: 0.75rem;
+          opacity: 0.7;
+          margin-left: 0.5rem;
+        }
+        
         @media (max-width: 600px) {
           .goal-editor-item__content .form-row {
             flex-direction: column;
@@ -424,6 +470,13 @@ title: "Edit Profile"
         (function() {
           const MAX_GOALS = 10;
           let goals = [];
+          
+          // Build games list from Jekyll data for autocomplete
+          const ALL_GAMES = [
+            {% for game in site.games %}
+              { name: {{ game.game_name | jsonify }}, id: {{ game.game_id | jsonify }} }{% unless forloop.last %},{% endunless %}
+            {% endfor %}
+          ];
           
           const goalsList = document.getElementById('goals-list');
           const goalsDataInput = document.getElementById('personal-goals-data');
@@ -456,6 +509,19 @@ title: "Edit Profile"
               item.querySelector('.goal-total').value = goal.total || '';
               item.querySelector('.goal-date').value = goal.date_completed || '';
               
+              // Status → date completed toggle
+              const statusSelect = item.querySelector('.goal-completed');
+              const dateGroup = item.querySelector('.goal-date-group');
+              updateDateState(statusSelect, dateGroup);
+              
+              statusSelect.addEventListener('change', () => {
+                updateDateState(statusSelect, dateGroup);
+                updateGoalFromDOM(index, item);
+              });
+              
+              // Game search autocomplete
+              setupGameSearch(item.querySelector('.goal-game'), item.querySelector('.goal-game-results'));
+              
               // Add event listeners
               item.querySelector('.goal-editor-item__remove').addEventListener('click', () => removeGoal(index));
               
@@ -472,16 +538,92 @@ title: "Edit Profile"
             updateAddButton();
           }
           
+          function updateDateState(statusSelect, dateGroup) {
+            if (!dateGroup) return;
+            if (statusSelect.value === 'false') {
+              dateGroup.classList.add('is-disabled');
+              const dateInput = dateGroup.querySelector('.goal-date');
+              if (dateInput) dateInput.value = '';
+            } else {
+              dateGroup.classList.remove('is-disabled');
+            }
+          }
+          
+          function setupGameSearch(input, resultsEl) {
+            if (!input || !resultsEl) return;
+            let activeIndex = -1;
+            
+            input.addEventListener('input', () => {
+              const query = input.value.trim().toLowerCase();
+              activeIndex = -1;
+              
+              if (query.length < 3) {
+                resultsEl.hidden = true;
+                return;
+              }
+              
+              const matches = ALL_GAMES.filter(g => 
+                g.name.toLowerCase().includes(query) || g.id.toLowerCase().includes(query)
+              ).slice(0, 8);
+              
+              if (matches.length === 0) {
+                resultsEl.hidden = true;
+                return;
+              }
+              
+              resultsEl.innerHTML = matches.map((g, i) => 
+                `<div class="goal-game-result" data-index="${i}" data-name="${g.name}">${g.name}<span class="goal-game-result__id">${g.id}</span></div>`
+              ).join('');
+              resultsEl.hidden = false;
+              
+              resultsEl.querySelectorAll('.goal-game-result').forEach(el => {
+                el.addEventListener('mousedown', (e) => {
+                  e.preventDefault();
+                  input.value = el.dataset.name;
+                  resultsEl.hidden = true;
+                  input.dispatchEvent(new Event('change'));
+                });
+              });
+            });
+            
+            input.addEventListener('keydown', (e) => {
+              const items = resultsEl.querySelectorAll('.goal-game-result');
+              if (resultsEl.hidden || items.length === 0) return;
+              
+              if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                activeIndex = Math.min(activeIndex + 1, items.length - 1);
+                items.forEach((el, i) => el.classList.toggle('is-active', i === activeIndex));
+              } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                activeIndex = Math.max(activeIndex - 1, 0);
+                items.forEach((el, i) => el.classList.toggle('is-active', i === activeIndex));
+              } else if (e.key === 'Enter' && activeIndex >= 0) {
+                e.preventDefault();
+                input.value = items[activeIndex].dataset.name;
+                resultsEl.hidden = true;
+                input.dispatchEvent(new Event('change'));
+              } else if (e.key === 'Escape') {
+                resultsEl.hidden = true;
+              }
+            });
+            
+            input.addEventListener('blur', () => {
+              setTimeout(() => { resultsEl.hidden = true; }, 200);
+            });
+          }
+          
           function updateGoalFromDOM(index, item) {
+            const isCompleted = item.querySelector('.goal-completed').value === 'true';
             goals[index] = {
               icon: item.querySelector('.goal-icon').value.trim() || '🎯',
               title: item.querySelector('.goal-title').value.trim(),
               description: item.querySelector('.goal-description').value.trim(),
               game: item.querySelector('.goal-game').value.trim() || null,
-              completed: item.querySelector('.goal-completed').value === 'true',
+              completed: isCompleted,
               current: parseInt(item.querySelector('.goal-current').value) || 0,
               total: parseInt(item.querySelector('.goal-total').value) || 0,
-              date_completed: item.querySelector('.goal-date').value || null
+              date_completed: isCompleted ? (item.querySelector('.goal-date').value || null) : null
             };
             updateGoalsData();
           }
@@ -1638,6 +1780,11 @@ function populateForm(profile) {
   if (profile.other_links_pending && profile.other_links_pending.length > 0) {
     showPendingLinksNotice(profile.other_links_pending);
   }
+  
+  // Personal Goals - load into editor
+  if (window.initPersonalGoalsEditor) {
+    window.initPersonalGoalsEditor(profile.personal_goals || []);
+  }
 }
 
 function showPendingLinksNotice(pendingLinks) {
@@ -1725,6 +1872,14 @@ form.addEventListener('submit', async (e) => {
       },
       updated_at: new Date().toISOString()
     };
+    
+    // Personal goals
+    try {
+      const goalsJson = document.getElementById('personal-goals-data')?.value || '[]';
+      formData.personal_goals = JSON.parse(goalsJson);
+    } catch (e) {
+      formData.personal_goals = [];
+    }
     
     // If other links changed, add them to pending for approval
     if (otherLinksChanged && newOtherLinks.length > 0) {
