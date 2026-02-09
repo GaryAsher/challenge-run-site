@@ -185,12 +185,6 @@ const NAV_SECTIONS = {
     href: '/admin/runs/',
     countKey: 'pendingRuns'
   },
-  users: {
-    icon: '👤',
-    title: 'User Management',
-    desc: 'Manage runners, roles, and permissions.',
-    href: '/admin/users/'
-  },
   financials: {
     icon: '💰',
     title: 'Financials',
@@ -232,9 +226,10 @@ const NAV_SECTIONS = {
 
   showState('ready');
 
-  // Header
+  // Header — show effective role (respects debug view)
   const profile = CRCAdmin.getProfile();
-  document.getElementById('dash-role-label').textContent = CRCAdmin.roleLabel(role);
+  const effectiveRole = CRCAdmin.getEffectiveRole ? CRCAdmin.getEffectiveRole() : role;
+  document.getElementById('dash-role-label').textContent = CRCAdmin.roleLabel(effectiveRole || role);
 
   if (profile) {
     const userEl = document.getElementById('dash-user-info');
