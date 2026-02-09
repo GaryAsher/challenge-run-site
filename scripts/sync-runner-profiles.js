@@ -256,6 +256,22 @@ function profileToFrontMatter(profile) {
     });
   }
   
+  // Personal Goals (if any)
+  if (profile.personal_goals && profile.personal_goals.length > 0) {
+    lines.push('');
+    lines.push('personal_goals:');
+    profile.personal_goals.forEach(goal => {
+      lines.push(`  - title: "${escapeYaml(goal.title)}"`);
+      if (goal.icon) lines.push(`    icon: "${goal.icon}"`);
+      if (goal.description) lines.push(`    description: "${escapeYaml(goal.description)}"`);
+      if (goal.game) lines.push(`    game: "${escapeYaml(goal.game)}"`);
+      lines.push(`    completed: ${goal.completed ? 'true' : 'false'}`);
+      if (goal.current) lines.push(`    current: ${goal.current}`);
+      if (goal.total) lines.push(`    total: ${goal.total}`);
+      if (goal.date_completed) lines.push(`    date_completed: "${goal.date_completed}"`);
+    });
+  }
+  
   lines.push('---');
   
   return lines.join('\n');
