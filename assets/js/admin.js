@@ -211,7 +211,7 @@ function getAccessibleSections() {
 
   // Super admins: everything
   if (role === 'super_admin') {
-    sections.push('profiles', 'games', 'runs', 'users', 'financials', 'health', 'debug');
+    sections.push('profiles', 'games', 'runs', 'financials', 'health', 'debug');
   }
 
   return sections;
