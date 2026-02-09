@@ -1,0 +1,361 @@
+---
+layout: default
+title: "Game Updates"
+---
+
+<div class="page-width">
+  <p class="muted mb-3">
+    <a href="{{ '/admin/' | relative_url }}">← Dashboard</a>
+  </p>
+
+  <div class="game-updates-page">
+    <!-- Loading -->
+    <div id="loading-state" class="card">
+      <div class="gu-loading">
+        <div class="spinner"></div>
+        <p class="muted">Loading update requests...</p>
+      </div>
+    </div>
+
+    <!-- Not authorized -->
+    <div id="not-authorized" class="card" hidden>
+      <h2>🔒 Access Denied</h2>
+      <p class="muted">You need verifier, admin, or super admin privileges to view game update requests.</p>
+      <a href="/" class="btn btn--primary">Go Home</a>
+    </div>
+
+    <!-- Content -->
+    <div id="content" hidden>
+      <div class="gu-header">
+        <div>
+          <h1>📝 Game Update Requests</h1>
+          <p class="muted">User-submitted corrections and suggestions, grouped by game.</p>
+        </div>
+        <div class="gu-header__filters">
+          <select id="status-filter" class="form-input">
+            <option value="pending">Pending</option>
+            <option value="acknowledged">Acknowledged</option>
+            <option value="resolved">Resolved</option>
+            <option value="dismissed">Dismissed</option>
+            <option value="all">All</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="gu-stats" id="stats-row">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Empty state -->
+      <div id="empty-state" class="card" hidden>
+        <div class="gu-empty">
+          <span class="gu-empty__icon">🎉</span>
+          <h3>No pending requests</h3>
+          <p class="muted">All game update suggestions have been addressed!</p>
+        </div>
+      </div>
+
+      <!-- Games list -->
+      <div id="games-list">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.game-updates-page { max-width: 960px; margin: 0 auto; }
+.gu-loading { text-align: center; padding: 3rem; }
+
+.gu-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+.gu-header h1 { margin: 0; }
+.gu-header__filters select { font-size: 0.9rem; padding: 0.4rem 0.75rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--fg); }
+
+/* Stats */
+.gu-stats { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.gu-stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1.25rem; text-align: center; min-width: 100px; }
+.gu-stat__value { display: block; font-size: 1.5rem; font-weight: 700; color: var(--accent); line-height: 1.2; }
+.gu-stat__label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+.gu-stat--alert .gu-stat__value { color: #f0ad4e; }
+
+/* Empty state */
+.gu-empty { text-align: center; padding: 3rem 1rem; }
+.gu-empty__icon { font-size: 3rem; display: block; margin-bottom: 0.75rem; }
+.gu-empty h3 { margin: 0 0 0.5rem 0; }
+
+/* Game group */
+.gu-game-group { margin-bottom: 1.5rem; }
+.gu-game-group__header {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  cursor: pointer; user-select: none;
+}
+.gu-game-group__header:hover { background: var(--bg-hover, rgba(255,255,255,0.05)); }
+.gu-game-group__name { font-weight: 600; flex: 1; }
+.gu-game-group__count {
+  background: #dc3545; color: white;
+  font-size: 0.7rem; font-weight: 700;
+  padding: 2px 7px; border-radius: 10px;
+  min-width: 20px; text-align: center;
+}
+.gu-game-group__count--zero { background: var(--border); color: var(--text-muted); }
+.gu-game-group__chevron { color: var(--text-muted); transition: transform 0.2s; font-size: 0.8rem; }
+.gu-game-group.is-open .gu-game-group__chevron { transform: rotate(90deg); }
+.gu-game-group__body { border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--radius-sm) var(--radius-sm); }
+.gu-game-group__body[hidden] { display: none; }
+
+/* Request card */
+.gu-request {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 0.5rem;
+}
+.gu-request:last-child { border-bottom: none; }
+
+.gu-request__top { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.gu-request__tag {
+  display: inline-block; font-size: 0.7rem; font-weight: 600;
+  padding: 2px 6px; border-radius: 4px;
+  text-transform: uppercase; letter-spacing: 0.3px;
+}
+.gu-request__tag--section { background: rgba(99, 102, 241, 0.2); color: #818cf8; }
+.gu-request__tag--type { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+.gu-request__tag--status-pending { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+.gu-request__tag--status-acknowledged { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+.gu-request__tag--status-resolved { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+.gu-request__tag--status-dismissed { background: rgba(107, 114, 128, 0.2); color: #9ca3af; }
+
+.gu-request__details {
+  font-size: 0.9rem; line-height: 1.5;
+  background: var(--bg); padding: 0.75rem;
+  border-radius: 6px; border: 1px solid var(--border);
+  white-space: pre-wrap; word-break: break-word;
+}
+
+.gu-request__meta {
+  display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+  font-size: 0.8rem; color: var(--text-muted);
+}
+.gu-request__meta a { color: var(--accent); text-decoration: none; }
+.gu-request__meta a:hover { text-decoration: underline; }
+
+.gu-request__actions { display: flex; gap: 0.5rem; margin-top: 0.25rem; }
+.gu-request__actions .btn { font-size: 0.8rem; padding: 0.3rem 0.75rem; }
+</style>
+
+<script type="module">
+import { CRCAdmin } from '{{ "/assets/js/admin.js" | relative_url }}';
+
+(async function() {
+  const loadingEl = document.getElementById('loading-state');
+  const deniedEl = document.getElementById('not-authorized');
+  const contentEl = document.getElementById('content');
+
+  function showState(s) {
+    loadingEl.hidden = s !== 'loading';
+    deniedEl.hidden = s !== 'denied';
+    contentEl.hidden = s !== 'ready';
+  }
+
+  const role = await CRCAdmin.init();
+  if (!role) { showState('denied'); return; }
+  showState('ready');
+
+  const supabase = CRCAdmin.getSupabase();
+  if (!supabase) { showState('denied'); return; }
+
+  let allRequests = [];
+
+  async function loadRequests(status) {
+    const gamesListEl = document.getElementById('games-list');
+    const emptyEl = document.getElementById('empty-state');
+    gamesListEl.innerHTML = '<div class="gu-loading"><div class="spinner"></div></div>';
+
+    try {
+      let query = supabase
+        .from('game_update_requests')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (status && status !== 'all') {
+        query = query.eq('status', status);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      allRequests = data || [];
+      renderRequests(allRequests);
+      renderStats(allRequests);
+    } catch (err) {
+      gamesListEl.innerHTML = `<div class="card"><p class="muted">Error loading requests: ${escapeHtml(err.message)}</p><p class="muted" style="font-size:0.85rem;">Make sure the <code>game_update_requests</code> table exists in Supabase. See the README for setup.</p></div>`;
+    }
+  }
+
+  function renderStats(requests) {
+    const statsEl = document.getElementById('stats-row');
+    const pending = requests.filter(r => r.status === 'pending').length;
+    const acknowledged = requests.filter(r => r.status === 'acknowledged').length;
+    const resolved = requests.filter(r => r.status === 'resolved').length;
+    const total = requests.length;
+
+    statsEl.innerHTML = `
+      <div class="gu-stat ${pending > 0 ? 'gu-stat--alert' : ''}">
+        <span class="gu-stat__value">${pending}</span>
+        <span class="gu-stat__label">Pending</span>
+      </div>
+      <div class="gu-stat">
+        <span class="gu-stat__value">${acknowledged}</span>
+        <span class="gu-stat__label">Acknowledged</span>
+      </div>
+      <div class="gu-stat">
+        <span class="gu-stat__value">${resolved}</span>
+        <span class="gu-stat__label">Resolved</span>
+      </div>
+      <div class="gu-stat">
+        <span class="gu-stat__value">${total}</span>
+        <span class="gu-stat__label">Total</span>
+      </div>`;
+  }
+
+  function renderRequests(requests) {
+    const gamesListEl = document.getElementById('games-list');
+    const emptyEl = document.getElementById('empty-state');
+
+    if (requests.length === 0) {
+      gamesListEl.innerHTML = '';
+      emptyEl.hidden = false;
+      return;
+    }
+    emptyEl.hidden = true;
+
+    // Group by game
+    const byGame = {};
+    for (const req of requests) {
+      const gid = req.game_id || 'unknown';
+      if (!byGame[gid]) byGame[gid] = { name: req.game_name || gid, requests: [] };
+      byGame[gid].requests.push(req);
+    }
+
+    // Sort games by pending count (most first)
+    const sortedGames = Object.entries(byGame).sort((a, b) => {
+      const aPending = a[1].requests.filter(r => r.status === 'pending').length;
+      const bPending = b[1].requests.filter(r => r.status === 'pending').length;
+      return bPending - aPending;
+    });
+
+    let html = '';
+    for (const [gameId, game] of sortedGames) {
+      const pendingCount = game.requests.filter(r => r.status === 'pending').length;
+      const countClass = pendingCount > 0 ? '' : 'gu-game-group__count--zero';
+
+      html += `
+        <div class="gu-game-group is-open" data-game="${escapeHtml(gameId)}">
+          <div class="gu-game-group__header" onclick="this.parentElement.classList.toggle('is-open');this.nextElementSibling.hidden=!this.nextElementSibling.hidden;">
+            <span class="gu-game-group__chevron">▶</span>
+            <span class="gu-game-group__name">${escapeHtml(game.name)}</span>
+            <span class="gu-game-group__count ${countClass}">${pendingCount}</span>
+          </div>
+          <div class="gu-game-group__body">`;
+
+      for (const req of game.requests) {
+        const sectionLabel = formatSection(req.section);
+        const typeLabel = formatType(req.update_type);
+        const date = req.created_at ? new Date(req.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+        const runner = req.runner_id ? `<a href="/runners/${encodeURIComponent(req.runner_id)}/">${escapeHtml(req.runner_id)}</a>` : 'Anonymous';
+
+        html += `
+            <div class="gu-request" data-id="${escapeHtml(req.id)}">
+              <div class="gu-request__top">
+                <span class="gu-request__tag gu-request__tag--section">${sectionLabel}</span>
+                <span class="gu-request__tag gu-request__tag--type">${typeLabel}</span>
+                <span class="gu-request__tag gu-request__tag--status-${escapeHtml(req.status)}">${escapeHtml(req.status)}</span>
+              </div>
+              <div class="gu-request__details">${escapeHtml(req.details || '')}</div>
+              <div class="gu-request__meta">
+                <span>By: ${runner}</span>
+                <span>${date}</span>
+                ${req.page_url ? `<a href="${escapeHtml(req.page_url)}" target="_blank">View page →</a>` : ''}
+              </div>
+              <div class="gu-request__actions">
+                ${req.status === 'pending' ? `
+                  <button class="btn btn--small" onclick="updateStatus('${req.id}', 'acknowledged')">👀 Acknowledge</button>
+                  <button class="btn btn--small btn--primary" onclick="updateStatus('${req.id}', 'resolved')">✅ Resolve</button>
+                  <button class="btn btn--small btn--muted" onclick="updateStatus('${req.id}', 'dismissed')">✕ Dismiss</button>
+                ` : req.status === 'acknowledged' ? `
+                  <button class="btn btn--small btn--primary" onclick="updateStatus('${req.id}', 'resolved')">✅ Resolve</button>
+                  <button class="btn btn--small btn--muted" onclick="updateStatus('${req.id}', 'dismissed')">✕ Dismiss</button>
+                ` : `
+                  <button class="btn btn--small btn--muted" onclick="updateStatus('${req.id}', 'pending')">↩ Reopen</button>
+                `}
+              </div>
+            </div>`;
+      }
+
+      html += `</div></div>`;
+    }
+
+    gamesListEl.innerHTML = html;
+  }
+
+  // Status update function (exposed globally for onclick)
+  window.updateStatus = async function(id, newStatus) {
+    try {
+      const { error } = await supabase
+        .from('game_update_requests')
+        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      // Update in local data and re-render
+      const req = allRequests.find(r => r.id === id);
+      if (req) req.status = newStatus;
+      renderRequests(allRequests);
+      renderStats(allRequests);
+    } catch (err) {
+      alert('Error updating status: ' + err.message);
+    }
+  };
+
+  function formatSection(s) {
+    const map = {
+      'game-description': 'Description',
+      'full-runs': 'Full Runs',
+      'mini-challenges': 'Mini Challenges',
+      'rules': 'Rules',
+      'achievements': 'Achievements',
+      'credits': 'Credits',
+      'other': 'Other'
+    };
+    return map[s] || s || 'Unknown';
+  }
+
+  function formatType(t) {
+    const map = {
+      'incorrect': 'Incorrect',
+      'missing': 'Missing',
+      'outdated': 'Outdated',
+      'typo': 'Typo',
+      'suggestion': 'Suggestion'
+    };
+    return map[t] || t || 'Unknown';
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // Filter handler
+  document.getElementById('status-filter').addEventListener('change', (e) => {
+    loadRequests(e.target.value);
+  });
+
+  // Initial load
+  loadRequests('pending');
+})();
+</script>
