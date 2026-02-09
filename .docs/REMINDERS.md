@@ -6,16 +6,15 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ---
 
-## Revisit
-### Global
+# Revisit
+## Global
 - [ ] Icons for Admins, Super Admins, Verifiers. These would be attached to their profile.
 - [ ] Add default profile picture and default banner.
 
+## Need to pick Frontend framework first
 ### Dashboard & Review System
 - [ ] Remove GitHub PR workflow for runs
-  - Need to pick Frontend framework first
   - Active games count could be enhanced by reading _data/form-index.json
-
 ### Modded Game Support
 - [ ] Build game submission UI in admin dashboard (replaces Google Form for new games)
   - Need to pick Frontend framework first
@@ -31,13 +30,6 @@ This document consolidates all reminders, future ideas, and planned features for
   - Team Badges
   - Highlights
   - Player-Made Challenges
-
-### 1.5 Admin Panel
-- [ ] Can dashboard be above Super Admin? Admins still should not be able to see Super Admin things.
-- [ ] Super Admin Order:
- - Site Health
- - Financials
- - Debug
 
 ### 2. Forms & Submissions
 - [ ] Test Discord Webhook for new game submissions
