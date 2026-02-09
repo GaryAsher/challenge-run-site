@@ -39,6 +39,29 @@ title: "Profile Settings"
         </div>
       </div>
       
+      <!-- Cookie Preferences -->
+      <div class="card mb-4">
+        <h2>🍪 Cookie Preferences</h2>
+        <p class="muted mb-3">
+          Control which cookies the site uses. Essential cookies (authentication, theme) are always active.
+        </p>
+        
+        <div class="cookie-pref-status" id="cookie-pref-status">
+          <div class="cookie-pref-row">
+            <span class="cookie-pref-label">Essential Cookies</span>
+            <span class="cookie-pref-value cookie-pref-value--on">Always On</span>
+          </div>
+          <div class="cookie-pref-row">
+            <span class="cookie-pref-label">Analytics Cookies</span>
+            <span class="cookie-pref-value" id="cookie-analytics-status">Checking...</span>
+          </div>
+        </div>
+        
+        <div class="profile-actions" style="margin-top: 1rem;">
+          <button type="button" class="btn" id="open-cookie-settings">Manage Cookie Settings</button>
+        </div>
+      </div>
+      
       <!-- Linked Accounts Section -->
       <div class="card mb-4">
         <h2>🔗 Linked Accounts</h2>
@@ -266,6 +289,47 @@ title: "Profile Settings"
   background: #dc3545;
   border-color: #dc3545;
   color: white;
+}
+
+.cookie-pref-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.cookie-pref-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.cookie-pref-label {
+  font-weight: 600;
+}
+
+.cookie-pref-value {
+  font-size: 0.85rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.cookie-pref-value--on {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.cookie-pref-value--off {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.cookie-pref-value--unknown {
+  color: var(--text-muted);
 }
 </style>
 
@@ -495,4 +559,52 @@ signOutAllBtn.addEventListener('click', async () => {
   
   window.location.href = '/sign-in/';
 });
+
+// Cookie preferences
+(function() {
+  const statusEl = document.getElementById('cookie-analytics-status');
+  const openBtn = document.getElementById('open-cookie-settings');
+  
+  function updateCookieStatus() {
+    if (!statusEl) return;
+    try {
+      const raw = localStorage.getItem('crc_cookie_consent');
+      if (!raw) {
+        statusEl.textContent = 'Not set';
+        statusEl.className = 'cookie-pref-value cookie-pref-value--unknown';
+        return;
+      }
+      const prefs = JSON.parse(raw);
+      if (prefs.analytics) {
+        statusEl.textContent = 'Accepted';
+        statusEl.className = 'cookie-pref-value cookie-pref-value--on';
+      } else {
+        statusEl.textContent = 'Rejected';
+        statusEl.className = 'cookie-pref-value cookie-pref-value--off';
+      }
+    } catch (e) {
+      statusEl.textContent = 'Unknown';
+      statusEl.className = 'cookie-pref-value cookie-pref-value--unknown';
+    }
+  }
+  
+  updateCookieStatus();
+  
+  openBtn?.addEventListener('click', () => {
+    if (window.CRCCookieConsent && typeof window.CRCCookieConsent.showSettings === 'function') {
+      window.CRCCookieConsent.showSettings();
+      // Update status when modal closes (poll for change)
+      const checkInterval = setInterval(() => {
+        const modal = document.getElementById('cookie-modal');
+        if (modal && modal.hidden) {
+          updateCookieStatus();
+          clearInterval(checkInterval);
+        }
+      }, 500);
+      setTimeout(() => clearInterval(checkInterval), 30000);
+    } else {
+      window.location.href = '/legal/cookies/';
+    }
+  });
+})();
 </script>
