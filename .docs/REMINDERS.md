@@ -133,14 +133,7 @@ Decision needed: GitHub Discussions vs Discord
 - [ ] Connecting Team Badges to a user's profile.
 
 ### Performance Optimizations
-- [ ] Lazy-loading game cards
 - [ ] Convert images to WebP
-- [ ] Prefetch game pages on hover
-
-### UX Improvements
-- [ ] Loading indicator for JavaScript filtering
-- [ ] Keyboard navigation for filter dropdowns
-- [ ] "Copy Link" button for filtered views
 
 ---
 
@@ -148,9 +141,7 @@ Decision needed: GitHub Discussions vs Discord
 
 ## Low Priority
 - [ ] Audit CSS for unused code
-- [ ] Consider Jekyll plugins or asset pipeline
 - [ ] Consistent variable naming across pages
-- [ ] Remove old monolithic `assets/style.css` after confirming SCSS pipeline works on Cloudflare
 
 ---
 
@@ -224,8 +215,3 @@ Notes for when CRC moves from Jekyll to SvelteKit (or Next.js). These are things
 - Client Components for interactive sections (forms, filters, admin)
 - `next/image` for automatic image optimization (replaces manual WebP conversion)
 - Consider `shadcn/ui` for component primitives
-
-## Pre-Migration Cleanup (Do Before Starting)
-- [ ] Remove `assets/style.css` after confirming SCSS pipeline
-- [ ] Ensure all games use tiered category structure (no legacy `categories_data`)
-- [ ] Document the Google Form → GitHub pipeline so it can be replicated
