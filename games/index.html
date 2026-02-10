@@ -127,9 +127,10 @@ title: Games
       </select>
     </div>
     <div class="results-bar__center">
-      <p class="muted" id="status"></p>
+      <p class="muted" id="status">Loading games...</p>
     </div>
     <div class="results-bar__right">
+      <button type="button" class="btn btn--copy-link" id="copy-link" hidden title="Copy a shareable link with current filters">🔗 Copy Link</button>
       <button type="button" class="btn btn--reset" id="reset-all" hidden>Reset Filters</button>
     </div>
   </div>
@@ -140,7 +141,7 @@ title: Games
      Games grid (constrained to page width)
      ========================================================= -->
 <div class="page-width">
-  <div class="grid" id="game-list">
+  <div class="grid" id="game-list" style="opacity: 0; transition: opacity 0.15s ease;">
     {% assign sorted = site.games | sort: "game_name" %}
     {% for g in sorted %}
       <!-- Skip test-only and unpublished games in the public listing -->
@@ -159,7 +160,7 @@ title: Games
         data-modded="{{ g.is_modded | default: false }}"
       >
         {% assign game_cover = g.cover | default: "/assets/img/site/default-game.jpg" %}
-        <div class="game-card__bg" style="background-image: url('{{ game_cover | relative_url }}');"></div>
+        <div class="game-card__bg" data-bg="{{ game_cover | relative_url }}"></div>
         {% if g.is_modded %}
           <div class="game-card__modded-badge">
             <span class="modded-badge modded-badge--card">🔧 MODDED</span>
@@ -187,15 +188,20 @@ title: Games
   var norm = F.norm;
   var expandRomanNumerals = F.expandRomanNumerals;
 
+  // Lazy load background images (game cards use data-bg)
+  F.lazyLoadBgs();
+
   // =========================================================
   // DOM: cache everything once for speed + clarity
   // =========================================================
   var items = Array.from(document.querySelectorAll('.game-item'));
-  var totalItems = items.length; // Store total count
+  var totalItems = items.length;
   var input = document.getElementById('q');
   var status = document.getElementById('status');
   var limitSelect = document.getElementById('limit');
   var resetBtn = document.getElementById('reset-all');
+  var copyLinkBtn = document.getElementById('copy-link');
+  var gameList = document.getElementById('game-list');
 
   // =========================================================
   // DOM: Filter elements - Genre, Platform, Challenge
@@ -252,15 +258,20 @@ title: Games
   ].sort(function(a, b) { return a.label.localeCompare(b.label); });
 
   // =========================================================
-  // Reset button visibility
+  // Reset + Copy Link button visibility
   // =========================================================
+  function hasActiveFilters() {
+    return input.value.trim() ||
+           activeGenres.size > 0 ||
+           activePlatforms.size > 0 ||
+           activeChallenges.size > 0 ||
+           location.hash;
+  }
+
   function updateResetButton() {
-    var hasFilters = input.value.trim() ||
-                     activeGenres.size > 0 ||
-                     activePlatforms.size > 0 ||
-                     activeChallenges.size > 0 ||
-                     location.hash;
-    if (resetBtn) resetBtn.hidden = !hasFilters;
+    var active = hasActiveFilters();
+    if (resetBtn) resetBtn.hidden = !active;
+    if (copyLinkBtn) copyLinkBtn.hidden = !active;
   }
 
   function resetAllFilters() {
@@ -269,8 +280,8 @@ title: Games
     activePlatforms.clear();
     activeChallenges.clear();
     
-    // Clear hash
-    history.pushState('', document.title, window.location.pathname + window.location.search);
+    // Clear hash and query params
+    history.pushState('', document.title, window.location.pathname);
     
     // Re-render picked chips
     F.renderPicked(activeGenres, GENRES, genrePickedEl, { onRemove: applyFilter });
@@ -284,6 +295,48 @@ title: Games
   if (resetBtn) {
     resetBtn.addEventListener('click', resetAllFilters);
   }
+
+  // =========================================================
+  // Copy Link: build shareable URL with current filters
+  // =========================================================
+  if (copyLinkBtn) {
+    copyLinkBtn.addEventListener('click', function() {
+      var url = new URL(window.location.href);
+      url.search = '';
+      if (input.value.trim()) url.searchParams.set('q', input.value.trim());
+      if (activeGenres.size) url.searchParams.set('genres', Array.from(activeGenres).join(','));
+      if (activePlatforms.size) url.searchParams.set('platforms', Array.from(activePlatforms).join(','));
+      if (activeChallenges.size) url.searchParams.set('challenges', Array.from(activeChallenges).join(','));
+      navigator.clipboard.writeText(url.toString()).then(function() {
+        copyLinkBtn.textContent = '✓ Copied!';
+        setTimeout(function() { copyLinkBtn.textContent = '🔗 Copy Link'; }, 1500);
+      }).catch(function() {
+        // Fallback for older browsers
+        var tmp = document.createElement('input');
+        tmp.value = url.toString();
+        document.body.appendChild(tmp);
+        tmp.select();
+        document.execCommand('copy');
+        document.body.removeChild(tmp);
+        copyLinkBtn.textContent = '✓ Copied!';
+        setTimeout(function() { copyLinkBtn.textContent = '🔗 Copy Link'; }, 1500);
+      });
+    });
+  }
+
+  // =========================================================
+  // Restore filters from URL query params (for shared links)
+  // =========================================================
+  (function restoreFromUrl() {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('q')) input.value = params.get('q');
+    if (params.get('genres')) params.get('genres').split(',').forEach(function(g) { activeGenres.add(g); });
+    if (params.get('platforms')) params.get('platforms').split(',').forEach(function(p) { activePlatforms.add(p); });
+    if (params.get('challenges')) params.get('challenges').split(',').forEach(function(c) { activeChallenges.add(c); });
+    if (activeGenres.size) F.renderPicked(activeGenres, GENRES, genrePickedEl, { onRemove: applyFilter });
+    if (activePlatforms.size) F.renderPicked(activePlatforms, PLATFORMS, platformPickedEl, { onRemove: applyFilter });
+    if (activeChallenges.size) F.renderPicked(activeChallenges, CHALLENGES, challengePickedEl, { onRemove: applyFilter });
+  })();
 
   // =========================================================
   // Filtering: search + genres + platforms + challenges
@@ -378,5 +431,8 @@ title: Games
 
   // Initial render
   applyFilter();
+
+  // Reveal the grid (was hidden with opacity:0 to prevent FOUC)
+  if (gameList) gameList.style.opacity = '1';
 })();
 </script>
