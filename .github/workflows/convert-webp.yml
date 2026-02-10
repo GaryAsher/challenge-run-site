@@ -82,7 +82,7 @@ jobs:
               . 2>/dev/null | while read -r file; do
               sed -i "s|$src|$webp_path|g" "$file"
               echo "  ↳ Updated ref in: $file"
-            done
+            done || true
             
             # Remove original
             rm "$src"
