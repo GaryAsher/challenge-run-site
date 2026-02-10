@@ -6,6 +6,14 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ---
 
+# Revisit
+
+### Icons for Staff Roles
+- [ ] Design icons for Admins, Super Admins, Verifiers
+- [ ] Display on runner profiles
+
+---
+
 # Immediate Priorities
 
 ### 1. Legal Document Review
@@ -36,14 +44,7 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Moderator guide
 - [ ] "Fixing mistakes" guide (for admins/verifiers)
 
-### 4. Runner Profile: Highlights
-- [ ] Review and complete Highlights functionality (pinned runs)
-
-### 5. Icons for Staff Roles
-- [ ] Design icons for Admins, Super Admins, Verifiers
-- [ ] Display on runner profiles
-
-### 6. History Tab Refinement
+### 4. History Tab Refinement
 - Needs Runner Profiles with Badges first
 - Focus on: rule changes, discussions, community milestones
 - NOT global submissions from anyone
@@ -52,31 +53,31 @@ This document consolidates all reminders, future ideas, and planned features for
 
 # Short-Term (During Svelte Migration)
 
-### 7. SvelteKit Migration
+### 5. SvelteKit Migration
 
 See [Migration Notes](#sveltekit-migration-notes) below for detailed planning.
 
-### 8. Verifier CMS (Edit Mode on Game Pages)
+### 6. Verifier CMS (Edit Mode on Game Pages)
 Deferred to Svelte — needs component-based UI for inline editing, confirmation dialogs, and diff previews. Key design decisions:
 - Require 2 verifiers to approve rule changes
 - Verifiers can edit descriptions, challenges, rules, achievements, credits
 - All changes logged to History tab with confirmation dialog
 - Application flow: user applies → admin approves → gets `verified_games` array
 
-### 9. CSS / Code Cleanup (Absorb Into Migration)
+### 7. CSS / Code Cleanup (Absorb Into Migration)
 These are moot once templates become Svelte components:
 - [ ] Audit CSS for unused code (inline `<style>` blocks total ~38KB across templates)
 - [ ] Consistent variable naming across pages
 - [ ] Extract inline styles/scripts (~838 lines CSS, ~1,550 lines JS in includes/layouts)
 - [ ] Consider Jekyll plugins or asset pipeline → replaced by Vite/SvelteKit
 
-### 10. Build Game Submission UI in Admin Dashboard
+### 8. Build Game Submission UI in Admin Dashboard
 Replaces Google Form. Better as a Svelte component than a Jekyll page.
 
-### 11. Remove GitHub PR Workflow for Runs
+### 9. Remove GitHub PR Workflow for Runs
 Replace with direct Supabase → GitHub API via Worker (already partially built). Cleaner in SvelteKit where the admin panel is a real app.
 
-### 12. Spanish Language Support
+### 10. Spanish Language Support
 - [ ] Create `_data/i18n/es.yml` with translations
 - [ ] Add language toggle to header
 - [ ] Create Spanish versions of key pages or use i18n framework
@@ -84,7 +85,7 @@ Replace with direct Supabase → GitHub API via Worker (already partially built)
 
 Better in SvelteKit with `$lib/i18n` or `paraglide-js` than Liquid hacks.
 
-### 13. Dark/Light Mode & Accessibility
+### 11. Dark/Light Mode & Accessibility
 Current theme system works (4 color themes via `data-theme`). Full light mode + accessibility features are easier in Svelte:
 - [ ] Add proper light mode CSS variables
 - [ ] Colorblind mode
@@ -97,13 +98,13 @@ Current theme system works (4 color themes via `data-theme`). Full light mode + 
 
 No specific timeline. Build when there's demand or when it's fun.
 
-### 14. Community Building
+### 12. Community Building
 - [ ] Leaderboards (per-game, per-challenge)
 - [ ] Player-Made Challenges via forum
 - [ ] Badges system
 - [ ] Run count badges on game cards
 
-### 15. Multi-Game Runs
+### 13. Multi-Game Runs
 A single challenge attempt spanning multiple games played in sequence (e.g., "Hitless Hades Marathon" — Hades 1 + 2 back-to-back without taking a hit).
 
 - `is_multi_game: true` + `related_games: [hades, hades-2]` flags
@@ -114,17 +115,17 @@ A single challenge attempt spanning multiple games played in sequence (e.g., "Hi
 - [ ] Update games index for multi-game badge
 - [ ] Update generation scripts
 
-### 16. Team Profiles
+### 14. Team Profiles
 - [ ] Team submission process
 - [ ] Team page layout refinements
 - [ ] Member lists with runner profile links
 - [ ] Connecting Team Badges to a user's profile
 
-### 17. Forum Integration
+### 15. Forum Integration
 Decision needed: GitHub Discussions vs Discord
 - Player-Made Challenges and connecting them to user profiles
 
-### 18. News & History Integration
+### 16. News & History Integration
 - Requires News page activity first
 - Combine news posts with game history for unified timeline
 
