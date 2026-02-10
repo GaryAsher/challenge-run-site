@@ -138,7 +138,8 @@
 }
 
 .filter-suggestion:hover,
-.filter-suggestion:focus {
+.filter-suggestion:focus,
+.filter-suggestion--active {
   background: var(--bg-soft);
   outline: none;
 }
@@ -159,7 +160,8 @@
   margin: 0.1rem 0;
 }
 
-.tag-suggestions .filter-suggestion:hover {
+.tag-suggestions .filter-suggestion:hover,
+.tag-suggestions .filter-suggestion--active {
   background: var(--panel);
   border-color: var(--border);
 }
