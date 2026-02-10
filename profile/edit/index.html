@@ -679,6 +679,25 @@ title: "Edit Profile"
         })();
         </script>
         
+        <!-- Highlights / Featured Runs -->
+        <div class="card mb-4">
+          <h2>📌 Highlights</h2>
+          <p class="muted mb-3">Pin up to 3 of your best runs to the top of your profile. These show as cards with the game cover art.</p>
+          
+          <div id="highlights-editor">
+            <div id="highlights-list" class="highlights-editor-list">
+              <!-- Populated by JavaScript -->
+            </div>
+            
+            <button type="button" class="btn btn--small mt-3" id="add-highlight-btn">
+              + Add Highlight
+            </button>
+            <p class="form-help">You can pin up to 3 highlights.</p>
+          </div>
+          
+          <input type="hidden" id="featured-runs-data" name="featured_runs" value="[]" />
+        </div>
+        
         <!-- Submit -->
         <div class="form-actions">
           <button type="submit" class="btn btn--primary" id="save-btn">
@@ -953,69 +972,110 @@ title: "Edit Profile"
   border: 1px solid rgba(220, 53, 69, 0.3);
 }
 
-/* Featured Runs */
-.featured-runs-list {
+/* Highlights Editor */
+.highlights-editor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.highlight-editor-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.highlight-editor-item__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.highlight-editor-item__number {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.highlight-editor-item__remove {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  line-height: 1;
+}
+
+.highlight-editor-item__remove:hover {
+  color: var(--danger, #ef4444);
+}
+
+.highlight-editor-item__content {
+  padding: 0.75rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
-.featured-run-item {
+.highlight-editor-item .form-row {
   display: flex;
-  align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem;
-  background: var(--surface);
+}
+
+.highlight-editor-item .form-row > * {
+  flex: 1;
+}
+
+.highlight-game-dropdown {
+  position: relative;
+}
+
+.highlight-game-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--panel, var(--surface));
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
+  max-height: 180px;
+  overflow-y: auto;
+  z-index: 20;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.highlight-game-suggestions button {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-size: 0.9rem;
+  color: var(--fg);
+  background: transparent;
+  border: none;
   cursor: pointer;
-  transition: all 0.15s ease;
 }
 
-.featured-run-item:hover {
-  border-color: var(--accent);
+.highlight-game-suggestions button:hover {
+  background: var(--bg-soft);
 }
 
-.featured-run-item.is-selected {
-  border-color: var(--accent);
-  background: rgba(99, 102, 241, 0.1);
-}
-
-.featured-run-item__checkbox {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-}
-
-.featured-run-item__info {
-  flex: 1;
-  min-width: 0;
-}
-
-.featured-run-item__game {
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.featured-run-item__details {
-  font-size: 0.85rem;
+.highlight-game-suggestions button .game-id-hint {
+  font-size: 0.75rem;
   color: var(--text-muted);
+  margin-left: 0.5rem;
 }
 
-.featured-run-item__order {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--accent);
-  min-width: 20px;
-  text-align: center;
-}
-
-.no-runs-message {
-  padding: 1rem;
-  text-align: center;
-  color: var(--text-muted);
+@media (max-width: 560px) {
+  .highlight-editor-item .form-row {
+    flex-direction: column;
+  }
 }
 
 /* Social Input Validation */
@@ -1184,9 +1244,9 @@ const formMessage = document.getElementById('form-message');
 
 let supabase = null;
 let currentProfile = null;
-let userRuns = [];
-let selectedFeatured = [];
 let otherLinks = [];
+let highlightsData = []; // { game_id, game_name, category, achievement }
+let formIndexGames = []; // loaded from form-index.json for autocomplete
 const MAX_OTHER_LINKS = 3;
 
 // Avatar upload constants
@@ -1652,87 +1712,212 @@ document.getElementById('add-other-link')?.addEventListener('click', () => {
   }
 });
 
-// Load user's runs for featured selection
-async function loadUserRuns(runnerId) {
-  const listEl = document.getElementById('featured-runs-list');
-  
+// =========================================================
+// Highlights Editor
+// =========================================================
+
+// Load game list from form-index.json for autocomplete
+async function loadFormIndex() {
   try {
-    const { data, error } = await supabase
-      .from('runs')
-      .select('id, game_id, category, date_completed, time, video_url')
-      .eq('runner_id', runnerId)
-      .order('date_completed', { ascending: false })
-      .limit(20);
-    
-    if (error) {
-      listEl.innerHTML = `
-        <div class="no-runs-message">
-          <p>Run data sync coming soon!</p>
-          <p class="muted">Your completed runs will appear here once the sync is set up.</p>
-        </div>
-      `;
-      return;
-    }
-    
-    userRuns = data || [];
-    
-    if (userRuns.length === 0) {
-      listEl.innerHTML = `
-        <div class="no-runs-message">
-          <p>No completed runs yet.</p>
-          <p class="muted">Submit some runs to feature them on your profile!</p>
-        </div>
-      `;
-      return;
-    }
-    
-    renderRunsList();
-  } catch (err) {
-    listEl.innerHTML = `<p class="muted">Could not load runs.</p>`;
+    const resp = await fetch('/assets/generated/form-index.json');
+    if (!resp.ok) return;
+    const data = await resp.json();
+    formIndexGames = (data.games || []).map(g => ({
+      game_id: g.game_id,
+      title: g.title,
+      categories: [
+        ...(g.category_tiers?.full_runs || []).map(c => c.name),
+        ...(g.category_tiers?.mini_challenges || []).map(c => c.name)
+      ]
+    }));
+  } catch (e) {
+    console.warn('[Highlights] Could not load form-index.json:', e);
   }
 }
 
-function renderRunsList() {
-  const listEl = document.getElementById('featured-runs-list');
+const MAX_HIGHLIGHTS = 3;
+
+function initHighlightsEditor(existing) {
+  highlightsData = (existing || []).map(h => ({
+    game_id: h.game_id || '',
+    game_name: h.game_name || '',
+    category: h.category || '',
+    achievement: h.achievement || ''
+  }));
+  renderHighlightsEditor();
+}
+
+function renderHighlightsEditor() {
+  const listEl = document.getElementById('highlights-list');
+  const addBtn = document.getElementById('add-highlight-btn');
+  if (!listEl) return;
   
-  listEl.innerHTML = userRuns.map(run => {
-    const isSelected = selectedFeatured.includes(run.id);
-    const orderNum = isSelected ? selectedFeatured.indexOf(run.id) + 1 : '';
-    
-    return `
-      <label class="featured-run-item ${isSelected ? 'is-selected' : ''}" data-run-id="${run.id}">
-        <input type="checkbox" class="featured-run-item__checkbox" 
-               ${isSelected ? 'checked' : ''} 
-               ${!isSelected && selectedFeatured.length >= 3 ? 'disabled' : ''} />
-        <div class="featured-run-item__info">
-          <div class="featured-run-item__game">${run.game_id}</div>
-          <div class="featured-run-item__details">
-            ${run.category || 'Any%'} · ${run.time || 'No time'} · ${run.date_completed || ''}
+  listEl.innerHTML = '';
+  
+  highlightsData.forEach((hl, idx) => {
+    const item = document.createElement('div');
+    item.className = 'highlight-editor-item';
+    item.innerHTML = `
+      <div class="highlight-editor-item__header">
+        <span class="highlight-editor-item__number">#${idx + 1}</span>
+        <button type="button" class="highlight-editor-item__remove" title="Remove highlight">×</button>
+      </div>
+      <div class="highlight-editor-item__content">
+        <div class="form-row">
+          <div class="highlight-game-dropdown">
+            <label class="form-label">Game</label>
+            <input type="text" class="form-input highlight-game-input" 
+                   value="${escapeAttr(hl.game_name || hl.game_id)}" 
+                   placeholder="Type a game name..." autocomplete="off" />
+            <div class="highlight-game-suggestions" hidden></div>
+            <input type="hidden" class="highlight-game-id" value="${escapeAttr(hl.game_id)}" />
+          </div>
+          <div>
+            <label class="form-label">Category</label>
+            <input type="text" class="form-input highlight-category-input" 
+                   value="${escapeAttr(hl.category)}" 
+                   placeholder="e.g., Underworld Any%" />
           </div>
         </div>
-        <span class="featured-run-item__order">${orderNum}</span>
-      </label>
+        <div>
+          <label class="form-label">Note <span class="muted">(optional)</span></label>
+          <input type="text" class="form-input highlight-achievement-input" 
+                 value="${escapeAttr(hl.achievement)}" 
+                 placeholder="e.g., First hitless clear" maxlength="100" />
+        </div>
+      </div>
     `;
-  }).join('');
-  
-  listEl.querySelectorAll('.featured-run-item').forEach(item => {
-    const checkbox = item.querySelector('input');
-    const runId = item.dataset.runId;
     
-    checkbox.addEventListener('change', () => {
-      if (checkbox.checked) {
-        if (selectedFeatured.length < 3) {
-          selectedFeatured.push(runId);
-        }
-      } else {
-        selectedFeatured = selectedFeatured.filter(id => id !== runId);
+    // Remove button
+    item.querySelector('.highlight-editor-item__remove').addEventListener('click', () => {
+      highlightsData.splice(idx, 1);
+      renderHighlightsEditor();
+    });
+    
+    // Game autocomplete
+    const gameInput = item.querySelector('.highlight-game-input');
+    const gameIdInput = item.querySelector('.highlight-game-id');
+    const sugBox = item.querySelector('.highlight-game-suggestions');
+    
+    gameInput.addEventListener('input', () => {
+      const q = gameInput.value.toLowerCase().trim();
+      gameIdInput.value = '';
+      highlightsData[idx].game_id = '';
+      highlightsData[idx].game_name = gameInput.value;
+      
+      if (!q || formIndexGames.length === 0) {
+        sugBox.hidden = true;
+        return;
       }
       
-      document.getElementById('featured-runs').value = JSON.stringify(selectedFeatured);
-      renderRunsList();
+      const matches = formIndexGames
+        .filter(g => g.title.toLowerCase().includes(q) || g.game_id.includes(q))
+        .slice(0, 8);
+      
+      if (matches.length === 0) {
+        sugBox.hidden = true;
+        return;
+      }
+      
+      sugBox.innerHTML = matches.map(g => 
+        `<button type="button" data-id="${escapeAttr(g.game_id)}" data-title="${escapeAttr(g.title)}">
+          ${escapeHtml(g.title)}<span class="game-id-hint">${escapeHtml(g.game_id)}</span>
+        </button>`
+      ).join('');
+      sugBox.hidden = false;
+      
+      sugBox.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const gid = btn.dataset.id;
+          const gtitle = btn.dataset.title;
+          gameInput.value = gtitle;
+          gameIdInput.value = gid;
+          highlightsData[idx].game_id = gid;
+          highlightsData[idx].game_name = gtitle;
+          sugBox.hidden = true;
+          
+          // Auto-fill category suggestions
+          const game = formIndexGames.find(g => g.game_id === gid);
+          if (game && game.categories.length > 0) {
+            const catInput = item.querySelector('.highlight-category-input');
+            if (!catInput.value) catInput.placeholder = game.categories[0];
+          }
+        });
+      });
     });
+    
+    gameInput.addEventListener('focus', () => {
+      if (gameInput.value && !gameIdInput.value) {
+        gameInput.dispatchEvent(new Event('input'));
+      }
+    });
+    
+    // Close suggestions on outside click
+    document.addEventListener('pointerdown', (e) => {
+      if (!item.querySelector('.highlight-game-dropdown').contains(e.target)) {
+        sugBox.hidden = true;
+      }
+    }, true);
+    
+    // Category + achievement sync
+    const catInput = item.querySelector('.highlight-category-input');
+    const achInput = item.querySelector('.highlight-achievement-input');
+    
+    catInput.addEventListener('input', () => {
+      highlightsData[idx].category = catInput.value;
+    });
+    achInput.addEventListener('input', () => {
+      highlightsData[idx].achievement = achInput.value;
+    });
+    
+    listEl.appendChild(item);
   });
+  
+  // Update hidden input
+  syncHighlightsData();
+  
+  // Toggle add button
+  if (addBtn) {
+    addBtn.disabled = highlightsData.length >= MAX_HIGHLIGHTS;
+    addBtn.textContent = highlightsData.length >= MAX_HIGHLIGHTS 
+      ? `Maximum ${MAX_HIGHLIGHTS} highlights reached` 
+      : '+ Add Highlight';
+  }
 }
+
+function syncHighlightsData() {
+  const clean = highlightsData
+    .filter(h => h.game_id && h.category)
+    .map(h => ({
+      game_id: h.game_id,
+      game_name: h.game_name || '',
+      category: h.category,
+      achievement: h.achievement || ''
+    }));
+  const el = document.getElementById('featured-runs-data');
+  if (el) el.value = JSON.stringify(clean);
+}
+
+function escapeAttr(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Add highlight button
+document.getElementById('add-highlight-btn')?.addEventListener('click', () => {
+  if (highlightsData.length >= MAX_HIGHLIGHTS) return;
+  highlightsData.push({ game_id: '', game_name: '', category: '', achievement: '' });
+  renderHighlightsEditor();
+  // Focus the new game input
+  const inputs = document.querySelectorAll('.highlight-game-input');
+  if (inputs.length) inputs[inputs.length - 1].focus();
+});
+
 
 // Populate form with current profile data
 function populateForm(profile) {
@@ -1785,6 +1970,9 @@ function populateForm(profile) {
   if (window.initPersonalGoalsEditor) {
     window.initPersonalGoalsEditor(profile.personal_goals || []);
   }
+  
+  // Highlights / Featured Runs - load into editor
+  initHighlightsEditor(profile.featured_runs || []);
 }
 
 function showPendingLinksNotice(pendingLinks) {
@@ -1881,6 +2069,14 @@ form.addEventListener('submit', async (e) => {
       formData.personal_goals = [];
     }
     
+    // Featured runs / highlights
+    try {
+      const highlightsJson = document.getElementById('featured-runs-data')?.value || '[]';
+      formData.featured_runs = JSON.parse(highlightsJson);
+    } catch (e) {
+      formData.featured_runs = [];
+    }
+    
     // If other links changed, add them to pending for approval
     if (otherLinksChanged && newOtherLinks.length > 0) {
       formData.other_links_pending = newOtherLinks;
@@ -1950,7 +2146,7 @@ form.addEventListener('submit', async (e) => {
   populateForm(profile);
   
   if (profile.runner_id) {
-    loadUserRuns(profile.runner_id);
+    loadFormIndex(); // Load game data for highlight autocomplete
   }
   
   showState('edit');
