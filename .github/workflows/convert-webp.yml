@@ -20,6 +20,7 @@ concurrency:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   convert:
@@ -98,15 +99,22 @@ jobs:
           echo "Converted: $converted files"
           echo "Total saved: $total_saved bytes"
 
-      - name: Commit changes
+      - name: Create Pull Request
         if: steps.convert.outputs.converted != '0'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          git add -A
-          git commit -m "chore: convert ${{ steps.convert.outputs.converted }} image(s) to WebP [skip ci]"
-          git push
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "chore: convert ${{ steps.convert.outputs.converted }} image(s) to WebP"
+          branch: auto/webp-conversion
+          delete-branch: true
+          title: "chore: convert ${{ steps.convert.outputs.converted }} image(s) to WebP"
+          body: |
+            Automated WebP conversion.
+
+            **Converted:** ${{ steps.convert.outputs.converted }} file(s)
+            **Saved:** ~${{ steps.convert.outputs.total_saved }} bytes
+
+            All references in HTML, MD, YML, SCSS, CSS, and JS files have been updated.
+          labels: automated
 
       - name: Summary
         run: |
