@@ -16,6 +16,12 @@ This document consolidates all reminders, future ideas, and planned features for
 
 # Immediate Priorities
 
+### 0. Quick Fix
+- [ ] On game's credits section, link runner's profile. If anonymous, do not link.
+- [ ] https://www.challengerun.net/profile/edit/
+ - Highlights: When typing a game, the game text overlaps with the text below it. This needs to be fixed.
+ - Highlights: Allow a user to submit a video. It requires approval if it is not already listed on the site.
+
 ### 1. Legal Document Review
 - [ ] Review Terms of Service line-by-line
 - [ ] Review Privacy Policy line-by-line
@@ -98,13 +104,17 @@ Current theme system works (4 color themes via `data-theme`). Full light mode + 
 
 No specific timeline. Build when there's demand or when it's fun.
 
-### 12. Community Building
+### 12. Forum Integration
+Decision needed: GitHub Discussions vs Discord
+- Player-Made Challenges and connecting them to user profiles
+
+### 13. Community Building
 - [ ] Leaderboards (per-game, per-challenge)
 - [ ] Player-Made Challenges via forum
 - [ ] Badges system
 - [ ] Run count badges on game cards
 
-### 13. Multi-Game Runs
+### 14. Multi-Game Runs
 A single challenge attempt spanning multiple games played in sequence (e.g., "Hitless Hades Marathon" — Hades 1 + 2 back-to-back without taking a hit).
 
 - `is_multi_game: true` + `related_games: [hades, hades-2]` flags
@@ -115,15 +125,11 @@ A single challenge attempt spanning multiple games played in sequence (e.g., "Hi
 - [ ] Update games index for multi-game badge
 - [ ] Update generation scripts
 
-### 14. Team Profiles
+### 15. Team Profiles
 - [ ] Team submission process
 - [ ] Team page layout refinements
 - [ ] Member lists with runner profile links
 - [ ] Connecting Team Badges to a user's profile
-
-### 15. Forum Integration
-Decision needed: GitHub Discussions vs Discord
-- Player-Made Challenges and connecting them to user profiles
 
 ### 16. News & History Integration
 - Requires News page activity first
