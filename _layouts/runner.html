@@ -1050,6 +1050,48 @@ async function loadLiveData() {
       if (goalsEmpty && goalsEmpty.parentNode) goalsEmpty.hidden = true;
     }
     
+    // Live highlights / featured runs
+    if (data.featured_runs && data.featured_runs.length > 0) {
+      let highlightsSection = document.querySelector('.runner-highlights');
+      
+      // Try to get game covers from the games-data JSON on the page
+      let gd = {};
+      try {
+        const gdEl = document.getElementById('games-data');
+        if (gdEl) gd = JSON.parse(gdEl.textContent);
+      } catch(e) {}
+      
+      let html = '<h2>📌 Highlights</h2><div class="highlights-grid">';
+      for (const fr of data.featured_runs) {
+        const gameName = escapeHtml(fr.game_name || fr.game_id || '');
+        const category = escapeHtml(fr.category || '');
+        const achievement = fr.achievement ? `<div class="highlight-card__note">${escapeHtml(fr.achievement)}</div>` : '';
+        const cover = (gd[fr.game_id] && gd[fr.game_id].avatar) 
+          ? gd[fr.game_id].avatar 
+          : '{{ "/assets/img/site/default-game.jpg" | relative_url }}';
+        
+        html += `
+          <div class="highlight-card">
+            <div class="highlight-card__bg" style="background-image:url('${cover}')"></div>
+            <div class="highlight-card__overlay">
+              <div class="highlight-card__game">${gameName}</div>
+              <div class="highlight-card__category">${category}</div>
+              ${achievement}
+            </div>
+          </div>`;
+      }
+      html += '</div>';
+      
+      if (!highlightsSection) {
+        highlightsSection = document.createElement('section');
+        highlightsSection.className = 'runner-highlights';
+        // Insert before the tabs nav
+        const tabsNav = document.querySelector('.runner-tabs');
+        if (tabsNav) tabsNav.parentNode.insertBefore(highlightsSection, tabsNav);
+      }
+      highlightsSection.innerHTML = html;
+    }
+    
     console.log('[Runner] Live data loaded');
   } catch (e) {
     console.error('[Runner] Live data error:', e);
