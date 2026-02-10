@@ -56,7 +56,17 @@ title: "Edit Profile"
           </div>
         </div>
         
+        <!-- Tab Navigation -->
+        <nav class="runner-tabs game-tabs profile-edit-tabs">
+          <button class="tab active" data-tab="basic" type="button">👤 Basic Info</button>
+          <button class="tab" data-tab="customization" type="button">🎨 Customize</button>
+          <button class="tab" data-tab="socials" type="button">🔗 Socials</button>
+          <button class="tab" data-tab="goals" type="button">🎯 Goals</button>
+          <button class="tab" data-tab="highlights" type="button">📌 Highlights</button>
+        </nav>
+        
         <!-- Basic Info -->
+        <section class="tab-panel active" data-panel="basic">
         <div class="card mb-4">
           <h2>👤 Basic Info</h2>
           
@@ -98,8 +108,10 @@ title: "Edit Profile"
             <p class="form-help">A short status shown on your profile</p>
           </div>
         </div>
+        </section>
         
         <!-- Avatar & Accent Color -->
+        <section class="tab-panel" data-panel="customization">
         <div class="card mb-4">
           <h2>🎨 Customization</h2>
           <p class="muted mb-3">Customize your profile appearance.</p>
@@ -152,8 +164,10 @@ title: "Edit Profile"
             <p class="form-help">Hex color code for your profile accent (e.g., #3BC36E)</p>
           </div>
         </div>
+        </section>
         
         <!-- Social Links -->
+        <section class="tab-panel" data-panel="socials">
         <div class="card mb-4">
           <h2>🔗 Social Links</h2>
           <p class="muted mb-3">Add links to your streaming and social accounts.</p>
@@ -226,8 +240,10 @@ title: "Edit Profile"
             <p class="form-help">Up to 3 additional links (must be valid URLs)</p>
           </div>
         </div>
+        </section>
         
         <!-- Personal Goals -->
+        <section class="tab-panel" data-panel="goals">
         <div class="card mb-4">
           <h2>🎯 Personal Goals</h2>
           <p class="muted mb-3">Set personal challenges and milestones to track your progress. These are visible on your profile.</p>
@@ -678,8 +694,10 @@ title: "Edit Profile"
           window.initPersonalGoalsEditor = initGoals;
         })();
         </script>
+        </section>
         
         <!-- Highlights / Featured Runs -->
+        <section class="tab-panel" data-panel="highlights">
         <div class="card mb-4">
           <h2>📌 Highlights</h2>
           <p class="muted mb-3">Pin up to 3 of your best runs to the top of your profile. These show as cards with the game cover art.</p>
@@ -697,6 +715,7 @@ title: "Edit Profile"
           
           <input type="hidden" id="featured-runs-data" name="featured_runs" value="[]" />
         </div>
+        </section>
         
         <!-- Submit -->
         <div class="form-actions">
@@ -1230,7 +1249,61 @@ title: "Edit Profile"
     align-items: center;
   }
 }
+
+/* Profile Edit Tabs */
+.profile-edit-tabs {
+  margin-top: 1rem;
+  margin-bottom: 0;
+  flex-wrap: wrap;
+}
+
+.profile-edit-tabs + .tab-panel {
+  border-top-left-radius: 0;
+}
+
+.profile-edit-tabs ~ .tab-panel {
+  min-height: auto;
+  padding: 1.25rem;
+}
+
+.profile-edit-tabs ~ .tab-panel > .card {
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  box-shadow: none;
+}
+
+.profile-edit-tabs ~ .tab-panel > .card > h2 {
+  display: none;
+}
+
+.profile-edit-tabs ~ .form-actions {
+  margin-top: 1.25rem;
+}
+
+@media (max-width: 560px) {
+  .profile-edit-tabs .tab {
+    font-size: 0.8rem;
+    padding: 0.45rem 0.55rem;
+  }
+}
 </style>
+
+<script>
+// Profile edit tab switching
+(function(){
+  var tabs = Array.from(document.querySelectorAll('.profile-edit-tabs .tab'));
+  var panels = Array.from(document.querySelectorAll('.profile-edit-tabs ~ .tab-panel[data-panel]'));
+  function switchTab(name) {
+    tabs.forEach(function(t) { t.classList.toggle('active', t.dataset.tab === name); });
+    panels.forEach(function(p) { p.classList.toggle('active', p.dataset.panel === name); });
+  }
+  tabs.forEach(function(t) {
+    t.addEventListener('click', function() { switchTab(t.dataset.tab); });
+  });
+})();
+</script>
 
 <script type="module">
 import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
