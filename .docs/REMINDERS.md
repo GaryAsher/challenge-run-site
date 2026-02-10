@@ -27,9 +27,7 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ### 1. Runner Profiles
 - [ ] Review functionality for: 
-  - Team Badges
   - Highlights
-  - Player-Made Challenges
 
 ### 2. Forms & Submissions
 - [ ] Test Discord Webhook for new game submissions
@@ -109,6 +107,7 @@ See [Migration Notes](#sveltekit-migration-notes) below for detailed planning.
 
 ### 12. Forum Integration
 Decision needed: GitHub Discussions vs Discord
+- Player-Made Challenges and connecting them to user profiles
 
 ### 13. News & History Integration
 - Requires News page activity first
@@ -131,6 +130,7 @@ Decision needed: GitHub Discussions vs Discord
 - [ ] Team submission process
 - [ ] Team page layout refinements
 - [ ] Member lists with runner profile links
+- [ ] Connecting Team Badges to a user's profile.
 
 ### Performance Optimizations
 - [ ] Lazy-loading game cards
