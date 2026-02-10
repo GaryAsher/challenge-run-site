@@ -9,7 +9,6 @@ This document consolidates all reminders, future ideas, and planned features for
 # Immediate Priorities
 
 ### 1. Legal Document Review
-This should happen before the site gets more traffic. Liability exposure grows with users.
 - [ ] Review Terms of Service line-by-line
 - [ ] Review Privacy Policy line-by-line
 - [ ] Add 13+ age requirement (like Speedrun.com)
