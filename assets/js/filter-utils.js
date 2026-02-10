@@ -352,7 +352,32 @@ window.CRCFilters = (function() {
     searchEl.addEventListener('pointerdown', function() { if (sugEl.hidden) open(); else close(); });
     searchEl.addEventListener('input', function() { open(); });
     searchEl.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') { close(); searchEl.blur(); }
+      if (e.key === 'Escape') { close(); searchEl.blur(); return; }
+      
+      // Arrow key navigation through suggestions
+      var btns = sugEl.querySelectorAll('.filter-suggestion:not(.filter-suggestion--empty)');
+      if (!btns.length) return;
+      
+      var active = sugEl.querySelector('.filter-suggestion--active');
+      var idx = active ? Array.from(btns).indexOf(active) : -1;
+      
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (active) active.classList.remove('filter-suggestion--active');
+        idx = (idx + 1) % btns.length;
+        btns[idx].classList.add('filter-suggestion--active');
+        btns[idx].scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (active) active.classList.remove('filter-suggestion--active');
+        idx = idx <= 0 ? btns.length - 1 : idx - 1;
+        btns[idx].classList.add('filter-suggestion--active');
+        btns[idx].scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (active) { active.click(); }
+        else if (btns.length === 1) { btns[0].click(); }
+      }
     });
     document.addEventListener('pointerdown', function(e) {
       if (!filterEl.contains(e.target)) close();
