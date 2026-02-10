@@ -6,34 +6,10 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ---
 
-# Revisit
-## Global
-- [ ] Icons for Admins, Super Admins, Verifiers. These would be attached to their profile.
-- [ ] Add default profile picture and default banner.
+# Immediate Priorities
 
-## Need to pick Frontend framework first
-### Dashboard & Review System
-- [ ] Remove GitHub PR workflow for runs
-  - Active games count could be enhanced by reading _data/form-index.json
-### Modded Game Support
-- [ ] Build game submission UI in admin dashboard (replaces Google Form for new games)
-  - Need to pick Frontend framework first
-
----
-
-# Priority Roadmap
-
-## Immediate Priorities
-
-### 1. Runner Profiles
-- [ ] Review functionality for: 
-  - Highlights
-
-### 2. Forms & Submissions
-- [ ] Test Discord Webhook for new game submissions
-- [ ] Test full end-to-end: form → Worker → Supabase → Dashboard → approve
-
-### 3. Legal Document Review
+### 1. Legal Document Review
+This should happen before the site gets more traffic. Liability exposure grows with users.
 - [ ] Review Terms of Service line-by-line
 - [ ] Review Privacy Policy line-by-line
 - [ ] Add 13+ age requirement (like Speedrun.com)
@@ -42,115 +18,116 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Add DMCA/Copyright policy
 - [ ] Add content license agreement for submissions
 - [ ] Consider user data export feature (GDPR compliance)
+
+### 2. Test End-to-End Pipelines
+- [ ] Test Discord webhook for new game submissions
+- [ ] Test full flow: form → Worker → Supabase → Dashboard → approve
+- [ ] Verify run submission → PR → merge → appears on site
+
+---
+
+# Short-Term (Before Svelte Migration)
+
+### 3. Content & Community
+- [ ] Support page: add Staff section, FAQ content, contact links
+- [ ] Glossary page: define Hit, Damage, Death, Hard CC, Soft CC, Hitless vs Damageless, Full Run, Mini-Challenge, etc.
+- [ ] Add supporting documents / community guides (ask creators first)
+- [ ] How to Navigate the Site — FAQ or general explanation
 - [ ] Create disaster recovery plan document
+- [ ] Moderator guide
+- [ ] "Fixing mistakes" guide (for admins/verifiers)
 
----
+### 4. Runner Profile: Highlights
+- [ ] Review and complete Highlights functionality (pinned runs)
 
-## Short-Term Priorities
+### 5. Icons for Staff Roles
+- [ ] Design icons for Admins, Super Admins, Verifiers
+- [ ] Display on runner profiles
 
-### 5. SvelteKit Migration
-**Target: When site has 10+ active games or needs real-time features**
-
-See [Migration Notes](#sveltekit-migration-notes) below for detailed planning.
-
-### 6. Spanish Language Support
-- [ ] Create `_data/i18n/es.yml` with translations
-- [ ] Add language toggle to header
-- [ ] Create Spanish versions of key pages or use Liquid variables
-- [ ] Request community translation help early
-
-### 7. Support Page
-- [ ] Add Staff section
-- [ ] Add FAQ content
-- [ ] Add contact links
-
-### 8. Glossary Page
-- [ ] Terms to define: Hit, Damage, Death, Hard CC, Soft CC, Hitless vs Damageless, Full Run, Mini-Challenge, etc.
-- [ ] Add content that would work as supporting documents.
-  - Ask creator first.
-
----
-
-## Medium-Term Priorities
-
-### 9. Dark/Light Mode Toggle and Accessibility Features
-- [ ] Add light mode CSS variables
-- [ ] Add toggle button to header
-- [ ] Colorblind mode
-- [ ] Store preference in localStorage
-- [ ] Respect `prefers-color-scheme`
-
-### 10. Multi-Game Runs
-**What it is:** A multi-game run is a single challenge attempt that spans multiple individual games played in sequence. For example, a "Hitless Hades Marathon" where a runner plays Hades 1 and Hades 2 back-to-back without taking a hit across both games, or a "Soulsborne Deathless" run that chains Dark Souls 1 → 2 → 3 → Elden Ring. The run is tracked as one entry with one video and one combined time, but it references all the individual games involved.
-
-**How it works on CRC:**
-- A multi-game entry is created like any other game file but with special flags:
-  - `is_multi_game: true` — marks it as a multi-game entry (not a single game)
-  - `related_games: [hades, hades-2]` — links to the individual game entries
-- On the Games index page, multi-game entries display a "🎮 MULTI-GAME" badge so they're visually distinct from single games
-- On each individual game's page (e.g., Hades 2), a banner links to any multi-game entries that include it: "This game is part of Hades Marathon — view multi-game runs"
-- On the multi-game page itself, a banner links back to each individual game
-- Categories, tiers, challenges, and the full submission flow work the same as single-game entries
-- The run file references the multi-game entry's `game_id`, not the individual games
-
-**What needs to be built:**
-- [ ] Add `is_multi_game` and `related_games` support to `generate-game-file.py`
-- [ ] Add layout support in `game.html` for `is_multi_game` (mirror the `is_modded` banner logic)
-- [ ] Update `games/index.html` to display multi-game badge
-- [ ] Update `generate-game-pages.js` and `generate-run-category-pages.js` to handle multi-game entries
-- [ ] Consider whether multi-game runs should also appear on individual game leaderboards (probably not — they'd have incomparable times)
-
-### 11. History Tab Refinement
+### 6. History Tab Refinement
 - Needs Runner Profiles with Badges first
 - Focus on: rule changes, discussions, community milestones
 - NOT global submissions from anyone
 
-### 12. Forum Integration
-Decision needed: GitHub Discussions vs Discord
-- Player-Made Challenges and connecting them to user profiles
+---
 
-### 13. News & History Integration
-- Requires News page activity first
-- Combine news posts with game history for unified timeline
+# Short-Term (During Svelte Migration)
+
+### 7. SvelteKit Migration
+
+See [Migration Notes](#sveltekit-migration-notes) below for detailed planning.
+
+### 8. Verifier CMS (Edit Mode on Game Pages)
+Deferred to Svelte — needs component-based UI for inline editing, confirmation dialogs, and diff previews. Key design decisions:
+- Require 2 verifiers to approve rule changes
+- Verifiers can edit descriptions, challenges, rules, achievements, credits
+- All changes logged to History tab with confirmation dialog
+- Application flow: user applies → admin approves → gets `verified_games` array
+
+### 9. CSS / Code Cleanup (Absorb Into Migration)
+These are moot once templates become Svelte components:
+- [ ] Audit CSS for unused code (inline `<style>` blocks total ~38KB across templates)
+- [ ] Consistent variable naming across pages
+- [ ] Extract inline styles/scripts (~838 lines CSS, ~1,550 lines JS in includes/layouts)
+- [ ] Consider Jekyll plugins or asset pipeline → replaced by Vite/SvelteKit
+
+### 10. Build Game Submission UI in Admin Dashboard
+Replaces Google Form. Better as a Svelte component than a Jekyll page.
+
+### 11. Remove GitHub PR Workflow for Runs
+Replace with direct Supabase → GitHub API via Worker (already partially built). Cleaner in SvelteKit where the admin panel is a real app.
+
+### 12. Spanish Language Support
+- [ ] Create `_data/i18n/es.yml` with translations
+- [ ] Add language toggle to header
+- [ ] Create Spanish versions of key pages or use i18n framework
+- [ ] Request community translation help early
+
+Better in SvelteKit with `$lib/i18n` or `paraglide-js` than Liquid hacks.
+
+### 13. Dark/Light Mode & Accessibility
+Current theme system works (4 color themes via `data-theme`). Full light mode + accessibility features are easier in Svelte:
+- [ ] Add proper light mode CSS variables
+- [ ] Colorblind mode
+- [ ] Respect `prefers-color-scheme`
+- [ ] Store preference via Svelte stores (replaces scattered localStorage)
 
 ---
 
-##  Future Features (Backlog)
+# Future Features (Backlog)
 
-### Community Building
+No specific timeline. Build when there's demand or when it's fun.
+
+### 14. Community Building
 - [ ] Leaderboards (per-game, per-challenge)
 - [ ] Player-Made Challenges via forum
 - [ ] Badges system
 - [ ] Run count badges on game cards
 
-### How to Navigate the Site
-- [ ] Either in form of FAQ or general explanation.
+### 15. Multi-Game Runs
+A single challenge attempt spanning multiple games played in sequence (e.g., "Hitless Hades Marathon" — Hades 1 + 2 back-to-back without taking a hit).
 
-### Team Profiles
+- `is_multi_game: true` + `related_games: [hades, hades-2]` flags
+- "🎮 MULTI-GAME" badge on Games index
+- Cross-linking banners on individual game pages
+- [ ] Add `is_multi_game` and `related_games` to `generate-game-file.py`
+- [ ] Add layout support in `game.html` (mirror `is_modded` banner logic)
+- [ ] Update games index for multi-game badge
+- [ ] Update generation scripts
+
+### 16. Team Profiles
 - [ ] Team submission process
 - [ ] Team page layout refinements
 - [ ] Member lists with runner profile links
-- [ ] Connecting Team Badges to a user's profile.
+- [ ] Connecting Team Badges to a user's profile
 
-### Performance Optimizations
-- [ ] Convert images to WebP
+### 17. Forum Integration
+Decision needed: GitHub Discussions vs Discord
+- Player-Made Challenges and connecting them to user profiles
 
----
-
-# Technical Debt
-
-## Low Priority
-- [ ] Audit CSS for unused code
-- [ ] Consistent variable naming across pages
-
----
-
-# Documentation Status
-
-## To Complete
-- [ ] Moderator guide
-- [ ] Fixing mistakes guide
-- [ ] Google Form setup guide
+### 18. News & History Integration
+- Requires News page activity first
+- Combine news posts with game history for unified timeline
 
 ---
 
@@ -169,13 +146,13 @@ Notes for when CRC moves from Jekyll to SvelteKit (or Next.js). These are things
 ## What Gets Replaced (and Why It's a Win)
 - **123+ generated `games/` pages** → Dynamic routes. A single `routes/games/[game_id]/runs/[tier]/[category]/+page.svelte` replaces all of them.
 - **Generation scripts** (`generate-game-pages.js`, `generate-run-category-pages.js`, `generate-runner-game-pages.js`, `generate-codeowners.js`): Most become unnecessary. Page generation is handled by the framework's routing. CODEOWNERS generation might still be useful.
-- **Liquid templates** in `_includes/` and `_layouts/`: Become Svelte components or React components. The big ones to plan for:
+- **Liquid templates** in `_includes/` and `_layouts/`: Become Svelte components. The big ones to plan for:
   - `game-rules.html` (1,288 lines, 710-line inline script) → Break into smaller components
   - `header.html` (631 lines, 324 lines of inline JS/CSS) → Header component with proper imports
   - `runner.html` layout (664 lines) → Runner page component
   - `game-runs.html` layout (810 lines) → Runs page component
   - `cookie-consent.html`, `report-modal.html` → Standalone components
-- **`form-index.json`** and the script that generates it → Server-side data loading (e.g., `+page.server.ts` load functions) can query game data directly.
+- **`form-index.json`** and the script that generates it → Server-side data loading (`+page.server.ts` load functions) can query game data directly.
 - **`assets/style.css`** (old monolithic file) → Delete. The SCSS pipeline is the source of truth.
 
 ## Data Architecture Decisions
