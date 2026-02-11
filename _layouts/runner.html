@@ -189,6 +189,7 @@ layout: default
             <div class="highlight-card__game">{{ fr_game.game_name | default: fr.game_id }}</div>
             <div class="highlight-card__category">{{ fr.category }}</div>
             {% if fr.achievement %}<div class="highlight-card__note">{{ fr.achievement }}</div>{% endif %}
+            {% if fr.video_url and fr.video_approved %}<a href="{{ fr.video_url }}" target="_blank" rel="noopener" class="highlight-card__video" title="Watch video">▶ Watch</a>{% endif %}
           </div>
         </div>
       {% endfor %}
@@ -565,6 +566,8 @@ layout: default
 .highlight-card__game{font-size:.75rem;color:rgba(255,255,255,.7)}
 .highlight-card__category{font-weight:700;font-size:.95rem;color:#fff}
 .highlight-card__note{font-size:.75rem;color:var(--accent);margin-top:.15rem;font-style:italic}
+.highlight-card__video{font-size:.75rem;color:#fff;margin-top:.25rem;text-decoration:none;opacity:.8;transition:opacity .15s}
+.highlight-card__video:hover{opacity:1;text-decoration:underline}
 
 /* Fun Stats Row */
 .runner-fun-stats{display:flex;gap:1rem;margin-bottom:1.25rem;flex-wrap:wrap}
