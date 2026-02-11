@@ -81,6 +81,24 @@ title: "Profile Settings"
         <div id="link-message" class="settings-message" hidden></div>
       </div>
       
+      <!-- Data & Privacy -->
+      <div class="card mb-4">
+        <h2>📦 Data & Privacy</h2>
+        <p class="muted mb-3">
+          Download a copy of all personal data CRC stores about you, including your profile, 
+          run submissions, linked accounts, and support history. 
+          Provided as a JSON file. 
+          <a href="/legal/privacy/#your-rights">Learn about your data rights.</a>
+        </p>
+        
+        <div class="profile-actions">
+          <button type="button" class="btn" id="export-data-btn">
+            Export My Data
+          </button>
+        </div>
+        <div id="export-message" class="settings-message" hidden></div>
+      </div>
+
       <!-- Danger Zone -->
       <div class="card card--danger">
         <h2>⚠️ Danger Zone</h2>
@@ -333,6 +351,11 @@ title: "Profile Settings"
 }
 </style>
 
+{% if site.run_submit_endpoint %}
+<script>
+  window.CRC_WORKER_URL = {{ site.run_submit_endpoint | jsonify }};
+</script>
+{% endif %}
 <script type="module">
 import { CRCAuth } from '{{ "/assets/js/auth.js" | relative_url }}';
 
@@ -604,6 +627,76 @@ signOutAllBtn.addEventListener('click', async () => {
       setTimeout(() => clearInterval(checkInterval), 30000);
     } else {
       window.location.href = '/legal/cookies/';
+    }
+  });
+})();
+
+// Data export
+(function() {
+  const exportBtn = document.getElementById('export-data-btn');
+  const exportMsg = document.getElementById('export-message');
+  
+  if (!exportBtn) return;
+  
+  function showExportMessage(text, type) {
+    exportMsg.textContent = text;
+    exportMsg.className = `settings-message is-${type}`;
+    exportMsg.hidden = false;
+    if (type === 'success') {
+      setTimeout(() => { exportMsg.hidden = true; }, 8000);
+    }
+  }
+  
+  exportBtn.addEventListener('click', async () => {
+    const endpoint = window.CRC_WORKER_URL;
+    if (!endpoint) {
+      showExportMessage('Export is not configured. Please contact support.', 'error');
+      return;
+    }
+    
+    exportBtn.disabled = true;
+    exportBtn.textContent = 'Exporting...';
+    exportMsg.hidden = true;
+    
+    try {
+      const supabase = CRCAuth.getSupabaseClient();
+      if (!supabase) throw new Error('Auth not initialized');
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error('Not signed in');
+      
+      const res = await fetch(`${endpoint}/export-data`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: session.access_token }),
+      });
+      
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Export failed (${res.status})`);
+      }
+      
+      const data = await res.json();
+      
+      // Trigger download as JSON file
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `crc-data-export-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      showExportMessage('Data exported successfully! Check your downloads.', 'success');
+      
+    } catch (err) {
+      console.error('[Settings] Export error:', err);
+      showExportMessage(`Export failed: ${err.message}`, 'error');
+    } finally {
+      exportBtn.disabled = false;
+      exportBtn.textContent = 'Export My Data';
     }
   });
 })();
