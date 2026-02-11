@@ -1936,7 +1936,7 @@ function renderHighlightsEditor() {
       
       sugBox.innerHTML = matches.map(g => 
         `<button type="button" data-id="${escapeAttr(g.game_id)}" data-title="${escapeAttr(g.title)}">
-          ${escapeHtml(g.title)}<span class="game-id-hint">${escapeHtml(g.game_id)}</span>
+          ${escapeHtml(g.title)}
         </button>`
       ).join('');
       sugBox.hidden = false;
