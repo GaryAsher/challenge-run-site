@@ -7,6 +7,7 @@
  *   POST /approve           Approve a pending run   (admin, JWT-verified)
  *   POST /approve-profile   Approve a pending profile (admin, JWT-verified)
  *   POST /approve-game      Approve a pending game  (admin, JWT-verified)
+ *   POST /export-data       User data export        (authenticated, own data only)
  *
  * Secrets (set via wrangler secret put):
  *   SUPABASE_URL, SUPABASE_SERVICE_KEY, GITHUB_TOKEN, GITHUB_REPO,
@@ -661,6 +662,20 @@ async function authenticateAdmin(env, body) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// AUTH HELPER: Authenticate any signed-in user (no role required)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+async function authenticateUser(env, body) {
+  const token = body.token;
+  if (!token) return { error: 'Missing token', status: 401 };
+
+  const user = await verifySupabaseToken(env, token);
+  if (!user?.id) return { error: 'Invalid or expired token', status: 401 };
+
+  return { user };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // ENDPOINT: POST / (Run submission)
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1122,6 +1137,80 @@ async function handleNotify(body, env, request) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// ENDPOINT: POST /export-data (User data export — GDPR/CCPA compliance)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+async function handleDataExport(body, env, request) {
+  // Authenticate — any signed-in user can export their own data
+  const auth = await authenticateUser(env, body);
+  if (auth.error) return jsonResponse({ error: auth.error }, auth.status, env, request);
+
+  const userId = auth.user.id;
+  const exportData = {
+    exported_at: new Date().toISOString(),
+    user_id: userId,
+    sections: {},
+  };
+
+  // 1. Profile
+  const profile = await supabaseQuery(env,
+    `runner_profiles?user_id=eq.${userId}&select=*`, { method: 'GET' });
+  exportData.sections.profile = profile.ok ? (profile.data || []) : [];
+
+  // 2. Pending profiles (in-progress profile edits)
+  const pendingProfiles = await supabaseQuery(env,
+    `pending_profiles?user_id=eq.${userId}&select=*`, { method: 'GET' });
+  exportData.sections.pending_profiles = pendingProfiles.ok ? (pendingProfiles.data || []) : [];
+
+  // 3. Run submissions
+  const runs = await supabaseQuery(env,
+    `pending_runs?submitted_by=eq.${userId}&select=*`, { method: 'GET' });
+  exportData.sections.runs = runs.ok ? (runs.data || []) : [];
+
+  // 4. Linked accounts
+  const linked = await supabaseQuery(env,
+    `linked_accounts?user_id=eq.${userId}&select=provider,provider_username,created_at`, { method: 'GET' });
+  exportData.sections.linked_accounts = linked.ok ? (linked.data || []) : [];
+
+  // 5. Game submissions
+  const games = await supabaseQuery(env,
+    `pending_games?submitter_user_id=eq.${userId}&select=*`, { method: 'GET' });
+  exportData.sections.game_submissions = games.ok ? (games.data || []) : [];
+
+  // 6. Game update requests
+  const updates = await supabaseQuery(env,
+    `game_update_requests?user_id=eq.${userId}&select=*`, { method: 'GET' });
+  exportData.sections.game_update_requests = updates.ok ? (updates.data || []) : [];
+
+  // 7. Support tickets
+  const tickets = await supabaseQuery(env,
+    `support_tickets?user_id=eq.${userId}&select=*`, { method: 'GET' });
+  exportData.sections.support_tickets = tickets.ok ? (tickets.data || []) : [];
+
+  // 8. Ticket messages
+  const messages = await supabaseQuery(env,
+    `ticket_messages?user_id=eq.${userId}&select=*`, { method: 'GET' });
+  exportData.sections.ticket_messages = messages.ok ? (messages.data || []) : [];
+
+  // 9. Profile audit log (actions performed on this user's profile)
+  const runnerId = profile.ok && profile.data?.[0]?.runner_id;
+  if (runnerId) {
+    const audit = await supabaseQuery(env,
+      `profile_audit_log?runner_id=eq.${encodeURIComponent(runnerId)}&select=*`, { method: 'GET' });
+    exportData.sections.audit_log = audit.ok ? (audit.data || []) : [];
+  }
+
+  // 10. Moderator record (if they are one)
+  const modRecord = await supabaseQuery(env,
+    `moderators?user_id=eq.${userId}&select=*`, { method: 'GET' });
+  if (modRecord.ok && modRecord.data?.length > 0) {
+    exportData.sections.moderator_record = modRecord.data;
+  }
+
+  return jsonResponse(exportData, 200, env, request);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // ROUTER
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1172,6 +1261,9 @@ export default {
 
         case '/notify':
           return handleNotify(body, env, request);
+
+        case '/export-data':
+          return handleDataExport(body, env, request);
 
         default:
           return jsonResponse({ error: 'Not found' }, 404, env, request);
