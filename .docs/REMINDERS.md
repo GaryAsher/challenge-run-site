@@ -17,10 +17,8 @@ This document consolidates all reminders, future ideas, and planned features for
 # Immediate Priorities
 
 ### 0. Quick Fix
-- [ ] On game's credits section, link runner's profile. If anonymous, do not link.
 - [ ] https://www.challengerun.net/profile/edit/
  - Highlights: When typing a game, the game text overlaps with the text below it. This needs to be fixed.
- - Highlights: Allow a user to submit a video. It requires approval if it is not already listed on the site.
 
 ### 1. Legal Document Review
 - [ ] Review Terms of Service line-by-line
