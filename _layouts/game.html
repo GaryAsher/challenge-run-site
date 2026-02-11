@@ -257,7 +257,14 @@ layout: default
           <ul class="credits-list">
             {% for credit in page.credits %}
               <li>
-                {% if credit.url %}
+                {% if credit.runner_id %}
+                  {% assign credit_runner = site.runners | where: "runner_id", credit.runner_id | first %}
+                  {% if credit_runner %}
+                    <a href="{{ credit_runner.url | relative_url }}">{{ credit.name }}</a>
+                  {% else %}
+                    {{ credit.name }}
+                  {% endif %}
+                {% elsif credit.url %}
                   <a href="{{ credit.url }}" target="_blank" rel="noopener">{{ credit.name }}</a>
                 {% else %}
                   {{ credit.name }}
