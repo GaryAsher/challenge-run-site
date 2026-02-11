@@ -12,23 +12,26 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Design icons for Admins, Super Admins, Verifiers
 - [ ] Display on runner profiles
 
+### Legal, Hands-Off fixes
+- [ ] DMCA safe harbor protection. 
+    - Current policy covers at a basic level
+    - Worth doing eventually. Needs a more formal policy with a designated agent. 
+        - Registering a DMCA agent with the Copyright Office costs $6 and requires a physical address
+- [ ] Add user data export feature (GDPR compliance)
+    - Current Privacy Policy states users can email privacy@challengerun.net
+    - Automated Tool fixes need for email
+
 ---
 
 # Immediate Priorities
 
 ### 1. Legal Document Review
 - [2] Review Terms of Service line-by-line 3 times
-- [x] Add 13+ age requirement
 - [x] Add third-party services disclosure (Supabase, Cloudflare, Discord/Twitch OAuth)
-- [ ] Add DMCA/Copyright policy
-    - Exists at Tos 7.4?
 
 - [1] Review Privacy Policy line-by-line 3 times
 - [x] Document all data collected in Privacy Policy 
-- [ ] Privacy Policy 5.2: Remove "GitHub (Microsoft)" after migrating to new framework?
 
-- [ ] Add user data export feature (GDPR compliance)
-- [ ] Add content license agreement for submissions
 - [ ] Write procedures to follow for Admins, Moderators, and Verifiers to make sure compliance is met.
     - Write specific guidelines based on user location: GDPR ; CCPA
 - [ ] Make email accounts for privacy and legal
@@ -71,6 +74,7 @@ These are moot once templates become Svelte components:
   - Replaces Google Form. Better as a Svelte component than a Jekyll page.
 - [ ] Remove GitHub PR Workflow for Runs
   - Replace with direct Supabase → GitHub API via Worker (already partially built). Cleaner in SvelteKit where the admin panel is a real app.
+- [ ] Remove Privacy Policy 5.2: "GitHub (Microsoft)" after migrating to new framework
 
 ### 7. Test End-to-End Pipelines
 - [ ] Test Discord webhook for new game submissions
