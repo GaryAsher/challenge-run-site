@@ -996,12 +996,14 @@ title: "Edit Profile"
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  overflow: visible;
 }
 
 .highlight-editor-item {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
+  overflow: visible;
 }
 
 .highlight-editor-item__header {
@@ -1011,6 +1013,7 @@ title: "Edit Profile"
   padding: 0.5rem 0.75rem;
   background: var(--bg);
   border-bottom: 1px solid var(--border);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
 }
 
 .highlight-editor-item__number {
@@ -1039,11 +1042,14 @@ title: "Edit Profile"
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  overflow: visible;
 }
 
 .highlight-editor-item .form-row {
   display: flex;
   gap: 0.75rem;
+  position: relative;
+  z-index: 3;
 }
 
 .highlight-editor-item .form-row > * {
@@ -1274,7 +1280,8 @@ title: "Edit Profile"
 .profile-edit-tabs ~ .tab-panel {
   min-height: auto;
   padding: 1.25rem;
-  overflow: visible;
+  overflow: visible !important;
+  overflow-y: visible !important;
 }
 
 .profile-edit-tabs ~ .tab-panel > .card {
@@ -1283,6 +1290,7 @@ title: "Edit Profile"
   padding: 0;
   margin: 0;
   box-shadow: none;
+  overflow: visible;
 }
 
 .profile-edit-tabs ~ .tab-panel > .card > h2 {
