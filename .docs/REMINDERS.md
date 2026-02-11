@@ -168,7 +168,6 @@ Notes for when CRC moves from Jekyll to SvelteKit (or Next.js). These are things
   - `game-runs.html` layout (810 lines) → Runs page component
   - `cookie-consent.html`, `report-modal.html` → Standalone components
 - **`form-index.json`** and the script that generates it → Server-side data loading (`+page.server.ts` load functions) can query game data directly.
-- **`assets/style.css`** (old monolithic file) → Delete. The SCSS pipeline is the source of truth.
 
 ## Data Architecture Decisions
 - [ ] **Where does game data live?** Options: Keep as markdown files (parsed at build), move to Supabase, or hybrid (markdown for config, Supabase for runs/profiles).
@@ -188,7 +187,6 @@ Notes for when CRC moves from Jekyll to SvelteKit (or Next.js). These are things
 - **GitHub Actions workflows**: The game submission pipeline (Google Form → Apps Script → GitHub → PR) still works, but the hydrate step changes since there are no pages to generate. The PR would just add the markdown file.
 - **Inline styles/scripts in templates**: Currently ~838 lines of inline CSS and ~1,550 lines of inline JS across includes/layouts. These must be extracted into proper component files. Don't port them inline.
 - **The `hidden` game/runner pattern** (`_test-game.md`, `_test-runner.md`): In SvelteKit, use environment-based filtering instead of underscore prefixes.
-- **Hardcoded game logic**: `submit-run.js` has Hades-2-specific validation. Fix this *before* migrating — make it data-driven so it ports cleanly.
 - **Cookie consent**: Current implementation is a large inline include. Consider a lightweight Svelte store-based approach.
 
 ## Framework-Specific Notes
