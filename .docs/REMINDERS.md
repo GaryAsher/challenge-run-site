@@ -17,10 +17,9 @@ This document consolidates all reminders, future ideas, and planned features for
 # Immediate Priorities
 
 ### 1. Legal Document Review
-- [1] Review Terms of Service line-by-line 3 times
+- [2] Review Terms of Service line-by-line 3 times
 - [x] Add 13+ age requirement
 - [x] Add third-party services disclosure (Supabase, Cloudflare, Discord/Twitch OAuth)
-- [ ] Remove ToS 7.3 after migrating to new framework?
 - [ ] Add DMCA/Copyright policy
     - Exists at Tos 7.4?
 
@@ -30,8 +29,6 @@ This document consolidates all reminders, future ideas, and planned features for
 
 - [ ] Add user data export feature (GDPR compliance)
 - [ ] Add content license agreement for submissions
-- [ ] 7. Data Retention
-    - For deleted accounts, anonymize data by naming the section "Anonymous" and removing the link?
 - [ ] Write procedures to follow for Admins, Moderators, and Verifiers to make sure compliance is met.
     - Write specific guidelines based on user location: GDPR ; CCPA
 - [ ] Make email accounts for privacy and legal
