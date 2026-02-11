@@ -17,9 +17,7 @@ This document consolidates all reminders, future ideas, and planned features for
     - Current policy covers at a basic level
     - Worth doing eventually. Needs a more formal policy with a designated agent. 
         - Registering a DMCA agent with the Copyright Office costs $6 and requires a physical address
-- [ ] Add user data export feature (GDPR compliance)
-    - Current Privacy Policy states users can email privacy@challengerun.net
-    - Automated Tool fixes need for email
+- [ ] Test user data export feature (GDPR compliance)
 - [ ] Create disaster recovery plan document
     - Finish frontend framework migration first
 
@@ -31,9 +29,6 @@ This document consolidates all reminders, future ideas, and planned features for
 - [2] Review Terms of Service line-by-line 3 times
 - [1] Review Privacy Policy line-by-line 3 times
 - [ ] Make email accounts for privacy and legal
-
-### 1.5 Staff Procedures Documentation
-- [ ] Update staff-compliance-procedures.md to only show relevant data to verifier, moderator, admin, super admin.
 
 ---
 
