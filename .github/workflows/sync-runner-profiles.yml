@@ -1,110 +1,445 @@
-name: Sync Runner Profiles
+#!/usr/bin/env node
+/**
+ * scripts/sync-runner-profiles.js
+ *
+ * Syncs runner profiles from Supabase database to Jekyll markdown files.
+ * This allows profile edits made via the web UI to appear on static runner pages.
+ *
+ * Usage:
+ *   node scripts/sync-runner-profiles.js                    # Sync all approved profiles
+ *   node scripts/sync-runner-profiles.js --runner gary-asher  # Sync specific runner
+ *   node scripts/sync-runner-profiles.js --dry-run          # Preview changes without writing
+ *   node scripts/sync-runner-profiles.js --force            # Overwrite all files
+ *
+ * Environment Variables Required:
+ *   SUPABASE_URL - Your Supabase project URL
+ *   SUPABASE_SERVICE_KEY - Service role key (for server-side access)
+ *
+ * Note: This script should be run in a GitHub Action or locally, never in the browser.
+ */
 
-on:
-  # Run on schedule (every 6 hours)
-  schedule:
-    - cron: '0 */6 * * *'
+const fs = require('fs');
+const path = require('path');
+const https = require('https');
+
+// ============================================================
+// Configuration
+// ============================================================
+const ROOT = process.cwd();
+const RUNNERS_DIR = path.join(ROOT, '_runners');
+const AVATARS_DIR = path.join(ROOT, 'assets', 'img', 'runners');
+
+// Supabase configuration from environment
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
+
+// ============================================================
+// CLI Arguments
+// ============================================================
+const args = process.argv.slice(2);
+const DRY_RUN = args.includes('--dry-run');
+const FORCE = args.includes('--force');
+const RUNNER_INDEX = args.indexOf('--runner');
+const SPECIFIC_RUNNER = RUNNER_INDEX !== -1 ? args[RUNNER_INDEX + 1] : null;
+
+// ============================================================
+// Helpers
+// ============================================================
+function ensureDir(dir) {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+}
+
+function log(message, type = 'info') {
+  const prefix = {
+    info: '   ',
+    success: ' ✓ ',
+    warning: ' ⚠ ',
+    error: ' ✗ ',
+    dry: ' 🔍'
+  }[type] || '   ';
   
-  # Manual trigger
-  workflow_dispatch:
-    inputs:
-      runner_id:
-        description: 'Specific runner ID to sync (leave empty for all)'
-        required: false
-        type: string
-      force:
-        description: 'Force overwrite all files'
-        required: false
-        type: boolean
-        default: false
+  console.log(`${prefix}${message}`);
+}
 
-  # Webhook trigger (can be called from Supabase Edge Function)
-  repository_dispatch:
-    types: [profile-updated]
-
-# Prevent concurrent runs
-concurrency:
-  group: sync-runners
-  cancel-in-progress: false
-
-permissions:
-  contents: write
-
-jobs:
-  sync:
-    name: Sync Profiles
-    runs-on: ubuntu-latest
+/**
+ * Make a request to Supabase REST API
+ */
+function supabaseRequest(endpoint, options = {}) {
+  return new Promise((resolve, reject) => {
+    const url = new URL(`${SUPABASE_URL}/rest/v1/${endpoint}`);
     
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: main
+    // Add query params
+    if (options.params) {
+      Object.entries(options.params).forEach(([key, value]) => {
+        url.searchParams.append(key, value);
+      });
+    }
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
+    const reqOptions = {
+      hostname: url.hostname,
+      path: url.pathname + url.search,
+      method: options.method || 'GET',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      }
+    };
 
-      - name: Install dependencies
-        run: npm ci
+    const req = https.request(reqOptions, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(data);
+          if (res.statusCode >= 400) {
+            reject(new Error(`Supabase error: ${JSON.stringify(json)}`));
+          } else {
+            resolve(json);
+          }
+        } catch (e) {
+          reject(new Error(`Failed to parse response: ${data}`));
+        }
+      });
+    });
 
-      - name: Sync Runner Profiles
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-        run: |
-          ARGS=""
-          
-          # Add runner ID if specified
-          if [ -n "${{ github.event.inputs.runner_id }}" ]; then
-            ARGS="$ARGS --runner ${{ github.event.inputs.runner_id }}"
-          fi
-          
-          # Add runner ID from repository_dispatch if present
-          if [ -n "${{ github.event.client_payload.runner_id }}" ]; then
-            ARGS="$ARGS --runner ${{ github.event.client_payload.runner_id }}"
-          fi
-          
-          # Add force flag if specified
-          if [ "${{ github.event.inputs.force }}" = "true" ]; then
-            ARGS="$ARGS --force"
-          fi
-          
-          echo "Running: node scripts/sync-runner-profiles.js $ARGS"
-          node scripts/sync-runner-profiles.js $ARGS
+    req.on('error', reject);
+    req.end();
+  });
+}
 
-      - name: Check for changes
-        id: changes
-        run: |
-          if [[ -n "$(git status --porcelain _runners/)" ]]; then
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-            echo "Changed files:"
-            git status --porcelain _runners/
-          else
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-            echo "No changes to runner profiles"
-          fi
+/**
+ * Fetch runner profiles from Supabase
+ * Note: If you add a status/approval column later, you can filter here
+ */
+async function fetchRunnerProfiles(runnerId = null) {
+  let endpoint = 'runner_profiles';
+  const params = {
+    select: '*',
+    order: 'runner_id.asc'
+  };
+  
+  // Filter by specific runner if provided
+  if (runnerId) {
+    params['runner_id'] = `eq.${runnerId}`;
+  }
 
-      - name: Commit and push directly
-        if: steps.changes.outputs.has_changes == 'true'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A _runners/
-          git commit -m "chore: Sync runner profiles from database [skip ci]"
-          git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  // Note: Add status filter here if/when you have an approval column
+  // Example: params['profile_status'] = 'eq.approved';
 
-      - name: Summary
-        run: |
-          echo "## Runner Profile Sync Summary" >> $GITHUB_STEP_SUMMARY
-          if [[ "${{ steps.changes.outputs.has_changes }}" == "true" ]]; then
-            echo "✅ Changes committed directly to main" >> $GITHUB_STEP_SUMMARY
-            echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "✅ No changes needed - profiles are in sync" >> $GITHUB_STEP_SUMMARY
-          fi
+  return supabaseRequest(endpoint, { params });
+}
+
+/**
+ * Convert a profile to Jekyll front matter YAML
+ */
+function profileToFrontMatter(profile) {
+  const lines = ['---'];
+  
+  // Layout (always runner)
+  lines.push('layout: runner');
+  
+  // Basic info
+  lines.push(`runner_id: ${profile.runner_id}`);
+  lines.push(`runner_name: ${profile.display_name || profile.runner_id}`);
+  
+  // Avatar
+  if (profile.avatar_url) {
+    lines.push(`avatar: ${profile.avatar_url}`);
+  } else {
+    // Use default or letter-based path
+    const firstLetter = profile.runner_id.charAt(0).toLowerCase();
+    lines.push(`avatar: /assets/img/runners/${firstLetter}/${profile.runner_id}.png`);
+  }
+  
+  // Banner
+  if (profile.banner_url) {
+    lines.push(`banner: ${profile.banner_url}`);
+  }
+  
+  // Joined date (from Supabase created_at)
+  if (profile.created_at) {
+    const d = new Date(profile.created_at);
+    const dateStr = d.toISOString().split('T')[0]; // YYYY-MM-DD
+    lines.push(`joined_date: "${dateStr}"`);
+  }
+  
+  // Optional fields
+  if (profile.pronouns) {
+    lines.push(`pronouns: ${profile.pronouns}`);
+  }
+  
+  if (profile.location) {
+    lines.push(`location: ${profile.location}`);
+  }
+  
+  if (profile.status_message) {
+    lines.push(`status: "${escapeYaml(profile.status_message)}"`);
+  }
+  
+  // Cover position (default)
+  lines.push('cover_position: center');
+  
+  // Admin privileges (preserve if exists, but don't add new)
+  // This should be manually managed
+  
+  // Social links
+  const socials = profile.socials || {};
+  lines.push('');
+  lines.push('socials:');
+  lines.push(`  twitch: ${socials.twitch || ''}`);
+  lines.push(`  youtube: ${socials.youtube || ''}`);
+  lines.push(`  discord: ${socials.discord || ''}`);
+  lines.push(`  twitter: ${socials.twitter || ''}`);
+  lines.push(`  bluesky: ${socials.bluesky || ''}`);
+  lines.push(`  instagram: ${socials.instagram || ''}`);
+  lines.push(`  speedruncom: ${socials.speedruncom || ''}`);
+  lines.push(`  steam: ${socials.steam || ''}`);
+  
+  // Other links (only if approved)
+  const otherLinks = socials.other || [];
+  if (otherLinks.length > 0) {
+    lines.push(`  other_link_1: ${otherLinks[0] || ''}`);
+    lines.push(`  other_link_2: ${otherLinks[1] || ''}`);
+    lines.push(`  other_link_3: ${otherLinks[2] || ''}`);
+  }
+  
+  // Bio
+  if (profile.bio) {
+    lines.push('');
+    lines.push(`bio: "${escapeYaml(profile.bio)}"`);
+  }
+  
+  // Theme settings (accent color)
+  if (profile.theme_settings?.accent) {
+    lines.push('');
+    lines.push(`accent_color: "${profile.theme_settings.accent}"`);
+  }
+  
+  // Featured runs (if any)
+  if (profile.featured_runs && profile.featured_runs.length > 0) {
+    lines.push('');
+    lines.push('featured_runs:');
+    profile.featured_runs.forEach(run => {
+      lines.push(`  - game_id: ${run.game_id}`);
+      if (run.category) lines.push(`    category: ${run.category}`);
+      if (run.achievement) lines.push(`    achievement: "${escapeYaml(run.achievement)}"`);
+      if (run.video_url) lines.push(`    video_url: "${escapeYaml(run.video_url)}"`);
+      if (run.video_approved) lines.push(`    video_approved: true`);
+    });
+  }
+  
+  // Achievements (if any)
+  if (profile.achievements && profile.achievements.length > 0) {
+    lines.push('');
+    lines.push('achievements:');
+    profile.achievements.forEach(ach => {
+      lines.push(`  - title: "${escapeYaml(ach.title)}"`);
+      if (ach.description) lines.push(`    description: "${escapeYaml(ach.description)}"`);
+      if (ach.game) lines.push(`    game: "${escapeYaml(ach.game)}"`);
+      if (ach.icon) lines.push(`    icon: "${ach.icon}"`);
+      lines.push(`    completed: ${ach.completed ? 'true' : 'false'}`);
+    });
+  }
+  
+  // Contributions (if any)
+  if (profile.contributions && profile.contributions.length > 0) {
+    lines.push('');
+    lines.push('contributions:');
+    profile.contributions.forEach(contrib => {
+      lines.push(`  - title: "${escapeYaml(contrib.title)}"`);
+      if (contrib.description) lines.push(`    description: "${escapeYaml(contrib.description)}"`);
+      if (contrib.type) lines.push(`    type: "${contrib.type}"`);
+      if (contrib.icon) lines.push(`    icon: "${contrib.icon}"`);
+      if (contrib.url) lines.push(`    url: ${contrib.url}`);
+    });
+  }
+  
+  // Personal Goals (if any)
+  if (profile.personal_goals && profile.personal_goals.length > 0) {
+    lines.push('');
+    lines.push('personal_goals:');
+    profile.personal_goals.forEach(goal => {
+      lines.push(`  - title: "${escapeYaml(goal.title)}"`);
+      if (goal.icon) lines.push(`    icon: "${goal.icon}"`);
+      if (goal.description) lines.push(`    description: "${escapeYaml(goal.description)}"`);
+      if (goal.game) lines.push(`    game: "${escapeYaml(goal.game)}"`);
+      lines.push(`    completed: ${goal.completed ? 'true' : 'false'}`);
+      if (goal.current) lines.push(`    current: ${goal.current}`);
+      if (goal.total) lines.push(`    total: ${goal.total}`);
+      if (goal.date_completed) lines.push(`    date_completed: "${goal.date_completed}"`);
+    });
+  }
+  
+  lines.push('---');
+  
+  return lines.join('\n');
+}
+
+/**
+ * Escape special characters for YAML strings
+ */
+function escapeYaml(str) {
+  if (!str) return '';
+  return str
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, '\\n');
+}
+
+/**
+ * Read existing runner file to preserve admin flags and other manual settings
+ */
+function readExistingRunner(runnerId) {
+  const filePath = path.join(RUNNERS_DIR, `${runnerId}.md`);
+  
+  if (!fs.existsSync(filePath)) {
+    return null;
+  }
+  
+  const content = fs.readFileSync(filePath, 'utf8');
+  
+  // Extract admin flags to preserve them
+  const isAdmin = content.includes('is_admin: true');
+  const canViewTest = content.includes('can_view_test_content: true');
+  
+  return {
+    isAdmin,
+    canViewTest,
+    originalContent: content
+  };
+}
+
+/**
+ * Write runner markdown file
+ */
+function writeRunnerFile(profile, existing) {
+  const runnerId = profile.runner_id;
+  const filePath = path.join(RUNNERS_DIR, `${runnerId}.md`);
+  
+  let content = profileToFrontMatter(profile);
+  
+  // Preserve admin flags if they existed
+  if (existing) {
+    if (existing.isAdmin) {
+      content = content.replace(
+        'cover_position: center',
+        'cover_position: center\n\n# Admin privileges\nis_admin: true'
+      );
+    }
+    if (existing.canViewTest) {
+      content = content.replace(
+        'is_admin: true',
+        'is_admin: true\ncan_view_test_content: true'
+      );
+    }
+  }
+  
+  if (DRY_RUN) {
+    log(`Would write: ${filePath}`, 'dry');
+    console.log('--- Content Preview ---');
+    console.log(content.substring(0, 500) + '...');
+    console.log('--- End Preview ---\n');
+    return false;
+  }
+  
+  ensureDir(RUNNERS_DIR);
+  fs.writeFileSync(filePath, content, 'utf8');
+  log(`Updated: ${runnerId}.md`, 'success');
+  return true;
+}
+
+/**
+ * Check if file needs updating
+ */
+function needsUpdate(profile, existing) {
+  // Always update for now - we want changes to sync
+  // The PR will show the diff anyway
+  return true;
+  
+  // Original logic (can re-enable later for optimization):
+  // if (FORCE) return true;
+  // if (!existing) return true;
+  // const currentName = existing.originalContent.match(/runner_name: (.+)/)?.[1];
+  // if (currentName !== profile.display_name) return true;
+  // return false;
+}
+
+// ============================================================
+// Main
+// ============================================================
+async function main() {
+  console.log('\n🏃 Runner Profile Sync\n');
+  
+  // Check for required environment variables
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
+    log('Missing SUPABASE_URL or SUPABASE_SERVICE_KEY environment variables', 'error');
+    log('Set these in your environment or .env file', 'info');
+    process.exit(1);
+  }
+  
+  if (DRY_RUN) {
+    log('DRY RUN MODE - No files will be written\n', 'warning');
+  }
+  
+  try {
+    // Fetch profiles from Supabase
+    log('Fetching runner profiles from Supabase...', 'info');
+    const profiles = await fetchRunnerProfiles(SPECIFIC_RUNNER);
+    
+    if (profiles.length === 0) {
+      log('No approved profiles found', 'warning');
+      return;
+    }
+    
+    log(`Found ${profiles.length} profile(s)\n`, 'success');
+    
+    let updated = 0;
+    let skipped = 0;
+    let errors = 0;
+    
+    for (const profile of profiles) {
+      try {
+        const existing = readExistingRunner(profile.runner_id);
+        
+        if (!needsUpdate(profile, existing)) {
+          log(`Skipped: ${profile.runner_id} (no changes)`, 'info');
+          skipped++;
+          continue;
+        }
+        
+        if (writeRunnerFile(profile, existing)) {
+          updated++;
+        } else if (DRY_RUN) {
+          updated++; // Count as would-be-updated in dry run
+        }
+      } catch (err) {
+        log(`Error processing ${profile.runner_id}: ${err.message}`, 'error');
+        errors++;
+      }
+    }
+    
+    // Summary
+    console.log('\n📊 Summary');
+    console.log(`   Updated: ${updated}`);
+    console.log(`   Skipped: ${skipped}`);
+    console.log(`   Errors:  ${errors}`);
+    
+    if (DRY_RUN) {
+      console.log('\n   (Dry run - no files were actually modified)');
+    }
+    
+  } catch (err) {
+    log(`Failed to sync profiles: ${err.message}`, 'error');
+    process.exit(1);
+  }
+}
+
+// Run
+main().catch(err => {
+  console.error(err);
+  process.exit(1);
+});
