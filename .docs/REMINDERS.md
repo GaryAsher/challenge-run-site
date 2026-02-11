@@ -2,7 +2,7 @@
 
 This document consolidates all reminders, future ideas, and planned features for CRC.
 
-**Last updated:** 2026/02/09
+**Last updated:** 2026/02/10
 
 ---
 
@@ -26,64 +26,69 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Add content license agreement for submissions
 - [ ] Consider user data export feature (GDPR compliance)
 
-### 2. Test End-to-End Pipelines
-- [ ] Test Discord webhook for new game submissions
-- [ ] Test full flow: form → Worker → Supabase → Dashboard → approve
-- [ ] Verify run submission → PR → merge → appears on site
-
 ---
 
 # Short-Term (Before Svelte Migration)
 
-### 3. Content & Community
-- [ ] Support page: add Staff section, FAQ content, contact links
-- [ ] Glossary page: define Hit, Damage, Death, Hard CC, Soft CC, Hitless vs Damageless, Full Run, Mini-Challenge, etc.
-- [ ] Add supporting documents / community guides (ask creators first)
-- [ ] How to Navigate the Site — FAQ or general explanation
-- [ ] Create disaster recovery plan document
-- [ ] Moderator guide
-- [ ] "Fixing mistakes" guide (for admins/verifiers)
-
-### 4. History Tab Refinement
-- Needs Runner Profiles with Badges first
+### 2. History Tab Refinement
 - Focus on: rule changes, discussions, community milestones
+- Needs Runner Profiles with Badges first
 - NOT global submissions from anyone
+
+### 3. Support and Glossary
+- [ ] Support page: add Staff section, FAQ content, contact links
+  - [ ] "Privacy Request" form or page users can fill out
+    - Link to it from your Privacy Policy or footer
+    - log requests
+  - [ ] Create disaster recovery plan document
+- [ ] Glossary page: define Hit, Damage, Death, Hard CC, Soft CC, Hitless vs Damageless, Full Run, Mini-Challenge, etc.
+  - [ ] Add supporting documents / community guides (ask creators first)
 
 ---
 
 # Short-Term (During Svelte Migration)
 
-### 5. SvelteKit Migration
+### 4. SvelteKit Migration
 
 See [Migration Notes](#sveltekit-migration-notes) below for detailed planning.
 
-### 6. Verifier CMS (Edit Mode on Game Pages)
-Deferred to Svelte — needs component-based UI for inline editing, confirmation dialogs, and diff previews. Key design decisions:
-- Require 2 verifiers to approve rule changes
-- Verifiers can edit descriptions, challenges, rules, achievements, credits
-- All changes logged to History tab with confirmation dialog
-- Application flow: user applies → admin approves → gets `verified_games` array
-
-### 7. CSS / Code Cleanup (Absorb Into Migration)
+### 5. CSS / Code Cleanup (Absorb Into Migration)
 These are moot once templates become Svelte components:
 - [ ] Audit CSS for unused code (inline `<style>` blocks total ~38KB across templates)
 - [ ] Consistent variable naming across pages
 - [ ] Extract inline styles/scripts (~838 lines CSS, ~1,550 lines JS in includes/layouts)
 - [ ] Consider Jekyll plugins or asset pipeline → replaced by Vite/SvelteKit
 
-### 8. Build Game Submission UI in Admin Dashboard
-Replaces Google Form. Better as a Svelte component than a Jekyll page.
+### 6. Final Migration
+- [ ] Build Game Submission UI in Admin Dashboard
+  - Replaces Google Form. Better as a Svelte component than a Jekyll page.
+- [ ] Remove GitHub PR Workflow for Runs
+  - Replace with direct Supabase → GitHub API via Worker (already partially built). Cleaner in SvelteKit where the admin panel is a real app.
 
-### 9. Remove GitHub PR Workflow for Runs
-Replace with direct Supabase → GitHub API via Worker (already partially built). Cleaner in SvelteKit where the admin panel is a real app.
+### 7. Test End-to-End Pipelines
+- [ ] Test Discord webhook for new game submissions
+- [ ] Test full flow: form → Worker → Supabase → Dashboard → approve
+- [ ] Verify run submission → PR → merge → appears on site
 
-### 10. Spanish Language Support
+### 8. Verifier CMS (Edit Mode on Game Pages)
+Deferred to Svelte — needs component-based UI for inline editing, confirmation dialogs, and diff previews. Key design decisions:
+- Require 2 verifiers to approve rule changes
+- Verifiers can edit descriptions, challenges, rules, achievements, credits
+- All changes logged to History tab with confirmation dialog
+- Application flow: user applies → admin approves → gets `verified_games` array
+
+### 9. Spanish Language Support
 - [ ] Create `_data/i18n/es.yml` with translations
 - [ ] Add language toggle to header
 - [ ] Create Spanish versions of key pages or use i18n framework
 - [ ] Request community translation help early
 
 Better in SvelteKit with `$lib/i18n` or `paraglide-js` than Liquid hacks.
+
+### 10 Documentation:
+- [ ] How to Navigate the Site — FAQ or general explanation
+- [ ] Moderator guide
+- [ ] "Fixing mistakes" guide (for admins/verifiers)
 
 ### 11. Dark/Light Mode & Accessibility
 Current theme system works (4 color themes via `data-theme`). Full light mode + accessibility features are easier in Svelte:
@@ -96,8 +101,6 @@ Current theme system works (4 color themes via `data-theme`). Full light mode + 
 
 # Future Features (Backlog)
 
-No specific timeline. Build when there's demand or when it's fun.
-
 ### 12. Forum Integration
 Decision needed: GitHub Discussions vs Discord
 - Player-Made Challenges and connecting them to user profiles
@@ -108,7 +111,11 @@ Decision needed: GitHub Discussions vs Discord
 - [ ] Badges system
 - [ ] Run count badges on game cards
 
-### 14. Multi-Game Runs
+### 14. News & History Integration
+- Requires News page activity first
+- Combine news posts with game history for unified timeline
+
+### 15. Multi-Game Runs
 A single challenge attempt spanning multiple games played in sequence (e.g., "Hitless Hades Marathon" — Hades 1 + 2 back-to-back without taking a hit).
 
 - `is_multi_game: true` + `related_games: [hades, hades-2]` flags
@@ -119,15 +126,11 @@ A single challenge attempt spanning multiple games played in sequence (e.g., "Hi
 - [ ] Update games index for multi-game badge
 - [ ] Update generation scripts
 
-### 15. Team Profiles
+### 16. Team Profiles
 - [ ] Team submission process
 - [ ] Team page layout refinements
 - [ ] Member lists with runner profile links
 - [ ] Connecting Team Badges to a user's profile
-
-### 16. News & History Integration
-- Requires News page activity first
-- Combine news posts with game history for unified timeline
 
 ---
 
