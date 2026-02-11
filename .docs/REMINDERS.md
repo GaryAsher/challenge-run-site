@@ -34,7 +34,7 @@ This document consolidates all reminders, future ideas, and planned features for
 - [1] Review Privacy Policy line-by-line 3 times
 - [x] Document all data collected in Privacy Policy 
 
-### 1.5 Staff procedures documentation
+### 1.5 Staff Procedures Documentation
 - [ ] Update staff-compliance-procedures.md to only show relevant data to verifier, moderator, admin, super admin.
 - [ ] Make email accounts for privacy and legal
 
