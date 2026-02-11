@@ -29,14 +29,11 @@ This document consolidates all reminders, future ideas, and planned features for
 
 ### 1. Legal Document Review
 - [2] Review Terms of Service line-by-line 3 times
-- [x] Add third-party services disclosure (Supabase, Cloudflare, Discord/Twitch OAuth)
-
 - [1] Review Privacy Policy line-by-line 3 times
-- [x] Document all data collected in Privacy Policy 
+- [ ] Make email accounts for privacy and legal
 
 ### 1.5 Staff Procedures Documentation
 - [ ] Update staff-compliance-procedures.md to only show relevant data to verifier, moderator, admin, super admin.
-- [ ] Make email accounts for privacy and legal
 
 ---
 
