@@ -2,7 +2,7 @@
 
 This document consolidates all reminders, future ideas, and planned features for CRC.
 
-**Last updated:** 2026/02/10
+**Last updated:** 2026/02/11
 
 ---
 
@@ -20,6 +20,8 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Add user data export feature (GDPR compliance)
     - Current Privacy Policy states users can email privacy@challengerun.net
     - Automated Tool fixes need for email
+- [ ] Create disaster recovery plan document
+    - Finish frontend framework migration first
 
 ---
 
@@ -32,10 +34,9 @@ This document consolidates all reminders, future ideas, and planned features for
 - [1] Review Privacy Policy line-by-line 3 times
 - [x] Document all data collected in Privacy Policy 
 
-- [ ] Write procedures to follow for Admins, Moderators, and Verifiers to make sure compliance is met.
-    - Write specific guidelines based on user location: GDPR ; CCPA
+### 1.5 Staff procedures documentation
+- [ ] Update staff-compliance-procedures.md to only show relevant data to verifier, moderator, admin, super admin.
 - [ ] Make email accounts for privacy and legal
-- [ ] Create disaster recovery plan document
 
 ---
 
