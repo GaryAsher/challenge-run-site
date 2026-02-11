@@ -1066,7 +1066,7 @@ title: "Edit Profile"
   top: 100%;
   left: 0;
   right: 0;
-  background: var(--panel, var(--surface));
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   max-height: 180px;
@@ -1084,17 +1084,28 @@ title: "Edit Profile"
   color: var(--fg);
   background: transparent;
   border: none;
+  border-bottom: 1px solid var(--border);
   cursor: pointer;
 }
 
+.highlight-game-suggestions button:last-child {
+  border-bottom: none;
+}
+
 .highlight-game-suggestions button:hover {
-  background: var(--bg-soft);
+  background: var(--accent);
+  color: var(--bg);
 }
 
 .highlight-game-suggestions button .game-id-hint {
   font-size: 0.75rem;
   color: var(--text-muted);
   margin-left: 0.5rem;
+}
+
+.highlight-game-suggestions button:hover .game-id-hint {
+  color: inherit;
+  opacity: 0.7;
 }
 
 .highlight-video-pending {
