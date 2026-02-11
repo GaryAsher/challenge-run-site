@@ -17,14 +17,25 @@ This document consolidates all reminders, future ideas, and planned features for
 # Immediate Priorities
 
 ### 1. Legal Document Review
-- [ ] Review Terms of Service line-by-line
-- [ ] Review Privacy Policy line-by-line
-- [ ] Add 13+ age requirement (like Speedrun.com)
-- [ ] Add third-party services disclosure (Supabase, Cloudflare, Discord/Twitch OAuth)
-- [ ] Document all data collected in Privacy Policy
+- [1] Review Terms of Service line-by-line 3 times
+- [x] Add 13+ age requirement
+- [x] Add third-party services disclosure (Supabase, Cloudflare, Discord/Twitch OAuth)
+- [ ] Remove ToS 7.3 after migrating to new framework?
 - [ ] Add DMCA/Copyright policy
+    - Exists at Tos 7.4?
+
+- [1] Review Privacy Policy line-by-line 3 times
+- [x] Document all data collected in Privacy Policy 
+- [ ] Privacy Policy 5.2: Remove "GitHub (Microsoft)" after migrating to new framework?
+
+- [ ] Add user data export feature (GDPR compliance)
 - [ ] Add content license agreement for submissions
-- [ ] Consider user data export feature (GDPR compliance)
+- [ ] 7. Data Retention
+    - For deleted accounts, anonymize data by naming the section "Anonymous" and removing the link?
+- [ ] Write procedures to follow for Admins, Moderators, and Verifiers to make sure compliance is met.
+    - Write specific guidelines based on user location: GDPR ; CCPA
+- [ ] Make email accounts for privacy and legal
+- [ ] Create disaster recovery plan document
 
 ---
 
@@ -40,7 +51,6 @@ This document consolidates all reminders, future ideas, and planned features for
   - [ ] "Privacy Request" form or page users can fill out
     - Link to it from your Privacy Policy or footer
     - log requests
-  - [ ] Create disaster recovery plan document
 - [ ] Glossary page: define Hit, Damage, Death, Hard CC, Soft CC, Hitless vs Damageless, Full Run, Mini-Challenge, etc.
   - [ ] Add supporting documents / community guides (ask creators first)
 
