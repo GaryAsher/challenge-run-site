@@ -700,7 +700,7 @@ title: "Edit Profile"
         <section class="tab-panel" data-panel="highlights">
         <div class="card mb-4">
           <h2>📌 Highlights</h2>
-          <p class="muted mb-3">Pin up to 3 of your best runs to the top of your profile. These show as cards with the game cover art.</p>
+          <p class="muted mb-3">Pin up to 3 of your best runs to the top of your profile. These show as cards with the game cover art. You can optionally link a video — videos not already on the site require moderator approval.</p>
           
           <div id="highlights-editor">
             <div id="highlights-list" class="highlights-editor-list">
@@ -1002,7 +1002,6 @@ title: "Edit Profile"
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  overflow: hidden;
 }
 
 .highlight-editor-item__header {
@@ -1053,6 +1052,7 @@ title: "Edit Profile"
 
 .highlight-game-dropdown {
   position: relative;
+  z-index: 2;
 }
 
 .highlight-game-suggestions {
@@ -1065,8 +1065,8 @@ title: "Edit Profile"
   border-radius: var(--radius-sm);
   max-height: 180px;
   overflow-y: auto;
-  z-index: 20;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 50;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .highlight-game-suggestions button {
@@ -1089,6 +1089,16 @@ title: "Edit Profile"
   font-size: 0.75rem;
   color: var(--text-muted);
   margin-left: 0.5rem;
+}
+
+.highlight-video-pending {
+  color: #f59e0b !important;
+  font-size: 0.8rem !important;
+}
+
+.highlight-video-approved {
+  color: #10b981 !important;
+  font-size: 0.8rem !important;
 }
 
 @media (max-width: 560px) {
@@ -1264,6 +1274,7 @@ title: "Edit Profile"
 .profile-edit-tabs ~ .tab-panel {
   min-height: auto;
   padding: 1.25rem;
+  overflow: visible;
 }
 
 .profile-edit-tabs ~ .tab-panel > .card {
@@ -1815,7 +1826,11 @@ function initHighlightsEditor(existing) {
     game_id: h.game_id || '',
     game_name: h.game_name || '',
     category: h.category || '',
-    achievement: h.achievement || ''
+    achievement: h.achievement || '',
+    video_url: h.video_url || '',
+    video_approved: h.video_approved || false,
+    _original_video_url: h.video_url || '',
+    _original_video_approved: h.video_approved || false
   }));
   renderHighlightsEditor();
 }
@@ -1857,6 +1872,14 @@ function renderHighlightsEditor() {
           <input type="text" class="form-input highlight-achievement-input" 
                  value="${escapeAttr(hl.achievement)}" 
                  placeholder="e.g., First hitless clear" maxlength="100" />
+        </div>
+        <div>
+          <label class="form-label">Video URL <span class="muted">(optional)</span></label>
+          <input type="url" class="form-input highlight-video-input" 
+                 value="${escapeAttr(hl.video_url)}" 
+                 placeholder="https://youtube.com/watch?v=... or https://twitch.tv/videos/..." />
+          ${hl.video_url && !hl.video_approved ? '<p class="form-help highlight-video-pending">⏳ Pending moderator approval</p>' : ''}
+          ${hl.video_url && hl.video_approved ? '<p class="form-help highlight-video-approved">✓ Approved</p>' : ''}
         </div>
       </div>
     `;
@@ -1932,15 +1955,26 @@ function renderHighlightsEditor() {
       }
     }, true);
     
-    // Category + achievement sync
+    // Category + achievement + video sync
     const catInput = item.querySelector('.highlight-category-input');
     const achInput = item.querySelector('.highlight-achievement-input');
+    const vidInput = item.querySelector('.highlight-video-input');
     
     catInput.addEventListener('input', () => {
       highlightsData[idx].category = catInput.value;
     });
     achInput.addEventListener('input', () => {
       highlightsData[idx].achievement = achInput.value;
+    });
+    vidInput.addEventListener('input', () => {
+      highlightsData[idx].video_url = vidInput.value.trim();
+      // Restore approved state if URL matches original, otherwise mark as pending
+      if (vidInput.value.trim() === (highlightsData[idx]._original_video_url || '')) {
+        highlightsData[idx].video_approved = highlightsData[idx]._original_video_approved || false;
+      } else if (vidInput.value.trim()) {
+        highlightsData[idx].video_approved = false;
+      }
+      syncHighlightsData();
     });
     
     listEl.appendChild(item);
@@ -1965,7 +1999,9 @@ function syncHighlightsData() {
       game_id: h.game_id,
       game_name: h.game_name || '',
       category: h.category,
-      achievement: h.achievement || ''
+      achievement: h.achievement || '',
+      video_url: h.video_url || '',
+      video_approved: h.video_approved || false
     }));
   const el = document.getElementById('featured-runs-data');
   if (el) el.value = JSON.stringify(clean);
@@ -1984,7 +2020,7 @@ function escapeHtml(str) {
 // Add highlight button
 document.getElementById('add-highlight-btn')?.addEventListener('click', () => {
   if (highlightsData.length >= MAX_HIGHLIGHTS) return;
-  highlightsData.push({ game_id: '', game_name: '', category: '', achievement: '' });
+  highlightsData.push({ game_id: '', game_name: '', category: '', achievement: '', video_url: '', video_approved: false, _original_video_url: '', _original_video_approved: false });
   renderHighlightsEditor();
   // Focus the new game input
   const inputs = document.querySelectorAll('.highlight-game-input');
