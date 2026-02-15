@@ -2,7 +2,7 @@
 
 This document consolidates all reminders, future ideas, and planned features for CRC.
 
-**Last updated:** 2026/02/11
+**Last updated:** 2026/02/14
 
 ---
 
@@ -13,9 +13,9 @@ This document consolidates all reminders, future ideas, and planned features for
 - [ ] Display on runner profiles
 
 ### Legal, Hands-Off fixes
-- [ ] DMCA safe harbor protection. 
+- [ ] DMCA safe harbor protection
     - Current policy covers at a basic level
-    - Worth doing eventually. Needs a more formal policy with a designated agent. 
+    - Worth doing eventually. Needs a more formal policy with a designated agent
         - Registering a DMCA agent with the Copyright Office costs $6 and requires a physical address
 - [ ] Test user data export feature (GDPR compliance)
 - [ ] Create disaster recovery plan document
@@ -30,170 +30,127 @@ This document consolidates all reminders, future ideas, and planned features for
 - [1] Review Privacy Policy line-by-line 3 times
 - [ ] Make email accounts for privacy and legal
 
+### 2. Deploy SvelteKit to Cloudflare Pages
+The SvelteKit migration is functionally complete — all routes, data, auth, and admin are ported. The blocker is deployment.
+
+**Option A: Cloudflare Pages (recommended)** — you're already using Cloudflare Worker + Turnstile:
+1. Swap adapter: `adapter-static` → `adapter-cloudflare`
+2. Connect GitHub repo at [dash.cloudflare.com](https://dash.cloudflare.com) → Pages
+3. Set build command `pnpm build`, add env vars
+4. Every `git push` auto-deploys (same workflow as Jekyll + GitHub Pages)
+
+**Option B: Stay on adapter-static** — deploy the static build to Cloudflare Pages as-is. Simpler, but auth pages won't have SSR.
+
+- [ ] Choose adapter strategy
+- [ ] Deploy and verify site works
+- [ ] Point custom domain
+- [ ] Remove Privacy Policy 5.2: "GitHub (Microsoft)"
+
 ---
 
-# Short-Term (Before Svelte Migration)
+# Short-Term (Post-Launch Cleanup)
 
-### 2. History Tab Refinement
+### 3. Missing Svelte Components
+These existed in Jekyll (`_includes/`) but haven't been rebuilt yet:
+- [ ] **Cookie consent banner** — Jekyll had `cookie-consent.html`. Build as `<CookieConsent>` component with `$lib/stores/consent.ts`. The `/legal/cookies` page exists but there's no banner.
+- [ ] **Report modal** — Jekyll had `report-modal.html`. Needs a `<ReportModal>` component.
+- [ ] **Achievement card** — Jekyll had `achievement-card.html`. Only 1 achievement exists so far but the component is needed for runner profiles.
+
+### 4. History Tab Refinement
+- Route exists (`/games/[game_id]/history`) — currently a placeholder
 - Focus on: rule changes, discussions, community milestones
 - Needs Runner Profiles with Badges first
 - NOT global submissions from anyone
 
-### 3. Support and Glossary
-- [ ] Support page: add Staff section, FAQ content, contact links
-  - [ ] "Privacy Request" form or page users can fill out
-    - Link to it from your Privacy Policy or footer
-    - log requests
-- [ ] Glossary page: define Hit, Damage, Death, Hard CC, Soft CC, Hitless vs Damageless, Full Run, Mini-Challenge, etc.
+### 5. Support and Glossary — Fill In Content
+Both pages exist in SvelteKit but have placeholder content:
+- [ ] Glossary: fill in definitions for Hit, Damage, Death, Hard CC, Soft CC, Hitless vs Damageless, Full Run, Mini-Challenge, etc.
   - [ ] Add supporting documents / community guides (ask creators first)
+- [ ] Support: add Staff section, FAQ content, contact links
+  - [ ] "Privacy Request" form or page users can fill out — link from Privacy Policy and footer
+  - [ ] Log requests
 
----
-
-# Short-Term (During Svelte Migration)
-
-### 4. SvelteKit Migration
-
-See [Migration Notes](#sveltekit-migration-notes) below for detailed planning.
-
-### 5. CSS / Code Cleanup (Absorb Into Migration)
-These are moot once templates become Svelte components:
-- [ ] Audit CSS for unused code (inline `<style>` blocks total ~38KB across templates)
-- [ ] Consistent variable naming across pages
-- [ ] Extract inline styles/scripts (~838 lines CSS, ~1,550 lines JS in includes/layouts)
-- [ ] Consider Jekyll plugins or asset pipeline → replaced by Vite/SvelteKit
-
-### 6. Final Migration
-- [ ] Build Game Submission UI in Admin Dashboard
-  - Replaces Google Form. Better as a Svelte component than a Jekyll page.
-- [ ] Remove GitHub PR Workflow for Runs
-  - Replace with direct Supabase → GitHub API via Worker (already partially built). Cleaner in SvelteKit where the admin panel is a real app.
-- [ ] Remove Privacy Policy 5.2: "GitHub (Microsoft)" after migrating to new framework
+### 6. CSS Cleanup
+SCSS was fully ported (228K across base/, components/, pages/) but some may be dead code now that components use scoped `<style>` blocks:
+- [ ] Audit for unused SCSS (141K in components alone)
+- [ ] Check for duplicated styles between global SCSS and component `<style>` blocks
 
 ### 7. Test End-to-End Pipelines
 - [ ] Test Discord webhook for new game submissions
 - [ ] Test full flow: form → Worker → Supabase → Dashboard → approve
 - [ ] Verify run submission → PR → merge → appears on site
 
-### 8. Verifier CMS (Edit Mode on Game Pages)
-Deferred to Svelte — needs component-based UI for inline editing, confirmation dialogs, and diff previews. Key design decisions:
-- Require 2 verifiers to approve rule changes
-- Verifiers can edit descriptions, challenges, rules, achievements, credits
-- All changes logged to History tab with confirmation dialog
-- Application flow: user applies → admin approves → gets `verified_games` array
-
-### 9. Spanish Language Support
-- [ ] Create `_data/i18n/es.yml` with translations
-- [ ] Add language toggle to header
-- [ ] Create Spanish versions of key pages or use i18n framework
-- [ ] Request community translation help early
-
-Better in SvelteKit with `$lib/i18n` or `paraglide-js` than Liquid hacks.
-
-### 10 Documentation:
+### 8. Documentation
+Staff guides are already in `src/data/staff-guides/` (admin, moderator, super-admin, verifier, compliance):
 - [ ] How to Navigate the Site — FAQ or general explanation
-- [ ] Moderator guide
 - [ ] "Fixing mistakes" guide (for admins/verifiers)
+- [ ] Surface staff guides in the admin panel or a protected route
 
-### 11. Dark/Light Mode & Accessibility
-Current theme system works (4 color themes via `data-theme`). Full light mode + accessibility features are easier in Svelte:
-- [ ] Add proper light mode CSS variables
+### 9. Dark/Light Mode & Accessibility
+Theme store is built (`$lib/stores/theme.ts`) — already supports dark/light toggle and respects `prefers-color-scheme`:
+- [ ] Add proper light mode CSS variables (currently 4 color themes via `data-theme`)
 - [ ] Colorblind mode
-- [ ] Respect `prefers-color-scheme`
-- [ ] Store preference via Svelte stores (replaces scattered localStorage)
+- [ ] Test all pages in light mode
+
+---
+
+# Medium-Term
+
+### 10. Game Submission UI in Admin Dashboard
+- [ ] Build admin-facing form to add games directly (replaces Google Form)
+- [ ] Should create markdown file + open PR via GitHub API, or write to Supabase
+- [ ] Admin page already has tabs — add a new section within it
+
+### 11. Streamline Run Pipeline
+- [ ] Replace GitHub PR workflow for runs with: Worker → Supabase → Admin approves → GitHub API commits file
+- [ ] Worker (`worker/src/`) is already partially built for this
+- [ ] Test full flow: submit → Worker → Supabase → Admin dashboard → approve → appears on site
+
+### 12. Verifier CMS (Edit Mode on Game Pages)
+Needs component-based UI for inline editing, confirmation dialogs, and diff previews:
+- [ ] Verifiers can edit descriptions, challenges, rules, achievements, credits
+- [ ] Require 2 verifiers to approve rule changes
+- [ ] All changes logged to History tab with confirmation dialog
+- [ ] Application flow: user applies → admin approves → gets `verified_games` array
+
+### 13. Spanish Language Support
+Better in SvelteKit with `paraglide-js` or `$lib/i18n`:
+- [ ] Create translation files
+- [ ] Add language toggle to Header
+- [ ] Create Spanish versions of key pages
+- [ ] Request community translation help early
 
 ---
 
 # Future Features (Backlog)
 
-### 12. Forum Integration
-Decision needed: GitHub Discussions vs Discord
+### 14. Forum Integration
+Route exists (`/games/[game_id]/forum`) — currently a placeholder. Decision needed: GitHub Discussions vs Discord.
 - Player-Made Challenges and connecting them to user profiles
 
-### 13. Community Building
+### 15. Community Building
 - [ ] Leaderboards (per-game, per-challenge)
 - [ ] Player-Made Challenges via forum
 - [ ] Badges system
 - [ ] Run count badges on game cards
 
-### 14. News & History Integration
+### 16. News & History Integration
 - Requires News page activity first
 - Combine news posts with game history for unified timeline
 
-### 15. Multi-Game Runs
+### 17. Multi-Game Runs
 A single challenge attempt spanning multiple games played in sequence (e.g., "Hitless Hades Marathon" — Hades 1 + 2 back-to-back without taking a hit).
 
 - `is_multi_game: true` + `related_games: [hades, hades-2]` flags
 - "🎮 MULTI-GAME" badge on Games index
 - Cross-linking banners on individual game pages
-- [ ] Add `is_multi_game` and `related_games` to `generate-game-file.py`
-- [ ] Add layout support in `game.html` (mirror `is_modded` banner logic)
+- [ ] Add `is_multi_game` and `related_games` to game markdown front matter
+- [ ] Add layout support in game detail page (mirror `is_modded` banner logic)
 - [ ] Update games index for multi-game badge
-- [ ] Update generation scripts
 
-### 16. Team Profiles
+### 18. Team Profiles
+Teams page and data exist (`/teams`, `src/data/teams/`):
 - [ ] Team submission process
 - [ ] Team page layout refinements
 - [ ] Member lists with runner profile links
 - [ ] Connecting Team Badges to a user's profile
-
----
-
-# SvelteKit Migration Notes
-
-Notes for when CRC moves from Jekyll to SvelteKit (or Next.js). These are things to keep in mind during the transition.
-
-## What Carries Over Directly
-- **Markdown data files** (`_games/*.md`, `_runners/*.md`, `_runs/**/*.md`): YAML front matter works natively with `gray-matter` or `mdsvex`. Keep the same file structure.
-- **`_data/*.yml` files**: Convert to JSON or TypeScript imports. Consider keeping YAML and parsing at build time.
-- **SCSS structure** (`assets/scss/`): Both SvelteKit and Next.js support SCSS. The modular structure (base, components, pages) maps cleanly to component-scoped styles.
-- **Supabase integration**: Auth, profiles, and edge functions are framework-agnostic. The `supabase/` directory moves as-is.
-- **Vanilla JS files** (`assets/js/`): Logic ports directly, though most will become component methods.
-- **Images and static assets**: Move to `static/` directory.
-
-## What Gets Replaced (and Why It's a Win)
-- **123+ generated `games/` pages** → Dynamic routes. A single `routes/games/[game_id]/runs/[tier]/[category]/+page.svelte` replaces all of them.
-- **Generation scripts** (`generate-game-pages.js`, `generate-run-category-pages.js`, `generate-runner-game-pages.js`, `generate-codeowners.js`): Most become unnecessary. Page generation is handled by the framework's routing. CODEOWNERS generation might still be useful.
-- **Liquid templates** in `_includes/` and `_layouts/`: Become Svelte components. The big ones to plan for:
-  - `game-rules.html` (1,288 lines, 710-line inline script) → Break into smaller components
-  - `header.html` (631 lines, 324 lines of inline JS/CSS) → Header component with proper imports
-  - `runner.html` layout (664 lines) → Runner page component
-  - `game-runs.html` layout (810 lines) → Runs page component
-  - `cookie-consent.html`, `report-modal.html` → Standalone components
-- **`form-index.json`** and the script that generates it → Server-side data loading (`+page.server.ts` load functions) can query game data directly.
-
-## Data Architecture Decisions
-- [ ] **Where does game data live?** Options: Keep as markdown files (parsed at build), move to Supabase, or hybrid (markdown for config, Supabase for runs/profiles).
-- [ ] **Static vs SSR vs hybrid**: Game pages can be statically generated at build time (SSG). Profile pages and admin panels should be server-rendered (SSR). Run submission needs client-side interactivity.
-- [ ] **Auth strategy**: SvelteKit has `+page.server.ts` and `+layout.server.ts` for server-only auth logic. Supabase keys stay server-side. No more exposing the anon key in `_data/supabase-config.yml`.
-- [ ] **Form handling**: SvelteKit form actions replace the current `submit-run.js` fetch-based approach with progressive enhancement (works without JS).
-
-## Migration Order (Suggested)
-1. **Set up SvelteKit project** with Supabase adapter and Cloudflare Pages adapter
-2. **Port static pages first**: Games index, game overview, rules, history, glossary, legal
-3. **Port data-driven pages**: Runs tables, runner profiles (these test the data pipeline)
-4. **Port interactive features**: Submit forms, admin panels, auth flows, search
-5. **Port remaining**: Profile editing, theme system, cookie consent, reporting
-6. **Verify and cut over**: Run both sites in parallel, compare output, switch DNS
-
-## Things That Will Need Rethinking
-- **GitHub Actions workflows**: The game submission pipeline (Google Form → Apps Script → GitHub → PR) still works, but the hydrate step changes since there are no pages to generate. The PR would just add the markdown file.
-- **Inline styles/scripts in templates**: Currently ~838 lines of inline CSS and ~1,550 lines of inline JS across includes/layouts. These must be extracted into proper component files. Don't port them inline.
-- **The `hidden` game/runner pattern** (`_test-game.md`, `_test-runner.md`): In SvelteKit, use environment-based filtering instead of underscore prefixes.
-- **Cookie consent**: Current implementation is a large inline include. Consider a lightweight Svelte store-based approach.
-
-## Framework-Specific Notes
-
-### If SvelteKit (Recommended)
-- Use `@sveltejs/adapter-cloudflare` for Cloudflare Pages deployment
-- Scoped styles per component replace the global SCSS approach (keep SCSS for shared variables/mixins)
-- Built-in transitions replace any JS animation logic
-- `+page.server.ts` load functions replace the form-index.json caching pattern
-- Consider `shadcn-svelte` or `skeleton` for UI component primitives
-- Svelte stores replace the scattered `localStorage` usage for theme/auth state
-
-### If Next.js
-- Use `@cloudflare/next-on-pages` for Cloudflare deployment (less mature than native Vercel)
-- React Server Components for game/runner pages (no client JS shipped)
-- Client Components for interactive sections (forms, filters, admin)
-- `next/image` for automatic image optimization (replaces manual WebP conversion)
-- Consider `shadcn/ui` for component primitives
